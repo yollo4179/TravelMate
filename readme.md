@@ -58,14 +58,14 @@
 <table>
 <th>
 <tr>구분</tr> <tr>기술 </tr> <tr>Stack</tr> <tr>비고</tr>
-<th>
+</th>
 <td>
 <tr>Frontend</tr><tr>"Vue 3, Pinia, TailwindCSS"</tr><tr>상태 관리 및 UI</tr>
 <tr>Communication</tr><tr>"WebRTC, Socket.io or SockJS"</tr><tr>실시간 화상 및 시그널링</tr>
 <tr>Messaging</tr><tr>Spring WebSocket (STOMP)</tr><tr>실시간 채팅 및 지도 핀 동기화</tr>
 <tr>Map API</tr><tr>Kakao Maps / Google Maps API</tr><tr>장소 검색 및 좌표 추출</tr>
 <tr>Recommendation</tr><tr>"TourAPI 4.0, 자체 비용 계산 Logic"</tr><tr>지역별 플랜 데이터 수급</tr>
-<td>
+</td>
 </table>
 
 
