@@ -56,16 +56,40 @@
 
 
 <table>
-<th>
-<tr>구분</tr> <tr>기술 </tr> <tr>Stack</tr> <tr>비고</tr>
-</th>
-<td>
-<tr>Frontend</tr><tr>"Vue 3, Pinia, TailwindCSS"</tr><tr>상태 관리 및 UI</tr>
-<tr>Communication</tr><tr>"WebRTC, Socket.io or SockJS"</tr><tr>실시간 화상 및 시그널링</tr>
-<tr>Messaging</tr><tr>Spring WebSocket (STOMP)</tr><tr>실시간 채팅 및 지도 핀 동기화</tr>
-<tr>Map API</tr><tr>Kakao Maps / Google Maps API</tr><tr>장소 검색 및 좌표 추출</tr>
-<tr>Recommendation</tr><tr>"TourAPI 4.0, 자체 비용 계산 Logic"</tr><tr>지역별 플랜 데이터 수급</tr>
-</td>
+  <thead>
+    <tr>
+      <th>구분</th>
+      <th>기술 Stack</th>
+      <th>비고</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Frontend</td>
+      <td>Vue 3, Pinia, TailwindCSS</td>
+      <td>상태 관리 및 UI</td>
+    </tr>
+    <tr>
+      <td>Communication</td>
+      <td>WebRTC, Socket.io or SockJS</td>
+      <td>실시간 화상 및 시그널링</td>
+    </tr>
+    <tr>
+      <td>Messaging</td>
+      <td>Spring WebSocket (STOMP)</td>
+      <td>실시간 채팅 및 지도 핀 동기화</td>
+    </tr>
+    <tr>
+      <td>Map API</td>
+      <td>Kakao Maps / Google Maps API</td>
+      <td>장소 검색 및 좌표 추출</td>
+    </tr>
+    <tr>
+      <td>Recommendation</td>
+      <td>TourAPI 4.0, 자체 비용 계산 Logic</td>
+      <td>지역별 플랜 데이터 수급</td>
+    </tr>
+  </tbody>
 </table>
 
 
