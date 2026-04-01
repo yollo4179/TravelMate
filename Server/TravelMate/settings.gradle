@@ -1,0 +1,8 @@
+// 1. Plugins block must be at the very top jdk가 없다면 적절한 jdk 다운로드 
+plugins {
+    id 'org.gradle.toolchains.foojay-resolver-convention' version '0.8.0'
+}
+// 2. Project name and includes come AFTER plugins
+rootProject.name = 'TravelMate'  
+//app이라는 하위 폴더(모듈)가 있으니 거기 들어가서 코드를 빌드해라
+include ':app'

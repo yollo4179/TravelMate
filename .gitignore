@@ -1,0 +1,40 @@
+# 1. 빌드 결과물 (가장 중요!)
+# Gradle이 코드를 빌드하면서 만들어내는 무거운 임시 파일과 결과물들은 절대 깃에 올리면 안 돼.
+.gradle/
+build/
+!gradle/wrapper/gradle-wrapper.jar
+!**/src/main/**/build/
+!**/src/test/**/build/
+
+# 2. IDE (개발 툴) 설정 파일
+# 각자 컴퓨터 환경이 다르기 때문에 이클립스나 인텔리제이 설정 파일이 깃에 올라가면 팀원들끼리 엄청난 충돌이 나.
+# Eclipse
+.metadata/
+.classpath
+.project
+.settings/
+*.class
+# IntelliJ IDEA
+.idea/
+*.iml
+*.iws
+out/
+
+# 3. 로그 파일
+# 서버 실행하면서 텍스트로 무한히 쌓이는 로그 파일들도 깃 용량만 차지하니까 제외!
+*.log
+
+# 4. OS (운영체제) 생성 찌꺼기 파일
+# 맥(Mac)이나 윈도우가 폴더를 관리하면서 몰래 만드는 숨김 파일들이야.
+.DS_Store
+Thumbs.db
+
+# 5. 프론트엔드 (선택 사항)
+# 혹시 나중에라도 Vue.js 같은 프론트엔드 코드를 같은 레포지토리에 넣게 된다면 이것도 꼭 막아줘!
+node_modules/
+dist/
+
+# 보안을 위해 비밀번호가 적힌 설정/설계 파일 제외 (필요한 경우)
+src/main/resources/application.yml
+src/main/resources/application.properties
+src/main/java/com/yollo/TravelMate/config/ApplicationConfig.java
