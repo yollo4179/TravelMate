@@ -12,28 +12,56 @@ java {
 		languageVersion = JavaLanguageVersion.of(17)
 	}
 }
-
+//의존성 관리 그룹을 설정
 configurations {
+	//컴파일할 때만 필요하고 실행(Runtime) 시점에는 결과물(JAR)에 포함되지 않아도 되는 라이브러리들을 '지정' 
 	compileOnly {
-		extendsFrom annotationProcessor
+		//무거우니까 런타임에 필요없으면 다 넣자
+		extendsFrom annotationProcessor 
+		//ex) lombok, 애너테이션이 실행시점에 필요할까? 컴파일 할 때 실행파일에 만들어주는데? 
 	}
 }
-
+//저장소 설정
 repositories {
+	//mavenCentral(): 자바 오픈소스 라이브러리 저장소
+	//Gradle은 mavenCentral()에 접속해 설정한 라이브러리들을 자동으로 내려받는다.
+	//(이거 없으면 라이브러리 못사져옴)
 	mavenCentral()
 }
 
 dependencies {
-	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
-	implementation 'org.springframework.boot:spring-boot-starter-security'
+	// 1. Web & JPA & Database(PostgreSQL)
 	implementation 'org.springframework.boot:spring-boot-starter-web'
-	compileOnly 'org.projectlombok:lombok'
-	developmentOnly 'org.springframework.boot:spring-boot-devtools'
+	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 	runtimeOnly 'org.postgresql:postgresql'
-	annotationProcessor 'org.projectlombok:lombok'
-	testImplementation 'org.springframework.boot:spring-boot-starter-test'
-	testImplementation 'org.springframework.security:spring-security-test'
-	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+	
+	
+	//Spring Security- Oauth2( 구글, 카톡 로그인 핵심) - 로그인의 꽃
+	implementation 'org.springframework.boot:spring-boot-starter-security'
+	implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
+	
+	
+	// 3. JWT (토큰 생성 및 검증)
+    implementation 'io.jsonwebtoken:jjwt-api:0.11.5'
+    runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.11.5'
+    runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.11.5'
+	
+	// 4. Lombok
+    compileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
+    
+    
+	// 5. Test (인증 관련 테스트 포함)
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'org.springframework.security:spring-security-test'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    
+    // 개발 단계에서만 활성화되는 도구(배포에서는 x ) 
+    /*developmentOnly*/ 
+    //6. 서버를 껐다 켜지 않아도 병경 감지+ 서버 자동 재시작 - 리로드 
+	developmentOnly 'org.springframework.boot:spring-boot-devtools'
+	
+	
 }
 
 tasks.named('test') {
