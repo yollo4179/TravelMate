@@ -1,4 +1,4 @@
-package com.yollo.TravelMate.dto;
+package com.yollo.TravelMate.domain.session.entity;
 import java.time.LocalDateTime;
 
 import lombok.AllArgsConstructor;
@@ -11,7 +11,7 @@ import lombok.Setter;
 @NoArgsConstructor 
 @AllArgsConstructor
 @Builder
-public class RtcSessionDTO {
+public class RtcSession {
 	private Long sessionId;
     private Long roomId;
     private String sessionKey;

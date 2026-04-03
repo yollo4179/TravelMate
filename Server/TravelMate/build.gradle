@@ -56,6 +56,9 @@ dependencies {
     testImplementation 'org.springframework.security:spring-security-test'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
     
+    testCompileOnly 'org.projectlombok:lombok'
+    testAnnotationProcessor 'org.projectlombok:lombok'
+    
     // 개발 단계에서만 활성화되는 도구(배포에서는 x ) 
     /*developmentOnly*/ 
     //6. 서버를 껐다 켜지 않아도 병경 감지+ 서버 자동 재시작 - 리로드 

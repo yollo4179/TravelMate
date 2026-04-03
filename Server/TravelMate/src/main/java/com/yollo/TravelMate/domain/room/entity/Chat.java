@@ -1,4 +1,4 @@
-package com.yollo.TravelMate.dto;
+package com.yollo.TravelMate.domain.room.entity;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -8,7 +8,7 @@ import java.time.LocalDateTime;
 @Getter @Setter
 @NoArgsConstructor @AllArgsConstructor
 @Builder
-public class ChatDTO {
+public class Chat {
 	private Long chatId;			//PK
     private Long roomId;			//FK
     private Long userId;			//FK

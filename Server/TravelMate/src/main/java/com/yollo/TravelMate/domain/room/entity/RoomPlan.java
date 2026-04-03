@@ -1,4 +1,4 @@
-package com.yollo.TravelMate.dto;
+package com.yollo.TravelMate.domain.room.entity;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.LocalDate;
@@ -12,7 +12,7 @@ import lombok.Setter;
 @NoArgsConstructor 
 @AllArgsConstructor
 @Builder
-public class RoomPlanDTO {
+public class RoomPlan {
 	private Long roomPlanId;
     private Long roomId;
     private String title;

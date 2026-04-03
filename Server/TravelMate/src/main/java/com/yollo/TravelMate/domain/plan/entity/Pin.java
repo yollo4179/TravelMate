@@ -1,4 +1,4 @@
-package com.yollo.TravelMate.dto;
+package com.yollo.TravelMate.domain.plan.entity;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -14,7 +14,7 @@ import lombok.Setter;
 @NoArgsConstructor 
 @AllArgsConstructor
 @Builder
-public class PinDTO {
+public class Pin {
 	private Long pinId;
     private Long planId;
     private String placeName;

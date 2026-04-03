@@ -1,12 +1,16 @@
 -- 1. 유저 테이블
 DROP TABLE IF EXISTS users CASCADE;
+
 CREATE TABLE IF NOT EXISTS users (
-    user_id BIGSERIAL PRIMARY KEY, -- SERIAL에서 BIGSERIAL로 변경 (BIGINT 외래키와 매칭)
+    user_id BIGSERIAL PRIMARY KEY, 
     email VARCHAR(100) NOT NULL UNIQUE,
-    password VARCHAR(255) NOT NULL,
+    password VARCHAR(255), 
     nickname VARCHAR(50) NOT NULL UNIQUE,
-    phone_number VARCHAR(20) NOT NULL,
-    profile_img_url VARCHAR(255) NOT NULL,
+    phone_number VARCHAR(20), 
+    profile_img_url VARCHAR(255), 
+    role VARCHAR(20),  -- 권한 (USER, ADMIN 등)
+    status VARCHAR(20) NOT NULL DEFAULT 'ACTIVE',
+    provider VARCHAR(20) NOT NULL, -- 가입 경로 (KAKAO, GOOGLE, LOCAL 등)
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
