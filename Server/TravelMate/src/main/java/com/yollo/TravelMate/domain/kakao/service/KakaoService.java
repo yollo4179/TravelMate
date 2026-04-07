@@ -59,7 +59,7 @@ public class KakaoService {
 	    	});
 	    //영속성 : 레포지토리로 가져온 모델도 db에 저장하고 새로운 유저도 db에 저장-> 
 	    userRepository.save(user);
-
+	    //jwt 인증
         
 	}
 }
