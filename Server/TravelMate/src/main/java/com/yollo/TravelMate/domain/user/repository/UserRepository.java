@@ -8,4 +8,8 @@ public interface UserRepository extends JpaRepository<User, Long>{
 	//User 엔티티와 연결된 users 테이블을 관리
 	//Long: "User 엔티티에서 **@Id(PK)**로 지정한 필드의 타입이 **Long**이야."라고 알려
 	Optional<User> findByEmail(String email);
+	
+	// 사용자 아이디(UID)로 사용자 찾기 (JWT 토큰에서 추출한 정보로 사용자 조회 시 사용)
+    Optional<User> findByUid(String uid);
+    
 }
