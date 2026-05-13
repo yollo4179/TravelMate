@@ -46,14 +46,21 @@ public class JwtTokenProvider {
 	@Autowired
 	private final UserService userService;
 	
-	/*PostConstruct: 한번만 실행 초기화*/
+	/*PostConstruct: 한번만 실행 + 초기화*/
 	@PostConstruct protected void init() {
-		/*초기화 :  secretKey를 Base64로 변환 */
+		
 		log.debug("[init] JwtTokenProvider: Start init secretKey:${}",secretKey);
 		secretKey = Base64.getEncoder().encodeToString(secretKey.getBytes(StandardCharsets.UTF_8));		
 		log.info("[init] JwtTokenProvider: Finish init secretKey${}",secretKey);
+		/* 시크릿키 Base64로 인코딩 완료*/
+		
+		
 		byte[] keyBytes = Decoders.BASE64.decode(secretKey);
+		/*바이트로 디코딩*/
+		
 		this.key = Keys.hmacShaKeyFor(keyBytes);
+		/*SecretKey가 충분히 긴지 검중+ java.security.Key 객체 반환 */
+		/*key는 Jwts.builder().signWith(key) 호출할 때 강력한 암호화 서명*/
 		
 	}
 	
@@ -62,6 +69,7 @@ public class JwtTokenProvider {
 		
 		Claims claims = Jwts.claims().setSubject(userUid);
 		claims.put("roles", roles);
+		/*Payload(내용)에 담길 제이슨 데이터 묶음을 생성하는 메서드 + 권한 추가 +키는 uid */
 		
 		Date now =new Date();
 		
@@ -69,7 +77,7 @@ public class JwtTokenProvider {
 				.setClaims(claims)
 				.setIssuedAt(now)
 				.setExpiration(new Date(now.getTime()+expireTime))
-				.signWith(key,SignatureAlgorithm.HS256) 
+				.signWith(key,SignatureAlgorithm.HS256) //발행
 		        .compact();
 		
 		
@@ -91,17 +99,17 @@ public class JwtTokenProvider {
     }
     
     public String getUsername(String token) {
-        // setSigningKey(secretKey) -> setSigningKey(key)로 변경 (최신 방식)
+       
         return Jwts.parserBuilder()
                 .setSigningKey(key)
                 .build()
-                .parseClaimsJws(token)
+                .parseClaimsJws(token)//검증 완
                 .getBody()
-                .getSubject();
+                .getSubject();//uid 꺼내기
     }
     
     public String resolveToken(HttpServletRequest request) {
-        // 헤더 이름을 "X-AUTH-TOKEN"으로 쓰기로 하셨군요!
+        
         return request.getHeader("X-AUTH-TOKEN");
     }
     
@@ -109,7 +117,10 @@ public class JwtTokenProvider {
         log.info("[validateToken] 토큰 유효 체크 시작");
         try {
             // parseClaimsJws 메서드가 에러 없이 실행되면 유효한 토큰임
-            Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token);
+            Jwts.parserBuilder() 
+            .setSigningKey(key) //비밀키를 검증기(Parser)에 넣어주는 단계
+            .build()//검증기 생성(파서)
+            .parseClaimsJws(token); //파싱 ( 토큰 분해) + 해싱+검증 
             return true;
         } catch (Exception e) {
             log.error("[validateToken] 유효하지 않은 토큰: {}", e.getMessage());
