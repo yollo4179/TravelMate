@@ -12,9 +12,9 @@ import lombok.Setter;
 @AllArgsConstructor
 @Builder
 public class Friendship {
-	private long friendshipId; //pk
-	private long userId;	//fk
-	private long friendId;	//fk
+	private Long friendshipId; //pk
+	private String userId;	//fk
+	private String friendId;	//fk
 	private String status; // PENDING, ACCEPTED, REJECTED
 	
 	

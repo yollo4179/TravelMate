@@ -13,8 +13,15 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
+import org.apache.juli.logging.LogFactory;
+import org.slf4j.*;
 public class JwtAuthenticationFilter extends OncePerRequestFilter{
 
+	
+
+	private static final Logger log = LoggerFactory.getLogger(JwtAuthenticationFilter.class);
+
+	
 	private final JwtTokenProvider tokenProvider ;
 	public JwtAuthenticationFilter(JwtTokenProvider tokenProvider) {
 		this.tokenProvider = tokenProvider;
@@ -35,7 +42,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter{
                 SecurityContextHolder.getContext().setAuthentication(auth);
                 //현재 실행 중인 스레드(요청 처리 과정)에 로그인 상태를 박아넣는 작업
                 //현재 접속자의 정보를 보관하는 보관함: SecurityContextHolder
-                
+                log.debug("${}",auth);
             }
         } catch (ExpiredJwtException e) {
            // AT 기간 만료 (에러코드 40006)

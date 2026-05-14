@@ -1,6 +1,7 @@
 package com.yollo.TravelMate.jwt;
 
 import java.nio.charset.StandardCharsets;
+
 import java.security.Key;
 import java.util.Base64;
 import java.util.Date;
@@ -26,12 +27,14 @@ import jakarta.annotation.PostConstruct;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 
+
+
 @Component
 @RequiredArgsConstructor
 public class JwtTokenProvider {
 	
 	private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(JwtTokenProvider.class);
-
+	
 	
 	@Value("${jwt.secret}") 
 	private String secretKey;
@@ -64,11 +67,11 @@ public class JwtTokenProvider {
 		
 	}
 	
-	private String createToken( String userUid , List<String>roles,long expireTime) {
+	private String createToken( String userUid , String  role,long expireTime) {
 		
 		
 		Claims claims = Jwts.claims().setSubject(userUid);
-		claims.put("roles", roles);
+		claims.put("roles", role);
 		/*Payload(내용)에 담길 제이슨 데이터 묶음을 생성하는 메서드 + 권한 추가 +키는 uid */
 		
 		Date now =new Date();
@@ -83,12 +86,13 @@ public class JwtTokenProvider {
 		
 		  return token;
 	}
-	public String createAccessToken(String userPk, List<String> roles) {
-        return createToken(userPk, roles, ACCESS_TOKEN_VALID_MS);
+	public String createAccessToken(String userPk, String role) {
+		 /*권한 배열 말고 일단 계츨구조로  List<String> roles */
+        return createToken(userPk, role, ACCESS_TOKEN_VALID_MS);
     }
 
-    public String createRefreshToken(String userPk, List<String> roles) {
-        return createToken(userPk, roles, REFRESH_TOKEN_VALID_MS); 
+    public String createRefreshToken(String userPk, String role) {
+        return createToken(userPk, role, REFRESH_TOKEN_VALID_MS); 
     }
     
     public Authentication getAuthentication(String token) {

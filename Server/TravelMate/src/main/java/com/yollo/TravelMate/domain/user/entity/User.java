@@ -35,9 +35,12 @@ public class User implements UserDetails {
 	//JPA는 영속성 컨텍스트(1차 캐시)라는 곳에 객체를 저장할 때 이 @Id 값을 Key로 사용
 	
 	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	@Column(name = "user_id")
-	private Long uid;
+	@Column(name = "uid", length = 36)
+	private String uid;
+	
+	
+	@Column(name = "user_id",nullable = false, unique = true)
+	private String userId;
 	
 	@Column(name = "email",nullable = false, unique = true)
 	private String email;

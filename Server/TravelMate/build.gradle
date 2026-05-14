@@ -40,6 +40,8 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-security'
 	implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
 	
+	implementation 'org.springframework.boot:spring-boot-starter-validation'
+	
 	
 	// 3. JWT (토큰 생성 및 검증)
     implementation 'io.jsonwebtoken:jjwt-api:0.11.5'
