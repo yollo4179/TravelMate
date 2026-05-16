@@ -1,5 +1,7 @@
 package com.yollo.TravelMate.jwt;
 
+import org.springframework.transaction.annotation.Transactional;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -13,4 +15,8 @@ public class TokenResponseDto {
     private String refreshToken; // 재발급용 (가이드의 RT)
     @Builder.Default 
     private String grantType= "Bearer"; ;// 보통 "Bearer"라고 보냄
+    
+    
+  
+    
 }

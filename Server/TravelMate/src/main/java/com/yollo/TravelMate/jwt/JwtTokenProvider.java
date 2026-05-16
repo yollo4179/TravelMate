@@ -46,8 +46,7 @@ public class JwtTokenProvider {
 	@Value("${jwt.refresh-expiration}")
 	private  long REFRESH_TOKEN_VALID_MS ;
 	
-	@Autowired
-	private final UserService userService;
+	
 	
 	/*PostConstruct: 한번만 실행 + 초기화*/
 	@PostConstruct protected void init() {
@@ -95,14 +94,9 @@ public class JwtTokenProvider {
         return createToken(userPk, role, REFRESH_TOKEN_VALID_MS); 
     }
     
-    public Authentication getAuthentication(String token) {
-        // UserDetails를 가져와서 시큐리티 인증 객체 생성
-    	UserDetails user = userService.loadUserByUsername(this.getUsername(token));
-
-    	return new UsernamePasswordAuthenticationToken(user, "", user.getAuthorities());
-    }
     
-    public String getUsername(String token) {
+    
+    public String getUIdFromToken(String token) {
        
         return Jwts.parserBuilder()
                 .setSigningKey(key)

@@ -23,8 +23,7 @@ public class UserRequestDto {
 	// 로그인 요청
 
     public record Login (
-        @NotBlank(message = "이메일은 필수입니다.") 
-        @Email(message = "올바른 이메일 형식이 아닙니다.") String email,
+    	@NotBlank(message = "아이디는 필수입니다.") String userId,
         @NotBlank(message = "비밀번호는 필수입니다.") String password
     ) {	}
     
@@ -44,7 +43,7 @@ public class UserRequestDto {
                         .password(encodedPassword)
                         .nickname(this.nickname)
                         .role("ROLE_USER")
-                        .status("ACTIVE")
+                        .status("INACTIVE")
                         .provider("LOCAL")
                         .build();
             	}

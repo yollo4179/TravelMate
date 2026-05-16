@@ -1,4 +1,8 @@
 package com.yollo.TravelMate.domain.user.controller;
+import java.util.Map;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
@@ -29,6 +33,9 @@ public class UserController {
 	
 	private final UserServiceImpl userService;
 	
+	private static final Logger log = LoggerFactory.getLogger(UserController.class);
+	
+	
 	@PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody @Valid UserRequestDto.Login loginDto) {
         TokenResponseDto tokenResponse = userService.login(loginDto);
@@ -37,6 +44,8 @@ public class UserController {
 	@PostMapping("/signup")
     public ResponseEntity<String> signUp(@RequestBody @Valid UserRequestDto.Signup signupDto) {
         userService.signUp(signupDto);
+        
+        log.debug("${}",signupDto);
         return ResponseEntity.ok("회원가입이 완료되었습니다.");
     }
 	
@@ -57,5 +66,24 @@ public class UserController {
         return ResponseEntity.ok("회원 탈퇴가 완료되었습니다.");
     }
 	
+	
+	//로그아웃 
+    @PostMapping("/user/logout")
+    public ResponseEntity<?> logout(@AuthenticationPrincipal User user){
+    	userService.logout(user.getUid());
+    	return ResponseEntity.ok("성공적으로 로그아웃 되었습니다.");
+    }
+    
+    
+    //Refresh로 액세스 발급
+    @PostMapping("/refresh")
+    public ResponseEntity<TokenResponseDto> refresh(@RequestBody Map<String, String> request) {
+        String refreshToken = request.get("refreshToken");
+        
+        // 서비스에 재발급 로직을 위임하고 새 토큰 세트를 받음
+        TokenResponseDto newTokenSet = userService.refresh(refreshToken);
+        
+        return ResponseEntity.ok(newTokenSet);
+    }
 	
 }

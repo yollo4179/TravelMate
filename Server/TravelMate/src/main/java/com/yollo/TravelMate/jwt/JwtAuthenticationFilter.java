@@ -2,9 +2,14 @@ package com.yollo.TravelMate.jwt;
 
 import java.io.IOException;
 
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
+
+import com.yollo.TravelMate.domain.user.service.UserService;
 
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtException;
@@ -12,21 +17,29 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.RequiredArgsConstructor;
 
 import org.apache.juli.logging.LogFactory;
 import org.slf4j.*;
+
+@Component
+@RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter{
 
 	
 
 	private static final Logger log = LoggerFactory.getLogger(JwtAuthenticationFilter.class);
 
-	
 	private final JwtTokenProvider tokenProvider ;
-	public JwtAuthenticationFilter(JwtTokenProvider tokenProvider) {
-		this.tokenProvider = tokenProvider;
-	}
+	private final UserService userService;
 	
+	
+	public Authentication getAuthentication(String token) {
+
+		// UserDetails를 가져와서 시큐리티 인증 객체 생성
+		UserDetails user = userService.loadUserByUsername(tokenProvider.getUIdFromToken(token));
+		return new UsernamePasswordAuthenticationToken(user, "", user.getAuthorities());
+		} 
 
 	@Override
 	protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
@@ -36,7 +49,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter{
 		
 		try {
             if (token != null && tokenProvider.validateToken(token)) {
-                Authentication auth = tokenProvider.getAuthentication(token);
+                Authentication auth = getAuthentication(token);
                 //신분증'security가 이해할 수 있는 (Authentication 객체)을 만드는 작업입니다.
                 
                 SecurityContextHolder.getContext().setAuthentication(auth);

@@ -18,4 +18,6 @@ public interface UserService {
      public abstract void updateUser(String uid, UserRequestDto.Update updateDto) ;
      public void signUp(UserRequestDto.Signup signupDto);
      public abstract void deleteUser(String userUid);
+     
+     public abstract void logout(String userUid);
 }
