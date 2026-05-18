@@ -9,6 +9,7 @@ import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -35,6 +36,11 @@ public class UserController {
 	
 	private static final Logger log = LoggerFactory.getLogger(UserController.class);
 	
+	
+	@GetMapping("")
+	public ResponseEntity<?> test(){
+		 return new  ResponseEntity<>("test", HttpStatus.OK);
+	}
 	
 	@PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody @Valid UserRequestDto.Login loginDto) {

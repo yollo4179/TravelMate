@@ -32,7 +32,7 @@ public class SecurityConfig {
             .csrf(csrf -> csrf.disable())// JWT를 사용하므로 CSRF 보호 비활성화
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))//세션 사용 x 
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/api/login", "/api/refresh","/api/signup","/").permitAll() // 로그인, 재발급은 통과
+                .requestMatchers("/api/login", "/api/refresh","/api/signup","/api","/").permitAll() // 로그인, 재발급은 통과
                 .anyRequest().authenticated()  //나머지 모든 API는 반드시 유효한 토큰이 있어야만 접근
             ).addFilterBefore(new JwtAuthenticationFilter(tokenProvider,userService), UsernamePasswordAuthenticationFilter.class);
         	//오버라이드 함수가 다 검증해줄거임
