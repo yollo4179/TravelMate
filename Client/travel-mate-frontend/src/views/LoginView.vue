@@ -1,4 +1,3 @@
-
 <script setup>
 import { ref } from 'vue'
 import axios from 'axios'
@@ -13,27 +12,33 @@ const handleLogin = async () => {
   }
 
   try {
-    // 💡 LTE 스마트폰에서도 붙을 수 있게 아까 뚫어둔 공인 IP 포트포워딩 주소를 씁니다.
+    //포트포워딩 공인 ip
     const response = await axios.post('http://125.137.58.131:8080/api/login', {
-      userId: userId.value,     // Spring Boot DTO의 'userId' 필드와 정확히 일치!
-      password: password.value  // Spring Boot DTO의 'password' 필드와 일치!
+      userId: userId.value, // Spring Boot DTO의 'userId' 필드와 정확히 일치!
+      password: password.value, // Spring Boot DTO의 'password' 필드와 일치!
     })
 
     // 로그인 성공 시 백엔드가 응답에 토큰을 어떻게 주는지에 따라 파싱 방법이 다를 수 있습니다.
     // 임시로 localStorage에 박아두고, 나중에 Pinia 창고로 옮기겠습니다.
     const token = response.headers['authorization'] || response.data.token || response.data
-    
+
     if (token) {
-      localStorage.setItem('accessToken', token)
+      localStorage.setItem('accessToken', token.accessToken)
+
+      if (token.grantType) {
+        localStorage.setItem('grantType', token.grantType)
+      }
+      if (token.refreshToken) {
+        localStorage.setItem('refreshToken', token.refreshToken)
+      }
       alert('🎉 로그인 대성공! 토큰 발급 완료!')
-      console.log('발급된 토큰:', token)
+      console.log('발급된 토큰:', token.accessToken)
       // TODO: 로그인 성공 후 메인 화면으로 이동
     } else {
       alert('로그인은 된 것 같은데 토큰이 안 넘어왔습니다. 응답 구조를 확인해야 합니다.')
     }
-    
   } catch (error) {
-    console.error('로그인 실패:', error)
+    console.error('로그인 실패:${}', error)
     // 403이나 401 에러가 뜨면 여기서 잡힙니다.
     alert('로그인에 실패했습니다. 아이디나 비밀번호를 확인하세요.')
   }
@@ -44,7 +49,7 @@ const handleLogin = async () => {
   <div class="login-page">
     <div class="login-card">
       <h2>Travel-Mate</h2>
-      
+
       <div class="input-group">
         <label for="userId">아이디</label>
         <input v-model="userId" type="text" id="userId" placeholder="아이디를 입력하세요" />
@@ -52,7 +57,12 @@ const handleLogin = async () => {
 
       <div class="input-group">
         <label for="password">비밀번호</label>
-        <input v-model="password" type="password" id="password" placeholder="비밀번호를 입력하세요" />
+        <input
+          v-model="password"
+          type="password"
+          id="password"
+          placeholder="비밀번호를 입력하세요"
+        />
       </div>
 
       <button @click="handleLogin" class="login-btn">로그인</button>

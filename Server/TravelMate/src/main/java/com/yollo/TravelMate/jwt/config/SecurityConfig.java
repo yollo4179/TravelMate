@@ -3,6 +3,7 @@ package com.yollo.TravelMate.jwt.config;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -29,13 +30,24 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-            .csrf(csrf -> csrf.disable())// JWT를 사용하므로 CSRF 보호 비활성화
-            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))//세션 사용 x 
+        	.cors(cors -> {})
+        	/* Spring Security가 MVC의 CORS 설정을 사용하도록 활성화 */
+        	.csrf(csrf -> csrf.disable())
+        	/* JWT Authorization 헤더 기반 인증 사용
+        	   (세션 쿠키 기반 인증이 아니므로)
+        	   기본 CSRF 보호 비활성화 */
+            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            /* 서버 세션 사용 안 함
+            매 요청마다 JWT 토큰 검증 */ 
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/api/login", "/api/refresh","/api/signup","/api","/").permitAll() // 로그인, 재발급은 통과
+            	.requestMatchers(HttpMethod.OPTIONS, "/**").permitAll() 
+            	/* 브라우저의 CORS preflight(OPTIONS) 요청은
+            	   인증 없이 허용 +나중에 mvc에서 헝용정보 생성*/
+                .requestMatchers("/api/login", "/api/refresh","/api/signup","/api","/").permitAll() 
+                /* 로그인, 재발급은 통과*/
                 .anyRequest().authenticated()  //나머지 모든 API는 반드시 유효한 토큰이 있어야만 접근
             ).addFilterBefore(new JwtAuthenticationFilter(tokenProvider,userService), UsernamePasswordAuthenticationFilter.class);
-        	//오버라이드 함수가 다 검증해줄거임
+       
         return http.build();
     }
     
