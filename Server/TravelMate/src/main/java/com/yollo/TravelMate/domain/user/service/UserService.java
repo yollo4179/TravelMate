@@ -20,4 +20,7 @@ public interface UserService {
      public abstract void deleteUser(String userUid);
      
      public abstract void logout(String userUid);
+     
+     public abstract boolean isUserIdDuplicated(String userId);
+     public abstract boolean isNicknameDuplicated(String nickname);
 }

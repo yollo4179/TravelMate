@@ -26,7 +26,16 @@ public class UserRequestDto {
     	@NotBlank(message = "아이디는 필수입니다.") String userId,
         @NotBlank(message = "비밀번호는 필수입니다.") String password
     ) {	}
+    //idCheck
+    public record CheckId(
+    		@NotBlank (message ="아이디는 필수입니다") String userId
+    		) {}
+    public record CheckNickname(
+    		@NotBlank(message="닉네임은 필수입니다.")String nickname
+    		) {}
     
+    
+    //nicknameCheck
     
     public record Signup(
             @NotBlank(message = "아이디는 필수입니다.") String userId,

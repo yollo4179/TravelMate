@@ -92,6 +92,15 @@ public class UserServiceImpl implements UserService{
         userRepository.save(user); //삽입이니까 더티체킹 관련없지?
     }
 
+	@Transactional(readOnly=true)
+	public boolean isUserIdDuplicated(String userId) {
+		return userRepository.existsByUserId(userId);
+	}
+	@Transactional (readOnly=true)
+	public boolean isNicknameDuplicated(String nickname) {
+		return userRepository.existsByNickname(nickname);
+	}
+	
 	//인증
     @Override  public User loadUserByUsername(String userUid) throws UsernameNotFoundException {  
         return userRepository.findByUid(userUid)
