@@ -1,6 +1,7 @@
 package com.yollo.TravelMate.jwt.config;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -22,13 +23,22 @@ import lombok.RequiredArgsConstructor;
 
 @Configuration
 @EnableWebSecurity
-@RequiredArgsConstructor // JwtTokenProvider 주입을 위해 사용
+
 public class SecurityConfig {
 
 
     private final JwtTokenProvider tokenProvider; // 빈으로 등록된 프로바이더 주입
 	private final UserService userService;
 	private final HandlerExceptionResolver handlerExceptionResolver;
+	public SecurityConfig(
+            JwtTokenProvider tokenProvider, 
+            UserService userService,
+            @Qualifier("handlerExceptionResolver") HandlerExceptionResolver handlerExceptionResolver // 여기에 명확히 주입
+    ) {
+        this.tokenProvider = tokenProvider;
+        this.userService = userService;
+        this.handlerExceptionResolver = handlerExceptionResolver;
+    }
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
