@@ -1,4 +1,4 @@
-package com.yollo.TravelMate.jwt;
+package com.yollo.TravelMate.jwt.Filters;
 
 import java.io.IOException;
 
@@ -9,7 +9,11 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.yollo.TravelMate.domain.user.service.UserService;
+import com.yollo.TravelMate.exceptions.errorCodes.ErrorCode;
+import com.yollo.TravelMate.exceptions.errorCodes.ErrorResponse;
+import com.yollo.TravelMate.jwt.JwtTokenProvider;
 
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtException;
@@ -44,29 +48,32 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter{
 	@Override
 	protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
 			throws ServletException, IOException {
-		//헤더에서 토큰 추출
+		
+		
+		String requestURI = request.getRequestURI();
+		
+		if (requestURI.equals("/api/login") || 
+		        requestURI.equals("/api/signup") || 
+		        requestURI.equals("/api/refresh") || 
+		        requestURI.equals("/api/checkUserId") || 
+		        requestURI.equals("/api/checkNickname")) {
+		        filterChain.doFilter(request, response);
+		        return;
+		}
+		
+		//[엑세스 토큰 추출 :X-AUTH-TOKEN]
 		String token = tokenProvider.resolveToken(request);
 		
-		try {
-            if (token != null && tokenProvider.validateToken(token)) {
-                Authentication auth = getAuthentication(token);
-                //신분증'security가 이해할 수 있는 (Authentication 객체)을 만드는 작업입니다.
-                
-                SecurityContextHolder.getContext().setAuthentication(auth);
-                //현재 실행 중인 스레드(요청 처리 과정)에 로그인 상태를 박아넣는 작업
-                //현재 접속자의 정보를 보관하는 보관함: SecurityContextHolder
-                log.debug("${}",auth);
-            }
-        } catch (ExpiredJwtException e) {
-           // AT 기간 만료 (에러코드 40006)
-            request.setAttribute("exception", "40006");
-        } catch (JwtException e) {
-            // 유효하지 않은 AT (에러코드 40007)
-            request.setAttribute("exception", "40007");
-        }
-
-        filterChain.doFilter(request, response);
+		if (token != null && tokenProvider.validateToken(token)) {
+			//액세스 토큰 건재...
+			Authentication auth = getAuthentication(token);
+	        SecurityContextHolder.getContext().setAuthentication(auth);
+	        log.debug("SecurityContext에 인증 정보 저장 완료: {}", auth);
+		}
+		filterChain.doFilter(request, response);
 	}
+
+	
 	
 	
 }

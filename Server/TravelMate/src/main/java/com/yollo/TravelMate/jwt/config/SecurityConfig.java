@@ -11,10 +11,12 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.servlet.HandlerExceptionResolver;
 
 import com.yollo.TravelMate.domain.user.service.UserService;
-import com.yollo.TravelMate.jwt.JwtAuthenticationFilter;
 import com.yollo.TravelMate.jwt.JwtTokenProvider;
+import com.yollo.TravelMate.jwt.Filters.JwtAuthenticationFilter;
+import com.yollo.TravelMate.jwt.Filters.JwtExceptionFilter;
 
 import lombok.RequiredArgsConstructor;
 
@@ -26,7 +28,7 @@ public class SecurityConfig {
 
     private final JwtTokenProvider tokenProvider; // 빈으로 등록된 프로바이더 주입
 	private final UserService userService;
-	
+	private final HandlerExceptionResolver handlerExceptionResolver;
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
@@ -52,8 +54,9 @@ public class SecurityConfig {
                 "/").permitAll() 
                 /* 로그인, 재발급은 통과*/
                 .anyRequest().authenticated()  //나머지 모든 API는 반드시 유효한 토큰이 있어야만 접근
-            ).addFilterBefore(new JwtAuthenticationFilter(tokenProvider,userService), UsernamePasswordAuthenticationFilter.class);
-       
+            )
+            .addFilterBefore(new JwtAuthenticationFilter(tokenProvider,userService), UsernamePasswordAuthenticationFilter.class)
+            .addFilterBefore(new JwtExceptionFilter(handlerExceptionResolver), JwtAuthenticationFilter.class);
         return http.build();
     }
     

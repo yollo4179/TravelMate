@@ -44,22 +44,16 @@ public class UserController {
 	
 	@PostMapping("/checkUserId") 
 	public ResponseEntity<?> checkUserId(@RequestBody @Valid UserRequestDto.CheckId request) {
-	    boolean isDuplicated = userService.isUserIdDuplicated(request.userId());
-	    
-	    if (isDuplicated) {
-	        return ResponseEntity.status(HttpStatus.CONFLICT).body("이미 존재하는 아이디입니다.");
-	    }
-	    return ResponseEntity.ok().build();
+	    userService.isUserIdDuplicated(request.userId());
+	   
+	    return ResponseEntity.ok("사용 가능한 아이디 입니다.");
 	}
 	
 	@PostMapping("/checkNickname") 
 	public ResponseEntity<?> checkNickname(@RequestBody @Valid UserRequestDto.CheckNickname request) {
 	    boolean isDuplicated = userService.isNicknameDuplicated(request.nickname());
 	    
-	    if (isDuplicated) {
-	        return ResponseEntity.status(HttpStatus.CONFLICT).body("이미 존재하는 닉네임입니다.");
-	    }
-	    return ResponseEntity.ok().build();
+	    return ResponseEntity.ok("사용 가능한 닉네임입니다.");
 	}
 	
 	@PostMapping("/login")

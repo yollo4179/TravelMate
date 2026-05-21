@@ -113,16 +113,12 @@ public class JwtTokenProvider {
     
     public boolean validateToken(String token) {
         log.info("[validateToken] 토큰 유효 체크 시작");
-        try {
-            // parseClaimsJws 메서드가 에러 없이 실행되면 유효한 토큰임
-            Jwts.parserBuilder() 
-            .setSigningKey(key) //비밀키를 검증기(Parser)에 넣어주는 단계
-            .build()//검증기 생성(파서)
-            .parseClaimsJws(token); //파싱 ( 토큰 분해) + 해싱+검증 
-            return true;
-        } catch (Exception e) {
-            log.error("[validateToken] 유효하지 않은 토큰: {}", e.getMessage());
-            return false;
-        }
+        // parseClaimsJws 메서드가 에러 없이 실행되면 유효한 토큰임
+        Jwts.parserBuilder() 
+        .setSigningKey(key) //비밀키를 검증기(Parser)에 넣어주는 단계
+        .build()//검증기 생성(파서)
+        .parseClaimsJws(token); //파싱 ( 토큰 분해) + 해싱+검증  or ExpiredJwtException
+        return true;
+        
     }
 }

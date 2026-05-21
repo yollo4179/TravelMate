@@ -1,8 +1,5 @@
 <template>
-  <main
-    class="container d-flex justify-content-center align-items-center mt-5"
-    style="min-height: 80vh"
-  >
+  <main class="container d-flex justify-content-center align-items-center mt-5">
     <article class="card p-4 shadow-sm w-100" style="max-width: 500px">
       <div class="card-body">
         <h3 class="card-title fw-bold mb-2">회원 가입</h3>
@@ -251,7 +248,7 @@ const submit = async () => {
   /* 뚫음 */
   try {
     serverErrorMessage.value = ''
-    await axios.post('/api/signUp', {
+    await axios.post('/api/signup', {
       userId: userId.value,
       email: email.value,
       password: password.value,

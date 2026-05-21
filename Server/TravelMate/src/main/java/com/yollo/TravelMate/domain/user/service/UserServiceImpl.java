@@ -10,6 +10,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.yollo.TravelMate.domain.user.entity.User;
 import com.yollo.TravelMate.domain.user.repository.UserRepository;
+import com.yollo.TravelMate.exceptions.cumtom.ErrorCodeException;
+import com.yollo.TravelMate.exceptions.errorCodes.ErrorCode;
 import com.yollo.TravelMate.jwt.TokenResponseDto;
 
 import lombok.RequiredArgsConstructor;
@@ -94,11 +96,20 @@ public class UserServiceImpl implements UserService{
 
 	@Transactional(readOnly=true)
 	public boolean isUserIdDuplicated(String userId) {
-		return userRepository.existsByUserId(userId);
+		boolean exists = userRepository.existsByUserId(userId);
+		if(exists) {
+			throw new ErrorCodeException(ErrorCode.DUPLICATED_USER_ID);
+		}
+		
+		return exists;
 	}
 	@Transactional (readOnly=true)
 	public boolean isNicknameDuplicated(String nickname) {
-		return userRepository.existsByNickname(nickname);
+		boolean exists = userRepository.existsByNickname(nickname);
+		if(exists) {
+			throw new ErrorCodeException(ErrorCode.DUPLICATED_NICKNAME);
+		}
+		return exists;
 	}
 	
 	//인증
