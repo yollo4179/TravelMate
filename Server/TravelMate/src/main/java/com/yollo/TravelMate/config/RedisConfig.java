@@ -7,6 +7,7 @@ import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
 import org.springframework.data.redis.connection.lettuce.LettuceClientConfiguration;
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
+import org.springframework.data.redis.connection.lettuce.LettuceClientConfiguration.LettuceClientConfigurationBuilder;
 import org.springframework.data.redis.core.RedisTemplate;
 
 import org.springframework.data.redis.serializer.StringRedisSerializer;
@@ -33,10 +34,15 @@ public class RedisConfig {
         redisConfig.setPassword(password);
 
         // 2. Upstash 필수 조건인 SSL/TLS 활성화 설정 적용
-        LettuceClientConfiguration clientConfig = LettuceClientConfiguration.builder()
-                .useSsl()
-                .build();
-
+        LettuceClientConfigurationBuilder clientConfigBuilder = LettuceClientConfiguration.builder();
+        
+        if(sslEnabled) {
+        	clientConfigBuilder
+        	.useSsl();
+        }
+        LettuceClientConfiguration clientConfig =clientConfigBuilder.build();
+        
+               
         return new LettuceConnectionFactory(redisConfig, clientConfig);
     }
 

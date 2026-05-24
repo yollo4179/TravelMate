@@ -121,4 +121,27 @@ public class JwtTokenProvider {
         return true;
         
     }
+    
+    
+    
+    public long getRemainingTtlSeconds(String token) {
+        try {
+           
+            Claims claims = Jwts.parserBuilder()
+                    .setSigningKey(secretKey)
+                    .build()
+                    .parseClaimsJws(token)
+                    .getBody();
+
+            Date expiration = claims.getExpiration();   
+            Date now = new Date();
+            long remainingMillis = expiration.getTime() - now.getTime();
+            long remainingSeconds = remainingMillis / 1000;
+            return Math.max(0, remainingSeconds);
+
+        } catch (Exception e) {
+            log.warn("토큰 TTL 계산 실패: {}", e.getMessage());
+            return 0;
+        }
+    }
 }

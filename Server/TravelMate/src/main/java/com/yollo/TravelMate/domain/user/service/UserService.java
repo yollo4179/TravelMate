@@ -19,7 +19,7 @@ public interface UserService {
      public void signUp(UserRequestDto.Signup signupDto);
      public abstract void deleteUser(String userUid);
      
-     public abstract void logout(String userUid);
+     public abstract void logout(String userUid,String accessToken);
      
      public abstract boolean isUserIdDuplicated(String userId);
      public abstract boolean isNicknameDuplicated(String nickname);
