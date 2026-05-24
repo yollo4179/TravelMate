@@ -55,13 +55,14 @@ public class SecurityConfig {
             	.requestMatchers(HttpMethod.OPTIONS, "/**").permitAll() 
             	/* 브라우저의 CORS preflight(OPTIONS) 요청은
             	   인증 없이 허용 +나중에 mvc에서 헝용정보 생성*/
-                .requestMatchers("/api/login", 
-                "/api/refresh", 
-                "/api/signup", 
-                "/api/checkUserId", 
-                "/api/checkNickname", 
-                "/api", 
-                "/").permitAll() 
+                .requestMatchers(
+                		"/api/auth/login", 
+                		"/api/auth/refresh", 
+                		"/api/users/signup", 
+                		"/api/users/checkUserId", 
+                		"/api/users/checkNickname",  
+                		"/"
+                		).permitAll() 
                 /* 로그인, 재발급은 통과*/
                 .anyRequest().authenticated()  //나머지 모든 API는 반드시 유효한 토큰이 있어야만 접근
             )

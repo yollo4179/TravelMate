@@ -19,6 +19,7 @@ import com.yollo.TravelMate.domain.user.entity.User;
 import com.yollo.TravelMate.domain.user.service.UserService;
 
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
@@ -108,7 +109,14 @@ public class JwtTokenProvider {
     
     public String resolveToken(HttpServletRequest request) {
         
-        return request.getHeader("X-AUTH-TOKEN");
+    	String bearerToken = request.getHeader("Authorization");
+        
+      
+        if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
+            return bearerToken.substring(7);
+        }
+        
+        return null;
     }
     
     public boolean validateToken(String token) {
@@ -142,6 +150,22 @@ public class JwtTokenProvider {
         } catch (Exception e) {
             log.warn("토큰 TTL 계산 실패: {}", e.getMessage());
             return 0;
+        }
+    }
+    
+    
+    public String getUidFromExpiredToken(String token) {
+        try {
+           
+            return Jwts.parserBuilder()
+                    .setSigningKey(key)
+                    .build()
+                    .parseClaimsJws(token)
+                    .getBody()
+                    .getSubject(); 
+        } catch (ExpiredJwtException e) {
+           
+            return e.getClaims().getSubject(); 
         }
     }
 }

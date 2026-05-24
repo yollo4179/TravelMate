@@ -19,25 +19,35 @@
 
 <script setup>
 import { ref, onMounted, watch } from 'vue'
-import { useRoute,useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { STORAGE_KEYS } from '@/utils/Constants'
+import axios from 'axios'
+import { DebugManager } from '@/utils/DebugManager'
 
 const router = useRouter()
 const route = useRoute()
 const isLoggedIn = ref(false)
 
-
 const checkLoginStatus = () => {
   isLoggedIn.value = !!localStorage.getItem(STORAGE_KEYS.ACCESS_TOKEN)
 }
 /*로그 아웃 기능만 구현합니다( 토큰 없앱니다.) */
-const logout = ()=>{
+const logout = async () => {
+  try {
+    const token = localStorage.getItem(STORAGE_KEYS.ACCESS_TOKEN)
+    await axios.post(`/api/auth/logout`, null, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    })
+  } catch (e) {
+    DebugManager.DebugConsolelog('LOGOUT', '서버 로그아웃 통신 실패 (이미 만료됨 등):', e)
+  } finally {
     localStorage.removeItem(STORAGE_KEYS.ACCESS_TOKEN)
-    localStorage.removeItem(STORAGE_KEYS.REFRESH_TOKEN)
     isLoggedIn.value = false
     router.push('/')
+  }
 }
-
 
 onMounted(() => {
   checkLoginStatus()

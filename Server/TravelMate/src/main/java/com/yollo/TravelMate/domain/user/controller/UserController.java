@@ -16,18 +16,19 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.yollo.TravelMate.domain.user.dto.internal.AuthResultDto;
+import com.yollo.TravelMate.domain.user.dto.request.UserRequestDto;
+import com.yollo.TravelMate.domain.user.dto.response.TokenResponseDto;
 import com.yollo.TravelMate.domain.user.entity.User;
-import com.yollo.TravelMate.domain.user.service.UserRequestDto;
 import com.yollo.TravelMate.domain.user.service.UserServiceImpl;
-import com.yollo.TravelMate.jwt.TokenResponseDto;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
-
+/****************유저 `자원`을 관리합니다.**********************/
 
 @RestController
-@RequestMapping("/api") // 가이드라인의 기반 주소 설정
+@RequestMapping("/api/users") // 가이드라인의 기반 주소 설정
 @RequiredArgsConstructor
 public class UserController {
 
@@ -37,30 +38,19 @@ public class UserController {
 	private static final Logger log = LoggerFactory.getLogger(UserController.class);
 	
 	
-	@GetMapping("")
-	public ResponseEntity<?> test(){
-		 return new  ResponseEntity<>("test", HttpStatus.OK);
-	}
 	
 	@PostMapping("/checkUserId") 
 	public ResponseEntity<?> checkUserId(@RequestBody @Valid UserRequestDto.CheckId request) {
 	    userService.isUserIdDuplicated(request.userId());
-	   
 	    return ResponseEntity.ok("사용 가능한 아이디 입니다.");
 	}
 	
 	@PostMapping("/checkNickname") 
 	public ResponseEntity<?> checkNickname(@RequestBody @Valid UserRequestDto.CheckNickname request) {
-	    boolean isDuplicated = userService.isNicknameDuplicated(request.nickname());
-	    
+	    boolean isDuplicated = userService.isNicknameDuplicated(request.nickname());    
 	    return ResponseEntity.ok("사용 가능한 닉네임입니다.");
 	}
 	
-	@PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody @Valid UserRequestDto.Login loginDto) {
-        TokenResponseDto tokenResponse = userService.login(loginDto);
-        return new  ResponseEntity<>(tokenResponse, HttpStatus.OK);
-    }
 	@PostMapping("/signup")
     public ResponseEntity<String> signUp(@RequestBody @Valid UserRequestDto.Signup signupDto) {
         userService.signUp(signupDto);
@@ -69,7 +59,10 @@ public class UserController {
         return ResponseEntity.ok("회원가입이 완료되었습니다.");
     }
 	
-	@PutMapping("/user/update")//패스로식별은 x jwt ㅈ보내면 필터가 뺏어가서 먼저 검증
+	
+
+	
+	@PutMapping("/me")//패스로식별은 x jwt ㅈ보내면 필터가 뺏어가서 먼저 검증
     public ResponseEntity<String> updateUser(
             @AuthenticationPrincipal User user, //jwt 필터 거쳐서 user 가져옵
             @RequestBody @Valid UserRequestDto.Update updateDto) {
@@ -80,30 +73,12 @@ public class UserController {
 	
 	
 	
-	@DeleteMapping("/user/delete")
+	@DeleteMapping("/me")
     public ResponseEntity<String> deleteUser(@AuthenticationPrincipal User user) {
         userService.deleteUser(user.getUid());
         return ResponseEntity.ok("회원 탈퇴가 완료되었습니다.");
     }
 	
 	
-	//로그아웃 
-    @PostMapping("/user/logout")
-    public ResponseEntity<?> logout(@AuthenticationPrincipal User user){
-    	userService.logout(user.getUid());
-    	return ResponseEntity.ok("성공적으로 로그아웃 되었습니다.");
-    }
-    
-    
-    //Refresh로 액세스 발급
-    @PostMapping("/refresh")
-    public ResponseEntity<TokenResponseDto> refresh(@RequestBody Map<String, String> request) {
-        String refreshToken = request.get("refreshToken");
-        
-        // 서비스에 재발급 로직을 위임하고 새 토큰 세트를 받음
-        TokenResponseDto newTokenSet = userService.refresh(refreshToken);
-        
-        return ResponseEntity.ok(newTokenSet);
-    }
 	
 }

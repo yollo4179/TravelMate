@@ -248,7 +248,7 @@ const submit = async () => {
   /* 뚫음 */
   try {
     serverErrorMessage.value = ''
-    await axios.post('/api/signup', {
+    await axios.post('/api/users/signup', {
       userId: userId.value,
       email: email.value,
       password: password.value,

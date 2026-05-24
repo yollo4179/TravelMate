@@ -46,31 +46,48 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter{
 		} 
 
 	@Override
+	protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
+	    String path = request.getRequestURI();
+	    return path.equals("/api/auth/login") || 
+	           path.equals("/api/auth/refresh") || 
+	           path.equals("/api/users/signup") || 
+	           path.equals("/api/users/checkUserId") || 
+	           path.equals("/api/users/checkNickname");
+	}
+	
+	@Override
 	protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
 			throws ServletException, IOException {
 		
+				
 		
-		String requestURI = request.getRequestURI();
-		
-		if (requestURI.equals("/api/login") || 
-		        requestURI.equals("/api/signup") || 
-		        requestURI.equals("/api/refresh") || 
-		        requestURI.equals("/api/checkUserId") || 
-		        requestURI.equals("/api/checkNickname")) {
-		        filterChain.doFilter(request, response);
-		        return;
-		}
-		
-		//[엑세스 토큰 추출 :X-AUTH-TOKEN]
-		String token = tokenProvider.resolveToken(request);
-		
-		if (token != null && tokenProvider.validateToken(token)) {
-			//액세스 토큰 건재...
-			Authentication auth = getAuthentication(token);
-	        SecurityContextHolder.getContext().setAuthentication(auth);
-	        log.debug("SecurityContext에 인증 정보 저장 완료: {}", auth);
-		}
-		filterChain.doFilter(request, response);
+		System.out.println("\n========== [CCTV 가동] ==========");
+	    System.out.println("1. 요청 URL: " + request.getRequestURI());
+	            
+	    // 토큰 추출
+	    String token = tokenProvider.resolveToken(request);
+	    System.out.println("2. 추출된 토큰: " + token);
+	    
+	    try {
+	        if (token != null) {
+	            boolean isValid = tokenProvider.validateToken(token);
+	            System.out.println("3. 토큰 검증 통과 여부: " + isValid);
+	            
+	            if (isValid) {
+	                Authentication auth = getAuthentication(token);
+	                SecurityContextHolder.getContext().setAuthentication(auth);
+	                System.out.println("4. [성공] 인증 객체 저장 완료: " + auth.getName());
+	            }
+	        } else {
+	            System.out.println("3. [실패] 헤더에 토큰이 아예 없습니다.");
+	        }
+	    } catch (Exception e) {
+	       
+	        System.out.println("🚨 [에러 발생] 토큰 파싱/검증 중 예외 터짐: " + e.getClass().getSimpleName() + " - " + e.getMessage());
+	    }
+	    
+	    System.out.println("=================================\n");
+	    filterChain.doFilter(request, response);
 	}
 
 	

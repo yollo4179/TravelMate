@@ -1,4 +1,4 @@
-package com.yollo.TravelMate.jwt;
+package com.yollo.TravelMate.domain.user.dto.response;
 
 import org.springframework.transaction.annotation.Transactional;
 
@@ -12,11 +12,9 @@ import lombok.Getter;
 public class TokenResponseDto {
 	
     private String accessToken;  // 실제 API 호출용 (가이드의 AT)
-    private String refreshToken; // 재발급용 (가이드의 RT)
     @Builder.Default 
     private String grantType= "Bearer"; ;// 보통 "Bearer"라고 보냄
     
-    
-  
-    
 }
+
+

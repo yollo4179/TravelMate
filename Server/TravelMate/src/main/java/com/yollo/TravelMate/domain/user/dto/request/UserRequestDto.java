@@ -1,4 +1,4 @@
-package com.yollo.TravelMate.domain.user.service;
+package com.yollo.TravelMate.domain.user.dto.request;
 
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;

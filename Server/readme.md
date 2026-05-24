@@ -78,3 +78,7 @@
 <li>Repository: 채팅 내역 조회를 위한 페이징 처리 (ChatRepository).</li>
 
 </ol>
+
+#Auth와 User 도메인 관리(자원 관리 중심의 분리/책임 분리)
+
+![alt text](image.png)
