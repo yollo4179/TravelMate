@@ -2,16 +2,11 @@ package com.yollo.TravelMate.domain.user.dto.internal;
 
 import com.yollo.TravelMate.domain.user.entity.User;
 
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.experimental.SuperBuilder;
 
 @Getter
-@AllArgsConstructor
 @SuperBuilder
-public class AuthResultDto {
-	
-	protected String accessToken;
-	protected String refreshToken;
-	protected long rtTtlSeconds;
+public class AuthLoginResultDto extends AuthResultDto {
+	  private User user;
 }

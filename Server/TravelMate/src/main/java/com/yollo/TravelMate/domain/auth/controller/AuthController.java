@@ -17,12 +17,17 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.yollo.TravelMate.cookies.CookieUtil;
 import com.yollo.TravelMate.domain.auth.service.AuthService;
+import com.yollo.TravelMate.domain.user.dto.internal.AuthLoginResultDto;
 import com.yollo.TravelMate.domain.user.dto.internal.AuthResultDto;
 import com.yollo.TravelMate.domain.user.dto.request.UserRequestDto;
 import com.yollo.TravelMate.domain.user.dto.response.TokenResponseDto;
 import com.yollo.TravelMate.domain.user.entity.User;
 import com.yollo.TravelMate.domain.user.service.UserService;
 import com.yollo.TravelMate.domain.user.service.UserServiceImpl;
+import com.yollo.TravelMate.exceptions.cumtom.ErrorCodeException;
+import com.yollo.TravelMate.exceptions.errorCodes.ErrorCode;
+import com.yollo.TravelMate.jwt.JwtTokenProvider;
+import com.yollo.TravelMate.redis.RedisService;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -33,20 +38,30 @@ import lombok.RequiredArgsConstructor;
 public class AuthController {
 	private final AuthService authService;
     private final CookieUtil cookieUtil ;
-   
+   private final JwtTokenProvider tokenProvider;
+   private final RedisService redisService;
     
 	private static final Logger log = LoggerFactory.getLogger(AuthController.class);
     @PostMapping("/login")
     public ResponseEntity<TokenResponseDto> login(@RequestBody @Valid UserRequestDto.Login loginDto) {
-    		AuthResultDto result = authService.login(loginDto);
+    		
+    	
+    	
+    	AuthLoginResultDto result = authService.login(loginDto);
     		ResponseCookie rtCookie = cookieUtil.createRefreshTokenCookie(
                     result.getRefreshToken(), 
                     result.getRtTtlSeconds()
             );
-    		
+    		User user = result.getUser();
     		TokenResponseDto bodyDto = TokenResponseDto.builder()
                     .accessToken(result.getAccessToken())
+                    .uid(user.getUid())
+                    .nickname(user.getNickname())
+                    .profileImgUrl(user.getProfileImgUrl())
+                    .role(user.getRole())
+                    // .email(user.getEmail()) // 이메일도 필요하다면 추가
                     .build();
+            
     		/*쿠키에 리프레시랑 엑세스 박습니다.*/
     		return ResponseEntity.ok()
                     .header(HttpHeaders.SET_COOKIE, rtCookie.toString())  //헤더에슨 httpOnly옵션으로 리프레시토큰
@@ -77,8 +92,15 @@ public class AuthController {
     @PostMapping("/refresh")
     public ResponseEntity<TokenResponseDto> refresh(
             @CookieValue(value = "refreshToken", required = true) String refreshToken) {
-        	/*쿠키(Cookie) 중 이름(키)이 refreshToken인 값을 찾아 메서드의 변수에 자동으로 넣어줌 httpOnly라도 클라에서 옵션 지정하면 넘겨 줌 */
+        
+    	/*리프레시 토큰 레디스 검증 or throw*/
+        
+      
+        
+    	/*쿠키(Cookie) 중 이름(키)이 refreshToken인 값을 찾아 메서드의 변수에 자동으로 넣어줌 httpOnly라도 클라에서 옵션 지정하면 넘겨 줌 */
         AuthResultDto result = authService.refresh(refreshToken);
+        
+        
         
         // 새 토큰으로 쿠키 덮어쓰기
         ResponseCookie rtCookie = cookieUtil.createRefreshTokenCookie(

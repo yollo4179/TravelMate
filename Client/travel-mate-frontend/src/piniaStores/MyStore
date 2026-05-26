@@ -1,0 +1,28 @@
+import { defineStore } from 'pinia'
+import { ref, computed } from 'vue'
+
+export const useUserStore = defineStore('user', () => {
+  // 1. 제네릭(<User | null>) 제거
+  const userDesc = ref(null)
+  
+  const isAuthenticated = computed(() => userDesc.value !== null)
+  
+  const userNickname = computed(() => userDesc.value?.nickname || 'unknown')
+  
+  // 2. 파라미터 타입(: User) 제거
+  function setUser(data) {
+    userDesc.value = data
+  }
+  
+  function logout() {
+    userDesc.value = null
+  }
+  
+  return {
+    userDesc,
+    isAuthenticated,
+    userNickname,
+    setUser,
+    logout,
+  }
+})

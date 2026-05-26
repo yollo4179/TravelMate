@@ -31,6 +31,10 @@ axios.interceptors.response.use(
   async (error) => {
     //예외 던진 경우
     const originalRequest = error.config
+    if (originalRequest.url.includes('/refresh') || originalRequest.url.includes('/logout')) {
+      return Promise.reject(error)
+    }
+
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true
 

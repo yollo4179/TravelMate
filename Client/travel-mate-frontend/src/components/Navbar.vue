@@ -5,33 +5,41 @@
     </div>
 
     <div class="nav-menu">
-      <template v-if="!isLoggedIn">
+      <template v-if="!userStore.isAuthenticated">
         <router-link to="/login" class="nav-item">로그인</router-link>
         <router-link to="/signup" class="nav-item signup-btn">회원가입</router-link>
       </template>
 
       <template v-else>
-        <router-link to="/logout" @click="logout" class="nav-item logout-btn">로그아웃</router-link>
+        <div class="user-profile">
+          <img 
+            :src="userStore.userDesc?.profileImgUrl || '/images/default-avatar.png'" 
+            alt="프로필" 
+            class="profile-img"
+          />
+          <span class="nickname"><strong>{{ userStore.userNickname }}</strong>님</span>
+        </div>
+
+        <a href="#" @click.prevent="logout" class="nav-item logout-btn">로그아웃</a>
       </template>
     </div>
   </nav>
 </template>
 
 <script setup>
-import { ref, onMounted, watch } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
+import { onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import { STORAGE_KEYS } from '@/utils/Constants'
 import axios from 'axios'
 import { DebugManager } from '@/utils/DebugManager'
 
-const router = useRouter()
-const route = useRoute()
-const isLoggedIn = ref(false)
+// 1. Pinia 스토어 임포트
+import { useUserStore } from '@/piniaStores/myStore' 
 
-const checkLoginStatus = () => {
-  isLoggedIn.value = !!localStorage.getItem(STORAGE_KEYS.ACCESS_TOKEN)
-}
-/*로그 아웃 기능만 구현합니다( 토큰 없앱니다.) */
+const router = useRouter()
+const userStore = useUserStore() // 스토어 인스턴스 생성
+
+/* 로그아웃 기능 */
 const logout = async () => {
   try {
     const token = localStorage.getItem(STORAGE_KEYS.ACCESS_TOKEN)
@@ -43,23 +51,16 @@ const logout = async () => {
   } catch (e) {
     DebugManager.DebugConsolelog('LOGOUT', '서버 로그아웃 통신 실패 (이미 만료됨 등):', e)
   } finally {
+    // 2. 로컬 스토리지 초기화
     localStorage.removeItem(STORAGE_KEYS.ACCESS_TOKEN)
-    isLoggedIn.value = false
+    // 3. Pinia 스토어 상태 초기화 (매우 중요!)
+    userStore.logout() 
+    
     router.push('/')
   }
 }
 
-onMounted(() => {
-  checkLoginStatus()
-})
-
-//일단 PATH만 추적... 바뀌면 적법한 루트인지 확인 .
-watch(
-  () => route.path,
-  () => {
-    checkLoginStatus()
-  },
-)
+// ※ Pinia 전역 상태가 반응형이므로 watch로 route.path를 추적할 필요가 없어졌습니다.
 </script>
 
 <style scoped>
@@ -76,7 +77,7 @@ watch(
 .brand-logo {
   font-size: 1.4rem;
   font-weight: bold;
-  color: #42b883; /* Vue 시그니처 그린 색상 */
+  color: #42b883;
   text-decoration: none;
 }
 
@@ -97,7 +98,27 @@ watch(
   color: #ffffff;
 }
 
-/* 회원가입 버튼 강조 스타일 */
+/* ⭐️ 유저 프로필 관련 스타일 추가 */
+.user-profile {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-right: 1rem;
+}
+
+.profile-img {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #42b883;
+}
+
+.nickname {
+  font-size: 0.95rem;
+  color: #ffffff;
+}
+
 .signup-btn {
   background-color: #42b883;
   color: white;
@@ -109,13 +130,13 @@ watch(
   background-color: #35495e;
 }
 
-/* 로그아웃 버튼 스타일 */
 .logout-btn {
   background-color: transparent;
   border: 1px solid #ff4d4d;
   color: #ff4d4d;
   padding: 0.4rem 0.8rem;
   border-radius: 4px;
+  cursor: pointer;
 }
 
 .logout-btn:hover {

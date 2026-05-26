@@ -11,7 +11,7 @@ public class CookieUtil {
         return ResponseCookie.from("refreshToken", refreshToken)
                 .httpOnly(true)    // JavaScript 크큐 못읽음 (XSS 방어)
                 .secure(false)     //일단 http + https 모두 허용 패킷강탈막으려면 true
-                .path("/api/auth/refresh") 
+                .path("/") 
                 .maxAge(maxAgeSeconds)
                 .build();
     }
@@ -20,7 +20,7 @@ public class CookieUtil {
         return ResponseCookie.from("refreshToken", "")
                 .httpOnly(true)
                 .secure(false) 
-                .path("/api/auth/refresh")
+                .path("/")
                 .maxAge(0) // 수명을 0으로 주면 브라우저가 즉시 삭제함
                 .build();
     }

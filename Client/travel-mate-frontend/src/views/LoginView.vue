@@ -2,12 +2,15 @@
 import { ref } from 'vue'
 import axios from 'axios'
 import { DebugManager } from '@/utils/DebugManager'
-import { API_CONFIG, STORAGE_KEYS } from '@/utils/Constants'
+import { STORAGE_KEYS } from '@/utils/Constants'
 import { useRouter } from 'vue-router'
+import { useUserStore } from '@/piniaStores/MyStore'
 const TAG = 'LOGIN_VIEW'
 const userId = ref('')
 const password = ref('')
 const router = useRouter()
+
+const userStore = useUserStore()
 
 const handleLogin = async () => {
   if (!userId.value || !password.value) {
@@ -22,13 +25,18 @@ const handleLogin = async () => {
       password: password.value, // Spring Boot DTO의 'password' 필드와 일치
     })
 
-    // 로그인 성공 시 백엔드가 응답에 토큰을 어떻게 주는지에 따라 파싱 방법이 다를 수 있습니다.
-    // 임시로 localStorage에 박아두고, 나중에 Pinia 창고로 옮기겠습니다.
     DebugManager.DebugConsolelog(JSON.stringify(response))
     const token = response.headers['Authrization'] || response.data.token || response.data
-
+    const loginResult = response.data
     if (token) {
-      localStorage.setItem(STORAGE_KEYS.ACCESS_TOKEN, token.accessToken)
+      localStorage.setItem(STORAGE_KEYS.ACCESS_TOKEN, loginResult.accessToken)
+
+      userStore.setUser({
+        uid: loginResult.uid,
+        nickname: loginResult.nickname,
+        profileImgUrl: loginResult.profileImgUrl,
+        role: loginResult.role,
+      })
 
       if (token.grantType) {
         localStorage.setItem(STORAGE_KEYS.GRANT_TYPE, token.grantType)
