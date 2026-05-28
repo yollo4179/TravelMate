@@ -1,7 +1,12 @@
 package com.yollo.TravelMate.config;
 
+import java.util.List;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
@@ -10,21 +15,30 @@ public class CorsConfig {
 
 	
 	@Bean
-	public WebMvcConfigurer  corsConfigurer() {
+	 public CorsConfigurationSource corsConfigurationSource() {
 		
-		return new WebMvcConfigurer() {
-			@Override
-			public void addCorsMappings(CorsRegistry registry) {
-				 registry.addMapping("/**")
-				 .allowedOriginPatterns("*") //나 dns 없으니까 ,cors 피하려면 얘랑 + allowCredentials(true) 필요 
-                 .allowedMethods("*")
-                 .allowedHeaders("*")
-                 .allowCredentials(true);
-				 /*필터에서 preflight 허용하였지만 추가 로 정의해야할 것들 mvc 설정에서 처리*/
-				 /* 실제 CORS 허용 정책을 정의 */
-				 /* 브라우저의 preflight 요청에 대해
-				    (허용되는)Access-Control-Allow-* 응답 헤더를 생성 */
-			};
+		CorsConfiguration configuration = new CorsConfiguration();
+        
+        // 1) 모든 프론트엔드 출처 허용 (개발용)
+        configuration.setAllowedOriginPatterns(List.of("*"));
+        
+        // 2) 모든 HTTP 메서드 허용
+        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
+        
+        // 3) 모든 요청 헤더 허용
+        configuration.setAllowedHeaders(List.of("*"));
+        
+        // 4) 내 인증 정보(쿠키 등) 포함 허용
+        configuration.setAllowCredentials(true);
+        
+        // 🔥 5) [핵심] 프론트엔드(Vue)가 응답 헤더에서 Authorization(JWT 토큰)을 읽을 수 있도록 노출!
+        configuration.setExposedHeaders(List.of("Authorization", "authorization")); 
+
+        // 6) 이 설정을 모든 API 경로(/**)에 적용
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration);
+        
+        return source;
 		
 			// [주의] allowCredentials(true) 일 때는 allowedOrigins("*") 사용 불가
             // 고정 IP/DNS가 없는 환경에서 쿠키 통신을 허용하기 위해 패턴 패턴 방식(*) 사용
@@ -36,6 +50,5 @@ public class CorsConfig {
              * 브라우저가 요구하는 CORS 응답 헤더(Access-Control-Allow-*)를 정상적으로 생성하기 위해 
              * WebMvcConfigurer 설정을 추가로 정의함.
              */
-		};
 	}
 }

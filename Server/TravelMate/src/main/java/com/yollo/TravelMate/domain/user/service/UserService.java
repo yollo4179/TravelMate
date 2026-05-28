@@ -5,6 +5,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import com.yollo.TravelMate.domain.user.dto.internal.AuthResultDto;
 import com.yollo.TravelMate.domain.user.dto.request.UserRequestDto;
 import com.yollo.TravelMate.domain.user.dto.response.TokenResponseDto;
+import com.yollo.TravelMate.domain.user.dto.response.UserResponseDto;
 import com.yollo.TravelMate.domain.user.entity.User;
 
 
@@ -26,5 +27,5 @@ public interface UserService {
      public abstract void deleteUser(String userUid); 
      
      public abstract User loadUserByUsername(String username) throws UsernameNotFoundException ;
-    
+     public UserResponseDto.AuthUserDto getUserProfile(String uid);
 }

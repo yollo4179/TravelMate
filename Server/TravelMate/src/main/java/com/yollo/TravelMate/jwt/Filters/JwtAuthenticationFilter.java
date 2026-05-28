@@ -47,7 +47,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter{
 
 	@Override
 	protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
-	    String path = request.getRequestURI();
+		
+		//preFlight도 이 필터는 통과 시켜줘야함(cors터짐)
+		if ("OPTIONS".equals(request.getMethod())) {
+	        return true; 
+	    }
+		String path = request.getRequestURI();
 	    return path.equals("/api/auth/login") || 
 	           path.equals("/api/auth/refresh") || 
 	           path.equals("/api/users/signup") || 
@@ -75,7 +80,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter{
 	            
 	            if (isValid) {
 	                Authentication auth = getAuthentication(token);
-	                SecurityContextHolder.getContext().setAuthentication(auth);
+	                SecurityContextHolder.getContext().setAuthentication(auth); //AuthorizeFilter(마지막 관문)에게 허용되기 위해 Authentication 세팅
 	                System.out.println("4. [성공] 인증 객체 저장 완료: " + auth.getName());
 	            }
 	        } else {

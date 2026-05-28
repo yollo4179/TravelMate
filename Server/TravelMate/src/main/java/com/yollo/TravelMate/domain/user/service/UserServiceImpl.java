@@ -12,6 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.yollo.TravelMate.domain.user.dto.internal.AuthResultDto;
 import com.yollo.TravelMate.domain.user.dto.request.UserRequestDto;
 import com.yollo.TravelMate.domain.user.dto.response.TokenResponseDto;
+import com.yollo.TravelMate.domain.user.dto.response.UserResponseDto;
 import com.yollo.TravelMate.domain.user.entity.User;
 import com.yollo.TravelMate.domain.user.repository.UserRepository;
 import com.yollo.TravelMate.exceptions.cumtom.ErrorCodeException;
@@ -117,7 +118,20 @@ public class UserServiceImpl implements UserService{
 
    
     
-   
+    @Override
+    @Transactional(readOnly = true) // 데이터 변경이 없으므로 readOnly로 성능 최적화
+    public UserResponseDto.AuthUserDto getUserProfile(String uid) {
+        User user = userRepository.findByUid(uid)
+                .orElseThrow(() -> new UsernameNotFoundException("해당 유저를 찾을 수 없습니다. UID: " + uid));
+
+        return UserResponseDto.AuthUserDto.builder()
+                .uid(user.getUid())
+                .nickname(user.getNickname())
+                .profileImgUrl(user.getProfileImgUrl())
+                .role(user.getRole().toString()) 
+                .email(user.getEmail())
+                .build();
+    }
 	
 
 

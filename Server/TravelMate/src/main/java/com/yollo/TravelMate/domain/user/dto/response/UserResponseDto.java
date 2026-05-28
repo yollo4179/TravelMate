@@ -1,10 +1,11 @@
 package com.yollo.TravelMate.domain.user.dto.response;
 
 import jakarta.validation.constraints.NotBlank;
+import lombok.Builder;
 
 public class UserResponseDto {
-
-	public record LoginResponseDto (
+	@Builder
+	public record AuthUserDto (
 			 @NotBlank(message = "uid는 필수입니다.") String uid,
 			 @NotBlank(message = "닉네임은 필수입니다.")String nickname,
 			 String profileImgUrl,

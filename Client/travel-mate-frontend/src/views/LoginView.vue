@@ -5,12 +5,14 @@ import { DebugManager } from '@/utils/DebugManager'
 import { STORAGE_KEYS } from '@/utils/Constants'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '@/piniaStores/MyStore'
+import { useAuthStore } from '@/piniaStores/AuthStore'
 const TAG = 'LOGIN_VIEW'
 const userId = ref('')
 const password = ref('')
 const router = useRouter()
 
 const userStore = useUserStore()
+const authStore = useAuthStore()
 
 const handleLogin = async () => {
   if (!userId.value || !password.value) {
@@ -19,18 +21,22 @@ const handleLogin = async () => {
   }
 
   try {
-    //포트포워딩 공인 ip
-    const response = await axios.post(`/api/auth/login`, {
-      userId: userId.value, // Spring Boot DTO의 'userId' 필드와  일치
-      password: password.value, // Spring Boot DTO의 'password' 필드와 일치
-    })
+    const response = await axios.post(
+      `/api/auth/login`,
+      {
+        userId: userId.value,
+        password: password.value,
+      },
+      {
+        withCredentials: true,
+      },
+    )
 
     DebugManager.DebugConsolelog(JSON.stringify(response))
-    const token = response.headers['Authrization'] || response.data.token || response.data
     const loginResult = response.data
-    if (token) {
-      localStorage.setItem(STORAGE_KEYS.ACCESS_TOKEN, loginResult.accessToken)
-
+    const accessToken = loginResult.accessToken || loginResult.token
+    if (accessToken) {
+      authStore.setAccessToken(accessToken)
       userStore.setUser({
         uid: loginResult.uid,
         nickname: loginResult.nickname,
@@ -38,11 +44,11 @@ const handleLogin = async () => {
         role: loginResult.role,
       })
 
-      if (token.grantType) {
-        localStorage.setItem(STORAGE_KEYS.GRANT_TYPE, token.grantType)
+      if (loginResult.grantType) {
+        localStorage.setItem(STORAGE_KEYS.GRANT_TYPE, loginResult.grantType)
       }
-      DebugManager.DebugConsolelog(TAG, `발급된 토큰: ${token}`)
-      // TODO: 로그인 성공 후 메인 화면으로 이동
+      DebugManager.DebugConsolelog(TAG, `발급된 토큰: ${accessToken}`)
+
       router.push('/')
     } else {
       DebugManager.DebugConsolelog(

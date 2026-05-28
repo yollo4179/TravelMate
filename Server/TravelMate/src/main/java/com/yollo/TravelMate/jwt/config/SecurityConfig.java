@@ -42,19 +42,11 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-        	.cors(cors -> {})
-        	/* Spring Security가 MVC의 CORS 설정을 사용하도록 활성화 */
-        	.csrf(csrf -> csrf.disable())
-        	/* JWT Authorization 헤더 기반 인증 사용
-        	   (세션 쿠키 기반 인증이 아니므로)
-        	   기본 CSRF 보호 비활성화 */
-            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-            /* 서버 세션 사용 안 함
-            매 요청마다 JWT 토큰 검증 */ 
+        	.cors(cors -> {})  //CorsConfigurationSource  || /* Spring Security가 MVC의 CORS 설정을 사용하도록 활성화 */
+        	.csrf(csrf -> csrf.disable()) /* JWT Authorization 헤더 기반 인증 사용  (세션 쿠키 기반 인증이 아니므로) 기본 CSRF 보호 비활성화 */
+            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) /* 서버 세션 사용 안 함, 매 요청마다 JWT 토큰 검증 */ 
             .authorizeHttpRequests(auth -> auth
-            	.requestMatchers(HttpMethod.OPTIONS, "/**").permitAll() 
-            	/* 브라우저의 CORS preflight(OPTIONS) 요청은
-            	   인증 없이 허용 +나중에 mvc에서 헝용정보 생성*/
+            	.requestMatchers(HttpMethod.OPTIONS, "/**").permitAll() /* 브라우저의 CORS preflight(OPTIONS) 요청은 인증 없이 허용 +나중에 mvc에서 헝용정보 생성*/
                 .requestMatchers(
                 		"/api/auth/login", 
                 		"/api/auth/refresh", 
@@ -62,13 +54,12 @@ public class SecurityConfig {
                 		"/api/users/checkUserId", 
                 		"/api/users/checkNickname",  
                 		"/"
-                		).permitAll() 
-                /* 로그인, 재발급은 통과*/
-                .anyRequest().authenticated()  //나머지 모든 API는 반드시 유효한 토큰이 있어야만 접근
+                		).permitAll() //permitAll로 등록된 요청 그룹들은 AuthorizeFilter에서 최종적으로 허가되기 위한 Authentication을 가지게 됨
+                .anyRequest().authenticated()  //나머지 모든 API는 반드시 유효한 토큰이 있어야만 접근(로그인 필요)
             )
             .addFilterBefore(new JwtAuthenticationFilter(tokenProvider,userService), UsernamePasswordAuthenticationFilter.class)
             .addFilterBefore(new JwtExceptionFilter(handlerExceptionResolver), JwtAuthenticationFilter.class);
-        return http.build();
+        return http.build(); //결국에는 Authentication을 갖춘 요청만 허용한다.(AuthorizeFilter 에서)
     }
     
     ///api/user/send

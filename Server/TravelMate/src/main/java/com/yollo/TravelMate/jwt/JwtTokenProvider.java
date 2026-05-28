@@ -84,7 +84,7 @@ public class JwtTokenProvider {
 		        .compact();
 		
 		
-		  return token;
+		return token;
 	}
 	public String createAccessToken(String userPk, String role) {
 		 /*권한 배열 말고 일단 계츨구조로  List<String> roles */
@@ -110,12 +110,9 @@ public class JwtTokenProvider {
     public String resolveToken(HttpServletRequest request) {
         
     	String bearerToken = request.getHeader("Authorization");
-        
-      
-        if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
+    	if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
             return bearerToken.substring(7);
         }
-        
         return null;
     }
     

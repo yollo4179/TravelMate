@@ -12,12 +12,15 @@
 
       <template v-else>
         <div class="user-profile">
-          <img 
-            :src="userStore.userDesc?.profileImgUrl || '/images/default-avatar.png'" 
-            alt="프로필" 
+          <img
+            :src="userStore.userDesc?.profileImgUrl || '/images/default-avatar.png'"
+            alt="프로필"
             class="profile-img"
           />
-          <span class="nickname"><strong>{{ userStore.userNickname }}</strong>님</span>
+          <span class="nickname"
+            ><strong>{{ userStore.userNickname }}</strong
+            >님</span
+          >
         </div>
 
         <a href="#" @click.prevent="logout" class="nav-item logout-btn">로그아웃</a>
@@ -27,40 +30,30 @@
 </template>
 
 <script setup>
-import { onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { STORAGE_KEYS } from '@/utils/Constants'
-import axios from 'axios'
 import { DebugManager } from '@/utils/DebugManager'
 
-// 1. Pinia 스토어 임포트
-import { useUserStore } from '@/piniaStores/myStore' 
+import { useUserStore } from '@/piniaStores/MyStore'
+import { useAuthStore } from '@/piniaStores/AuthStore'
+import { logout as apiLogout } from '@/Services/AuthService'
 
 const router = useRouter()
-const userStore = useUserStore() // 스토어 인스턴스 생성
+const userStore = useUserStore()
+const authStore = useAuthStore()
 
-/* 로그아웃 기능 */
+/* 로그아웃 기능: 서버 로그아웃 호출하고 Pinia 상태만 초기화합니다. */
 const logout = async () => {
   try {
-    const token = localStorage.getItem(STORAGE_KEYS.ACCESS_TOKEN)
-    await axios.post(`/api/auth/logout`, null, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    })
+    await apiLogout()
   } catch (e) {
     DebugManager.DebugConsolelog('LOGOUT', '서버 로그아웃 통신 실패 (이미 만료됨 등):', e)
   } finally {
-    // 2. 로컬 스토리지 초기화
-    localStorage.removeItem(STORAGE_KEYS.ACCESS_TOKEN)
-    // 3. Pinia 스토어 상태 초기화 (매우 중요!)
-    userStore.logout() 
-    
+    // Pinia 상태 초기화
+    authStore.removeAccessToken()
+    userStore.logout()
     router.push('/')
   }
 }
-
-// ※ Pinia 전역 상태가 반응형이므로 watch로 route.path를 추적할 필요가 없어졌습니다.
 </script>
 
 <style scoped>
