@@ -16,7 +16,7 @@ public class TokenResponseDto {
 	
     private String accessToken;  // 실제 API 호출용 (가이드의 AT)
     @Builder.Default 
-    private String grantType= "Bearer"; ;// 보통 "Bearer"라고 보냄
+    private String grantType= "Bearer "; ;// 보통 "Bearer"라고 보냄
     
     
  // Pinia 전역 상태 관리를 위한 유저 정보 추가
@@ -24,6 +24,7 @@ public class TokenResponseDto {
     private String nickname;
     private String profileImgUrl;
     private String role;
+    private String email;
     
 }
 

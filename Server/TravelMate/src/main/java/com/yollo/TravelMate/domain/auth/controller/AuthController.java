@@ -55,11 +55,11 @@ public class AuthController {
     		User user = result.getUser();
     		TokenResponseDto bodyDto = TokenResponseDto.builder()
                     .accessToken(result.getAccessToken())
-                    //.uid(user.getUid())
-                    //.nickname(user.getNickname())
-                    //.profileImgUrl(user.getProfileImgUrl())
-                    //.role(user.getRole())
-                    // .email(user.getEmail()) // 이메일도 필요하다면 추가
+                    .uid(user.getUid())
+                    .nickname(user.getNickname())
+                    .profileImgUrl(user.getProfileImgUrl())
+                    .role(user.getRole())
+                    .email(user.getEmail()) // 이메일도 필요하다면 추가
                     .build();
             
     		/*쿠키에 리프레시랑 엑세스 박습니다.*/
@@ -91,7 +91,7 @@ public class AuthController {
     }
     @PostMapping("/refresh")
     public ResponseEntity<TokenResponseDto> refresh(
-            @CookieValue(value = "refreshToken", required = true) String refreshToken) {
+            @CookieValue(value = "refreshToken"/*, required = true*/) String refreshToken) {
         
     	/* 쿠키(Cookie) 중 이름(키)이 refreshToken인 값을 찾아 메서드의 변수에 자동으로 넣어줌 httpOnly라도 클라에서 옵션 지정하면 넘겨 줌 */
     	/* + 리프레시 토큰 레디스 검증 or throw*/

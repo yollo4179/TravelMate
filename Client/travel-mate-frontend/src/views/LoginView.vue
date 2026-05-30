@@ -47,7 +47,8 @@ const handleLogin = async () => {
       if (loginResult.grantType) {
         localStorage.setItem(STORAGE_KEYS.GRANT_TYPE, loginResult.grantType)
       }
-      DebugManager.DebugConsolelog(TAG, `발급된 토큰: ${accessToken}`)
+      DebugManager.DebugConsolelog(TAG, `발급된 토큰: ${accessToken}  
+      닉네임${userStore.userNickname}`)
 
       router.push('/')
     } else {

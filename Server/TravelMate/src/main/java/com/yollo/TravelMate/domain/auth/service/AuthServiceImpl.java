@@ -39,6 +39,8 @@ public class AuthServiceImpl implements AuthService {
 	/*RTR 방식  Refresh +Access */
     @Transactional
     public AuthResultDto refresh(String refreshToken) {
+    	
+    	log.debug( "리프레시 토큰입니다.${}",refreshToken);
         // 1. Refresh Token 유효성 검증 (만료되었거나 변조되었는지 확인)
         if (!tokenProvider.validateToken(refreshToken)) {
             throw new IllegalArgumentException("유효하지 않거나 만료된 Refresh Token입니다. 다시 로그인해주세요.");

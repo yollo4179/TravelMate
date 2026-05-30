@@ -53,7 +53,8 @@ public class SecurityConfig {
                 		"/api/users/signup", 
                 		"/api/users/checkUserId", 
                 		"/api/users/checkNickname",  
-                		"/"
+                		"/",
+                		"/error"
                 		).permitAll() //permitAll로 등록된 요청 그룹들은 AuthorizeFilter에서 최종적으로 허가되기 위한 Authentication을 가지게 됨
                 .anyRequest().authenticated()  //나머지 모든 API는 반드시 유효한 토큰이 있어야만 접근(로그인 필요)
             )

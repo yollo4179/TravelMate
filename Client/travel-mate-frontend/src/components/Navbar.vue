@@ -18,7 +18,7 @@
             class="profile-img"
           />
           <span class="nickname"
-            ><strong>{{ userStore.userNickname }}</strong
+            ><strong>{{ userStore.userDesc?.nickname }}</strong
             >님</span
           >
         </div>

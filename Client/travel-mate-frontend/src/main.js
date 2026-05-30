@@ -21,6 +21,7 @@ axios.defaults.withCredentials = true
 const authStore = useAuthStore()
 
 /**********(모든)API 요청할 때마다 액세스 토큰 헤더에 실어서 보내게************* */
+axios.defaults.headers.common['ngrok-skip-browser-warning'] = '69420'
 axios.interceptors.request.use(
   (config) => {
     const token = authStore.accessToken
