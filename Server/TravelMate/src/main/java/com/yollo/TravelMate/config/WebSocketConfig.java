@@ -1,16 +1,20 @@
 package com.yollo.TravelMate.config;
 
 import org.springframework.context.annotation.Configuration;
+import org.springframework.messaging.simp.config.ChannelRegistration;
 import org.springframework.messaging.simp.config.MessageBrokerRegistry;
 import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBroker;
 import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
 import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerConfigurer;
 
+import lombok.RequiredArgsConstructor;
 
 @Configuration
 @EnableWebSocketMessageBroker
+@RequiredArgsConstructor
 public class WebSocketConfig implements WebSocketMessageBrokerConfigurer{
 
+	private final FilterChannelInterceptor filterChannelInterceptor;
 	
 	@Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
@@ -29,4 +33,10 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer{
         // 클라이언트가 서버(컨트롤러)로 시그널링 데이터를 보낼 때의 접두사  ex) /app/signal
         registry.setApplicationDestinationPrefixes("/app");
     }
+
+	//stomp연결 필터 - > jwt에서 통과시키고 여기서 처리 
+	@Override
+	public void configureClientInboundChannel(ChannelRegistration registration) {
+		registration.interceptors(filterChannelInterceptor);
+	}
 }

@@ -4,6 +4,7 @@ import java.io.IOException;
 
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
@@ -42,6 +43,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter{
 
 		// UserDetails를 가져와서 시큐리티 인증 객체 생성
 		UserDetails user = userService.loadUserByUsername(tokenProvider.getUIdFromToken(token));
+		/* 1. 필터에서 토큰 생성 시 user(UserDetails)를 첫 번째 인자(principal)로 지정 */
 		return new UsernamePasswordAuthenticationToken(user, "", user.getAuthorities());
 		} 
 
@@ -57,7 +59,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter{
 	           path.equals("/api/auth/refresh") || 
 	           path.equals("/api/users/signup") || 
 	           path.equals("/api/users/checkUserId") || 
-	           path.equals("/api/users/checkNickname")||
+	           path.equals("/api/users/checkNickname") ||
+	           path.startsWith("/ws-stomp") || 
+	           //Socket 통신을 위해서는 3way handshake 필요함 stomp 연결시도는
+	           //http request가 아니므로 여기서 뚫어주고 뒤에서 토큰 받도록해서 stomp 소켓이랑 해서 연결 시도 
 	           path.equals("/error");
 	}
 	
@@ -80,8 +85,16 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter{
 	            System.out.println("3. 토큰 검증 통과 여부: " + isValid);
 	            
 	            if (isValid) {
-	                Authentication auth = getAuthentication(token);
-	                SecurityContextHolder.getContext().setAuthentication(auth); //AuthorizeFilter(마지막 관문)에게 허용되기 위해 Authentication 세팅
+	            	 // DB 조회를 거친 인증 정보를 받아와 보관소(SecurityContextHolder)에 넣습니다.
+	            	Authentication auth = getAuthentication(token);
+	            	
+	            	
+	            	SecurityContextHolder.getContext().setAuthentication(auth);
+	            	/* 2. 이 인증 객체(principal)를 스프링 보관함에 보관 
+	            	 * @AuthenticationPrincipal으로 헤더에 액세스 or refresh 토큰을 보냈다면 유저정보 받아올 수 있습니다.
+	            	 * 아님 말구...
+	            	 * */
+	            	//AuthorizeFilter(마지막 관문)에게 허용되기 위해 Authentication 세팅 
 	                System.out.println("4. [성공] 인증 객체 저장 완료: " + auth.getName());
 	            }
 	        } else {
