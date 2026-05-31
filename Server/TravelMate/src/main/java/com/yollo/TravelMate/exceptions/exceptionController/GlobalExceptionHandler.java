@@ -24,12 +24,23 @@ public class GlobalExceptionHandler {
     }
 	
 	
-	/*jwt 위조 + 이상한 인자 전달 시 호출 */
-	@ExceptionHandler({JwtException.class, IllegalArgumentException.class})
-    public ResponseEntity<ErrorResponse> handleJwtException(Exception e) {
+	/*jwt 위조 */
+	@ExceptionHandler(JwtException.class)
+    public ResponseEntity<ErrorResponse> handleJwtException(JwtException e) {
         ErrorCode errorCode = ErrorCode.ERR_TOKEN_INVALID;
         return createErrorResponse(errorCode);
     }
+
+	/* 이상한 인자 전달 시 호출 */
+	@ExceptionHandler(IllegalArgumentException.class)
+	public ResponseEntity<ErrorResponse> handleIllegalArgumentException(IllegalArgumentException e) {
+		ErrorResponse response = ErrorResponse.builder()
+				.status(400)
+				.code("ERR_BAD_REQUEST")
+				.message(e.getMessage())
+				.build();
+		return ResponseEntity.badRequest().body(response);
+	}
 	/************제공에러 핸들링***************/
 	
 	/************커스텀 에러******************/

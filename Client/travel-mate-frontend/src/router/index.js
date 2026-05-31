@@ -30,6 +30,14 @@ const router = createRouter({
     /*meta: {
         requiresAuth: true,
       }, */
+    {
+      path: '/room/:roomId',
+      name: 'videoCall',
+      component: () => import('@/views/VideoCallView.vue'),
+      meta: {
+        requiresAuth: true,
+      },
+    },
   ],
 })
 
