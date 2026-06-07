@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?><!--
+   Sample data extraction rules file; uncomment and customize as necessary.
+   See https://developer.android.com/about/versions/12/backup-restore#xml-changes
+   for details.
+
+   12 버전 이상
+-->
+<data-extraction-rules>
+    <cloud-backup>
+        <!-- TODO: Use <include> and <exclude> to control what is backed up.
+        <include .../>
+        유저의 데이터가 구글 드라이브 같은 온라인 클라우드 서버에 백업될 때 이 파일을 제외하라는 뜻
+        <exclude .../>
+        -->
+        <exclude domain="sharedpref" path="auth_prefs_encrypted.xml"/>
+
+    </cloud-backup>
+
+    <device-transfer>
+        <exclude domain="sharedpref" path="auth_prefs_encrypted.xml"/>
+    </device-transfer>
+    <!--
+    <device-transfer>
+        <include .../>
+        새 폰을 샀을 때 예전 폰과 케이블을 직접 연결해서 영혼 보내기(데이터 복사)를 할 때 이 파일을 제외하라는 뜻
+        <exclude .../>
+    </device-transfer>
+    -->
+</data-extraction-rules>

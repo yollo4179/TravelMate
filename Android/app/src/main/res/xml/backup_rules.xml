@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?><!--
+   Sample backup rules file; uncomment and customize as necessary.
+   See https://developer.android.com/guide/topics/data/autobackup
+   for details.
+   Note: This file is ignored for devices older than API 31
+   See https://developer.android.com/about/versions/12/backup-restore
+   11 버전 이하
+-->
+<full-backup-content>
+    <!--
+   <include domain="sharedpref" path="."/>
+   <exclude domain="sharedpref" path="device.xml"/>
+-->
+
+
+   <exclude domain="sharedpref" path="auth_prefs_encrypted.xml" />
+    <!--암호화된 파일은 백업하지 않는다 삭제 후 재성치하면 암호화된 데이터는 복원되지만
+     해독을 위한 (앱 `처음` 실행 시 안드로이드 기기 내부의 특수 보안 구역인 Android Keystore에 생성)마스터키는 복원안되고
+     새로 생성되서 키가 달라 크래시가 난다. ->auth_prefs_encrypted.xml 는 자동 복원....-->
+<!-- 암호화의 이유는 해당 폰이 루팅되어 있거나 악성 앱이 루트 권한을 어ㄷ었다면 ? 중요정보를 탈취 가능..이 앱의  xml 정보를 꺼내갈 수 도 있다.-->
+
+</full-backup-content>
