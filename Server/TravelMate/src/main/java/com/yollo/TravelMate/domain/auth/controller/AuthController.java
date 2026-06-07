@@ -5,6 +5,7 @@ package com.yollo.TravelMate.domain.auth.controller;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -12,15 +13,16 @@ import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-
 import com.yollo.TravelMate.cookies.CookieUtil;
 import com.yollo.TravelMate.domain.auth.service.AuthService;
-import com.yollo.TravelMate.domain.user.dto.internal.AuthLoginResultDto;
-import com.yollo.TravelMate.domain.user.dto.internal.AuthResultDto;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+import com.yollo.TravelMate.domain.auth.dto.internal.AuthLoginResultDto;
+import com.yollo.TravelMate.domain.auth.dto.internal.AuthResultDto;
+import com.yollo.TravelMate.domain.auth.dto.request.AuthRequestDto;
+import com.yollo.TravelMate.domain.auth.dto.response.AuthResponseDto;
+import com.yollo.TravelMate.domain.auth.dto.response.TokenResponseDto;
 import com.yollo.TravelMate.domain.user.dto.request.UserRequestDto;
-import com.yollo.TravelMate.domain.user.dto.response.TokenResponseDto;
 import com.yollo.TravelMate.domain.user.entity.User;
 import com.yollo.TravelMate.domain.user.service.UserService;
 import com.yollo.TravelMate.domain.user.service.UserServiceImpl;
@@ -38,15 +40,43 @@ import lombok.RequiredArgsConstructor;
 public class AuthController {
 	private final AuthService authService;
     private final CookieUtil cookieUtil ;
-   private final JwtTokenProvider tokenProvider;
-   private final RedisService redisService;
+    private final JwtTokenProvider tokenProvider;
+    private final RedisService redisService;
     
 	private static final Logger log = LoggerFactory.getLogger(AuthController.class);
-    @PostMapping("/login")
-    public ResponseEntity<TokenResponseDto> login(@RequestBody @Valid UserRequestDto.Login loginDto) {
-    		
+    
+	
+	@PostMapping("/login/oauth")
+    public ResponseEntity<?> loginOauth(@RequestBody @Valid AuthRequestDto.SocialLogin loginDto){
     	
-    	
+		
+	    AuthResponseDto.MobileLogin loginResult = authService.oauthLogin(loginDto);
+	    log.debug("loginDto:${}",loginDto);
+	    
+	    if (loginResult.isNewUser()) {
+	        return ResponseEntity.ok(loginResult); //바디로 보낼게 
+	    }
+	    
+	    
+	    HttpHeaders headers = new HttpHeaders();
+	    //headers.add("Authorization", "Bearer " + refreshToken); 안드로이드는 굳이 해더로 httpOnly 옵션 필요 없다. 
+	    // ResponseCookie cookie = ResponseCookie.from("refreshToken", refreshToken)
+	    //         .httpOnly(true)
+	    //         .secure(true)
+	    //         .path("/")
+	    //         .build();
+	    // headers.add(HttpHeaders.SET_COOKIE, cookie.toString());
+
+	    //  헤더와 바디(DTO)를 합쳐서 최종 응답!
+	    return ResponseEntity.ok()
+	            .headers(headers)
+	            .body(loginResult);
+    }
+	
+	
+	@PostMapping("/login")
+    public ResponseEntity<TokenResponseDto> login(@RequestBody @Valid AuthRequestDto.LocalLogin loginDto) {
+  	
     	AuthLoginResultDto result = authService.login(loginDto);
     		ResponseCookie rtCookie = cookieUtil.createRefreshTokenCookie(
                     result.getRefreshToken(), 

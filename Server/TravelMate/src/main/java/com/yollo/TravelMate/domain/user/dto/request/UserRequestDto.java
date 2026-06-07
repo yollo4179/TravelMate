@@ -12,20 +12,26 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 public class UserRequestDto {
 
-	//회원 정보 수정 요청 DTO
 	
+
+	
+	//회원 정보 수정 요청 DTO
 	public record Update (
-        @NotBlank(message = "닉네임은 필수입니다.") String nickname,
+         @NotBlank(message = "닉네임은 필수입니다.") String nickname,
          String profileImgUrl,
-        @NotBlank(message = "비밀번호는 필수입니다.")  String password // 비밀번호 변경 시 사용 (선택적)
+         String password // 비밀번호 변경 시 사용 (선택적)
     ) {}
 	
-	// 로그인 요청
+	// 로그인 요청은 AuthRequestDto.java로 이동됨.
 
-    public record Login (
-    	@NotBlank(message = "아이디는 필수입니다.") String userId,
-        @NotBlank(message = "비밀번호는 필수입니다.") String password
-    ) {	}
+	public record SocialSignUp(
+		    @NotBlank(message = "Provider는 무조건 설정해야 합니다.  ( : KAKAO, GOOGLE)") 
+		    @NotBlank(message = "소셜 인증 토큰(idToken)은 필수입니다.") 
+		    String idToken,
+		    @NotBlank(message = "닉네임을 입력해주세요.") String nickname
+		) {}
+	
+	
     //idCheck
     public record CheckId(
     		@NotBlank (message ="아이디는 필수입니다") String userId

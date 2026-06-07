@@ -24,7 +24,11 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+import jakarta.persistence.EntityListeners;
+
 @Entity// JPA가 관리하는 엔티티임을 명시 (DB 테이블과 매핑)
+@EntityListeners(AuditingEntityListener.class)
 @Table(name = "users") // DB 테이블 이름을 "users"로 지정
 @Getter @Setter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -69,18 +73,25 @@ public class User implements UserDetails {
 	@Column(nullable = false)
     private String provider;
 	
+	@Column(name = "provider_id",nullable =true)
+	private String providerId ;
+	
+	
 	@CreatedDate
     @Column(updatable = false)
 	private LocalDateTime createdAt;
 	
+	
 	@LastModifiedDate
 	private LocalDateTime updatedAt;
+	
 	
 	public void updateProfile(String nickname, String profileImage) {
         this.nickname = nickname;
         this.profileImgUrl = profileImage;
     }
 
+	
 	// --- UserDetails 필수 구현 메서드 ---
 
     @Override

@@ -1,29 +1,38 @@
 package com.yollo.TravelMate.domain.auth.service;
 
+import java.util.Optional;
+
 import org.slf4j.Logger;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
-import com.yollo.TravelMate.domain.user.dto.internal.AuthLoginResultDto;
-import com.yollo.TravelMate.domain.user.dto.internal.AuthResultDto;
+import com.yollo.TravelMate.domain.auth.dto.internal.AuthLoginResultDto;
+import com.yollo.TravelMate.domain.auth.dto.internal.AuthResultDto;
+import com.yollo.TravelMate.domain.auth.dto.internal.UserInfo;
+import com.yollo.TravelMate.domain.auth.dto.request.AuthRequestDto;
+import com.yollo.TravelMate.domain.auth.dto.response.AuthResponseDto;
 import com.yollo.TravelMate.domain.user.dto.request.UserRequestDto;
+import com.yollo.TravelMate.domain.user.dto.response.UserResponseDto;
 import com.yollo.TravelMate.domain.user.entity.User;
 import com.yollo.TravelMate.domain.user.repository.UserRepository;
 import com.yollo.TravelMate.exceptions.cumtom.ErrorCodeException;
 import com.yollo.TravelMate.exceptions.errorCodes.ErrorCode;
 import com.yollo.TravelMate.jwt.JwtTokenProvider;
 import com.yollo.TravelMate.redis.RedisService;
+import com.yollo.TravelMate.util.managers.OauthManager;
 
 import lombok.RequiredArgsConstructor;
+
 
 @Service
 @RequiredArgsConstructor
 public class AuthServiceImpl implements AuthService {
 
 	
+	private final OauthManager authManager;
 	private final UserRepository userRepository;
 
 	private final JwtTokenProvider tokenProvider;
@@ -35,6 +44,11 @@ public class AuthServiceImpl implements AuthService {
 	
 	
 	private static final Logger log = LoggerFactory.getLogger(AuthServiceImpl.class);
+	
+	
+	
+	
+	
 	
 	/*RTR 방식  Refresh +Access */
     @Transactional
@@ -86,17 +100,11 @@ public class AuthServiceImpl implements AuthService {
          redisService.logout(targetUid, accessToken, atTtlSeconds);	
         	
         }
-        
-    
-    	
-    			 
-    	 
-    	 
-    	 
+          
     }
     
     @Transactional
-    public AuthLoginResultDto login(UserRequestDto.Login loginDto) {
+    public AuthLoginResultDto login(AuthRequestDto.LocalLogin loginDto) {
         User user = userRepository.findByUserId(loginDto.userId())
                 .orElseThrow(() -> new IllegalArgumentException("가입되지 않은 이메일입니다."));
 
@@ -111,7 +119,7 @@ public class AuthServiceImpl implements AuthService {
         
         long rtTtlSeconds = tokenProvider.getRemainingTtlSeconds(refreshToken); 
         redisService.saveRefreshToken(user.getUid(), refreshToken, rtTtlSeconds);
-        // 토큰 발급 및 가이드 이미지의 1번 로직 수행
+      
         return  AuthLoginResultDto.builder()
         		.accessToken(accessToken)
         		.refreshToken(refreshToken)
@@ -119,5 +127,60 @@ public class AuthServiceImpl implements AuthService {
         		.user(user).build();
         
     }
+    
+    @Transactional 
+    public AuthResponseDto.MobileLogin oauthLogin(AuthRequestDto.SocialLogin loginDto) {
+        
+        
+    	UserInfo userInfo = authManager.getUserInfo(loginDto.provider(), loginDto.idToken());
+        log.debug("소셜에서 받아온 고유 ID: {}", userInfo.providerId());
 
+        Optional<User> optionalUser = userRepository.findByProviderAndProviderId(
+                loginDto.provider(), 
+                userInfo.providerId()
+        );
+
+        if (optionalUser.isEmpty()) { //신규 회원입니다.
+            String tempToken = "";
+            try {
+                tempToken = tokenProvider.createTempToken(userInfo.providerId(), loginDto.provider(), userInfo.email()); 
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+            return new AuthResponseDto.MobileLogin(true, tempToken, null, null); //닉네임제공 요청 
+
+        } else {//기존 회원입니다.
+            User user = optionalUser.get();
+            String refreshToken = "";
+            String accessToken = "";
+            try {
+            	refreshToken = tokenProvider.createRefreshToken(user.getUid().toString(), JwtTokenProvider.ERole.USER.getValue());
+                accessToken = tokenProvider.createAccessToken(user.getUid().toString(), JwtTokenProvider.ERole.USER.getValue());
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+            return new AuthResponseDto.MobileLogin(false, null, accessToken, refreshToken); //이미 존재하는 유저입니다.
+        }
+    }
+    
+	private User registerNewUser(UserInfo userInfo ,String provider) { 
+	        
+	  
+	        String nickname = userInfo.nickname();
+	        if (nickname == null || nickname.isBlank()) {
+	            nickname = provider +"_"+ java.util.UUID.randomUUID().toString().substring(0, 8);
+	        }
+	       
+	        User newUser = User.builder()
+	                .provider(userInfo.provider())       
+	                .providerId(userInfo.providerId())   
+	                .email(userInfo.email())
+	                .nickname(nickname)
+	                .build();
+	        
+	        return userRepository.save(newUser);
+	    }
+    
 }

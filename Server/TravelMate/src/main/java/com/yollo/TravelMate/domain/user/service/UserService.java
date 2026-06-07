@@ -2,9 +2,7 @@ package com.yollo.TravelMate.domain.user.service;
 
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
-import com.yollo.TravelMate.domain.user.dto.internal.AuthResultDto;
 import com.yollo.TravelMate.domain.user.dto.request.UserRequestDto;
-import com.yollo.TravelMate.domain.user.dto.response.TokenResponseDto;
 import com.yollo.TravelMate.domain.user.dto.response.UserResponseDto;
 import com.yollo.TravelMate.domain.user.entity.User;
 

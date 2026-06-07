@@ -18,9 +18,11 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.yollo.TravelMate.domain.user.dto.internal.AuthResultDto;
+import com.yollo.TravelMate.domain.auth.dto.internal.AuthLoginResultDto;
+import com.yollo.TravelMate.domain.auth.dto.request.AuthRequestDto;
+import com.yollo.TravelMate.domain.auth.dto.response.AuthResponseDto;
 import com.yollo.TravelMate.domain.user.dto.request.UserRequestDto;
-import com.yollo.TravelMate.domain.user.dto.response.TokenResponseDto;
+
 import com.yollo.TravelMate.domain.user.dto.response.UserResponseDto;
 import com.yollo.TravelMate.domain.user.dto.response.UserResponseDto.AuthUserDto;
 import com.yollo.TravelMate.domain.user.entity.User;
@@ -63,6 +65,27 @@ public class UserController {
         
         log.debug("${}",signupDto);
         return ResponseEntity.ok("회원가입이 완료되었습니다.");
+    }
+	
+	@PostMapping("/signup/oauth")
+    public ResponseEntity<AuthResponseDto.MobileLogin> signUpOauth(
+            @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false) String bearerToken, //임시토큰 입니다.
+            @RequestBody @Valid AuthRequestDto.OAuthSignup signupDto) {
+        
+        if (bearerToken == null || !bearerToken.startsWith("Bearer ")) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+        
+        
+        String tempToken = bearerToken.substring(7);
+        AuthLoginResultDto result = userService.signupOauth(tempToken, signupDto);
+        
+        return ResponseEntity.ok(new AuthResponseDto.MobileLogin(
+                false, 
+                null, 
+                result.getAccessToken(), 
+                result.getRefreshToken()
+        ));
     }
 	
 	@GetMapping("/me")
