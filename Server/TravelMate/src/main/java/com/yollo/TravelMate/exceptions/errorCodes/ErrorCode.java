@@ -9,6 +9,9 @@ public enum ErrorCode {
 
 	/**********ENUM CODE*************/
 	ERR_TOKEN_EXPIRED(HttpStatus.UNAUTHORIZED, "ERR_TOKEN_EXPIRED", "Access token has expired. Please refresh."),
+	ERR_ACCESS_TOKEN_EXPIRED(HttpStatus.UNAUTHORIZED, "ERR_ACCESS_TOKEN_EXPIRED", "Access token has expired. Please refresh."),
+	ERR_REFRESH_TOKEN_EXPIRED(HttpStatus.UNAUTHORIZED, "ERR_REFRESH_TOKEN_EXPIRED", "Refresh token has expired. Please login again."),
+	ERR_TEMP_TOKEN_EXPIRED(HttpStatus.UNAUTHORIZED, "ERR_TEMP_TOKEN_EXPIRED", "Signup time has expired. Please try again."),
     ERR_TOKEN_INVALID(HttpStatus.UNAUTHORIZED, "ERR_TOKEN_INVALID", "Invalid or tampered access token."),
 
     DUPLICATED_USER_ID(HttpStatus.CONFLICT, "ERR_USER_001", "이미 존재하는 아이디입니다."),

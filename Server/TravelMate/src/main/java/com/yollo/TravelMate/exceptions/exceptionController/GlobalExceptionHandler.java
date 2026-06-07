@@ -19,8 +19,15 @@ public class GlobalExceptionHandler {
 	/*액세스 토큰 만료*/
 	@ExceptionHandler(ExpiredJwtException.class)
     public ResponseEntity<ErrorResponse> handleExpiredJwtException(ExpiredJwtException e) {
-        ErrorCode errorCode = ErrorCode.ERR_TOKEN_EXPIRED; 
-        return createErrorResponse(errorCode);
+        String subject = e.getClaims().getSubject();
+        if ("TEMP_REGISTER_TOKEN".equals(subject)) {
+            return createErrorResponse(ErrorCode.ERR_TEMP_TOKEN_EXPIRED);
+        }
+        String tokenType = e.getClaims().get("token_type", String.class);
+        if ("refresh".equals(tokenType)) {
+            return createErrorResponse(ErrorCode.ERR_REFRESH_TOKEN_EXPIRED);
+        }
+        return createErrorResponse(ErrorCode.ERR_ACCESS_TOKEN_EXPIRED);
     }
 	
 	

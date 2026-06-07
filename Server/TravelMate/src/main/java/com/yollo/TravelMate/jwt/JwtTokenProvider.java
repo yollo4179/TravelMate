@@ -30,11 +30,26 @@ import lombok.RequiredArgsConstructor;
 
 
 
+
 @Component
 @RequiredArgsConstructor
 public class JwtTokenProvider {
 	
 	private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(JwtTokenProvider.class);
+
+	public static  enum ERole{
+		
+		USER("ROLE_BASE"),
+		ADMIN("ROLE_ADMIN");
+		private final String value ; 
+		
+		ERole(String value){
+			this.value = value;
+		}
+		public String getValue() {
+			return value; 
+		}
+	}
 	
 	
 	@Value("${jwt.secret}") 
@@ -67,11 +82,12 @@ public class JwtTokenProvider {
 		
 	}
 	
-	private String createToken( String userUid , String  role,long expireTime) {
+	private String createToken( String userUid , String  role,long expireTime, String tokenType) {
 		
 		
 		Claims claims = Jwts.claims().setSubject(userUid);
 		claims.put("roles", role);
+		claims.put("token_type", tokenType);
 		/*Payload(내용)에 담길 제이슨 데이터 묶음을 생성하는 메서드 + 권한 추가 +키는 uid */
 		
 		Date now =new Date();
@@ -86,13 +102,36 @@ public class JwtTokenProvider {
 		
 		return token;
 	}
+	public String createTempToken(String providerId, String provider, String email) {
+	   
+	    long TEMP_TOKEN_VALID_TIME = 5 * 60 * 1000L;
+	    Date now = new Date();
+
+	    return Jwts.builder()
+	            .claim("providerId", providerId) 
+	            .claim("provider", provider)    
+	            .claim("email", email)
+	            .setSubject("TEMP_REGISTER_TOKEN") //아직 회원아니니까 주체는 일반 문자열로 채우겠다
+	            .setIssuedAt(now)
+	            .setExpiration(new Date(now.getTime() + TEMP_TOKEN_VALID_TIME))
+	            .signWith(key, SignatureAlgorithm.HS256)
+	            .compact();
+	}
+	
+	public Claims getClaimsFromToken(String token) {
+        return Jwts.parserBuilder()
+                .setSigningKey(key)
+                .build()
+                .parseClaimsJws(token)
+                .getBody();
+    }
 	public String createAccessToken(String userPk, String role) {
 		 /*권한 배열 말고 일단 계츨구조로  List<String> roles */
-        return createToken(userPk, role, ACCESS_TOKEN_VALID_MS);
+        return createToken(userPk, role, ACCESS_TOKEN_VALID_MS, "access");
     }
 
     public String createRefreshToken(String userPk, String role) {
-        return createToken(userPk, role, REFRESH_TOKEN_VALID_MS); 
+        return createToken(userPk, role, REFRESH_TOKEN_VALID_MS, "refresh"); 
     }
     
     
