@@ -5,20 +5,24 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import java.util.UUID;
+
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.yollo.TravelMate.domain.user.dto.internal.AuthResultDto;
+import com.yollo.TravelMate.domain.auth.dto.internal.AuthLoginResultDto;
+import com.yollo.TravelMate.domain.auth.dto.request.AuthRequestDto;
 import com.yollo.TravelMate.domain.user.dto.request.UserRequestDto;
-import com.yollo.TravelMate.domain.user.dto.response.TokenResponseDto;
 import com.yollo.TravelMate.domain.user.dto.response.UserResponseDto;
 import com.yollo.TravelMate.domain.user.entity.User;
 import com.yollo.TravelMate.domain.user.repository.UserRepository;
 import com.yollo.TravelMate.exceptions.cumtom.ErrorCodeException;
 import com.yollo.TravelMate.exceptions.errorCodes.ErrorCode;
+import com.yollo.TravelMate.jwt.JwtTokenProvider;
 import com.yollo.TravelMate.redis.RedisService;
 
+import io.jsonwebtoken.Claims;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -28,7 +32,7 @@ public class UserServiceImpl implements UserService{
 	
 	private final UserRepository userRepository;
 
-	private final com.yollo.TravelMate.jwt.JwtTokenProvider tokenProvider;
+	private final JwtTokenProvider tokenProvider;
 	
 	private final PasswordEncoder passwordEncoder;
 	
@@ -59,8 +63,7 @@ public class UserServiceImpl implements UserService{
 	@Transactional // 데이터 변경이 일어나므로 쓰기 트랜잭션 적용
     public void signUp(UserRequestDto.Signup signupDto) {
         
-        // 1. 중복 검증 (아이디 및 이메일)
-        // 💡 record이므로 signupDto.userId(), signupDto.email()로 값을 꺼냅니다!
+        
         if (userRepository.existsByUserId(signupDto.userId())) {
             throw new IllegalArgumentException("이미 존재하는 아이디입니다.");
         }
@@ -73,14 +76,13 @@ public class UserServiceImpl implements UserService{
             throw new IllegalArgumentException("이미 사용 중인 닉네임입니다.");
         }
 
-        // 2. 비밀번호 암호화 (보안 필수)
+       
         String encodedPassword = passwordEncoder.encode(signupDto.password());
 
-        // 3. DTO를 엔티티로 변환 (우리가 만든 빌더 패턴 내부 호출 및 UUID 주입)
+        
         User user = signupDto.toEntity(encodedPassword);
 
-        // 4. DB에 최종 저장
-        userRepository.save(user); //삽입이니까 더티체킹 관련없지?
+        userRepository.save(user);
     }
 
 	@Transactional(readOnly=true)
@@ -133,7 +135,51 @@ public class UserServiceImpl implements UserService{
                 .build();
     }
 	
+    @Transactional
+    public AuthLoginResultDto signupOauth(String tempToken, AuthRequestDto.OAuthSignup dto) {
+    	
+        if (!tokenProvider.validateToken(tempToken)) {
+            throw new IllegalArgumentException("유효하지 않거나 만료된 임시 토큰입니다."); 
+        }
+        
+        Claims claims = tokenProvider.getClaimsFromToken(tempToken);
+        
+        if (!"TEMP_REGISTER_TOKEN".equals(claims.getSubject())) {  //TEMP_REGISTER_TOKEN는 로그인 시도할 때 처음이라면 주는 임시 토큰의 subject..
+            throw new IllegalArgumentException("회원가입용 임시 토큰이 아닙니다.");
+        }
+        String providerId = claims.get("providerId", String.class);
+        String provider = claims.get("provider", String.class);
+        String email = claims.get("email", String.class);
+        
+        // 이메일이 null일 경우 DB의 NOT NULL 제약조건을 피하기 위해 더미 이메일 생성
+        if (email == null || email.isBlank()) {
+            email = provider + "_" + providerId + "@social.com";
+        }
+        
+        isNicknameDuplicated(dto.nickname());
 
-
-    
+        User newUser = User.builder()
+                .uid(UUID.randomUUID().toString())
+                .userId(provider + providerId.substring(8))
+                .provider(provider)       
+                .providerId(providerId)   
+                .email(email)
+                .nickname(dto.nickname())
+                .role(JwtTokenProvider.ERole.USER.getValue())
+                .status("ACTIVE")
+                .build();
+        
+        userRepository.save(newUser);
+        
+        String accessToken = tokenProvider.createAccessToken(newUser.getUid(), newUser.getRole());
+        String refreshToken = tokenProvider.createRefreshToken(newUser.getUid(), newUser.getRole());
+        long rtTtlSeconds = tokenProvider.getRemainingTtlSeconds(refreshToken);
+        redisService.saveRefreshToken(newUser.getUid(), refreshToken, rtTtlSeconds);
+        
+        return AuthLoginResultDto.builder()
+                .accessToken(accessToken)
+                .refreshToken(refreshToken)
+                .rtTtlSeconds(rtTtlSeconds)
+                .user(newUser).build();
+    }
 }
