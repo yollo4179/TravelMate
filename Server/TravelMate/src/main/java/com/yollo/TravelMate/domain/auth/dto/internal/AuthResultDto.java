@@ -1,6 +1,4 @@
-package com.yollo.TravelMate.domain.user.dto.internal;
-
-import com.yollo.TravelMate.domain.user.entity.User;
+package com.yollo.TravelMate.domain.auth.dto.internal;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
