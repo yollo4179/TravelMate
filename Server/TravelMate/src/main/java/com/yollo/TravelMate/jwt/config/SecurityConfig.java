@@ -48,9 +48,14 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
             	.requestMatchers(HttpMethod.OPTIONS, "/**").permitAll() /* 브라우저의 CORS preflight(OPTIONS) 요청은 인증 없이 허용 +나중에 mvc에서 헝용정보 생성*/
                 .requestMatchers(
+                		"/swagger-ui/**", 
+                        "/v3/api-docs/**", 
+                        "/swagger-ui.html",
+                		"/api/auth/login/oauth",
                 		"/api/auth/login", 
                 		"/api/auth/refresh", 
                 		"/api/users/signup", 
+                		"/api/users/signup/oauth",
                 		"/api/users/checkUserId", 
                 		"/api/users/checkNickname",  
                 		"/ws-stomp/**", //소켓 통신 요청은 일단 뚫어 놓습니다.

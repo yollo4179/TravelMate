@@ -75,7 +75,7 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-websocket'
     
     //Swagger 의존성 추가 및 controller 기능 설명 
-    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.3.0'
+    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.9'
 }
 
 tasks.named('test') {
