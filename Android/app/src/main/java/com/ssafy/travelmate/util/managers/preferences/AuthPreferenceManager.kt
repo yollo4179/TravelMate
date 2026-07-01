@@ -26,7 +26,7 @@ private lateinit var sharedPref: SharedPreferences
         sharedPref.edit()
             .putString("ACCESS_TOKEN", accessToken)
             .putString("REFRESH_TOKEN", refreshToken)
-            .apply()
+            .commit()
     }
     fun saveAccessToken(token: String) {
         sharedPref.edit().putString("ACCESS_TOKEN", token).apply()
@@ -36,6 +36,12 @@ private lateinit var sharedPref: SharedPreferences
     }
     fun getRefreshToken(): String? {
         return sharedPref.getString("REFRESH_TOKEN", null)
+    }
+    fun saveUid(uid: String) {
+        sharedPref.edit().putString("USER_UID", uid).commit()
+    }
+    fun getUid(): String? {
+        return sharedPref.getString("USER_UID", null)
     }
     fun clearUser() {
         sharedPref.edit().clear().apply()

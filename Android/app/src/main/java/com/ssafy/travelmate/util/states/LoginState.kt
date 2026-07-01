@@ -7,13 +7,13 @@ sealed interface LoginState {
 
     data object Idle : LoginState
 
-    data object Loading : LoginState
+    data object LoggingIn : LoginState
 
-    data class Success(
+    data class LoggedIn(
         val response: LoginResponse
     ) : LoginState
 
-    data class Error(
+    data class Failed(
         val message: String
     ) : LoginState
 }

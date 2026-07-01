@@ -19,12 +19,7 @@ fun OAuthNicknameScreen(
     val loginState by viewModel.loginState.collectAsState()
 
     LaunchedEffect(loginState) {
-        if (loginState is LoginState.Success) {
-            val response = (loginState as LoginState.Success).response
-            com.ssafy.travelmate.util.managers.preferences.AuthPreferenceManager.saveTokens(
-                response.accessToken ?: "",
-                response.refreshToken ?: ""
-            )
+        if (loginState is LoginState.LoggedIn) {
             toHome()
             viewModel.resetState()
         }
