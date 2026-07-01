@@ -15,9 +15,9 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 @Configuration
 @EnableWebSecurity
 public class ApplicationConfig {
-	 @SuppressWarnings("unchecked")
+	// @SuppressWarnings("unchecked")
 		
-	    @Bean
+	    /*@Bean
 	    public DataSource dataSource() {
 	    	//SimpleDriverDataSource 이란
 	        //스프링에서 connection을 관리해주는 클래스, connection을 관리한다.  
@@ -31,7 +31,7 @@ public class ApplicationConfig {
 	        ds.setUsername("ssafy");
 	        ds.setPassword("ssafy");
 	        return ds;
-	    }
+	    }*/
 	 
 }
 
