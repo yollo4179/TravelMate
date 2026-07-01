@@ -4,6 +4,9 @@
     xmlns:tools="http://schemas.android.com/tools">
 
 
+
+
+
     <uses-permission android:name="android.permission.INTERNET"></uses-permission>
     <application
 
@@ -19,6 +22,9 @@
         android:usesCleartextTraffic="true"
         android:theme="@style/Theme.TravelMate">
 
+        <meta-data
+            android:name="com.kakao.sdk.AppKey"
+            android:value="${kakaoNativeAppKey}" />
         <activity
             android:name=".MainActivity"
             android:exported="true"
@@ -30,9 +36,11 @@
             </intent-filter>
         </activity>
 
-
-
-
+        <!-- Home Activity (바텀 네비게이션 적용 화면) -->
+        <activity
+            android:name=".HomeActivity"
+            android:exported="false"
+            android:theme="@style/Theme.TravelMate" />
 
         <activity
             android:name="com.navercorp.nid.oauth.NidOAuthBridgeActivity"

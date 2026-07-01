@@ -5,6 +5,7 @@ plugins {
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     id ("com.google.devtools.ksp")
+    id("com.google.dagger.hilt.android")
 }
 
 android {
@@ -29,8 +30,9 @@ android {
         buildConfigField("String", "GOOGLE_CLIENT_ID", "\"${properties.getProperty("GOOGLE_CLIENT_ID")}\"")
 
 
-        manifestPlaceholders["naverClientIdScheme"] = "nid${properties.getProperty("NAVER_CLIENT_ID")}"
-        manifestPlaceholders["kakaoNativeAppKeyScheme"] = "kakao${properties.getProperty("KAKAO_NATIVE_APP_KEY")}"
+        manifestPlaceholders["naverClientIdScheme"] = "nid${properties.getProperty("NAVER_CLIENT_ID")}".lowercase()
+        manifestPlaceholders["kakaoNativeAppKeyScheme"] = "kakao${properties.getProperty("KAKAO_NATIVE_APP_KEY")}".lowercase()
+        manifestPlaceholders["kakaoNativeAppKey"] = "${properties.getProperty("KAKAO_NATIVE_APP_KEY")}"
     }
 
     buildTypes {
@@ -107,6 +109,11 @@ dependencies {
     //EncryptedSharedPreference 사용을 위한 젯펙 시큐리티 속성 추가
     implementation("androidx.security:security-crypto-ktx:1.1.0-alpha06")
 
+    // Hilt
+    implementation("com.google.dagger:hilt-android:2.51.1")
+    ksp("com.google.dagger:hilt-compiler:2.51.1")
+    implementation("androidx.hilt:hilt-navigation-compose:1.2.0")
+
     // --- 아래 테스트 및 디버그 의존성들을 추가해 주세요 ---
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
@@ -118,5 +125,12 @@ dependencies {
     debugImplementation(libs.androidx.compose.ui.tooling)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
 
+
+    // 카카오맵 SDK (2D 지도)
+    implementation("com.kakao.maps.open:android:2.12.8") // 최신 버전은 디벨로퍼스 문서에서 확인
+
+    // 네트워크 (카카오 로컬 API 호출용)
+    implementation("com.squareup.retrofit2:retrofit:2.11.0")
+    implementation("com.squareup.retrofit2:converter-gson:2.11.0")
 
 }
