@@ -1,0 +1,5 @@
+가상환경 생성
+python -m venv venv
+venv\Scripts\activate
+의존성 설치
+pip install fastapi uvicorn sentence-transformers
