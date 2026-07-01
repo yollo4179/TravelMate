@@ -1,0 +1,23 @@
+services:
+  postgres:
+    image: pgvector/pgvector:pg17
+    container_name: travel-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: travel_db
+      POSTGRES_USER: ssafy
+      POSTGRES_PASSWORD: ssafy
+      TZ: Asia/Seoul
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data  # 데이터 영속성
+      - ./init:/docker-entrypoint-initdb.d # 최초 1회 SQL 실행
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ssafy -d travel_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  pgdata:
