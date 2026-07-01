@@ -6,79 +6,110 @@ import com.ssafy.travelmate.data.remote.dto.responses.login.LoginResponse
 import com.ssafy.travelmate.repositories.AuthRepository
 import com.ssafy.travelmate.util.managers.preferences.AuthPreferenceManager
 import com.ssafy.travelmate.util.states.LoginState
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
-class LoginViewModel(
-    private val repository: AuthRepository // MainActivity에서 주입 받습니다.
+import com.ssafy.travelmate.data.db.Member
+import com.ssafy.travelmate.data.repository.MemberRepository
+
+
+@HiltViewModel
+class LoginViewModel @Inject constructor(
+    private val repository: AuthRepository,
+    private val memberRepository: MemberRepository
 ) : ViewModel() {
 
-    private val _loginState =
-        MutableStateFlow<LoginState>(
-            LoginState.Idle
-        )
-
-    val loginState =
-        _loginState.asStateFlow()
-
+    private val _loginState = MutableStateFlow<LoginState>(LoginState.Idle)
+    val loginState = _loginState.asStateFlow()
 
     fun resetState(){
         _loginState.value = LoginState.Idle
     }
-    fun login(
-        idToken: String,
-        provider: String
-    ) {
 
-        viewModelScope.launch  {
+    private suspend fun fetchAndSaveUserProfile() {
+        repository.getUserProfile().onSuccess { userInfo ->
+            AuthPreferenceManager.saveUid(userInfo.uid)
+            val member = Member(
+                uid = userInfo.uid,
+                name = userInfo.nickname,
+                email = userInfo.email ?: "",
+                profileImageUrl = userInfo.profileImgUrl ?: ""
+            )
+            if (memberRepository.exists(userInfo.uid)) {
+                memberRepository.updateMember(member)
+            } else {
+                memberRepository.insertMember(member)
+            }
+        }.onFailure {
+            // 프로필 조회 실패 시 예외 처리 (필요에 따라)
+        }
+    }
 
-            _loginState.value = LoginState.Loading
-            repository
-                .login(idToken,provider)
+    fun login(idToken: String, provider: String) {
+        viewModelScope.launch {
+            _loginState.value = LoginState.LoggingIn
+            repository.login(idToken, provider)
                 .onSuccess {
-                    _loginState.value =
-                        LoginState.Success(it)
+                    if (!it.isNewUser) {
+                        AuthPreferenceManager.saveTokens(it.accessToken, it.refreshToken)
+                        fetchAndSaveUserProfile()
+                    }
+                    _loginState.value = LoginState.LoggedIn(it)
                 }
                 .onFailure {
-                    _loginState.value =
-                        LoginState.Error(
-                            it.message ?: "Unknown Error"
-                        )
+                    _loginState.value = LoginState.Failed(it.message ?: "Unknown Error")
                 }
         }
     }
 
     fun signupOauth(nickname: String, tempToken: String) {
         viewModelScope.launch {
-            _loginState.value = LoginState.Loading
+            _loginState.value = LoginState.LoggingIn
             repository.signupOauth(tempToken, nickname)
                 .onSuccess {
-                    _loginState.value = LoginState.Success(it)
+                    AuthPreferenceManager.saveTokens(it.accessToken, it.refreshToken)
+                    fetchAndSaveUserProfile()
+                    _loginState.value = LoginState.LoggedIn(it)
                 }
                 .onFailure {
-                    _loginState.value = LoginState.Error(it.message ?: "Signup Failed")
+                    _loginState.value = LoginState.Failed(it.message ?: "Signup Failed")
                 }
         }
     }
 
     fun checkAutoLogin() {
-        val refreshToken = com.ssafy.travelmate.util.managers.preferences.AuthPreferenceManager.getRefreshToken()
+        val refreshToken = AuthPreferenceManager.getRefreshToken()
         if (refreshToken != null) {
             viewModelScope.launch {
-                _loginState.value = LoginState.Loading //스피너 같은 화면 띄운다.
+                _loginState.value = LoginState.LoggingIn
                 repository.getUserProfile()
-                    .onSuccess {
+                    .onSuccess { userInfo ->
+                        AuthPreferenceManager.saveUid(userInfo.uid)
+                        val member = Member(
+                            uid = userInfo.uid,
+                            name = userInfo.nickname,
+                            email = userInfo.email ?: "",
+                            profileImageUrl = userInfo.profileImgUrl ?: ""
+                        )
+                        if (memberRepository.exists(userInfo.uid)) {
+                            memberRepository.updateMember(member)
+                        } else {
+                            memberRepository.insertMember(member)
+                        }
+
                         val loginResponse = LoginResponse(
                             isNewUser = false,
-                            accessToken = AuthPreferenceManager.getAccessToken() ?: "", //사실 리프레시 호출 확정임
+                            accessToken = AuthPreferenceManager.getAccessToken() ?: "",
                             refreshToken = refreshToken,
                             tempToken = ""
                         )
-                        _loginState.value = LoginState.Success(loginResponse)
+                        _loginState.value = LoginState.LoggedIn(loginResponse)
                     }
                     .onFailure {
-                        _loginState.value = LoginState.Error(it.message ?: "Auto Login Failed")
+                        _loginState.value = LoginState.Failed(it.message ?: "Auto Login Failed")
                     }
             }
         }
