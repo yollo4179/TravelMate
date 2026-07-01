@@ -74,8 +74,11 @@ dependencies {
     // `웹소켓` stomp 의존성 추가 
     implementation 'org.springframework.boot:spring-boot-starter-websocket'
     
-    //Swagger 의존성 추가 및 controller 기능 설명 
+    //Swagger 의존성 추가 및 controller 기능 설명
     implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.9'
+
+    // .env 파일 자동 로드
+    implementation 'me.paulschwarz:spring-dotenv:4.0.0'
 }
 
 tasks.named('test') {
