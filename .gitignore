@@ -43,3 +43,9 @@ src/main/java/com/yollo/TravelMate/config/ApplicationConfig.java
 # 가상환경 라이브러리 제외
 venv/
 embedding-server/venv/
+
+# Python Cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
