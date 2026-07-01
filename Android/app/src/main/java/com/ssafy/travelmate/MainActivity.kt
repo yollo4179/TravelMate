@@ -1,5 +1,7 @@
 package com.ssafy.travelmate
 
+import android.content.Context
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.widget.Toast
@@ -14,23 +16,16 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.compose.ui.platform.LocalContext
+import androidx.core.content.ContextCompat.startActivity
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.kakao.sdk.common.KakaoSdk
 import com.kakao.sdk.common.util.Utility
-import com.navercorp.nid.NaverIdLoginSDK
-import com.ssafy.travelmate.apis.AuthApi
-import com.ssafy.travelmate.data.RetrofitUtil
-import com.ssafy.travelmate.repositories.AuthRepository
-import com.ssafy.travelmate.screens.homes.HomeScreen
 import com.ssafy.travelmate.screens.users.GreetingScreen
 import com.ssafy.travelmate.screens.users.LoginScreen
 import com.ssafy.travelmate.screens.users.OAuthNicknameScreen
@@ -38,9 +33,13 @@ import com.ssafy.travelmate.screens.users.SignupScreen
 import com.ssafy.travelmate.util.ui.UtilTheme
 import com.ssafy.travelmate.ui.theme.TravelMateTheme
 import com.ssafy.travelmate.util.events.GlobalEventBus
+import com.ssafy.travelmate.viewmodels.greeting.GreetingViewModel
 import com.ssafy.travelmate.viewmodels.login.LoginViewModel
+import dagger.hilt.android.AndroidEntryPoint
 
 private const val TAG = "MainActivity"
+
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -63,7 +62,7 @@ class MainActivity : ComponentActivity() {
 fun TravelMateApp() {
     val navController = rememberNavController()
     val backgroundBrush = UtilTheme().generateGradientBackground()
-    val context = androidx.compose.ui.platform.LocalContext.current
+    val context = LocalContext.current
 
     LaunchedEffect (Unit) {
         GlobalEventBus.sessionExpiredEvent.collect { errorCode ->
@@ -89,6 +88,7 @@ fun TravelMateApp() {
         ){
             NavigatedScreens(
                 navController = navController,
+                context = context
             )
 
         }
@@ -96,18 +96,13 @@ fun TravelMateApp() {
 }
 
 @Composable
-fun NavigatedScreens(navController: NavHostController){
+fun NavigatedScreens(
+    navController: NavHostController,
+    context: Context
+){
 
-    // `레포지토리`를 사용하여 ViewModel 생성에 필요한 의존성 준비
-    val repository = remember { AuthRepository() }
-    //팩토리임니다 .
-    val loginViewModel: LoginViewModel = viewModel(
-        factory = object : ViewModelProvider.Factory {
-            override fun <T : ViewModel> create(modelClass: Class<T>): T {
-                return LoginViewModel(repository) as T
-            }
-        }
-    )
+    val greetingViewModel: GreetingViewModel = hiltViewModel()
+    val loginViewModel: LoginViewModel = hiltViewModel()
 
     NavHost(
         navController = navController,
@@ -115,7 +110,7 @@ fun NavigatedScreens(navController: NavHostController){
     ){
         composable("greeting"){
             GreetingScreen(
-                viewModel = loginViewModel,
+                viewModel = greetingViewModel,
                 toHome = { navController.navigateToHome() },
                 toOAuthSignup = { tempToken -> navController.navigateToOAuthSignup(tempToken) },
                 onClickLogin = {navController.navigate("login")},
@@ -143,8 +138,14 @@ fun NavigatedScreens(navController: NavHostController){
                 toLogin = {navController.navigateToLogin()}
             )
         }
-        composable("home"){
-            HomeScreen()
+        composable("home_activity_launcher"){
+            //HomeScreen()
+            LaunchedEffect(Unit) {
+                val flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+                val intent = Intent(context, HomeActivity::class.java)
+                intent.addFlags(flags)
+                startActivity(context, intent, null)
+            }
         }
 
     }
@@ -161,9 +162,9 @@ fun Greeting(name: String, modifier: Modifier = Modifier) {
 /***********navigateion 람다 함수 ***********/
 fun NavController.navigateToHome() {
     //백스택 뺴버림
-    this.navigate("home") {
-        launchSingleTop = true
-        popUpTo("greeting") { inclusive = true } //이전의 화면기록을 지운다
+    this.navigate("home_activity_launcher") {
+        //launchSingleTop = true
+       // popUpTo("greeting") { inclusive = true } //이전의 화면기록을 지운다
     }
 }
 fun NavController.navigateToGreeting() {
