@@ -10,22 +10,29 @@ import com.google.gson.GsonBuilder
 import com.kakao.sdk.common.KakaoSdk
 import com.navercorp.nid.NaverIdLoginSDK
 import com.ssafy.travelmate.BuildConfig
-import com.ssafy.travelmate.data.local.SharedPreferencesUtil
+import com.ssafy.travelmate.data.SharedPreferencesUtil
 import com.ssafy.travelmate.util.managers.preferences.AuthPreferenceManager
+import dagger.hilt.android.HiltAndroidApp
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import java.util.concurrent.TimeUnit
 
+import androidx.room.Room
+import com.kakao.vectormap.KakaoMapSdk
+import com.ssafy.travelmate.data.db.AppDatabase
+
+@HiltAndroidApp
 class MainApplication: Application() {
 
 
     companion object{
 
-        const val SERVER_URL = "http://172.30.1.28:8080/"
+        const val SERVER_URL = "https://5c28-58-229-134-165.ngrok-free.app/"
         lateinit var retrofit: Retrofit
         lateinit var sharedPreferencesUtil: SharedPreferencesUtil
+        lateinit var database: AppDatabase
 
         //notification channel
         const val notificationChannel = "ssafy_channel"
@@ -34,10 +41,16 @@ class MainApplication: Application() {
     }
     override fun onCreate() {
         super.onCreate()
+        database = Room.databaseBuilder(
+            applicationContext,
+            AppDatabase::class.java,
+            "travelmate-db"
+        ).build()
 
         AuthPreferenceManager.init(applicationContext)
         // Kakao SDK 초기화 (네이티브 앱 키를 넣으세요)
         KakaoSdk.init(this, BuildConfig.KAKAO_NATIVE_APP_KEY)
+        KakaoMapSdk.init(this, BuildConfig.KAKAO_NATIVE_APP_KEY)
         NaverIdLoginSDK.initialize(
             this,
             BuildConfig.NAVER_CLIENT_ID,
