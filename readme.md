@@ -1,5 +1,18 @@
 # Travel-Mate
 
+
+
+## 실행 준비
+1. Docker: `docker-compose up -d` (postgres + pgvector)
+2. 임베딩 서버: 
+   cd embedding-server && python -m venv venv && venv\Scripts\activate
+   pip install -r requirements.txt
+   uvicorn app.main:app --port 8000
+3. LLM: `ollama pull qwen3:8b`
+4. 환경변수: .env.example 복사해서 카카오 API 키 입력
+5. Spring 실행
+
+
 # stacks 
 <img src="https://img.shields.io/badge/springboot-6DB33F?style=for-the-badge&logo=springboot&logoColor=white">
 <img src="https://img.shields.io/badge/bootstrap-7952B3?style=for-the-badge&logo=bootstrap&logoColor=white">

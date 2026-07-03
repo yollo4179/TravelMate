@@ -5,19 +5,21 @@ CREATE TABLE IF NOT EXISTS places (
     id              BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     name            VARCHAR(200) NOT NULL,
     description     TEXT,
-    region          VARCHAR(100),          -- 메타데이터 필터링용 (지역)
-    category        VARCHAR(50),           -- 메타데이터 필터링용 (체험/전망/식사 등)
-    latitude        DOUBLE PRECISION,      -- 위치(좌표)
+    region          VARCHAR(100),          -- 광역 필터 (경기, 서울...)
+    city            VARCHAR(50),           -- 세부 도시 필터 (가평, 수원...) 
+    category        VARCHAR(50),           -- 카테고리 필터(참조용)
+    source_category VARCHAR(50),           -- 원본 카테고리 (kakao, 메인)    
+    latitude        DOUBLE PRECISION,
     longitude       DOUBLE PRECISION,
-    kakao_place_id  VARCHAR(100),          -- Kakao 장소 식별자 (있으면)
-    embedding       vector(1024),          -- 임베딩  bge-m3 (1024차원)
+    kakao_place_id  VARCHAR(100) UNIQUE,   -- 중복 방지 (ON CONFLICT용)
+    embedding       vector(1024),          -- bge-m3
     created_at      TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
----------------------------------------------------목적 - 서울에 있는 관광지 중에서 남산타워와 비슷한 곳이 있으면 추천해줘 - 유사도 TOP -K 개 추출----
--- 메타데이터 필터링용 일반 인덱스 (지역/카테고리로 서전 필터, 조건으로 사용될 일이 많을 것 같음)
-CREATE INDEX IF NOT EXISTS idx_place_region   ON places (region);
-CREATE INDEX IF NOT EXISTS idx_place_category ON places (category);
+CREATE INDEX IF NOT EXISTS idx_places_region    ON places (region);
+CREATE INDEX IF NOT EXISTS idx_places_city      ON places (city);
+CREATE INDEX IF NOT EXISTS idx_places_category  ON places (category);
+CREATE INDEX IF NOT EXISTS idx_places_embedding ON places USING hnsw (embedding vector_cosine_ops);
 
 -- 벡터 유사도 검색용 HNSW 인덱스
 -- vector_cosine_ops = 코사인 유사도 기준 (임베딩 검색에 일반적)

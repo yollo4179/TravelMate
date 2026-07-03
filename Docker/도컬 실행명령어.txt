@@ -1,0 +1,19 @@
+docker-compose up -d //실행
+docker ps //컨테이너 확인
+docker exec -it travel-postgres psql -U ssafy -d travel_db //dbms 접근
+
+CREATE EXTENSION IF NOT EXISTS vector;  \q
+
+SELECT * FROM pg_extension WHERE extname = 'vector';
+
+
+
+ALTER TABLE place RENAME TO places;
+//테이블 초기화
+1. DROP TABLE places;
+2. \i /docker-entrypoint-initdb.d/init.sql
+
+
+PlaceCollector 확인하기
+SELECT region, category, COUNT(*) FROM place GROUP BY region, category ORDER BY region, category;
+SELECT name, description FROM place ORDER BY id DESC LIMIT 20;
