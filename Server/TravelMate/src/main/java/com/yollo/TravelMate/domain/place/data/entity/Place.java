@@ -22,9 +22,13 @@ public class Place {
     private String description;
 
     private String region;
+    
+    private String city;
 
     private String category;
 
+    private String sourceCategory;
+    
     private Double latitude;
 
     private Double longitude;

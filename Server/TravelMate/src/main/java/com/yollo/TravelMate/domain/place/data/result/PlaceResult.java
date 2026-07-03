@@ -7,7 +7,9 @@ public record PlaceResult (
 		 String name,
 		 String description, 
 		 String region,
+		 String city,
 		 String category,
+		 String source_category,
 		 Double latitude, 
 		 Double longitude,
 		 Double similarity	
