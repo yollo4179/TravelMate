@@ -1,4 +1,4 @@
-package com.yollo.TravelMate.domain.plan.entity;
+package com.yollo.TravelMate.domain.plan.data.entity;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
