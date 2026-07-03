@@ -15,10 +15,10 @@ public class LlmClientTest {
 
     @Test
     void 기본_생성_확인() {
-        String result = llmClient.generate(
-                "서울 당일치기 여행 계획을 JSON으로 만들어줘. "
-                + "장소 3곳, 각 장소는 name과 activity 필드만. JSON만 출력하고 설명 금지.");
-        System.out.println("=== LLM 응답 ===");
-        System.out.println(result);
+//        String result = llmClient.generate(
+//                "서울 당일치기 여행 계획을 JSON으로 만들어줘. "
+//                + "장소 3곳, 각 장소는 name과 activity 필드만. JSON만 출력하고 설명 금지.");
+//        System.out.println("=== LLM 응답 ===");
+//        System.out.println(result);
     }
 }

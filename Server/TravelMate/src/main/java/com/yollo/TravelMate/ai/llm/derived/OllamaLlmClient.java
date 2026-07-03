@@ -10,6 +10,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
 
 import com.yollo.TravelMate.ai.llm.base.LlmClient;
+import com.yollo.TravelMate.exceptions.cumtom.ErrorCodeException;
+import com.yollo.TravelMate.exceptions.errorCodes.ErrorCode;
 
 @Component
 public class OllamaLlmClient implements LlmClient{
@@ -61,13 +63,16 @@ public class OllamaLlmClient implements LlmClient{
 	                    .body(OllamaChatResponse.class);
 
 	            if (res == null || res.message() == null) {
-	                throw new IllegalStateException("Ollama 응답이 비어있습니다.");
+	            	logger.error("Ollama 응답이 비어있습니다.");
+	                throw new ErrorCodeException(ErrorCode.PLAN_LLM_PARSE_FAILED);
 	            }
 	            return res.message().content();
 
+	        } catch (ErrorCodeException e) {
+	            throw e;   
 	        } catch (Exception e) {
-	        	logger.error("Ollama 호출 실패: {}", e.getMessage());
-	            throw new IllegalStateException("LLM 생성 실패 - Ollama 서버(11434) 확인 필요", e);
+	            logger.error("Ollama 호출 실패: {}", e.getMessage());
+	            throw new ErrorCodeException(ErrorCode.LLM_SERVER_UNAVAILABLE);   // 진짜 통신 오류만
 	        }
 		 
 	}
