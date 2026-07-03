@@ -29,7 +29,7 @@ class MainApplication: Application() {
 
     companion object{
 
-        const val SERVER_URL = "https://5c28-58-229-134-165.ngrok-free.app/"
+        const val SERVER_URL = "http://192.168.45.205:8080"
         lateinit var retrofit: Retrofit
         lateinit var sharedPreferencesUtil: SharedPreferencesUtil
         lateinit var database: AppDatabase

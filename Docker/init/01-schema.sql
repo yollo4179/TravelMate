@@ -124,6 +124,7 @@ CREATE TABLE plans (
     user_uid  VARCHAR(36) NOT NULL,              -- 이 플랜을 작성/관리하는 유저
     title VARCHAR(100) NOT NULL,
     description TEXT,
+    status VARCHAR(20) DEFAULT 'DRAFT',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (room_plan_id) REFERENCES room_plans(room_plan_id) ON DELETE CASCADE,
     FOREIGN KEY (user_uid) REFERENCES users(uid)
@@ -134,6 +135,7 @@ DROP TABLE IF EXISTS pins CASCADE;
 CREATE TABLE pins (
     pin_id BIGSERIAL PRIMARY KEY,
     plan_id BIGINT NOT NULL,              -- 어느 개별 플랜에 속하는 핀인지 연결
+    place_id BIGINT,                       -- 장소 테이블과 연결 (null이면 직접 입력한 장소)
     place_name VARCHAR(100),
     latitude DOUBLE PRECISION NOT NULL,   
     longitude DOUBLE PRECISION NOT NULL,  
@@ -141,5 +143,6 @@ CREATE TABLE pins (
     sequence INT,                         -- 이동 순서
     cost DECIMAL(15, 2),                  -- 해당 장소 예상 비용
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (plan_id) REFERENCES plans(plan_id) ON DELETE CASCADE
+    FOREIGN KEY (plan_id) REFERENCES plans(plan_id) ON DELETE CASCADE,
+    FOREIGN KEY (place_id) REFERENCES places(id) ON DELETE SET NULL
 );
