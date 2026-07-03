@@ -1,10 +1,13 @@
 package com.yollo.TravelMate;
 
+import java.util.List;
+
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.util.Pair;
 
 import com.yollo.TravelMate.ai.embedding.base.EmbeddingClient;
 import com.yollo.TravelMate.domain.place.data.entity.Place;
@@ -31,36 +34,50 @@ public class EmbeddingTest {
 	 
 	
 	private static final Logger log = LoggerFactory.getLogger(EmbeddingTest.class);
-	@Test
-	public void ClearAll() {
-		 jpaRepo.deleteAll();
-		 
-	 }
+//	@Test
+//	public void ClearAll() {
+//		 jpaRepo.deleteAll();
+//		 
+//	 }
+
+	public record EmbeddingTestParams(
+			String description,
+			String region,
+			String city
+			) {}
 	
 	@Test
 	public void run() {
-		 	insert("남산서울타워", "서울 도심 전망 명소, 케이블카와 야경");
-	        insert("롯데월드타워", "잠실 초고층 전망대 서울스카이");
-	        insert("인왕 산", "산꼭대기 위에서 보는 절경,화려한 야경은 덤으로.");
-	        insert("경복궁", "조선시대 궁궐, 한복 체험과 수문장 교대식");
-	        insert("광장시장", "전통시장, 빈대떡과 마약김밥 먹거리");
+
 	        
-	        
-	        float[] query = embeddingClient.embed( "데이트 하기 좋은 장소" );
-	        log.info("{}=== 검색: 데이트 하기 좋은 장소==={}",RED,RESET);
-	        repo.searchSimilarTopK(query, 5).forEach( (r) -> {
-	        	
-	        String similarity = String.format("%.4f", r.similarity());
-	        log.info("{}{}->유사도: {}{}{}",RED,r.name(),GREEN ,similarity, RESET);
-	        });
-	        //ClearAll();
+	        List<EmbeddingTestParams> queries = 
+	        		List.of(
+	        				new EmbeddingTestParams("아이랑 가기 좋은 풀빌라","경기" ,"가평"),
+	        				new EmbeddingTestParams("밥 먹기 좋은 곳","서울","서울"),
+	        				new EmbeddingTestParams("조용히 쉬고 싶어","서울","서울"),
+	        				new EmbeddingTestParams("역사 공부하고 싶어","서울","서울"),
+	        				new EmbeddingTestParams("스키장 리프트권 할인", "","")  // threshold 동작 확인용
+	        				); 
+	        queries.forEach(
+	        		it->{
+	        			String nowRegion = it.region.isEmpty() ? null : it.region;
+	        			String nowCity = it.city.isEmpty() ? null : it.city;
+	        			String nowQuery = it.description() ;
+	        			
+	        			float[] nowEmbedding = embeddingClient.embed( nowQuery);
+	        			log.info("{}=== 검색: {}==={}",RED,nowQuery,RESET);
+	        			repo
+	        			.searchSimilar(nowEmbedding, nowRegion, nowCity, null, 0.3, 10)
+	        			.forEach( (r) -> {
+	        		        	
+	        			        String similarity = String.format("%.4f", r.similarity());
+	        			        log.info("{}{}->유사도: {}{}{}:city:{}",RED,r.name(),GREEN ,similarity, RESET,r.city());
+	        			 });
+	        			 
+	        		});
+		
+	       
 	    }
 
-	    
-	    private void insert(String name, String desc) {
-	        float[] emb = embeddingClient.embed(name + " " + desc);
-	        
-	        log.debug("emb"+emb.length);
-	        repo.insertPlace( name, desc, "서울", null, null, null, emb);
-	    }
+	
 }

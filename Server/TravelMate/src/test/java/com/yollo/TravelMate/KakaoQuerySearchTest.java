@@ -20,18 +20,7 @@ public class KakaoQuerySearchTest {
 	    @DisplayName("여러 키워드로 Kakao 검색 결과와 카테고리 확인")
 	    void searchByKeyword_다양한키워드() {
 	        List<String> keywords = List.of(
-	                "서울 관광명소",
-	                "서울 전망대",
-	                "서울 고궁",
-	                "동성로",
-	                "서울 맛집",
-	                "서울 카페",
-	                "서울 공원",
-	                "서울 숙소",
-	                "서울 버스 정류장",
-	                "공항",
-	                "백화점",
-	                "박물관"
+  	               "서울 리프트샵"
 	               
 	        );
 
@@ -63,7 +52,7 @@ public class KakaoQuerySearchTest {
 	    @Test
 	    @DisplayName("단일 키워드 상세 확인")
 	    void searchByKeyword_단일() {
-	        List<KakaoPlaceResponseDto> results = kakaoService.searchByKeyword("남산서울타워");
+	        List<KakaoPlaceResponseDto> results = kakaoService.searchByKeyword("서울 체험·액티비티");
 	        results.forEach(p -> System.out.println(
 	                p.placeName() + " / " + p.categoryName()
 	                + " / kakaoId=" + p.kakaoPlaceId()));
