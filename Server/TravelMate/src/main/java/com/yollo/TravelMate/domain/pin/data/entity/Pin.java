@@ -1,4 +1,4 @@
-package com.yollo.TravelMate.domain.plan.data.entity;
+package com.yollo.TravelMate.domain.pin.data.entity;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
