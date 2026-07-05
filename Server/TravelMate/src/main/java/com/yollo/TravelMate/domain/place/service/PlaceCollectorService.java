@@ -122,12 +122,12 @@ public class PlaceCollectorService {
 	            return 0;
 	        }
 	        consecutiveFlushFailures = 0;
-	        List<PlaceVectorRepository.PlaceInsert> inserts = new ArrayList<>(buffer.size());
+	        List<PlaceVectorRepository.KakaoPlaceInsert> inserts = new ArrayList<>(buffer.size());
 	        for (int i = 0; i < buffer.size(); i++) {
 	            Candidate nowC = buffer.get(i);
 	            float[] nowEmbedding = embeddings.get(i);
 	            
-	            inserts.add(new PlaceVectorRepository.PlaceInsert(
+	            inserts.add(new PlaceVectorRepository.KakaoPlaceInsert(
 	            		nowC.dto().placeName(),
 	            		nowC.description(),
 	            		nowC.city().getRegion(),
@@ -136,11 +136,10 @@ public class PlaceCollectorService {
 	            		nowC.dto().categoryName(),
 	            		nowC.dto().latitude(),
 	            		nowC.dto().longitude(),
-	            		nowC.dto().kakaoPlaceId(),
-	            		nowEmbedding));
+	            		nowC.dto().kakaoPlaceId()));
 	        }
 	        //DB 
-	        placeRepository.insertPlaceBatch(inserts);
+	        placeRepository.insertKakaoPlaceBatch(inserts);
 
 	        //클리어
 	        int n = buffer.size();
