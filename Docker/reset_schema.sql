@@ -2,6 +2,19 @@
 -- users만 보존, 나머지 전부 재생성
 -- ============================================
 
+-- [1] 자식 테이블부터 삭제 (FK 역순), CASCADE로 관련 제약도 정리
+DROP TABLE IF EXISTS pin_activities CASCADE;
+DROP TABLE IF EXISTS place_programs CASCADE;
+DROP TABLE IF EXISTS place_details CASCADE;
+DROP TABLE IF EXISTS pins CASCADE;
+DROP TABLE IF EXISTS plans CASCADE;
+DROP TABLE IF EXISTS room_plans CASCADE;
+DROP TABLE IF EXISTS rtc_sessions CASCADE;
+DROP TABLE IF EXISTS chats CASCADE;
+DROP TABLE IF EXISTS room_user CASCADE;
+DROP TABLE IF EXISTS rooms CASCADE;
+DROP TABLE IF EXISTS friendships CASCADE;
+DROP TABLE IF EXISTS places CASCADE;
 -- users는 DROP하지 않음
 
 CREATE EXTENSION IF NOT EXISTS vector;
