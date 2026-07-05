@@ -31,8 +31,16 @@ public enum ErrorCode {
 	PLAN_EMPTY_PINS(HttpStatus.UNPROCESSABLE_ENTITY, "ERR_PLAN_003", "생성된 플랜에 장소가 없습니다."),
 	PLAN_ALL_HALLUCINATED(HttpStatus.UNPROCESSABLE_ENTITY, "ERR_PLAN_004", "유효한 장소를 찾지 못했습니다. 다시 시도해주세요."),
 	LLM_SERVER_UNAVAILABLE(HttpStatus.SERVICE_UNAVAILABLE, "ERR_AI_001", "AI 서버에 연결할 수 없습니다."),
-	EMBEDDING_SERVER_UNAVAILABLE(HttpStatus.SERVICE_UNAVAILABLE, "ERR_AI_002", "임베딩 서버에 연결할 수 없습니다.");
+	EMBEDDING_SERVER_UNAVAILABLE(HttpStatus.SERVICE_UNAVAILABLE, "ERR_AI_002", "임베딩 서버에 연결할 수 없습니다."),
 	/**********PLAN / AI*************/
+	/**********PIN ACTIVITY (극소 계획)*************/
+	PIN_ACTIVITY_LLM_PARSE_FAILED(HttpStatus.UNPROCESSABLE_ENTITY, "ERR_PIN_ACT_001", "AI 응답을 해석할 수 없습니다. 다시 시도해주세요."),
+	PIN_ACTIVITY_EMPTY(HttpStatus.UNPROCESSABLE_ENTITY, "ERR_PIN_ACT_002", "생성된 세부 활동이 없습니다."),
+	PIN_ACTIVITY_PIN_MISMATCH(HttpStatus.UNPROCESSABLE_ENTITY, "ERR_PIN_ACT_003", "요청한 핀과 다른 응답이 생성되었습니다. 다시 시도해주세요."),
+	PIN_ACTIVITY_HALLUCINATION_SUSPECTED(HttpStatus.UNPROCESSABLE_ENTITY, "ERR_PIN_ACT_004", "장소 정보가 부족하여 신뢰할 수 있는 세부 활동을 생성하지 못했습니다.");
+	/**********PIN ACTIVITY (극소 계획)*************/
+	
+	
 	
 	
 	/**********ENUM CODE*************/
