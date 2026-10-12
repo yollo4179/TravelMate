@@ -4,7 +4,7 @@ import com.ssafy.travelmate.base.MainApplication
 import com.ssafy.travelmate.data.db.AppDatabase
 import com.ssafy.travelmate.data.repository.MemberRepository
 import com.ssafy.travelmate.repositories.AuthRepository
-import com.ssafy.travelmate.repositories.KakaoQueryRepository
+import com.ssafy.travelmate.repositories.PlaceSearchRepository
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -35,7 +35,7 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideKakaoQueryRepository(): KakaoQueryRepository {
-        return KakaoQueryRepository()
+    fun providePlaceSearchRepository(): PlaceSearchRepository {
+        return PlaceSearchRepository()
     }
 }

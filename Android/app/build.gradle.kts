@@ -21,23 +21,40 @@ android {
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
-        val properties = Properties().apply {
-            load(project.rootProject.file("local.properties").inputStream())
+        val envFile = project.rootProject.file(".env")
+        val env = Properties().apply {
+            if (envFile.exists()) {
+                envFile.inputStream().use { load(it) }
+            }
         }
-        buildConfigField("String", "NAVER_CLIENT_ID", "\"${properties.getProperty("NAVER_CLIENT_ID")}\"")
-        buildConfigField("String", "NAVER_CLIENT_SECRET", "\"${properties.getProperty("NAVER_CLIENT_SECRET")}\"")
-        buildConfigField("String", "KAKAO_NATIVE_APP_KEY", "\"${properties.getProperty("KAKAO_NATIVE_APP_KEY")}\"")
-        buildConfigField("String", "GOOGLE_CLIENT_ID", "\"${properties.getProperty("GOOGLE_CLIENT_ID")}\"")
+        buildConfigField("String", "NAVER_CLIENT_ID", "\"${env.getProperty("NAVER_CLIENT_ID") ?: ""}\"")
+        buildConfigField("String", "NAVER_CLIENT_SECRET", "\"${env.getProperty("NAVER_CLIENT_SECRET") ?: ""}\"")
+        buildConfigField("String", "KAKAO_NATIVE_APP_KEY", "\"${env.getProperty("KAKAO_NATIVE_APP_KEY") ?: ""}\"")
+        buildConfigField("String", "GOOGLE_CLIENT_ID", "\"${env.getProperty("GOOGLE_CLIENT_ID") ?: ""}\"")
+        buildConfigField("String", "SERVER_URL", "\"${env.getProperty("SERVER_URL") ?: ""}\"")
 
 
-        manifestPlaceholders["naverClientIdScheme"] = "nid${properties.getProperty("NAVER_CLIENT_ID")}".lowercase()
-        manifestPlaceholders["kakaoNativeAppKeyScheme"] = "kakao${properties.getProperty("KAKAO_NATIVE_APP_KEY")}".lowercase()
-        manifestPlaceholders["kakaoNativeAppKey"] = "${properties.getProperty("KAKAO_NATIVE_APP_KEY")}"
+        manifestPlaceholders["naverClientIdScheme"] = "nid${env.getProperty("NAVER_CLIENT_ID") ?: ""}".lowercase()
+        manifestPlaceholders["kakaoNativeAppKeyScheme"] = "kakao${env.getProperty("KAKAO_NATIVE_APP_KEY") ?: ""}".lowercase()
+        manifestPlaceholders["kakaoNativeAppKey"] = "${env.getProperty("KAKAO_NATIVE_APP_KEY") ?: ""}"
+    }
+
+    signingConfigs {
+        getByName("debug") {
+            storeFile = file("debug.keystore")
+            storePassword = "android"
+            keyAlias = "androiddebugkey"
+            keyPassword = "android"
+        }
     }
 
     buildTypes {
+        debug {
+            signingConfig = signingConfigs.getByName("debug")
+        }
         release {
             isMinifyEnabled = false
+            signingConfig = signingConfigs.getByName("debug")
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"

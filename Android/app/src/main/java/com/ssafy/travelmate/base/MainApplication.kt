@@ -29,7 +29,7 @@ class MainApplication: Application() {
 
     companion object{
 
-        const val SERVER_URL = "http://192.168.45.205:8080"
+        val SERVER_URL: String = BuildConfig.SERVER_URL
         lateinit var retrofit: Retrofit
         lateinit var sharedPreferencesUtil: SharedPreferencesUtil
         lateinit var database: AppDatabase
