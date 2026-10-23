@@ -31,7 +31,10 @@ android {
         buildConfigField("String", "NAVER_CLIENT_SECRET", "\"${env.getProperty("NAVER_CLIENT_SECRET") ?: ""}\"")
         buildConfigField("String", "KAKAO_NATIVE_APP_KEY", "\"${env.getProperty("KAKAO_NATIVE_APP_KEY") ?: ""}\"")
         buildConfigField("String", "GOOGLE_CLIENT_ID", "\"${env.getProperty("GOOGLE_CLIENT_ID") ?: ""}\"")
-        buildConfigField("String", "SERVER_URL", "\"${env.getProperty("SERVER_URL") ?: ""}\"")
+        val serverUrl = providers.gradleProperty("serverUrl")
+            .orElse(env.getProperty("SERVER_URL") ?: "")
+            .get()
+        buildConfigField("String", "SERVER_URL", "\"$serverUrl\"")
 
 
         manifestPlaceholders["naverClientIdScheme"] = "nid${env.getProperty("NAVER_CLIENT_ID") ?: ""}".lowercase()
@@ -77,6 +80,7 @@ android {
 dependencies {
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
+    implementation("androidx.lifecycle:lifecycle-runtime-compose:2.8.7")
     implementation(libs.androidx.activity.compose)
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.compose.ui)
@@ -133,6 +137,8 @@ dependencies {
 
     // --- 아래 테스트 및 디버그 의존성들을 추가해 주세요 ---
     testImplementation(libs.junit)
+    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.9.0")
+    testImplementation("com.squareup.okhttp3:mockwebserver:4.9.0")
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(platform(libs.androidx.compose.bom))

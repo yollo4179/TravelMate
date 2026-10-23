@@ -8,4 +8,4 @@ pip install fastapi uvicorn sentence-transformers
 
 py -m venv venv
 
-uvicorn app.main:app --reload --port 8000
+python -m uvicorn app.main:app --reload --port 8000

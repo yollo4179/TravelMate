@@ -26,11 +26,11 @@ public class PlaceSearchController {
 
     @GetMapping("/search")
     public List<PlaceSearchResponseDto> search(
-            @NotBlank @RequestParam String query,
-            @RequestParam(required = false) String region,
-            @RequestParam(required = false) String city,
-            @RequestParam(required = false) String category,
-            @Min(1) @Max(20) @RequestParam(defaultValue = "10") int limit
+            @NotBlank @RequestParam("query") String query,
+            @RequestParam(name = "region", required = false) String region,
+            @RequestParam(name = "city", required = false) String city,
+            @RequestParam(name = "category", required = false) String category,
+            @Min(1) @Max(20) @RequestParam(name = "limit", defaultValue = "10") int limit
     ) {
         return placeSemanticSearchService.search(
                         query,

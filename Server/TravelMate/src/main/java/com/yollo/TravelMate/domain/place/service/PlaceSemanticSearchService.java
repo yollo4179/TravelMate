@@ -29,6 +29,17 @@ public class PlaceSemanticSearchService {
     private final RerankClient rerankClient;
 
     public List<PlaceSemanticSearchResult> search(String query, String region, String city, String category, int limit) {
+        return search(query, region, city, category, limit, null);
+    }
+
+    public List<PlaceSemanticSearchResult> search(
+            String query,
+            String region,
+            String city,
+            String category,
+            int limit,
+            com.yollo.TravelMate.domain.plan.data.request.PlanContext.Area area
+    ) {
         if (query == null || query.isBlank()) {
             throw new IllegalArgumentException("검색어는 비어 있을 수 없습니다.");
         }
@@ -38,7 +49,7 @@ public class PlaceSemanticSearchService {
 
         float[] queryEmbedding = embeddingClient.embed(query);
         List<PlaceResult> candidates = placeSearchRepository.searchSimilar(
-                queryEmbedding, region, city, category, 0.0, RETRIEVE_TOP_K);
+                queryEmbedding, region, city, category, 0.0, RETRIEVE_TOP_K, area);
 
         if (candidates.isEmpty()) {
             return List.of();

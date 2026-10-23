@@ -44,6 +44,18 @@ public class PlaceSemanticSearchRepository {
             double minimumSimilarity,
             int limit
     ) {
+        return searchSimilar(queryEmbedding, region, city, category, minimumSimilarity, limit, null);
+    }
+
+    public List<PlaceResult> searchSimilar(
+            float[] queryEmbedding,
+            String region,
+            String city,
+            String category,
+            double minimumSimilarity,
+            int limit,
+            com.yollo.TravelMate.domain.plan.data.request.PlanContext.Area area
+    ) {
         String vector = VectorUtil.toVectorString(queryEmbedding);
         StringBuilder sql = new StringBuilder("""
                 select id, name, description, region, city, category, source_category,
@@ -61,6 +73,21 @@ public class PlaceSemanticSearchRepository {
         appendFilter(sql, parameters, "region", region);
         appendFilter(sql, parameters, "city", city);
         appendFilter(sql, parameters, "category", category);
+        if (area != null) {
+            // 범위를 먼저 적용해야 범위 밖 top-K가 안쪽 후보를 밀어내지 않는다.
+            sql.append("""
+                     AND latitude IS NOT NULL AND longitude IS NOT NULL
+                     AND latitude BETWEEN -90 AND 90 AND longitude BETWEEN -180 AND 180
+                     AND 6371000 * 2 * asin(sqrt(least(1.0,
+                         power(sin(radians(latitude - ?) / 2), 2)
+                         + cos(radians(?)) * cos(radians(latitude))
+                         * power(sin(radians(longitude - ?) / 2), 2)))) <= ?
+                    """);
+            parameters.add(area.center().lat());
+            parameters.add(area.center().lat());
+            parameters.add(area.center().lon());
+            parameters.add(area.radiusMeters());
+        }
 
         sql.append(" order by embedding <=> ?::vector limit ? ");
         parameters.add(vector);

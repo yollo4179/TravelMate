@@ -1,4 +1,4 @@
-package com.ssafy.travelmate.components
+package com.ssafy.travelmate.common.components
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image

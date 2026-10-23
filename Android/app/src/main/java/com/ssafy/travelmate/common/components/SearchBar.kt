@@ -1,10 +1,9 @@
-package com.ssafy.travelmate.components
+package com.ssafy.travelmate.common.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
 
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -24,32 +23,36 @@ import androidx.compose.ui.unit.dp
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SearchBar(
+    query: String,
+    onQueryChange: (String) -> Unit,
     onSearch: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    var searchQuery by remember { mutableStateOf("") }
     val keyboardController = LocalSoftwareKeyboardController.current
 
     TextField(
-        value = searchQuery,
-        onValueChange = { searchQuery = it },
+        value = query,
+        onValueChange = onQueryChange,
         modifier = modifier
             .fillMaxWidth()
-            .padding(16.dp)
-            .clip(RoundedCornerShape(5.dp))
-            .background(MaterialTheme.colorScheme.onSecondaryContainer)
-            .border(2.dp, MaterialTheme.colorScheme.onPrimaryContainer),
+            .clip(RoundedCornerShape(12.dp))
+            .border(1.dp, MaterialTheme.colorScheme.outlineVariant, RoundedCornerShape(12.dp)),
         leadingIcon = {
             Icon(
                 imageVector = Icons.Default.Search,
-                contentDescription = "Search",
-                tint = MaterialTheme.colorScheme.onPrimaryContainer
+                contentDescription = "장소 검색",
+                modifier = Modifier.clickable {
+                    onSearch(query)
+                    keyboardController?.hide()
+                },
+                tint = MaterialTheme.colorScheme.primary
             )
         },
         placeholder = {
             Text(
-                "장소를 검색해주세요",
-                color = MaterialTheme.colorScheme.onPrimaryContainer
+                "장소 · 취향 검색",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         },
         keyboardOptions = KeyboardOptions(
@@ -57,14 +60,17 @@ fun SearchBar(
         ),
         keyboardActions = KeyboardActions(
             onSearch = {
-                onSearch(searchQuery)
+                onSearch(query)
                 keyboardController?.hide()
             }
         ),
         colors = TextFieldDefaults.colors(
+            focusedContainerColor = MaterialTheme.colorScheme.surface,
+            unfocusedContainerColor = MaterialTheme.colorScheme.surface,
             focusedIndicatorColor = Color.Transparent,
             unfocusedIndicatorColor = Color.Transparent
         ),
+        textStyle = MaterialTheme.typography.bodyMedium,
         singleLine = true
     )
 }

@@ -18,6 +18,7 @@ CREATE TABLE IF NOT EXISTS users (
     role VARCHAR(255),                     -- 권한 (USER, ADMIN 등)
     status VARCHAR(255) NOT NULL,          -- 상태 (ACTIVE, QUIT 등)
     provider VARCHAR(255) NOT NULL,        -- 로그인 제공자 (KAKAO, NAVER 등)
+    provider_id VARCHAR(255),
     created_at TIMESTAMP WITHOUT TIME ZONE, -- 생성일
     updated_at TIMESTAMP WITHOUT TIME ZONE  -- 수정일
 );
