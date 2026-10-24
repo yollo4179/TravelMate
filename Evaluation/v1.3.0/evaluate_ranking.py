@@ -5,17 +5,26 @@ from __future__ import annotations
 import json
 import math
 import csv
+import argparse
 from collections import Counter
 from pathlib import Path
 from typing import Any
 
 import build_dataset
+from ragas_support.langsmith_observability import evaluation_span
 
 
 ROOT = Path(__file__).resolve().parent
 CUTOFF = 10
 RANKING_VERSIONS = ("v1_semantic_only", "v2_reranked")
-METRIC_NAMES = ("ndcg_at_10", "mrr_at_10", "recall_at_10", "precision_at_10")
+METRIC_NAMES = (
+    "ndcg_at_10",
+    "map_at_10",
+    "mrr_at_10",
+    "recall_at_10",
+    "precision_at_10",
+    "f1_at_10",
+)
 
 
 def read_jsonl(path: Path) -> list[dict[str, Any]]:
@@ -59,12 +68,35 @@ def score_order(place_ids: list[int], judgments: dict[int, int]) -> dict[str, fl
         (1 / rank for rank, place_id in enumerate(top_ids, start=1) if place_id in relevant_ids),
         0.0,
     )
-    relevant_hits = sum(place_id in relevant_ids for place_id in top_ids)
+    relevant_ranks: list[int] = []
+    seen_relevant_ids: set[int] = set()
+    for rank, place_id in enumerate(top_ids, start=1):
+        if place_id in relevant_ids and place_id not in seen_relevant_ids:
+            relevant_ranks.append(rank)
+            seen_relevant_ids.add(place_id)
+    relevant_hits = len(relevant_ranks)
+    precision_at_cutoff = relevant_hits / CUTOFF
+    recall_at_cutoff = relevant_hits / len(relevant_ids) if relevant_ids else 0.0
+    average_precision = (
+        sum(
+            len({place_id for place_id in top_ids[:rank] if place_id in relevant_ids}) / rank
+            for rank in relevant_ranks
+        )
+        / min(len(relevant_ids), CUTOFF)
+        if relevant_ids
+        else 0.0
+    )
     return {
         "ndcg_at_10": dcg(top_grades) / ideal_dcg if ideal_dcg else 0.0,
+        "map_at_10": average_precision,
         "mrr_at_10": reciprocal_rank,
-        "recall_at_10": relevant_hits / len(relevant_ids) if relevant_ids else 0.0,
-        "precision_at_10": relevant_hits / CUTOFF,
+        "recall_at_10": recall_at_cutoff,
+        "precision_at_10": precision_at_cutoff,
+        "f1_at_10": (
+            2 * precision_at_cutoff * recall_at_cutoff / (precision_at_cutoff + recall_at_cutoff)
+            if precision_at_cutoff + recall_at_cutoff
+            else 0.0
+        ),
     }
 
 
@@ -85,10 +117,25 @@ def evaluate_case(
     judgments = review_judgments.get(case["case_id"], {})
     if not judgments:
         return None
-    scores = {
-        version: score_order(comparison[version]["place_ids"], judgments)
-        for version in RANKING_VERSIONS
-    }
+    scores: dict[str, dict[str, float]] = {}
+    for version in RANKING_VERSIONS:
+        with evaluation_span(
+            operation="travelmate.ranking_metrics",
+            case_id=case["case_id"],
+            strategy_version=version,
+            metric_name="ranking_metrics_at_10",
+            inputs={
+                "query": case["query"],
+                "cutoff": CUTOFF,
+                "relevance_threshold": 2,
+                "judgment_count": len(judgments),
+                "retrieved_place_count": len(comparison[version]["place_ids"]),
+            },
+        ) as ranking_trace:
+            scores[version] = score_order(comparison[version]["place_ids"], judgments)
+            if ranking_trace is not None:
+                for metric_name, metric_score in scores[version].items():
+                    ranking_trace.set_attribute(f"evaluation.{metric_name}", metric_score)
     return {
         "case_id": case["case_id"],
         "query": case["query"],
@@ -115,18 +162,28 @@ def aggregate(results: list[dict[str, Any]]) -> dict[str, Any]:
     }
 
 
-def evaluate(root: Path = ROOT) -> dict[str, Any]:
+def evaluate(root: Path = ROOT, env_file: Path | None = None) -> dict[str, Any]:
+    from dotenv import load_dotenv
+
+    configured_env_file = env_file or root.resolve().parents[1] / ".env"
+    if configured_env_file.is_file():
+        load_dotenv(configured_env_file, override=False)
+
     cases = read_jsonl(root / "development.jsonl")
     review_judgments = read_review_judgments(root / "review_notes_filled_v1.3.0.csv")
-    results = [
-        result
-        for case in cases
-        if (result := evaluate_case(case, review_judgments)) is not None
-    ]
+    results = []
+    skipped_cases = []
+    for case in cases:
+        if case["answerability"] != "answerable":
+            continue
+        result = evaluate_case(case, review_judgments)
+        if result is None:
+            skipped_cases.append(case)
+            continue
+        results.append(result)
     skipped = Counter(
         case.get("execution", {}).get("condition_coverage", "not_run")
-        for case in cases
-        if case["answerability"] == "answerable" and evaluate_case(case, review_judgments) is None
+        for case in skipped_cases
     )
     averages = aggregate(results)
     summary = {
@@ -148,7 +205,7 @@ def evaluate(root: Path = ROOT) -> dict[str, Any]:
         },
         "judgment_scope": "partial_explicit_judgments; unjudged places are not asserted irrelevant",
         "judgment_source": "review_notes_filled_v1.3.0.csv",
-        "metric_interpretation": "Ranking metrics use only authored place relevance judgments. Scores are candidate-pool indicators, not exhaustive corpus recall.",
+        "metric_interpretation": "Ranking metrics use authored relevance grades >= 2 as relevant; NDCG uses graded relevance. Precision, recall, F1, MAP, NDCG and MRR are measured at cutoff 10. Scores use explicit judgments only and are candidate-pool indicators, not exhaustive corpus recall.",
     }
     build_dataset.write_jsonl(root / "ranking_results.jsonl", results)
     build_dataset.write_json(root / "ranking_summary.json", summary)
@@ -157,4 +214,8 @@ def evaluate(root: Path = ROOT) -> dict[str, Any]:
 
 
 if __name__ == "__main__":
-    print(json.dumps(evaluate(), ensure_ascii=False, indent=2))
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--root", type=Path, default=ROOT)
+    parser.add_argument("--env-file", type=Path, help="Defaults to the repository root .env")
+    arguments = parser.parse_args()
+    print(json.dumps(evaluate(arguments.root, arguments.env_file), ensure_ascii=False, indent=2))

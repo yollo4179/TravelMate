@@ -134,7 +134,31 @@ Evaluation/v1.3.0/
 
 실제 OpenAI 인증·권한·한도·접속 오류는 실패 상태와 오류 유형으로 기록하며 키나 제공자 오류 원문은 결과에 저장하지 않습니다. 실제 LLM 평가를 모두 완료한 뒤에만 연결 확인 상태를 표시합니다. 평가기 자체의 소요시간은 기존 검색 API 지연시간과 분리합니다.
 
-## 7. 검증
+## 7. LangSmith Observability (랭스미스 관측)
+
+평가기의 OpenAI 호출과 문항별 RAGAS 지표 점수를 LangSmith에 기록합니다. 루트 `.env`의 `OPENAI_API_KEY`와 LangSmith 추적 설정을 사용하며, 실행할 때 `--env-file .env`를 전달합니다. API 키가 저장소에 커밋되지 않도록 주의하세요.
+
+기본 평가 환경과 분리된 관측 패키지를 설치합니다.
+
+```powershell
+.\.venv-ragas\Scripts\python.exe -m pip install -r Evaluation/v1.3.0/requirements-langsmith-observability.txt
+```
+
+순위 평가를 실행하면 v1 임베딩 검색과 v2 리랭킹 각각의 Precision@10, Recall@10, F1@10, NDCG@10, MAP@10, MRR@10이 문항별 trace로 기록됩니다.
+
+```powershell
+.\.venv-ragas\Scripts\python.exe Evaluation/v1.3.0/evaluate_ranking.py --env-file .env
+```
+
+추적을 켜고 평가를 실행합니다. `--mode judge`는 실제 검색된 장소를 Markdown 기준으로 보조 채점합니다. 이 결과는 사람 검수 CSV를 대체하지 않습니다. OpenAI API 호출 비용이 발생할 수 있습니다.
+
+```powershell
+.\.venv-ragas\Scripts\python.exe Evaluation/v1.3.0/run_ragas_evaluation.py --env-file .env --mode judge
+```
+
+LangSmith에서 `travelmate-ragas-v1.3.0` 프로젝트를 열면 모델 입력·출력과 문항별 지표 점수를 확인할 수 있습니다. trace에는 질문, 검색 문맥, 모델 답변이 포함될 수 있습니다. 해당 데이터를 LangSmith로 전송할 수 있는 환경에서 실행하세요. 기본 LLM 평가(`--mode llm`)는 대상 문항에 `reference`, `response`, `retrieved_contexts`가 모두 준비된 경우에만 실행됩니다.
+
+## 8. 검증
 
 ```powershell
 .\.venv-ragas\Scripts\python.exe -m unittest discover -s Evaluation/v1.3.0/tests -v
