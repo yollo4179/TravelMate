@@ -8,6 +8,7 @@ RUN --mount=type=cache,target=/root/.gradle \
     --mount=type=secret,id=gradle_properties \
     if [ -s /run/secrets/gradle_properties ]; then cp /run/secrets/gradle_properties /root/.gradle/gradle.properties; fi; \
     if [ -s /run/secrets/java_cacerts ]; then export JAVA_TOOL_OPTIONS=-Djavax.net.ssl.trustStore=/run/secrets/java_cacerts; fi; \
+    sed -i 's/\r$//' gradlew && \
     bash gradlew --no-daemon --max-workers=2 bootJar
 
 FROM eclipse-temurin:17-jdk-jammy AS runtime

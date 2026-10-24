@@ -1,0 +1,3 @@
+Docker/*.sh text eol=lf
+Docker/*.py text eol=lf
+Server/TravelMate/gradlew text eol=lf

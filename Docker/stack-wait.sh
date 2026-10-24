@@ -1,33 +1,38 @@
 #!/usr/bin/env bash
 set -euo pipefail
-python3 - "${STACK_WAIT_TIMEOUT:-600}" <<'PY'
-import json
-import subprocess
-import sys
-import time
-
-names = ['travel-postgres', 'travelmate-redis', 'travelmate-server', 'travelmate-embedding']
-deadline = time.monotonic() + float(sys.argv[1])
-last = {}
-while True:
-    states = {}
-    for name in names:
-        result = subprocess.run(['docker', 'inspect', '--format', '{{json .State}}', name],
-                                capture_output=True, text=True)
-        if result.returncode:
-            states[name] = 'missing'
-        else:
-            state = json.loads(result.stdout)
-            states[name] = state.get('Health', {}).get('Status', state['Status']) if state['Running'] else state['Status']
-    if states != last:
-        print(' | '.join(f'{name}: {status}' for name, status in states.items()), flush=True)
-        last = states
-    if all(value == 'healthy' for value in states.values()):
-        print('All four services passed Docker healthchecks.', flush=True)
-        break
-    if any(value in {'exited', 'dead', 'missing'} for value in states.values()):
-        raise SystemExit('Required container is not running. Inspect startup errors before retrying.')
-    if time.monotonic() >= deadline:
-        raise SystemExit('Readiness timed out; not all required services are healthy.')
-    time.sleep(2)
-PY
+wait_timeout="${STACK_WAIT_TIMEOUT:-600}"
+if ! [[ "$wait_timeout" =~ ^[0-9]+$ ]]; then
+  echo 'STACK_WAIT_TIMEOUT must be a non-negative integer (seconds).' >&2
+  exit 1
+fi
+names=(travel-postgres travelmate-redis travelmate-server travelmate-embedding)
+deadline=$((SECONDS + wait_timeout))
+last=''
+while true; do
+  states=''
+  all_healthy=true
+  failed=false
+  for name in "${names[@]}"; do
+    state=$(docker inspect --format '{{if .State.Running}}{{if .State.Health}}{{.State.Health.Status}}{{else}}{{.State.Status}}{{end}}{{else}}{{.State.Status}}{{end}}' "$name" 2>/dev/null) || state=missing
+    states+="$name: $state | "
+    [ "$state" = healthy ] || all_healthy=false
+    case "$state" in missing|exited|dead) failed=true ;; esac
+  done
+  if [ "$states" != "$last" ]; then
+    echo "${states% | }"
+    last="$states"
+  fi
+  if [ "$all_healthy" = true ]; then
+    echo 'All four services passed Docker healthchecks.'
+    exit 0
+  fi
+  if [ "$failed" = true ]; then
+    echo 'Required container is not running. Run stack-up.sh successfully first, then inspect startup errors.' >&2
+    exit 1
+  fi
+  if [ "$SECONDS" -ge "$deadline" ]; then
+    echo 'Readiness timed out; not all required services are healthy.' >&2
+    exit 1
+  fi
+  sleep 2
+done

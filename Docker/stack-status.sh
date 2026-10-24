@@ -1,8 +1,11 @@
 #!/usr/bin/env bash
 set -euo pipefail
-repo_dir=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
-export STACK_STATE_DIR="${STACK_STATE_DIR:-$repo_dir/Docker/build/stack}"
-docker compose --project-name docker --env-file "$STACK_STATE_DIR/runtime.env" -f "$repo_dir/Docker/docker-compose.yml" -f "$repo_dir/Docker/docker-compose.stack.yml" -f "$STACK_STATE_DIR/proxy.compose.yml" ps
+source "$(dirname "${BASH_SOURCE[0]}")/stack-common.sh"
+if [ ! -f "$state_dir/runtime.env" ]; then
+  echo 'Run bash Docker/stack-up.sh successfully before checking stack status.' >&2
+  exit 1
+fi
+"${compose[@]}" ps
 for service in travel-postgres travelmate-redis travelmate-server travelmate-embedding; do
   docker inspect --format '{{.Name}}: {{if .State.Health}}{{.State.Health.Status}}{{else}}{{.State.Status}}{{end}}' "$service"
 done
