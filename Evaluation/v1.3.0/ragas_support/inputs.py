@@ -60,7 +60,7 @@ class EvaluationBatch:
         return len(next(iter(self.samples_by_version.values())))
 
 
-def load_batch(root: Path) -> EvaluationBatch:
+def load_batch(root: Path, *, include_reference: bool = True) -> EvaluationBatch:
     review_path = root / "review_notes_filled_v1.3.0.csv"
     judgments: dict[str, dict[str, int]] = {}
     review_statuses: set[str] = set()
@@ -112,14 +112,14 @@ def load_batch(root: Path) -> EvaluationBatch:
         authored = references.get(case_id, {})
         if authored.get("query") is not None and authored["query"] not in queries:
             raise ValueError(f"{case_id}: API input differs from golden query")
-        answers = [authored.get("reference"), *(row.get("reference") for row in paired_rows.values())]
+        answers = [authored.get("reference"), *(row.get("reference") for row in paired_rows.values())] if include_reference else []
         provided = {answer for answer in answers if isinstance(answer, str) and answer.strip()}
         if any(answer is not None and (not isinstance(answer, str) or not answer.strip()) for answer in answers):
             raise ValueError(f"{case_id}: reference must be nonempty text or null")
         if len(provided) > 1:
             raise ValueError(f"{case_id}: conflicting references; synchronize golden and API inputs")
         reference = next(iter(provided), None)
-        if reference is None:
+        if include_reference and reference is None:
             missing_references.append(case_id)
 
         if any(row.get("execution_status") != ApiExecutionStatus.COMPLETED for row in paired_rows.values()):

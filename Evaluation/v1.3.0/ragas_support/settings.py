@@ -28,6 +28,7 @@ class RunMode(str, Enum):
     ALL = "all"
     ID = "id"
     LLM = "llm"
+    JUDGE = "judge"
 
 
 class RunStatus(str, Enum):

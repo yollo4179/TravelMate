@@ -1,11 +1,10 @@
-"""Evaluate paired API results with two ID metrics and an all-or-none LLM batch."""
+"""Evaluate API results with ID metrics, reference-based metrics, or a reference-free MD judge."""
 from __future__ import annotations
 
 import argparse
 import asyncio
 import json
 import os
-import tempfile
 import time
 import uuid
 from datetime import datetime, timezone
@@ -15,6 +14,7 @@ from typing import Any, Protocol
 from ragas_support.backend import RagasBackend
 from ragas_support.inputs import EvaluationBatch, load_batch
 from ragas_support.precheck import build_precheck
+from ragas_support.reporting import safe_failure, write_json, write_jsonl
 from ragas_support.settings import (
     ID_METRICS, LLM_METRICS, EvaluatorSettings, MetricName, RunMode, RunStatus,
 )
@@ -33,26 +33,6 @@ class EvaluationBackend(Protocol):
         batch: EvaluationBatch,
         settings: EvaluatorSettings,
     ) -> list[dict[str, Any]]: ...
-
-
-def atomic_write(path: Path, content: str) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    descriptor, temporary_name = tempfile.mkstemp(dir=path.parent, prefix=f".{path.name}.", suffix=".tmp")
-    temporary_path = Path(temporary_name)
-    try:
-        with os.fdopen(descriptor, "w", encoding="utf-8", newline="\n") as stream:
-            stream.write(content)
-        temporary_path.replace(path)
-    finally:
-        temporary_path.unlink(missing_ok=True)
-
-
-def write_json(path: Path, payload: dict[str, Any]) -> None:
-    atomic_write(path, json.dumps(payload, ensure_ascii=False, indent=2, allow_nan=False) + "\n")
-
-
-def write_jsonl(path: Path, rows: list[dict[str, Any]]) -> None:
-    atomic_write(path, "".join(json.dumps(row, ensure_ascii=False, allow_nan=False) + "\n" for row in rows))
 
 
 def score_summary(
@@ -78,23 +58,6 @@ def score_summary(
     }
 
 
-def safe_failure(exception: Exception) -> dict[str, str]:
-    # Provider exceptions can contain request bodies or credential-bearing URLs.
-    guidance = {
-        "AuthenticationError": "Check OPENAI_API_KEY and the OpenAI project permissions.",
-        "PermissionDeniedError": "Check access to the configured OpenAI models.",
-        "RateLimitError": "Check OpenAI API quota, billing and rate limits.",
-        "APIConnectionError": "Check network access to the OpenAI API.",
-        "APITimeoutError": "The OpenAI request timed out; no partial LLM batch was published.",
-        "ModuleNotFoundError": "Install this version's requirements-evaluation.txt in the evaluation environment.",
-        "ImportError": "Install this version's requirements-evaluation.txt in the evaluation environment.",
-    }
-    return {
-        "error_type": type(exception).__name__,
-        "message": guidance.get(type(exception).__name__, "Evaluation failed. Check API access, dependencies and metric inputs. No partial LLM batch was published."),
-    }
-
-
 async def run_evaluation(
     *,
     root: Path,
@@ -103,7 +66,16 @@ async def run_evaluation(
     mode: RunMode,
     precheck_only: bool = False,
     backend: EvaluationBackend | None = None,
+    rubric_path: Path | None = None,
+    rubric_backend: Any = None,
 ) -> int:
+    if mode == RunMode.JUDGE:
+        from ragas_support.judge import run_markdown_judge
+        return await run_markdown_judge(
+            root=root, output=output, settings=settings,
+            rubric_path=rubric_path or ROOT / "LLM_JUDGE_RUBRIC.md",
+            precheck_only=precheck_only, backend=rubric_backend,
+        )
     batch = load_batch(root)
     run_id = str(uuid.uuid4())
     provenance = {
@@ -208,6 +180,7 @@ def main() -> None:
     parser.add_argument("--config", type=Path, help="Defaults to ragas_config.json alongside this runner")
     parser.add_argument("--env-file", type=Path, help="Explicit optional .env file containing OPENAI_API_KEY")
     parser.add_argument("--mode", choices=[mode.value for mode in RunMode], default=RunMode.ALL.value)
+    parser.add_argument("--rubric", type=Path, help="Markdown rubric for --mode judge; defaults to LLM_JUDGE_RUBRIC.md")
     parser.add_argument("--precheck-only", action="store_true", help="No Ragas imports or OpenAI requests; write prerequisite report only")
     arguments = parser.parse_args()
     if arguments.env_file:
@@ -223,9 +196,10 @@ def main() -> None:
             settings=settings,
             mode=RunMode(arguments.mode),
             precheck_only=arguments.precheck_only,
+            rubric_path=arguments.rubric,
         ))
     except (FileNotFoundError, ValueError, KeyError) as exception:
-        print(f"입력 검증 실패 ({type(exception).__name__}). API JSONL·CSV·golden reference와 경로를 확인하세요.")
+        print(f"입력 검증 실패 ({type(exception).__name__}). API JSONL·CSV·golden·원문·MD와 경로를 확인하세요.")
         code = 1
     raise SystemExit(code)
 

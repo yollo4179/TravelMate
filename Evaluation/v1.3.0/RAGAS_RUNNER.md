@@ -1,6 +1,29 @@
 # Ragas 실행기: ID 평가와 OpenAI LLM 평가
 
-사용자가 지정한 평가 범위는 기존 **ID 지표 두 개**와 **LLM 지표 세 개**입니다. LLM 세 지표는 두 버전의 공통 완료 문항을 대상으로 함께 실행하며, 요건이 하나라도 부족하면 세 지표 전체를 보류합니다. 이 실행기는 검색 API를 다시 호출하거나 골든셋·리뷰·API 결과를 수정하지 않습니다.
+## 지금 필요한 평가: MD 기준 LLM-as-a-Judge
+
+**기존 사람/AI 검수표의 장소별 0~3점과 근거는 이미 유효한 평가 자료입니다. 문장형 모범 답변을 새로 쓰지 않아도 됩니다.** 장소 추천의 적합도를 LLM이 판정하게 하려면 다음 명령을 사용합니다. 저장소 루트 기준입니다.
+
+```powershell
+python Evaluation/v1.3.0/run_ragas_evaluation.py --mode judge --env-file .env
+```
+
+이 모드는 [LLM_JUDGE_RUBRIC.md](LLM_JUDGE_RUBRIC.md)를 실제 프롬프트에 읽어 넣고 다음 자료를 사용합니다.
+
+1. `golden.jsonl`: 질문·대화·필터·필수 조건. `reference`·정답 ID 목록·장소별 정답 점수는 모델에 보내지 않습니다.
+2. API JSONL: 실제 반환된 장소와 순서. 기존처럼 양쪽 버전의 공통 완료 문항을 사용합니다.
+3. `corpus.json`: 이름·설명·지역 등 장소 원문과 필요한 상위/하위 시설 관계 근거.
+4. `review_notes_filled_v1.3.0.csv`: 모델이 먼저 채점한 뒤 기존 판정과 대조합니다. 정답 점수를 그대로 따라 쓰게 하지 않습니다.
+
+`reference: null`이어도 실행하며 평가 임베딩도 필요하지 않습니다. 이미 선택한 `gpt-4.1-mini`와 본인 OpenAI 키를 사용합니다. `--rubric 파일경로`로 수정한 MD를 명시할 수도 있고, 사용한 MD의 SHA-256을 결과에 기록합니다.
+
+결과는 `llm_judge_results.jsonl`, `llm_judge_summary.json`에 저장하며 `llm_judge_precheck.json`은 키·원문·평가 입력 상태를 기록합니다. 각 장소의 0~3점·이유·원문 인용과, 판정돼 있던 장소의 CSV 점수를 함께 확인할 수 있습니다. 미판정 장소의 새 점수는 AI 판정으로 구분하고 기존 검수표·골든셋은 덮어쓰지 않습니다.
+
+이는 MD 기준의 사용자 정의 장소 관련도 평가입니다. 아래의 Ragas 내장 Answer Correctness·Faithfulness·Context Recall 세 지표와 같은 점수라고 표시하지 않습니다. 기존 `--mode id`, `--mode llm`, `--mode all`의 의미와 기본값은 유지합니다. **현재 장소 Judge 목적에는 위 `--mode judge` 명령을 사용하세요.**
+
+---
+
+아래는 기존 **ID 지표 두 개**와 **Ragas 내장 LLM 지표 세 개**에 대한 설명입니다. 내장 LLM 세 지표는 두 버전의 공통 완료 문항을 대상으로 함께 실행하며, 요건이 하나라도 부족하면 세 지표 전체를 보류합니다. 위의 MD Judge는 별도 모드이므로 이 reference 조건에 묶이지 않습니다. 이 실행기는 검색 API를 다시 호출하거나 골든셋·리뷰·API 결과를 수정하지 않습니다.
 
 ## 1. 모델과 API 키
 

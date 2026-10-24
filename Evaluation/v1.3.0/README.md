@@ -6,6 +6,7 @@
 
 ## 먼저 사용할 파일
 
+- **LLM이 읽는 장소 평가 기준:** [LLM_JUDGE_RUBRIC.md](LLM_JUDGE_RUBRIC.md). [실행 방법](RAGAS_RUNNER.md#지금-필요한-평가-md-기준-llm-as-a-judge)의 `--mode judge`는 reference 없이 기존 0~3점 기준으로 판정합니다.
 - **검수할 리뷰:** [review_notes_filled_v1.3.0.csv](review_notes_filled_v1.3.0.csv)
 - **읽기 쉬운 리뷰:** [review_notes_by_question.md](review_notes_by_question.md)
 - **평가용 정답:** [golden.jsonl](golden.jsonl)
