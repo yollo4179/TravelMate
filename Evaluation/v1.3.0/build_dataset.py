@@ -74,6 +74,7 @@ class Speaker(str, Enum):
 
 ROOT = Path(__file__).resolve().parent
 MINIMUM_RELEVANT_GRADE = Relevance.RELATED
+RUNTIME_FIELDS = {"response", "retrieved_contexts", "execution", "ranking_comparison"}
 ANSWERABILITY_BY_TYPE = {
     CaseType.INSUFFICIENT_EVIDENCE: Answerability.INSUFFICIENT_EVIDENCE,
     CaseType.CLARIFICATION_REQUIRED: Answerability.CLARIFICATION_REQUIRED,
@@ -461,7 +462,7 @@ def validate_cases(
                 f"{case_id}: reviewed label requires reviewer and date",
             )
         group_splits.setdefault(case["group_id"], set()).add(case["split"])
-        require("retrieved_contexts" not in case and "response" not in case, f"{case_id}: system output in gold")
+        require(not RUNTIME_FIELDS.intersection(case), f"{case_id}: system output in gold")
         require(case["evaluation_track"] == evaluation_track(case), f"{case_id}: evaluation track mismatch")
         require(case["relevance_threshold"] == MINIMUM_RELEVANT_GRADE, f"{case_id}: inconsistent relevance threshold")
         constraints = case["semantic_constraints"]
@@ -559,6 +560,7 @@ def validate_cases(
 
 
 def write_jsonl(path: Path, rows: list[dict[str, Any]]) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(
         "".join(json.dumps(row, ensure_ascii=False) + "\n" for row in rows),
         encoding="utf-8",
@@ -665,6 +667,19 @@ def build(root: Path) -> dict[str, Any]:
     write_json(root / "corpus.json", snapshot["places"])
     write_corpus_sheet(root / "places.csv", snapshot["places"])
     write_review_sheet(root / "review.csv", cases)
+    write_json(root / "development_run.json", {"status": "not_run", "case_count": 0})
+    write_jsonl(root / "api_embedding" / "v1.jsonl", [])
+    write_json(root / "api_embedding" / "fastapi_embed_smoke.json", {"status": "not_run"})
+    write_jsonl(root / "api_reranking" / "v2.jsonl", [])
+    write_jsonl(root / "ragas_results.jsonl", [])
+    write_json(root / "ragas_summary.json", {"status": "not_run", "score_count": 0})
+    write_json(root / "ragas_llm_precheck.json", {
+        "status": "not_run",
+        "metric_family": "reference_based_llm",
+        "score_count": 0,
+    })
+    write_jsonl(root / "ranking_results.jsonl", [])
+    write_json(root / "ranking_summary.json", {"status": "not_run", "case_count": 0})
     write_json(root / "validation.json", validation)
     write_json(root / "manifest.json", build_manifest(root, snapshot, authored, cases, validation))
     return validation
@@ -677,8 +692,19 @@ def build_manifest(
     cases: list[dict[str, Any]],
     validation: dict[str, Any],
 ) -> dict[str, Any]:
-    artifacts = ["golden.jsonl", "development.jsonl", "test.jsonl", "corpus.json", "places.csv", "review.csv", "validation.json"]
+    artifacts = [
+        "golden.jsonl", "development.jsonl", "test.jsonl", "corpus.json", "places.csv",
+        "review.csv", "validation.json", "development_run.json", "api_embedding/v1.jsonl",
+        "api_embedding/fastapi_embed_smoke.json",
+        "api_reranking/v2.jsonl", "ragas_results.jsonl",
+        "ragas_summary.json", "ragas_llm_precheck.json",
+        "ranking_results.jsonl", "ranking_summary.json",
+    ]
     artifacts.extend(f"{track.value}.jsonl" for track in EvaluationTrack)
+    development_cases = [
+        json.loads(line)
+        for line in (root / "development.jsonl").read_text(encoding="utf-8").splitlines()
+    ]
     return {
         "dataset_name": "TravelMate Seoul place search golden candidate set",
         "dataset_version": authored["dataset_version"],
@@ -704,6 +730,10 @@ def build_manifest(
         "reference_count": validation["reference_count"],
         "missing_reference_count": validation["missing_reference_count"],
         "answerable_missing_reference_count": validation["answerable_missing_reference_count"],
+        "actual_execution_counts": dict(Counter(
+            case.get("execution", {}).get("status", "not_run") for case in development_cases
+        )),
+        "ragas_status": read_json(root / "ragas_summary.json")["status"],
         "corpus_regions": dict(Counter(place["region"] for place in snapshot["places"])),
         "corpus_categories": dict(Counter(place["category"] for place in snapshot["places"])),
         "missing_embedding_place_ids": [place["id"] for place in snapshot["places"] if not place["has_embedding"]],
@@ -751,7 +781,18 @@ def check(root: Path, *, require_reference: bool = False) -> dict[str, Any]:
     for field, values in [("split", Split), ("evaluation_track", EvaluationTrack)]:
         for value in values:
             exported = [json.loads(line) for line in (root / f"{value.value}.jsonl").read_text(encoding="utf-8").splitlines()]
-            require(exported == [case for case in cases if case[field] == value], f"{value}: export mismatch")
+            expected = [case for case in cases if case[field] == value]
+            if field == "split" and value == Split.DEVELOPMENT:
+                require(len(exported) == len(expected), "development: export count mismatch")
+                for stored_case, expected_case in zip(exported, expected, strict=True):
+                    require(
+                        {key: item for key, item in stored_case.items() if key not in RUNTIME_FIELDS}
+                        == expected_case,
+                        f"{stored_case['case_id']}: development differs from authored case",
+                    )
+                    validate_runtime_output(stored_case)
+            else:
+                require(exported == expected, f"{value}: export mismatch")
     require((root / "places.csv").read_bytes() == render_corpus_sheet(snapshot["places"]), "Corpus CSV mismatch")
     require((root / "review.csv").read_bytes() == render_review_sheet(cases), "Review CSV mismatch; merge notes into source before rebuilding")
     require(read_json(root / "validation.json") == validation, "Validation report mismatch")
@@ -767,6 +808,79 @@ def check(root: Path, *, require_reference: bool = False) -> dict[str, Any]:
             "author expected answers in cases.source.json and rebuild JSONL. "
             f"Missing case IDs: {', '.join(missing_references)}",
         )
+    return validation
+
+
+def validate_runtime_output(case: dict[str, Any]) -> None:
+    runtime_fields = RUNTIME_FIELDS.intersection(case)
+    if not runtime_fields:
+        return
+    require(runtime_fields == RUNTIME_FIELDS, f"{case['case_id']}: incomplete runtime fields")
+    require(isinstance(case["retrieved_contexts"], list), f"{case['case_id']}: retrieved_contexts must be a list")
+    execution = case["execution"]
+    comparison = case["ranking_comparison"]
+    for version, variant in comparison.items():
+        duration = variant.get("execution", {}).get("duration_seconds")
+        require(
+            duration is None or isinstance(duration, (int, float)) and duration >= 0,
+            f"{case['case_id']}: invalid duration for {version}",
+        )
+    if execution["status"] == "completed":
+        require(isinstance(case["response"], str), f"{case['case_id']}: completed execution requires response")
+        require(
+            execution["response_field_source"] == "target_system_http_response",
+            f"{case['case_id']}: response is not a target system output",
+        )
+        response_places = json.loads(case["response"])
+        require(isinstance(response_places, list), f"{case['case_id']}: response must be a JSON array")
+        returned_contexts = [place.get("description") or "" for place in response_places]
+        require(returned_contexts == case["retrieved_contexts"], f"{case['case_id']}: contexts differ from target output")
+        require(
+            set(comparison) == {"v1_semantic_only", "v2_reranked"},
+            f"{case['case_id']}: missing ranking version",
+        )
+        for variant in comparison.values():
+            require(isinstance(variant.get("response"), str), f"{case['case_id']}: ranking variant response missing")
+            variant_places = json.loads(variant["response"])
+            require(isinstance(variant_places, list), f"{case['case_id']}: ranking variant response must be a JSON array")
+            require(
+                [place["placeId"] for place in variant_places] == variant["place_ids"],
+                f"{case['case_id']}: ranking variant place IDs differ from response",
+            )
+    else:
+        require(case["response"] is None and not case["retrieved_contexts"], f"{case['case_id']}: output without execution")
+
+
+def refresh_runtime_exports(root: Path, run_summary: dict[str, Any] | None = None) -> dict[str, Any]:
+    snapshot = read_json(root / "snapshot.json")
+    authored = read_json(root / "cases.source.json")
+    snapshot_id = "sha256:" + digest_file(root / "snapshot.json")
+    golden_cases = [
+        json.loads(line)
+        for line in (root / "golden.jsonl").read_text(encoding="utf-8").splitlines()
+    ]
+    development_cases = [
+        json.loads(line)
+        for line in (root / "development.jsonl").read_text(encoding="utf-8").splitlines()
+    ]
+    require(
+        len(development_cases) == len([case for case in golden_cases if case["split"] == Split.DEVELOPMENT]),
+        "development runtime export has an unexpected case count",
+    )
+    expected_development = [case for case in golden_cases if case["split"] == Split.DEVELOPMENT]
+    for case, expected_case in zip(development_cases, expected_development, strict=True):
+        require(
+            {key: value for key, value in case.items() if key not in RUNTIME_FIELDS} == expected_case,
+            f"{case['case_id']}: runtime output modified an authored field",
+        )
+        validate_runtime_output(case)
+    validation = validate_cases(golden_cases, snapshot, authored["expected_case_count"])
+    validation["snapshot_id"] = snapshot_id
+    validation["dataset_version"] = authored["dataset_version"]
+    if run_summary is not None:
+        write_json(root / "development_run.json", run_summary)
+    write_json(root / "validation.json", validation)
+    write_json(root / "manifest.json", build_manifest(root, snapshot, authored, golden_cases, validation))
     return validation
 
 

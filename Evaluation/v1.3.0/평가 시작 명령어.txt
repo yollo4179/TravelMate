@@ -1,0 +1,4 @@
+powershell에서 하시오
+
+python Evaluation/v1.3.0/run_ragas_evaluation.py --env-file .env --precheck-only
+python Evaluation/v1.3.0/run_ragas_evaluation.py --env-file .env
