@@ -1,0 +1,9 @@
+case_id,place_id,place_name,before_grade,after_grade,reason,review_status
+TM-crafts-03,427,향기억,3,1,향수 제작 체험은 있으나 만든 향수를 가져가거나 받는다는 원문 근거가 없다.,pending_human_review
+TM-crafts-03,415,필소굿캘리,3,1,돌도장 새김 체험은 있으나 완성품 수령·반출 근거가 없다.,pending_human_review
+TM-crafts-03,164,북촌전통공예체험관,,1,전통공예 제작 체험은 있으나 완성품 수령·반출 근거가 없다. 분할 규칙 완화로 판정 가능해짐.,pending_human_review
+TM-gardens-03,412,푸른수목원,3,1,주제정원·가드닝 교육은 있으나 식물의 쓰임을 배운다는 근거가 없다.,pending_human_review
+TM-gardens-03,219,서울숲 곤충식물원,,1,식물 관찰은 가능하나 식물의 쓰임 근거가 없다. 어려운 오답으로 추가.,pending_human_review
+TM-wetlands-03,8,개봉유수지 생태공원,2,1,생태습지는 있으나 생물 관찰 근거가 없다. 2점도 필수 조건 충족이 전제.,pending_human_review
+TM-wetlands-03,222,서울창포원,,3,습지원에 습지 생물 관찰 데크가 있다. 분할 규칙 완화로 추가 가능해짐.,pending_human_review
+TM-literary_homes-03,437,홍파동 홍난파 가옥,2,1,작곡가 가옥이지만 원문에 동요 작곡가 근거가 없고 작가도 아니다.,pending_human_review

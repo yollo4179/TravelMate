@@ -1,0 +1,49 @@
+{
+  "dataset_version": "1.3.0",
+  "snapshot_id": "sha256:410a9c3c46004cb30644455fe9d5ddb01a52a04a700ffe04159605cf94661218",
+  "source_review_sha256": "944fa1d382fd1442dd5d792f47ff4b33127e665df8f370b2a2610787cfb34345",
+  "review_author": "Codex",
+  "review_type": "ai_draft_for_user_judgment",
+  "case_count": 100,
+  "review_row_count": 273,
+  "human_review_completed": false,
+  "changed_fields": [
+    "review_notes"
+  ],
+  "unchanged_fields": [
+    "case_id",
+    "split",
+    "evaluation_track",
+    "query",
+    "conditions",
+    "semantic_constraints",
+    "answerability",
+    "place_id",
+    "place_name",
+    "relevance",
+    "semantic_constraint_support",
+    "rationale_or_expected_behavior",
+    "evidence",
+    "review_status",
+    "human_reviewer"
+  ],
+  "special_rechecks": [
+    "TM-churches-03 place 364: meaning of church architecture",
+    "TM-family_parks-04: include center place policy",
+    "TM-literary_homes-03 place 437: remove unsupported negative biography"
+  ],
+  "created_at": "2026-10-24T05:49:24.303937+00:00",
+  "review_notes_revision": 2,
+  "updated_at": "2026-10-24T06:24:48.483432+00:00",
+  "review_method": "질문 조건·스냅샷 인용·검색 적합도와 생성 답변 평가 분리·진단 문항의 행동 판정 기준",
+  "evaluation_document": "evaluation_review_criteria.md",
+  "actual_system_outputs_evaluated": false,
+  "ragas_evaluation_run": false,
+  "organization": {
+    "dataset_directory": "Evaluation/v1.3.0",
+    "review_notes_file": "review_notes_filled_v1.3.0.csv",
+    "readable_review": "review_notes_by_question.md",
+    "source": "develop 36ba1a8 evaluations/place_search/review.csv",
+    "canonical_review_is_generated": true
+  }
+}

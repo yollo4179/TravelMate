@@ -1,0 +1,104 @@
+{
+  "dataset_name": "TravelMate Seoul place search golden candidate set",
+  "dataset_version": "1.3.0",
+  "schema_version": "1.1.0",
+  "snapshot_id": "sha256:410a9c3c46004cb30644455fe9d5ddb01a52a04a700ffe04159605cf94661218",
+  "snapshot_exported_at": "2026-10-24T10:51:25.868608+09:00",
+  "database": "travel_db",
+  "places_count": 449,
+  "raw_records_count": 449,
+  "export_scope": "all_places_and_all_tour_api_raw_rows",
+  "omitted_columns": [
+    "places.embedding vector values; has_embedding retained"
+  ],
+  "source_of_truth": "snapshot.json",
+  "authoring_source": "cases.source.json",
+  "authoring_sha256": "efe13d14621fcf6d5f1c0bbd0fb9e07a10c9d380d8cb047ead5e7b2c14a4295c",
+  "golden_sha256": "448695d72622aa741af1cdab1cd1be23e506a6c8bda8b5429862828a3fff8ae8",
+  "artifact_sha256": {
+    "golden.jsonl": "448695d72622aa741af1cdab1cd1be23e506a6c8bda8b5429862828a3fff8ae8",
+    "development.jsonl": "03a2500fce5992a7f5c057067f177a396735105f2248574207f4b02bd615efe1",
+    "test.jsonl": "682a26d6e83bfe9aa1019d1da9689088238aea3cc7a7dec626af0606f9caa79b",
+    "corpus.json": "c74e902620687cbe8b7ec61a24eb7932e95f8cf7a90762baef5e78ad0b134f9e",
+    "places.csv": "9adf76b5f0d6f3ac01c3286ff059e0abd0e3806f8a863380a6778edd758c3c94",
+    "review.csv": "944fa1d382fd1442dd5d792f47ff4b33127e665df8f370b2a2610787cfb34345",
+    "validation.json": "e949e0ed4f9121ded9630079042dc3aca8ad3d122fd9ded8caefa6181a1b8d48",
+    "search_api.jsonl": "f3b57abd3514ad2e7344b81964207723407b6d496af2c37d8ddf6a52d6880d3c",
+    "context_search.jsonl": "c969ddd3ad2fd17b9a0acc30cd861cd62c02f46c8a8382c6e0ce794dbeb566e1",
+    "answer_behavior.jsonl": "c7a201eed6ee217284840e8f6f4cae37d0d61e204ccbeb56eac90522c083371e"
+  },
+  "builder_sha256": "08d4dc2b28b35e650cc34bee9a79e9b0726add81df126f3fc4e454757ff881b9",
+  "case_count": 100,
+  "counts_by_split": {
+    "development": 80,
+    "test": 20
+  },
+  "counts_by_case_type": {
+    "exact_name": 20,
+    "semantic": 20,
+    "multiple_relevant": 20,
+    "context_constraints": 20,
+    "insufficient_evidence": 10,
+    "clarification_required": 10
+  },
+  "counts_by_answerability": {
+    "answerable": 80,
+    "insufficient_evidence": 10,
+    "clarification_required": 10
+  },
+  "counts_by_evaluation_track": {
+    "search_api": 60,
+    "context_search": 20,
+    "answer_behavior": 20
+  },
+  "reference_count": 0,
+  "missing_reference_count": 100,
+  "answerable_missing_reference_count": 80,
+  "corpus_regions": {
+    "서울": 449
+  },
+  "corpus_categories": {
+    "관광지": 449
+  },
+  "missing_embedding_place_ids": [
+    394
+  ],
+  "missing_city_place_ids": [
+    355
+  ],
+  "relevance_scale": {
+    "3": "핵심 의도와 모든 명시 필수 조건을 직접 충족",
+    "2": "필수 조건이 근거로 확인되나 직접성·시설 범위가 낮은 유용한 대안; 동일 시설 상위 공간은 관계 근거 필요",
+    "1": "주제만 일부 관련되거나 필수 조건이 미확인; 정답에서 제외",
+    "0": "의도 불일치 또는 명시 조건 위반"
+  },
+  "annotation_policy": {
+    "hard_constraints": "질문에 명시한 핵심 시설·기능·장소 조건은 필수다. 근거 미확인 또는 조건 불충족은 0–1점으로 두며 정답에 넣지 않는다.",
+    "grade_2": "필수 조건을 충족하는 근거가 있지만 직접성·시설 범위가 낮은 유용한 대안. 같은 시설의 상위 공간은 다른 인용 문서로 위치 관계와 기능을 확인할 때만 허용한다.",
+    "grade_3": "질문의 핵심 의도와 모든 명시 필수 조건을 직접 충족하는 장소.",
+    "unjudged": "미판정은 무관한 장소를 뜻하지 않는다. 검색 결과 pool을 사람 검수로 확장한다.",
+    "human_review": "이번 수정은 AI의 원문 대조이며 사람 검수 완료를 뜻하지 않는다."
+  },
+  "revision_review": {
+    "reviewer": "Claude",
+    "type": "ai_source_review",
+    "based_on_version": "1.2.0",
+    "human_review_completed": false
+  },
+  "unjudged_policy": "미판정 장소를 0점으로 간주하지 않는다. 전수 관련도 판정이 아니다.",
+  "review_status": "pending_human_review",
+  "split_policy": "질문·유사 의도 그룹(group_id)을 분할 간 분리한다. 같은 장소가 다른 그룹 질문의 정답·근거로 등장하는 것은 허용한다.",
+  "line_endings": {
+    "generated_json_jsonl_csv": "LF",
+    "snapshot": "original bytes preserved; Git -text"
+  },
+  "limitations": [
+    "AI의 원문 대조 후 수정했으며 독립적인 사람 검수는 아직 없다.",
+    "인용 일치와 의미 조건 주석의 일관성 검증은 의미적 타당성의 자동 증명이 아니다.",
+    "미판정 관련 장소가 남아 있을 수 있다. 여러 검색기 결과 pool을 검수해야 한다.",
+    "서울 코퍼스만 평가하며 시험 검색 문항은 16개·주제 그룹은 4개다.",
+    "장소 ID는 분할 간에 겹칠 수 있다. 개발셋으로 장소별 규칙을 튜닝하면 시험 점수가 낙관적으로 나올 수 있다.",
+    "반경 문항은 후보가 한 개뿐인 필터 확인 시험이며 경계·순위 시험은 보완이 필요하다.",
+    "TourAPI 수집일은 현장 상태의 최신성 보장이 아니다. 실제 검색·RAGAS 점수는 산출하지 않았다."
+  ]
+}

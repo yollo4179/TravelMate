@@ -1,0 +1,3117 @@
+{
+  "schema_version": "1.1.0",
+  "dataset_version": "1.3.0",
+  "expected_case_count": 100,
+  "groups": [
+    {
+      "group_id": "palaces",
+      "split": "development",
+      "place_ids": [
+        378,
+        208,
+        380,
+        10
+      ],
+      "evidence_anchors": {
+        "208": [
+          "흥선대원군의 일가",
+          "고종이 임금이 되기 전"
+        ],
+        "378": [
+          "성종이 세 명의 대비",
+          "왕실 가족들의 생활공간"
+        ],
+        "380": [
+          "헌종의 서재 겸 사랑채",
+          "단청을 하지 않은"
+        ],
+        "10": [
+          "왕과 왕비의 생활공간으로 지어진 궁",
+          "고종과 명성황후는 10년 정도 생활"
+        ]
+      },
+      "cases": [
+        {
+          "case_suffix": 1,
+          "case_type": "exact_name",
+          "query": "창경궁을 찾아줘.",
+          "judgments": [
+            {
+              "place_id": 378,
+              "relevance": 3,
+              "rationale": "요청한 장소명과 일치한다."
+            },
+            {
+              "place_id": 208,
+              "relevance": 0,
+              "rationale": "다른 왕실 주거지이다."
+            },
+            {
+              "place_id": 380,
+              "relevance": 0,
+              "rationale": "별개의 장소 레코드이다."
+            }
+          ]
+        },
+        {
+          "case_suffix": 2,
+          "case_type": "semantic",
+          "query": "고종이 왕이 되기 전에 태어나서 자랐고 흥선대원군 가족이 살던 집을 보고 싶어.",
+          "judgments": [
+            {
+              "place_id": 208,
+              "relevance": 3,
+              "rationale": "고종의 성장지이자 흥선대원군 일가의 사저라고 명시되어 있다."
+            },
+            {
+              "place_id": 378,
+              "relevance": 1,
+              "rationale": "왕실 생활공간이지만 질문의 사저는 아니다."
+            },
+            {
+              "place_id": 380,
+              "relevance": 0,
+              "rationale": "헌종의 서재와 마지막 황실 가족의 거처로 설명된다."
+            }
+          ]
+        },
+        {
+          "case_suffix": 3,
+          "case_type": "multiple_relevant",
+          "query": "종로에서 조선 왕실 가족이 생활했던 궁이나 거처를 둘러보고 싶어.",
+          "judgments": [
+            {
+              "place_id": 378,
+              "relevance": 3,
+              "rationale": "왕실 가족의 생활공간이다."
+            },
+            {
+              "place_id": 208,
+              "relevance": 3,
+              "rationale": "흥선대원군 일가의 사저이자 고종의 성장지이다."
+            },
+            {
+              "place_id": 380,
+              "relevance": 3,
+              "rationale": "헌종의 서재와 황실 가족의 생활공간이다."
+            },
+            {
+              "place_id": 10,
+              "relevance": 3,
+              "rationale": "경복궁 안 건청궁은 고종과 명성황후가 약 10년간 생활한 왕과 왕비의 생활공간으로, 종로 조건을 만족한다."
+            }
+          ],
+          "city": "종로"
+        },
+        {
+          "case_suffix": 4,
+          "case_type": "context_constraints",
+          "query": "방금 본 곳은 빼고, 단청 없이 소박하게 지은 왕실 거처를 더 찾아줘.",
+          "judgments": [
+            {
+              "place_id": 380,
+              "relevance": 3,
+              "rationale": "단청이 없는 왕실 거처라는 설명이 있다."
+            },
+            {
+              "place_id": 378,
+              "relevance": 0,
+              "rationale": "대화에서 이미 본 장소로 제외했다."
+            },
+            {
+              "place_id": 208,
+              "relevance": 1,
+              "rationale": "왕족 사저이지만 단청 없는 거처라는 근거는 없다."
+            }
+          ],
+          "city": "종로",
+          "exclude_place_ids": [
+            378
+          ],
+          "conversation": [
+            [
+              "user",
+              "창경궁은 이미 봤어. 종로 안에서 다음 장소를 찾고 있어."
+            ]
+          ]
+        },
+        {
+          "case_suffix": 5,
+          "case_type": "insufficient_evidence",
+          "query": "오늘 창경궁 야간 관람 표가 지금 몇 장 남았어?",
+          "judgments": [],
+          "reference_place_ids": [
+            378
+          ],
+          "missing_information": [
+            "실시간 야간 관람 잔여 표"
+          ],
+          "expected_action": "실시간 재고를 확인할 수 없다고 밝히고 공식 예매처 확인을 안내한다."
+        }
+      ]
+    },
+    {
+      "group_id": "churches",
+      "split": "development",
+      "place_ids": [
+        1,
+        195,
+        203,
+        302,
+        364,
+        187,
+        88
+      ],
+      "evidence_anchors": {
+        "1": [
+          "첫 미사",
+          "동서양 건축양식"
+        ],
+        "195": [
+          "고딕 양식",
+          "한국 가톨릭의 대표 성지"
+        ],
+        "203": [
+          "로마네스크 양식",
+          "서양식 성당 건축물"
+        ],
+        "302": [
+          "벽돌 건물로서 한국 최초의 신학교",
+          "약식화된 고딕풍",
+          "성지로 등록"
+        ],
+        "364": [
+          "천주교탄압",
+          "유물·유품전시관"
+        ],
+        "187": [
+          "신유박해부터 병인박해까지",
+          "국내 최대의 천주교 성지"
+        ],
+        "88": [
+          "로마네스크 양식에 한국 전통 건축 기법",
+          "서울교구 주교좌성당"
+        ]
+      },
+      "cases": [
+        {
+          "case_suffix": 1,
+          "case_type": "exact_name",
+          "query": "가회동성당 위치를 찾고 있어.",
+          "judgments": [
+            {
+              "place_id": 1,
+              "relevance": 3,
+              "rationale": "가회동성당 레코드이다."
+            },
+            {
+              "place_id": 195,
+              "relevance": 0,
+              "rationale": "명동성당으로 요청 장소와 다르다."
+            },
+            {
+              "place_id": 203,
+              "relevance": 0,
+              "rationale": "약현성당으로 요청 장소와 다르다."
+            }
+          ]
+        },
+        {
+          "case_suffix": 2,
+          "case_type": "semantic",
+          "query": "서울에서 벽돌로 지었고 전체적으로 로마네스크 양식인 오래된 성당을 보고 싶어.",
+          "judgments": [
+            {
+              "place_id": 203,
+              "relevance": 3,
+              "rationale": "로마네스크 양식의 벽돌조 건물이라고 명시되어 있다.",
+              "semantic_constraint_support": {
+                "brick_building": "supported",
+                "romanesque_style": "supported"
+              }
+            },
+            {
+              "place_id": 195,
+              "relevance": 1,
+              "rationale": "오래된 성당이지만 고딕 양식으로 설명된다.",
+              "semantic_constraint_support": {
+                "brick_building": "not_supported",
+                "romanesque_style": "contradicted"
+              }
+            },
+            {
+              "place_id": 1,
+              "relevance": 0,
+              "rationale": "동서양 건축양식의 새 성전이며 질문의 양식 근거가 없다.",
+              "semantic_constraint_support": {
+                "brick_building": "not_supported",
+                "romanesque_style": "not_supported"
+              }
+            },
+            {
+              "place_id": 88,
+              "relevance": 1,
+              "rationale": "로마네스크 양식은 명시되나 벽돌조라는 필수 조건의 근거가 없어 정답에서 제외한다.",
+              "semantic_constraint_support": {
+                "brick_building": "not_supported",
+                "romanesque_style": "supported"
+              }
+            },
+            {
+              "place_id": 302,
+              "relevance": 1,
+              "rationale": "벽돌 건물이지만 양식은 약식화된 고딕풍으로 설명되어 로마네스크 조건에 맞지 않는다.",
+              "semantic_constraint_support": {
+                "brick_building": "supported",
+                "romanesque_style": "contradicted"
+              }
+            }
+          ],
+          "semantic_constraints": [
+            {
+              "id": "brick_building",
+              "description": "벽돌로 지은 건물이다."
+            },
+            {
+              "id": "romanesque_style",
+              "description": "전체적으로 로마네스크 양식이다."
+            }
+          ]
+        },
+        {
+          "case_suffix": 3,
+          "case_type": "multiple_relevant",
+          "query": "서울에서 한국 천주교 역사와 성당 건축을 함께 살펴볼 곳을 추천해줘.",
+          "judgments": [
+            {
+              "place_id": 1,
+              "relevance": 3,
+              "rationale": "조선 첫 미사 지역과 한국 교회사의 의미가 설명되어 있다.",
+              "semantic_constraint_support": {
+                "catholic_history": "supported",
+                "church_architecture": "supported"
+              }
+            },
+            {
+              "place_id": 195,
+              "relevance": 3,
+              "rationale": "가톨릭 성지와 고딕 건축의 역사가 설명되어 있다.",
+              "semantic_constraint_support": {
+                "catholic_history": "supported",
+                "church_architecture": "supported"
+              }
+            },
+            {
+              "place_id": 203,
+              "relevance": 3,
+              "rationale": "성당 건립 역사와 서양식 건축 양식이 설명되어 있다.",
+              "semantic_constraint_support": {
+                "catholic_history": "supported",
+                "church_architecture": "supported"
+              }
+            },
+            {
+              "place_id": 302,
+              "relevance": 3,
+              "rationale": "한국 최초의 신학교 건물과 성당이 가톨릭 성지로 등록되었고, 벽돌 건물·고딕풍 성당 건축이 설명된다.",
+              "semantic_constraint_support": {
+                "catholic_history": "supported",
+                "church_architecture": "supported"
+              }
+            },
+            {
+              "place_id": 364,
+              "relevance": 1,
+              "rationale": "병인박해 순교와 천주교 사료 전시는 있으나 성당 건축에 대한 설명이 없어 필수 조건 미확인으로 정답에서 제외한다.",
+              "semantic_constraint_support": {
+                "catholic_history": "supported",
+                "church_architecture": "not_supported"
+              }
+            },
+            {
+              "place_id": 187,
+              "relevance": 1,
+              "rationale": "천주교 순교 처형지라는 역사만 있고 성당 건축이 아니어서 정답에서 제외한다.",
+              "semantic_constraint_support": {
+                "catholic_history": "supported",
+                "church_architecture": "not_supported"
+              }
+            }
+          ],
+          "semantic_constraints": [
+            {
+              "id": "catholic_history",
+              "description": "한국 천주교 역사를 살펴볼 수 있다."
+            },
+            {
+              "id": "church_architecture",
+              "description": "성당 건축을 살펴볼 수 있다."
+            }
+          ]
+        },
+        {
+          "case_suffix": 4,
+          "case_type": "context_constraints",
+          "query": "가회동은 다녀왔어. 이번에는 중구 안에 있는 성당으로 골라줘.",
+          "judgments": [
+            {
+              "place_id": 195,
+              "relevance": 3,
+              "rationale": "중구에 있는 성당이다."
+            },
+            {
+              "place_id": 203,
+              "relevance": 3,
+              "rationale": "중구에 있는 성당이다."
+            },
+            {
+              "place_id": 1,
+              "relevance": 0,
+              "rationale": "방문 완료로 제외되며 종로에 있다."
+            },
+            {
+              "place_id": 88,
+              "relevance": 3,
+              "rationale": "중구에 있는 성당이며 방문 완료 장소가 아니다. 대한성공회 성당이라는 점은 사람 검수에서 확인한다."
+            }
+          ],
+          "city": "중",
+          "exclude_place_ids": [
+            1
+          ],
+          "conversation": [
+            [
+              "user",
+              "서울 성당 건축을 구경하는 중이야."
+            ]
+          ]
+        },
+        {
+          "case_suffix": 5,
+          "case_type": "clarification_required",
+          "query": "아까 얘기한 그 성당 근처로 찾아줘.",
+          "judgments": [],
+          "missing_information": [
+            "기준 성당",
+            "원하는 거리 범위"
+          ],
+          "expected_action": "이전 대화에 성당이 없으므로 어느 성당인지 먼저 묻는다."
+        }
+      ]
+    },
+    {
+      "group_id": "traditional_experiences",
+      "split": "development",
+      "place_ids": [
+        164,
+        181,
+        422
+      ],
+      "evidence_anchors": {
+        "164": [
+          "북촌 공방 장인들이 직접",
+          "체험장에서는"
+        ],
+        "181": [
+          "온돌의 우수성",
+          "경복궁 서측",
+          "전통문화를 체험"
+        ],
+        "422": [
+          "1000여 벌의 한복",
+          "유료 스튜디오"
+        ]
+      },
+      "cases": [
+        {
+          "case_suffix": 1,
+          "case_type": "exact_name",
+          "query": "북촌전통공예체험관을 검색해줘.",
+          "judgments": [
+            {
+              "place_id": 164,
+              "relevance": 3,
+              "rationale": "장소명이 일치한다."
+            },
+            {
+              "place_id": 181,
+              "relevance": 0,
+              "rationale": "다른 전통문화 공간이다."
+            },
+            {
+              "place_id": 422,
+              "relevance": 0,
+              "rationale": "한복 체험 업체로 요청 장소와 다르다."
+            }
+          ]
+        },
+        {
+          "case_suffix": 2,
+          "case_type": "semantic",
+          "query": "경복궁 서쪽에서 한옥의 온돌을 알아보고 전통 주거문화를 체험하고 싶어.",
+          "judgments": [
+            {
+              "place_id": 181,
+              "relevance": 3,
+              "rationale": "경복궁 서측 한옥문화공간이며 온돌과 주거문화 전시가 있다."
+            },
+            {
+              "place_id": 164,
+              "relevance": 1,
+              "rationale": "전통공예 체험은 가능하지만 온돌 전시 근거는 없다."
+            },
+            {
+              "place_id": 422,
+              "relevance": 0,
+              "rationale": "한복 체험과 촬영 중심이다."
+            }
+          ]
+        },
+        {
+          "case_suffix": 3,
+          "case_type": "multiple_relevant",
+          "query": "종로에서 한국 전통문화를 직접 체험할 만한 곳들을 알려줘.",
+          "judgments": [
+            {
+              "place_id": 164,
+              "relevance": 3,
+              "rationale": "장인이 진행하는 전통공예 체험이 있다."
+            },
+            {
+              "place_id": 181,
+              "relevance": 3,
+              "rationale": "한복·공예 등 전통문화 체험 프로그램이 있다."
+            },
+            {
+              "place_id": 422,
+              "relevance": 3,
+              "rationale": "여러 한복을 입어 보고 촬영할 수 있다."
+            }
+          ],
+          "city": "종로"
+        },
+        {
+          "case_suffix": 4,
+          "case_type": "context_constraints",
+          "query": "공예 체험관은 빼고, 한복을 입고 전문 스튜디오 촬영까지 할 수 있는 곳으로 찾아줘.",
+          "judgments": [
+            {
+              "place_id": 422,
+              "relevance": 3,
+              "rationale": "한복과 연계 유료 전문 스튜디오 촬영이 명시되어 있다."
+            },
+            {
+              "place_id": 164,
+              "relevance": 0,
+              "rationale": "명시적으로 제외한 장소이다."
+            },
+            {
+              "place_id": 181,
+              "relevance": 1,
+              "rationale": "한복 체험은 관련되지만 전문 스튜디오 촬영 근거는 없다."
+            }
+          ],
+          "city": "종로",
+          "exclude_place_ids": [
+            164
+          ],
+          "conversation": [
+            [
+              "user",
+              "북촌전통공예체험관은 예약했어. 다른 체험도 하고 싶어."
+            ]
+          ]
+        },
+        {
+          "case_suffix": 5,
+          "case_type": "insufficient_evidence",
+          "query": "내일 상촌재 공예 수업에 두 명 예약 가능한지 확정해줘.",
+          "judgments": [],
+          "reference_place_ids": [
+            181
+          ],
+          "missing_information": [
+            "내일 수업 일정",
+            "예약 잔여 인원"
+          ],
+          "expected_action": "프로그램 소개만으로 예약 가능 여부를 확정하지 않고 운영처 확인이 필요하다고 답한다."
+        }
+      ]
+    },
+    {
+      "group_id": "ancient_history",
+      "split": "test",
+      "place_ids": [
+        202,
+        128,
+        212
+      ],
+      "evidence_anchors": {
+        "128": [
+          "백제의 토성",
+          "한성시대"
+        ],
+        "202": [
+          "신석기시대 유적",
+          "빗살무늬 토기",
+          "집터"
+        ],
+        "212": [
+          "백제 한성기",
+          "한강과 맞닿은"
+        ]
+      },
+      "cases": [
+        {
+          "case_suffix": 1,
+          "case_type": "exact_name",
+          "query": "서울 암사동 유적을 찾아줘.",
+          "judgments": [
+            {
+              "place_id": 202,
+              "relevance": 3,
+              "rationale": "요청 장소와 일치한다."
+            },
+            {
+              "place_id": 128,
+              "relevance": 0,
+              "rationale": "백제 토성으로 요청 장소와 다르다."
+            },
+            {
+              "place_id": 212,
+              "relevance": 0,
+              "rationale": "풍납동 토성은 다른 유적이다."
+            }
+          ]
+        },
+        {
+          "case_suffix": 2,
+          "case_type": "semantic",
+          "query": "한강변에서 신석기 사람들이 살던 집터와 빗살무늬 토기의 흔적을 볼 곳이 있을까?",
+          "judgments": [
+            {
+              "place_id": 202,
+              "relevance": 3,
+              "rationale": "신석기 집터와 빗살무늬 토기 출토가 명시되어 있다."
+            },
+            {
+              "place_id": 128,
+              "relevance": 1,
+              "rationale": "옛 생활을 살피는 유적이지만 백제 시대이다."
+            },
+            {
+              "place_id": 212,
+              "relevance": 1,
+              "rationale": "고대 유적이지만 신석기 집터가 아닌 백제 토성이다."
+            }
+          ]
+        },
+        {
+          "case_suffix": 3,
+          "case_type": "multiple_relevant",
+          "query": "송파에서 한성백제의 흙으로 쌓은 성곽 유적들을 찾아줘.",
+          "judgments": [
+            {
+              "place_id": 128,
+              "relevance": 3,
+              "rationale": "송파의 백제 토성이다."
+            },
+            {
+              "place_id": 212,
+              "relevance": 3,
+              "rationale": "송파의 백제 한성기 평지성이다."
+            },
+            {
+              "place_id": 202,
+              "relevance": 0,
+              "rationale": "강동의 신석기 유적이며 송파 조건에 맞지 않는다."
+            }
+          ],
+          "city": "송파"
+        },
+        {
+          "case_suffix": 4,
+          "case_type": "context_constraints",
+          "query": "몽촌토성은 이미 갔으니 제외하고, 한강 옆의 다른 백제 토성을 추천해줘.",
+          "judgments": [
+            {
+              "place_id": 212,
+              "relevance": 3,
+              "rationale": "한강과 맞닿은 백제 토성으로 설명된다."
+            },
+            {
+              "place_id": 128,
+              "relevance": 0,
+              "rationale": "이미 방문하여 제외한 장소이다."
+            },
+            {
+              "place_id": 202,
+              "relevance": 0,
+              "rationale": "백제 토성 조건에 맞지 않는다."
+            }
+          ],
+          "city": "송파",
+          "exclude_place_ids": [
+            128
+          ],
+          "conversation": [
+            [
+              "user",
+              "송파의 백제 성곽을 보고 있어."
+            ]
+          ]
+        },
+        {
+          "case_suffix": 5,
+          "case_type": "clarification_required",
+          "query": "그 유적에서 걸어서 가까운 다른 역사 장소를 알려줘.",
+          "judgments": [],
+          "missing_information": [
+            "기준 유적",
+            "도보 거리 또는 시간"
+          ],
+          "expected_action": "기준 유적과 도보 범위를 확인한 뒤 장소를 선택한다."
+        }
+      ]
+    },
+    {
+      "group_id": "aquariums",
+      "split": "development",
+      "place_ids": [
+        109,
+        403
+      ],
+      "evidence_anchors": {
+        "109": [
+          "13개의 다양한 테마존",
+          "해양생물"
+        ],
+        "403": [
+          "상어가 서식",
+          "대형수족관"
+        ]
+      },
+      "cases": [
+        {
+          "case_suffix": 1,
+          "case_type": "exact_name",
+          "query": "롯데월드 아쿠아리움을 찾아줘.",
+          "judgments": [
+            {
+              "place_id": 109,
+              "relevance": 3,
+              "rationale": "장소명이 일치한다."
+            },
+            {
+              "place_id": 403,
+              "relevance": 0,
+              "rationale": "코엑스의 별개 수족관이다."
+            }
+          ]
+        },
+        {
+          "case_suffix": 2,
+          "case_type": "semantic",
+          "query": "서울에서 상어 종류가 많이 전시된 대형 수족관을 가고 싶어.",
+          "judgments": [
+            {
+              "place_id": 403,
+              "relevance": 3,
+              "rationale": "상어의 종과 개체 수가 많은 대형수족관으로 명시되어 있다.",
+              "semantic_constraint_support": {
+                "many_shark_species": "supported"
+              }
+            },
+            {
+              "place_id": 109,
+              "relevance": 1,
+              "rationale": "해양생물 수족관이라는 주제는 관련되지만 상어 종류가 많다는 필수 조건의 근거가 없어 정답에서 제외한다.",
+              "semantic_constraint_support": {
+                "many_shark_species": "not_supported"
+              }
+            }
+          ],
+          "semantic_constraints": [
+            {
+              "id": "many_shark_species",
+              "description": "상어 종류가 많이 전시되어 있다."
+            }
+          ]
+        },
+        {
+          "case_suffix": 3,
+          "case_type": "multiple_relevant",
+          "query": "서울에서 여러 해양생물을 관찰할 수 있는 수족관들을 보여줘.",
+          "judgments": [
+            {
+              "place_id": 109,
+              "relevance": 3,
+              "rationale": "다양한 해양생물을 관찰하는 아쿠아리움이다."
+            },
+            {
+              "place_id": 403,
+              "relevance": 3,
+              "rationale": "다양한 수중생물을 만나는 대형수족관이다."
+            }
+          ]
+        },
+        {
+          "case_suffix": 4,
+          "case_type": "context_constraints",
+          "query": "잠실 쪽은 가봤으니 빼고 강남에 있는 수족관을 찾아줘.",
+          "judgments": [
+            {
+              "place_id": 403,
+              "relevance": 3,
+              "rationale": "강남의 수족관이다."
+            },
+            {
+              "place_id": 109,
+              "relevance": 0,
+              "rationale": "송파에 있으며 이미 방문한 장소로 제외했다."
+            }
+          ],
+          "city": "강남",
+          "exclude_place_ids": [
+            109
+          ],
+          "conversation": [
+            [
+              "user",
+              "롯데월드 아쿠아리움은 지난번에 다녀왔어."
+            ]
+          ]
+        },
+        {
+          "case_suffix": 5,
+          "case_type": "insufficient_evidence",
+          "query": "부산에 있는 아쿠아리움만 찾아줘.",
+          "judgments": [],
+          "reference_place_ids": [],
+          "missing_information": [
+            "부산 관광지 레코드"
+          ],
+          "expected_action": "이 스냅샷에는 부산 장소가 없으므로 서울 수족관을 부산의 정답으로 대신 제시하지 않는다.",
+          "region": "부산",
+          "absence_check": {
+            "field": "region",
+            "value": "부산",
+            "expected_matches": 0
+          }
+        }
+      ]
+    },
+    {
+      "group_id": "family_parks",
+      "split": "development",
+      "place_ids": [
+        311,
+        319,
+        121,
+        394
+      ],
+      "evidence_anchors": {
+        "121": [
+          "어린이놀이터",
+          "울창한 숲"
+        ],
+        "311": [
+          "돗자리를 깔고",
+          "넓은 잔디광장"
+        ],
+        "319": [
+          "넓은 잔디밭과 연못",
+          "야외조각품"
+        ],
+        "394": [
+          "근린공원"
+        ]
+      },
+      "cases": [
+        {
+          "case_suffix": 1,
+          "case_type": "exact_name",
+          "query": "청담도로공원을 찾아줘.",
+          "judgments": [
+            {
+              "place_id": 394,
+              "relevance": 3,
+              "rationale": "정확한 장소명이 존재한다. 임베딩 누락은 시스템의 검색 누락 원인이며 정답에서 제외할 이유가 아니다."
+            },
+            {
+              "place_id": 311,
+              "relevance": 0,
+              "rationale": "다른 공원이다."
+            },
+            {
+              "place_id": 319,
+              "relevance": 0,
+              "rationale": "다른 공원이다."
+            }
+          ]
+        },
+        {
+          "case_suffix": 2,
+          "case_type": "semantic",
+          "query": "용산에서 잔디밭과 연못이 있고 야외 조각도 보며 쉴 수 있는 공원을 원해.",
+          "judgments": [
+            {
+              "place_id": 319,
+              "relevance": 3,
+              "rationale": "잔디밭·연못·야외조각품을 갖춘 용산 공원이다."
+            },
+            {
+              "place_id": 311,
+              "relevance": 0,
+              "rationale": "송파이므로 지역 조건에서 제외된다."
+            },
+            {
+              "place_id": 121,
+              "relevance": 0,
+              "rationale": "서초이므로 지역 조건에서 제외된다."
+            }
+          ],
+          "city": "용산"
+        },
+        {
+          "case_suffix": 3,
+          "case_type": "multiple_relevant",
+          "query": "서울에서 아이들과 바깥 나들이를 하거나 넓은 녹지에서 쉴 곳을 찾고 있어.",
+          "judgments": [
+            {
+              "place_id": 311,
+              "relevance": 3,
+              "rationale": "아이들과 뛰어놀 수 있는 잔디광장이다."
+            },
+            {
+              "place_id": 319,
+              "relevance": 3,
+              "rationale": "넓은 잔디밭과 휴식 시설이 있는 공원이다."
+            },
+            {
+              "place_id": 121,
+              "relevance": 3,
+              "rationale": "어린이놀이터와 가족 나들이 공간이 있다."
+            }
+          ]
+        },
+        {
+          "case_suffix": 4,
+          "case_type": "context_constraints",
+          "query": "지금 선택한 공원에서 500m 안으로만 찾아줘. 돗자리를 펴고 아이와 놀 공간이면 좋겠어.",
+          "judgments": [
+            {
+              "place_id": 311,
+              "relevance": 3,
+              "rationale": "기준점 자체가 피크닉 가능한 잔디광장이다."
+            },
+            {
+              "place_id": 319,
+              "relevance": 0,
+              "rationale": "지정한 반경 밖에 있다."
+            },
+            {
+              "place_id": 121,
+              "relevance": 0,
+              "rationale": "지정한 반경 밖에 있다."
+            }
+          ],
+          "area": {
+            "center_place_id": 311,
+            "radius_meters": 500
+          },
+          "conversation": [
+            [
+              "user",
+              "지도에서 올림픽공원피크닉장을 선택했어."
+            ]
+          ]
+        },
+        {
+          "case_suffix": 5,
+          "case_type": "clarification_required",
+          "query": "우리 집에서 가장 가까운 피크닉 장소가 어디야?",
+          "judgments": [],
+          "missing_information": [
+            "출발 위치"
+          ],
+          "expected_action": "집 주소나 현재 위치가 없어 가장 가까운 장소를 정할 수 없으므로 출발 위치를 묻는다."
+        }
+      ]
+    },
+    {
+      "group_id": "wetlands",
+      "split": "development",
+      "place_ids": [
+        6,
+        289,
+        48,
+        8,
+        222
+      ],
+      "evidence_anchors": {
+        "6": [
+          "자연관찰로",
+          "습지 생태계를 복원"
+        ],
+        "48": [
+          "동식물을 관찰",
+          "생태연못",
+          "산책로"
+        ],
+        "289": [
+          "생태해설, 자연관찰",
+          "갈대와 물억새",
+          "황조롱이"
+        ],
+        "8": [
+          "생태습지",
+          "종다양성"
+        ]
+      },
+      "cases": [
+        {
+          "case_suffix": 1,
+          "case_type": "exact_name",
+          "query": "강서습지생태공원을 찾아줘.",
+          "judgments": [
+            {
+              "place_id": 6,
+              "relevance": 3,
+              "rationale": "장소명이 일치한다."
+            },
+            {
+              "place_id": 289,
+              "relevance": 0,
+              "rationale": "여의도에 있는 다른 생태공원이다."
+            },
+            {
+              "place_id": 48,
+              "relevance": 0,
+              "rationale": "구로의 다른 생태공원이다."
+            }
+          ]
+        },
+        {
+          "case_suffix": 2,
+          "case_type": "semantic",
+          "query": "여의도 빌딩숲 사이에서 갈대와 야생 동식물을 관찰하며 걸을 곳을 알려줘.",
+          "judgments": [
+            {
+              "place_id": 289,
+              "relevance": 3,
+              "rationale": "여의도의 갈대·야생 동식물·산책로가 설명되어 있다."
+            },
+            {
+              "place_id": 6,
+              "relevance": 0,
+              "rationale": "강서에 있어 지역 조건을 만족하지 않는다."
+            },
+            {
+              "place_id": 48,
+              "relevance": 0,
+              "rationale": "구로에 있어 지역 조건을 만족하지 않는다."
+            }
+          ],
+          "city": "영등포"
+        },
+        {
+          "case_suffix": 3,
+          "case_type": "multiple_relevant",
+          "query": "서울에서 습지나 연못 주변 생물을 관찰할 수 있는 생태공원을 추천해줘.",
+          "judgments": [
+            {
+              "place_id": 6,
+              "relevance": 3,
+              "rationale": "습지 생태계와 자연관찰로가 있다.",
+              "semantic_constraint_support": {
+                "wetland_or_pond": "supported",
+                "organism_observation": "supported"
+              }
+            },
+            {
+              "place_id": 289,
+              "relevance": 3,
+              "rationale": "습지 식물·샛강 생물과 생태관찰 프로그램이 있다.",
+              "semantic_constraint_support": {
+                "wetland_or_pond": "supported",
+                "organism_observation": "supported"
+              }
+            },
+            {
+              "place_id": 48,
+              "relevance": 3,
+              "rationale": "생태연못과 동식물 관찰 공간이 있다.",
+              "semantic_constraint_support": {
+                "wetland_or_pond": "supported",
+                "organism_observation": "supported"
+              }
+            },
+            {
+              "place_id": 8,
+              "relevance": 1,
+              "rationale": "생태습지와 서식공간은 있으나 생물을 관찰할 수 있다는 원문 근거가 없어 정답에서 제외한다.",
+              "semantic_constraint_support": {
+                "wetland_or_pond": "supported",
+                "organism_observation": "not_supported"
+              }
+            },
+            {
+              "place_id": 222,
+              "relevance": 3,
+              "rationale": "습지원에 수생식물과 습지 생물을 관찰하는 데크가 있는 생태공원이다.",
+              "semantic_constraint_support": {
+                "wetland_or_pond": "supported",
+                "organism_observation": "supported"
+              }
+            }
+          ],
+          "semantic_constraints": [
+            {
+              "id": "wetland_or_pond",
+              "description": "습지나 연못이 있다."
+            },
+            {
+              "id": "organism_observation",
+              "description": "생물을 관찰할 수 있다는 근거가 있다."
+            }
+          ]
+        },
+        {
+          "case_suffix": 4,
+          "case_type": "context_constraints",
+          "query": "강서 쪽은 빼줘. 이번에는 구로에서 생태연못과 산책로가 있는 곳을 찾을래.",
+          "judgments": [
+            {
+              "place_id": 48,
+              "relevance": 3,
+              "rationale": "구로의 생태연못과 산책로가 있는 공원이다."
+            },
+            {
+              "place_id": 6,
+              "relevance": 0,
+              "rationale": "제외 장소이며 강서에 있다."
+            },
+            {
+              "place_id": 289,
+              "relevance": 0,
+              "rationale": "영등포에 있어 구로 조건을 만족하지 않는다."
+            }
+          ],
+          "city": "구로",
+          "exclude_place_ids": [
+            6
+          ],
+          "conversation": [
+            [
+              "user",
+              "강서습지생태공원은 지난주에 다녀왔어."
+            ]
+          ]
+        },
+        {
+          "case_suffix": 5,
+          "case_type": "insufficient_evidence",
+          "query": "오늘 여의도샛강생태공원에 황조롱이가 몇 마리 있는지 알려줘.",
+          "judgments": [],
+          "reference_place_ids": [
+            289
+          ],
+          "missing_information": [
+            "오늘의 현장 생물 개체 수"
+          ],
+          "expected_action": "서식 소개와 현재 개체 수를 구분하고 현장 조사 없이는 수치를 확정할 수 없다고 답한다."
+        }
+      ]
+    },
+    {
+      "group_id": "mountains",
+      "split": "development",
+      "place_ids": [
+        27,
+        169,
+        317
+      ],
+      "evidence_anchors": {
+        "27": [
+          "연주대",
+          "서울대학교 입구",
+          "암봉"
+        ],
+        "169": [
+          "정상 부분이 온통 바위산",
+          "노원구"
+        ],
+        "317": [
+          "해발 348m",
+          "정상에서 바라보는"
+        ]
+      },
+      "cases": [
+        {
+          "case_suffix": 1,
+          "case_type": "exact_name",
+          "query": "관악산을 검색해줘.",
+          "judgments": [
+            {
+              "place_id": 27,
+              "relevance": 3,
+              "rationale": "요청한 산이다."
+            },
+            {
+              "place_id": 169,
+              "relevance": 0,
+              "rationale": "불암산은 다른 산이다."
+            },
+            {
+              "place_id": 317,
+              "relevance": 0,
+              "rationale": "용마산은 다른 산이다."
+            }
+          ]
+        },
+        {
+          "case_suffix": 2,
+          "case_type": "semantic",
+          "query": "연주대가 있고 서울대 입구 쪽에서도 오를 수 있는 산을 찾고 있어.",
+          "judgments": [
+            {
+              "place_id": 27,
+              "relevance": 3,
+              "rationale": "연주대와 서울대학교 입구에서 시작하는 등산로가 설명되어 있다."
+            },
+            {
+              "place_id": 169,
+              "relevance": 0,
+              "rationale": "질문의 연주대 근거가 없다."
+            },
+            {
+              "place_id": 317,
+              "relevance": 0,
+              "rationale": "질문의 연주대 근거가 없다."
+            }
+          ]
+        },
+        {
+          "case_suffix": 3,
+          "case_type": "multiple_relevant",
+          "query": "서울에서 바위 경관이나 정상 전망을 즐길 수 있는 등산 장소를 추천해줘.",
+          "judgments": [
+            {
+              "place_id": 27,
+              "relevance": 3,
+              "rationale": "암봉과 벼랑 위 연주대가 설명되어 있다."
+            },
+            {
+              "place_id": 169,
+              "relevance": 3,
+              "rationale": "정상 바위산과 경치가 설명되어 있다."
+            },
+            {
+              "place_id": 317,
+              "relevance": 3,
+              "rationale": "정상에서 서울·한강·북한산을 조망할 수 있다."
+            }
+          ]
+        },
+        {
+          "case_suffix": 4,
+          "case_type": "context_constraints",
+          "query": "관악산은 빼고 노원 쪽의 바위산으로 찾아줘.",
+          "judgments": [
+            {
+              "place_id": 169,
+              "relevance": 3,
+              "rationale": "노원에 있고 정상 부분이 바위산이다."
+            },
+            {
+              "place_id": 27,
+              "relevance": 0,
+              "rationale": "방문 완료로 제외했다."
+            },
+            {
+              "place_id": 317,
+              "relevance": 0,
+              "rationale": "중랑에 있어 노원 조건과 다르다."
+            }
+          ],
+          "city": "노원",
+          "exclude_place_ids": [
+            27
+          ],
+          "conversation": [
+            [
+              "user",
+              "관악산 등산은 끝냈어. 다음 산을 찾고 있어."
+            ]
+          ]
+        },
+        {
+          "case_suffix": 5,
+          "case_type": "clarification_required",
+          "query": "내 체력에 딱 맞는 등산 코스로 정해줘.",
+          "judgments": [],
+          "missing_information": [
+            "체력 수준",
+            "원하는 산행 시간",
+            "출발 지역"
+          ],
+          "expected_action": "체력 수준과 산행 시간 등 선택에 필요한 조건을 확인한다."
+        }
+      ]
+    },
+    {
+      "group_id": "railway",
+      "split": "development",
+      "place_ids": [
+        438,
+        74,
+        133,
+        134
+      ],
+      "evidence_anchors": {
+        "74": [
+          "야간 경관",
+          "환상의 기차역"
+        ],
+        "133": [
+          "구 서울역사의 원형",
+          "전시, 공연"
+        ],
+        "438": [
+          "실물 기차가 곳곳에 전시",
+          "옛 화랑대역",
+          "전시관"
+        ],
+        "134": [
+          "신도림선상역사 1호선 3층",
+          "유휴공간"
+        ]
+      },
+      "cases": [
+        {
+          "case_suffix": 1,
+          "case_type": "exact_name",
+          "query": "화랑대 철도공원을 찾아줘.",
+          "judgments": [
+            {
+              "place_id": 438,
+              "relevance": 3,
+              "rationale": "요청 장소와 일치한다."
+            },
+            {
+              "place_id": 74,
+              "relevance": 1,
+              "rationale": "같은 철도공원에 조성된 불빛정원이지만 별도 레코드이다."
+            },
+            {
+              "place_id": 133,
+              "relevance": 0,
+              "rationale": "구 서울역의 별개 공간이다."
+            }
+          ]
+        },
+        {
+          "case_suffix": 2,
+          "case_type": "semantic",
+          "query": "옛 간이역 주변에서 밤에 색색의 조명과 환상의 기차역을 보고 싶어.",
+          "judgments": [
+            {
+              "place_id": 74,
+              "relevance": 3,
+              "rationale": "화랑대역의 야간 경관과 환상의 기차역이 설명되어 있다."
+            },
+            {
+              "place_id": 438,
+              "relevance": 2,
+              "rationale": "노원 불빛정원(74)의 인용에서 화랑대역 철도공원에 조성된 야간 경관임이 확인된다. 같은 시설의 상위 공간인 철도공원을 2점 대안으로 인정한다.",
+              "supporting_place_ids": [
+                74
+              ]
+            },
+            {
+              "place_id": 133,
+              "relevance": 0,
+              "rationale": "구 서울역 복합문화공간으로 질문의 야간 정원이 아니다."
+            }
+          ]
+        },
+        {
+          "case_suffix": 3,
+          "case_type": "multiple_relevant",
+          "query": "서울에서 옛 철도역이나 철도 시설을 문화공간으로 바꾼 곳들을 가고 싶어.",
+          "judgments": [
+            {
+              "place_id": 438,
+              "relevance": 3,
+              "rationale": "폐철로와 간이역을 공원과 전시관으로 바꿨다.",
+              "semantic_constraint_support": {
+                "former_railway_facility_converted": "supported"
+              }
+            },
+            {
+              "place_id": 74,
+              "relevance": 2,
+              "rationale": "화랑대역 철도공원에 조성된 야간 정원이다.",
+              "semantic_constraint_support": {
+                "former_railway_facility_converted": "supported"
+              }
+            },
+            {
+              "place_id": 133,
+              "relevance": 3,
+              "rationale": "구 서울역을 복원한 복합문화공간이다.",
+              "semantic_constraint_support": {
+                "former_railway_facility_converted": "supported"
+              }
+            },
+            {
+              "place_id": 14,
+              "relevance": 3,
+              "rationale": "경의선 폐선부지에 조성한 책 테마거리로, 옛 철도 시설을 문화공간으로 바꾼 사례이다.",
+              "semantic_constraint_support": {
+                "former_railway_facility_converted": "supported"
+              }
+            },
+            {
+              "place_id": 134,
+              "relevance": 1,
+              "rationale": "역사 내 유휴공간을 복합문화공간으로 쓰지만 옛 철도 시설을 전환했다는 근거는 없어 정답에서 제외한다.",
+              "semantic_constraint_support": {
+                "former_railway_facility_converted": "not_supported"
+              }
+            }
+          ],
+          "semantic_constraints": [
+            {
+              "id": "former_railway_facility_converted",
+              "description": "옛 철도역·철도 시설이었던 곳을 문화공간으로 바꾸었다."
+            }
+          ]
+        },
+        {
+          "case_suffix": 4,
+          "case_type": "context_constraints",
+          "query": "노원에 있는 두 곳은 가봤으니 제외하고, 중구의 옛 역 건물 전시공간을 찾아줘.",
+          "judgments": [
+            {
+              "place_id": 133,
+              "relevance": 3,
+              "rationale": "중구에 있고 구 서울역을 복원한 전시공간이다."
+            },
+            {
+              "place_id": 438,
+              "relevance": 0,
+              "rationale": "이미 방문해 제외한 노원 장소이다."
+            },
+            {
+              "place_id": 74,
+              "relevance": 0,
+              "rationale": "이미 방문해 제외한 노원 장소이다."
+            }
+          ],
+          "city": "중",
+          "exclude_place_ids": [
+            438,
+            74
+          ],
+          "conversation": [
+            [
+              "user",
+              "화랑대 철도공원과 노원 불빛정원은 다녀왔어."
+            ]
+          ]
+        },
+        {
+          "case_suffix": 5,
+          "case_type": "insufficient_evidence",
+          "query": "강원 지역에서 옛 기차역을 활용한 문화공간을 찾아줘.",
+          "judgments": [],
+          "reference_place_ids": [],
+          "missing_information": [
+            "강원 관광지 레코드"
+          ],
+          "expected_action": "현재 서울 코퍼스만으로 강원 지역 후보를 제시할 수 없다고 설명한다.",
+          "region": "강원",
+          "absence_check": {
+            "field": "region",
+            "value": "강원",
+            "expected_matches": 0
+          }
+        }
+      ]
+    },
+    {
+      "group_id": "crafts",
+      "split": "test",
+      "place_ids": [
+        55,
+        427,
+        415
+      ],
+      "evidence_anchors": {
+        "55": [
+          "물레성형과 핸드빌딩",
+          "완성품은 4주"
+        ],
+        "415": [
+          "돌에 직접 새김",
+          "자신의 이름을 스스로"
+        ],
+        "427": [
+          "향수를 만들",
+          "향료를 스스로 배합",
+          "원데이 클래스"
+        ]
+      },
+      "cases": [
+        {
+          "case_suffix": 1,
+          "case_type": "exact_name",
+          "query": "길상도예를 찾아줘.",
+          "judgments": [
+            {
+              "place_id": 55,
+              "relevance": 3,
+              "rationale": "요청한 공방이다."
+            },
+            {
+              "place_id": 427,
+              "relevance": 0,
+              "rationale": "향수 공방으로 다른 장소이다."
+            },
+            {
+              "place_id": 415,
+              "relevance": 0,
+              "rationale": "캘리그래피 공방으로 다른 장소이다."
+            }
+          ]
+        },
+        {
+          "case_suffix": 2,
+          "case_type": "semantic",
+          "query": "여러 향료를 직접 섞어서 나만의 향수를 만드는 원데이 체험을 해보고 싶어.",
+          "judgments": [
+            {
+              "place_id": 427,
+              "relevance": 3,
+              "rationale": "개인 맞춤 향수와 원데이 클래스, 향료 배합 체험이 명시되어 있다."
+            },
+            {
+              "place_id": 55,
+              "relevance": 0,
+              "rationale": "도자기 제작 체험이다."
+            },
+            {
+              "place_id": 415,
+              "relevance": 0,
+              "rationale": "돌도장 새김 체험이다."
+            }
+          ]
+        },
+        {
+          "case_suffix": 3,
+          "case_type": "multiple_relevant",
+          "query": "서울에서 내가 직접 만들어 가져갈 수 있는 공예 체험 장소를 추천해줘. 완성품은 나중에 받아도 돼.",
+          "judgments": [
+            {
+              "place_id": 55,
+              "relevance": 3,
+              "rationale": "도자기를 직접 만들며 완성품은 약 4주 뒤 수령한다.",
+              "semantic_constraint_support": {
+                "take_home_product": "supported"
+              }
+            },
+            {
+              "place_id": 427,
+              "relevance": 1,
+              "rationale": "향료를 직접 배합해 향수를 만드는 체험은 있으나 만든 향수를 가져가거나 받는다는 원문 근거가 없어 정답에서 제외한다.",
+              "semantic_constraint_support": {
+                "take_home_product": "not_supported"
+              }
+            },
+            {
+              "place_id": 415,
+              "relevance": 1,
+              "rationale": "돌에 이름을 직접 새기는 체험은 있으나 완성품을 가져가거나 받는다는 원문 근거가 없어 정답에서 제외한다.",
+              "semantic_constraint_support": {
+                "take_home_product": "not_supported"
+              }
+            },
+            {
+              "place_id": 164,
+              "relevance": 1,
+              "rationale": "장인이 진행하는 전통공예 제작 체험은 있으나 완성품 수령·반출 근거가 없어 정답에서 제외한다.",
+              "semantic_constraint_support": {
+                "take_home_product": "not_supported"
+              }
+            }
+          ],
+          "semantic_constraints": [
+            {
+              "id": "take_home_product",
+              "description": "직접 만든 완성품을 가져가거나 나중에 받을 수 있다는 근거가 있다."
+            }
+          ]
+        },
+        {
+          "case_suffix": 4,
+          "case_type": "context_constraints",
+          "query": "향수 공방은 빼고, 서초에서 물레나 손으로 도자기를 만들 곳을 찾아줘.",
+          "judgments": [
+            {
+              "place_id": 55,
+              "relevance": 3,
+              "rationale": "서초에 있고 물레성형·핸드빌딩을 제공한다."
+            },
+            {
+              "place_id": 427,
+              "relevance": 0,
+              "rationale": "제외 장소이다."
+            },
+            {
+              "place_id": 415,
+              "relevance": 0,
+              "rationale": "종로의 돌도장 체험으로 조건과 다르다."
+            }
+          ],
+          "city": "서초",
+          "exclude_place_ids": [
+            427
+          ],
+          "conversation": [
+            [
+              "user",
+              "향기억에서는 체험을 했어."
+            ]
+          ]
+        },
+        {
+          "case_suffix": 5,
+          "case_type": "clarification_required",
+          "query": "아까 고른 공방 말고 같은 체험을 할 수 있는 곳을 알려줘.",
+          "judgments": [],
+          "missing_information": [
+            "기준 공방",
+            "원하는 체험 종류"
+          ],
+          "expected_action": "기준 공방과 체험 종류가 대화에 없으므로 먼저 확인한다."
+        }
+      ]
+    },
+    {
+      "group_id": "food_streets",
+      "split": "development",
+      "place_ids": [
+        24,
+        363,
+        254
+      ],
+      "evidence_anchors": {
+        "24": [
+          "족발집이 골목"
+        ],
+        "254": [
+          "떡볶이집이 양쪽",
+          "떡볶이집마다 있었던 DJ박스"
+        ],
+        "363": [
+          "족발거리"
+        ]
+      },
+      "cases": [
+        {
+          "case_suffix": 1,
+          "case_type": "exact_name",
+          "query": "공덕동 족발골목을 찾아줘.",
+          "judgments": [
+            {
+              "place_id": 24,
+              "relevance": 3,
+              "rationale": "요청한 골목이다."
+            },
+            {
+              "place_id": 363,
+              "relevance": 0,
+              "rationale": "장충동의 별개 골목이다."
+            },
+            {
+              "place_id": 254,
+              "relevance": 0,
+              "rationale": "떡볶이 골목이다."
+            }
+          ]
+        },
+        {
+          "case_suffix": 2,
+          "case_type": "semantic",
+          "query": "떡볶이집마다 DJ박스가 있던 추억의 먹거리 골목을 가보고 싶어.",
+          "judgments": [
+            {
+              "place_id": 254,
+              "relevance": 3,
+              "rationale": "떡볶이집 DJ박스의 역사가 명시되어 있다."
+            },
+            {
+              "place_id": 24,
+              "relevance": 0,
+              "rationale": "족발 골목으로 DJ박스 근거가 없다."
+            },
+            {
+              "place_id": 363,
+              "relevance": 0,
+              "rationale": "족발 골목으로 DJ박스 근거가 없다."
+            }
+          ]
+        },
+        {
+          "case_suffix": 3,
+          "case_type": "multiple_relevant",
+          "query": "서울에서 오래된 족발집들이 모여 있는 골목들을 알려줘.",
+          "judgments": [
+            {
+              "place_id": 24,
+              "relevance": 3,
+              "rationale": "족발집들이 모여 형성된 오래된 골목이다."
+            },
+            {
+              "place_id": 363,
+              "relevance": 3,
+              "rationale": "수십 년 역사의 족발집들이 모여 있다."
+            },
+            {
+              "place_id": 254,
+              "relevance": 0,
+              "rationale": "떡볶이 골목으로 족발 골목 조건과 다르다."
+            }
+          ]
+        },
+        {
+          "case_suffix": 4,
+          "case_type": "context_constraints",
+          "query": "공덕은 이미 갔어. 중구에서 족발집들이 모여 있는 다른 골목으로 골라줘.",
+          "judgments": [
+            {
+              "place_id": 363,
+              "relevance": 3,
+              "rationale": "중구 장충동의 족발 골목이다."
+            },
+            {
+              "place_id": 24,
+              "relevance": 0,
+              "rationale": "제외 장소이며 마포에 있다."
+            },
+            {
+              "place_id": 254,
+              "relevance": 0,
+              "rationale": "중구이지만 족발 골목 조건을 만족하지 않는다."
+            }
+          ],
+          "city": "중",
+          "exclude_place_ids": [
+            24
+          ],
+          "conversation": [
+            [
+              "user",
+              "공덕동 족발골목은 다녀왔어."
+            ]
+          ]
+        },
+        {
+          "case_suffix": 5,
+          "case_type": "insufficient_evidence",
+          "query": "지금 장충동 족발 골목에서 줄이 가장 짧은 가게와 정확한 대기 인원을 알려줘.",
+          "judgments": [],
+          "reference_place_ids": [
+            363
+          ],
+          "missing_information": [
+            "개별 가게의 현재 대기 인원"
+          ],
+          "expected_action": "골목 소개만으로 가게별 실시간 대기를 비교할 수 없다고 설명한다."
+        }
+      ]
+    },
+    {
+      "group_id": "future_technology",
+      "split": "test",
+      "place_ids": [
+        230,
+        448,
+        223
+      ],
+      "evidence_anchors": {
+        "223": [
+          "메타버스 체험관",
+          "AI융합 체험관",
+          "로보틱스"
+        ],
+        "230": [
+          "코딩, 로봇, 드론",
+          "교육은 성동구"
+        ],
+        "448": [
+          "드론, 코딩, VR",
+          "커리큘럼"
+        ]
+      },
+      "cases": [
+        {
+          "case_suffix": 1,
+          "case_type": "exact_name",
+          "query": "G밸리 4차산업체험관을 검색해줘.",
+          "judgments": [
+            {
+              "place_id": 448,
+              "relevance": 3,
+              "rationale": "요청한 체험관이다."
+            },
+            {
+              "place_id": 230,
+              "relevance": 0,
+              "rationale": "성동의 다른 체험센터이다."
+            },
+            {
+              "place_id": 223,
+              "relevance": 0,
+              "rationale": "강서의 다른 체험관이다."
+            }
+          ]
+        },
+        {
+          "case_suffix": 2,
+          "case_type": "semantic",
+          "query": "메타버스 체험관과 AI 융합 체험관이 나뉘어 있는 디지털 놀이터를 가고 싶어.",
+          "judgments": [
+            {
+              "place_id": 223,
+              "relevance": 3,
+              "rationale": "메타버스·AI융합 등으로 구성된 디지털 놀이터라고 명시되어 있다.",
+              "semantic_constraint_support": {
+                "metaverse_ai_spaces": "supported"
+              }
+            },
+            {
+              "place_id": 230,
+              "relevance": 1,
+              "rationale": "미래기술 체험이라는 주제는 관련되지만 질문의 메타버스·AI 공간 구성 근거가 없어 정답에서 제외한다.",
+              "semantic_constraint_support": {
+                "metaverse_ai_spaces": "not_supported"
+              }
+            },
+            {
+              "place_id": 448,
+              "relevance": 1,
+              "rationale": "미래기술 체험은 관련되나 메타버스·AI 공간 구성이 확인되지 않는다.",
+              "semantic_constraint_support": {
+                "metaverse_ai_spaces": "not_supported"
+              }
+            }
+          ],
+          "semantic_constraints": [
+            {
+              "id": "metaverse_ai_spaces",
+              "description": "메타버스 체험관과 AI 융합 체험관으로 나뉜 공간 구성이 있다."
+            }
+          ]
+        },
+        {
+          "case_suffix": 3,
+          "case_type": "multiple_relevant",
+          "query": "서울에서 코딩이나 로봇, 가상현실 같은 미래 기술을 직접 체험하는 곳을 알려줘.",
+          "judgments": [
+            {
+              "place_id": 230,
+              "relevance": 3,
+              "rationale": "코딩·로봇·드론·VR 체험 교육을 제공한다."
+            },
+            {
+              "place_id": 448,
+              "relevance": 3,
+              "rationale": "드론·코딩·VR 등 체험 프로그램을 제공한다."
+            },
+            {
+              "place_id": 223,
+              "relevance": 3,
+              "rationale": "메타버스·로보틱스·AI융합 체험을 제공한다."
+            }
+          ]
+        },
+        {
+          "case_suffix": 4,
+          "case_type": "context_constraints",
+          "query": "강서 쪽은 빼줘. 이번에는 구로에서 코딩이나 드론을 체험할 곳을 원해.",
+          "judgments": [
+            {
+              "place_id": 448,
+              "relevance": 3,
+              "rationale": "구로에 있으며 드론·코딩 체험을 제공한다."
+            },
+            {
+              "place_id": 223,
+              "relevance": 0,
+              "rationale": "제외 장소이며 강서에 있다."
+            },
+            {
+              "place_id": 230,
+              "relevance": 0,
+              "rationale": "성동에 있어 구로 조건과 다르다."
+            }
+          ],
+          "city": "구로",
+          "exclude_place_ids": [
+            223
+          ],
+          "conversation": [
+            [
+              "user",
+              "서울퓨처랩은 방문했어."
+            ]
+          ]
+        },
+        {
+          "case_suffix": 5,
+          "case_type": "clarification_required",
+          "query": "성동 AI·미래기술체험센터 교육을 내가 신청해도 되는지 판단해줘.",
+          "judgments": [],
+          "reference_place_ids": [
+            230
+          ],
+          "missing_information": [
+            "성동구 거주 여부",
+            "관내 학교 재학 또는 직장 재직 여부"
+          ],
+          "expected_action": "원문에 교육 대상 제한이 있으므로 사용자가 대상에 해당하는지 먼저 확인한다."
+        }
+      ]
+    },
+    {
+      "group_id": "safety_education",
+      "split": "development",
+      "place_ids": [
+        31,
+        278,
+        407
+      ],
+      "evidence_anchors": {
+        "31": [
+          "화재나 지진, 태풍",
+          "온라인 사전 예약"
+        ],
+        "278": [
+          "신호등과 횡단보도",
+          "교통사고 예방법"
+        ],
+        "407": [
+          "어린이들이 자동차를 운전",
+          "보행교육장",
+          "사전 예약"
+        ]
+      },
+      "cases": [
+        {
+          "case_suffix": 1,
+          "case_type": "exact_name",
+          "query": "광나루안전체험관을 찾아줘.",
+          "judgments": [
+            {
+              "place_id": 31,
+              "relevance": 3,
+              "rationale": "요청 장소이다."
+            },
+            {
+              "place_id": 278,
+              "relevance": 0,
+              "rationale": "양천의 교통안전교육장이다."
+            },
+            {
+              "place_id": 407,
+              "relevance": 0,
+              "rationale": "별개의 교통안전체험관이다."
+            }
+          ]
+        },
+        {
+          "case_suffix": 2,
+          "case_type": "semantic",
+          "query": "아이가 작은 자동차를 직접 운전하면서 교통안전을 배우는 체험을 원해.",
+          "judgments": [
+            {
+              "place_id": 407,
+              "relevance": 3,
+              "rationale": "어린이가 자동차를 운전하는 교통안전 체험이 명시되어 있다.",
+              "semantic_constraint_support": {
+                "child_driving": "supported"
+              }
+            },
+            {
+              "place_id": 278,
+              "relevance": 1,
+              "rationale": "교통안전 체험이라는 주제는 관련되지만 어린이가 직접 자동차를 운전하는 필수 조건의 근거가 없어 정답에서 제외한다.",
+              "semantic_constraint_support": {
+                "child_driving": "not_supported"
+              }
+            },
+            {
+              "place_id": 31,
+              "relevance": 0,
+              "rationale": "화재·지진 등의 재난 체험 시설이다.",
+              "semantic_constraint_support": {
+                "child_driving": "not_supported"
+              }
+            }
+          ],
+          "semantic_constraints": [
+            {
+              "id": "child_driving",
+              "description": "어린이가 자동차를 직접 운전하는 체험이 있다."
+            }
+          ]
+        },
+        {
+          "case_suffix": 3,
+          "case_type": "multiple_relevant",
+          "query": "어린이가 신호등이나 횡단보도 같은 교통안전을 배울 수 있는 곳들을 알려줘.",
+          "judgments": [
+            {
+              "place_id": 278,
+              "relevance": 3,
+              "rationale": "신호등과 횡단보도 건너기 교육을 한다."
+            },
+            {
+              "place_id": 407,
+              "relevance": 3,
+              "rationale": "신호등·보행교육장과 교통문화 체험을 제공한다."
+            },
+            {
+              "place_id": 31,
+              "relevance": 1,
+              "rationale": "안전교육 시설이지만 교통안전보다 재난 대응 중심이다."
+            }
+          ]
+        },
+        {
+          "case_suffix": 4,
+          "case_type": "context_constraints",
+          "query": "자동차 체험은 했어. 광진구 안에서 화재나 지진을 가상으로 체험하는 곳을 찾아줘.",
+          "judgments": [
+            {
+              "place_id": 31,
+              "relevance": 3,
+              "rationale": "광진구의 화재·지진 가상 재난 체험관이다."
+            },
+            {
+              "place_id": 407,
+              "relevance": 0,
+              "rationale": "방문 완료로 제외했다."
+            },
+            {
+              "place_id": 278,
+              "relevance": 0,
+              "rationale": "양천의 교통 교육장이다."
+            }
+          ],
+          "city": "광진",
+          "exclude_place_ids": [
+            407
+          ],
+          "conversation": [
+            [
+              "user",
+              "키즈오토파크의 자동차 체험은 끝냈어."
+            ]
+          ]
+        },
+        {
+          "case_suffix": 5,
+          "case_type": "insufficient_evidence",
+          "query": "내일 오전 광나루안전체험관에 우리 반 25명 예약이 가능한지 확정해줘.",
+          "judgments": [],
+          "reference_place_ids": [
+            31
+          ],
+          "missing_information": [
+            "내일 오전 단체 예약 잔여 정원"
+          ],
+          "expected_action": "사전 예약이 필요하다는 원문 사실만 안내하고 예약 가능 여부는 확정하지 않는다."
+        }
+      ]
+    },
+    {
+      "group_id": "water_relaxation",
+      "split": "development",
+      "place_ids": [
+        5,
+        324,
+        411
+      ],
+      "evidence_anchors": {
+        "5": [
+          "찜질방, 사우나",
+          "온탕"
+        ],
+        "324": [
+          "지하 1,040m",
+          "천연유황온천수"
+        ],
+        "411": [
+          "실내형으로 운영",
+          "급류 타기",
+          "찜질과 스파"
+        ]
+      },
+      "cases": [
+        {
+          "case_suffix": 1,
+          "case_type": "exact_name",
+          "query": "우리유황온천을 찾아줘.",
+          "judgments": [
+            {
+              "place_id": 324,
+              "relevance": 3,
+              "rationale": "요청 장소이다."
+            },
+            {
+              "place_id": 5,
+              "relevance": 0,
+              "rationale": "강변스파랜드는 별개의 시설이다."
+            },
+            {
+              "place_id": 411,
+              "relevance": 0,
+              "rationale": "송파의 별개 워터파크이다."
+            }
+          ]
+        },
+        {
+          "case_suffix": 2,
+          "case_type": "semantic",
+          "query": "비가 와도 실내에서 급류를 타고 물놀이하다가 찜질도 할 수 있는 곳을 찾고 있어.",
+          "judgments": [
+            {
+              "place_id": 411,
+              "relevance": 3,
+              "rationale": "실내 워터파크·급류 타기·찜질이 모두 명시되어 있다."
+            },
+            {
+              "place_id": 5,
+              "relevance": 1,
+              "rationale": "찜질과 사우나는 있으나 급류 물놀이 근거는 없다."
+            },
+            {
+              "place_id": 324,
+              "relevance": 1,
+              "rationale": "온천욕은 가능하지만 급류 물놀이 근거는 없다."
+            }
+          ]
+        },
+        {
+          "case_suffix": 3,
+          "case_type": "multiple_relevant",
+          "query": "광진구에서 따뜻한 탕이나 사우나로 몸을 쉬게 할 곳을 알려줘.",
+          "judgments": [
+            {
+              "place_id": 5,
+              "relevance": 3,
+              "rationale": "광진의 사우나·온탕 시설이다."
+            },
+            {
+              "place_id": 324,
+              "relevance": 3,
+              "rationale": "광진의 유황온천탕 시설이다."
+            },
+            {
+              "place_id": 411,
+              "relevance": 0,
+              "rationale": "송파여서 광진 조건에 맞지 않는다."
+            }
+          ],
+          "city": "광진"
+        },
+        {
+          "case_suffix": 4,
+          "case_type": "context_constraints",
+          "query": "강변스파랜드는 빼고, 광진구에서 깊은 지하의 천연유황온천수를 쓰는 곳을 찾아줘.",
+          "judgments": [
+            {
+              "place_id": 324,
+              "relevance": 3,
+              "rationale": "광진에 있고 지하 1,040m 천연유황온천수를 공급한다."
+            },
+            {
+              "place_id": 5,
+              "relevance": 0,
+              "rationale": "명시적으로 제외했다."
+            },
+            {
+              "place_id": 411,
+              "relevance": 0,
+              "rationale": "송파이며 천연유황온천수 근거가 없다."
+            }
+          ],
+          "city": "광진",
+          "exclude_place_ids": [
+            5
+          ],
+          "conversation": [
+            [
+              "user",
+              "강변스파랜드는 이미 이용했어."
+            ]
+          ]
+        },
+        {
+          "case_suffix": 5,
+          "case_type": "clarification_required",
+          "query": "아까 본 스파에서 가까운 곳으로 바꿔줘.",
+          "judgments": [],
+          "missing_information": [
+            "기준 스파",
+            "거리 범위",
+            "원하는 시설 종류"
+          ],
+          "expected_action": "어느 스파를 기준으로 하는지와 원하는 범위를 확인한다."
+        }
+      ]
+    },
+    {
+      "group_id": "architecture",
+      "split": "development",
+      "place_ids": [
+        99,
+        110,
+        34
+      ],
+      "evidence_anchors": {
+        "34": [
+          "교각 하부 전망대",
+          "투명 유리"
+        ],
+        "99": [
+          "자하 하디드",
+          "곡선과 곡면"
+        ],
+        "110": [
+          "555m 높이",
+          "전망대인 서울스카이"
+        ]
+      },
+      "cases": [
+        {
+          "case_suffix": 1,
+          "case_type": "exact_name",
+          "query": "동대문디자인플라자 DDP를 찾아줘.",
+          "judgments": [
+            {
+              "place_id": 99,
+              "relevance": 3,
+              "rationale": "DDP와 정식 명칭이 같은 레코드이다."
+            },
+            {
+              "place_id": 110,
+              "relevance": 0,
+              "rationale": "다른 건축물이다."
+            },
+            {
+              "place_id": 34,
+              "relevance": 0,
+              "rationale": "다른 전망 공간이다."
+            }
+          ]
+        },
+        {
+          "case_suffix": 2,
+          "case_type": "semantic",
+          "query": "다리 교각 아래에서 한강을 보고 유리 바닥도 걸어볼 수 있는 전망대를 찾고 있어.",
+          "judgments": [
+            {
+              "place_id": 34,
+              "relevance": 3,
+              "rationale": "교각 하부 전망대와 투명 유리 바닥이 명시되어 있다."
+            },
+            {
+              "place_id": 110,
+              "relevance": 1,
+              "rationale": "전망대는 있지만 다리 아래 시설이 아니다."
+            },
+            {
+              "place_id": 99,
+              "relevance": 0,
+              "rationale": "질문의 교각 하부 전망대가 아니다."
+            }
+          ]
+        },
+        {
+          "case_suffix": 3,
+          "case_type": "multiple_relevant",
+          "query": "서울의 독특한 건축이나 전망 공간을 둘러보고 싶어.",
+          "judgments": [
+            {
+              "place_id": 99,
+              "relevance": 3,
+              "rationale": "자하 하디드의 곡선 건축이 설명되어 있다."
+            },
+            {
+              "place_id": 110,
+              "relevance": 3,
+              "rationale": "한국적 곡선을 모티브로 한 초고층 건물과 전망대가 있다."
+            },
+            {
+              "place_id": 34,
+              "relevance": 3,
+              "rationale": "특이한 교각 하부 전망대이다."
+            }
+          ]
+        },
+        {
+          "case_suffix": 4,
+          "case_type": "context_constraints",
+          "query": "DDP는 봤어. 송파에서 높은 건물의 전망 공간을 찾아줘.",
+          "judgments": [
+            {
+              "place_id": 110,
+              "relevance": 3,
+              "rationale": "송파의 초고층 건물에 서울스카이 전망대가 있다."
+            },
+            {
+              "place_id": 99,
+              "relevance": 0,
+              "rationale": "방문 완료로 제외했다."
+            },
+            {
+              "place_id": 34,
+              "relevance": 0,
+              "rationale": "강동의 교각 아래 전망대로 지역·높이 조건이 다르다."
+            }
+          ],
+          "city": "송파",
+          "exclude_place_ids": [
+            99
+          ],
+          "conversation": [
+            [
+              "user",
+              "동대문디자인플라자는 관람했어."
+            ]
+          ]
+        },
+        {
+          "case_suffix": 5,
+          "case_type": "insufficient_evidence",
+          "query": "오늘 롯데월드타워 전망대에서 몇 km 밖까지 보이는지 정확히 알려줘.",
+          "judgments": [],
+          "reference_place_ids": [
+            110
+          ],
+          "missing_information": [
+            "오늘 현재의 기상과 가시거리"
+          ],
+          "expected_action": "전망대 소개로 오늘의 가시거리를 확정하지 않고 실시간 기상 확인이 필요하다고 답한다."
+        }
+      ]
+    },
+    {
+      "group_id": "modern_history",
+      "split": "development",
+      "place_ids": [
+        189,
+        373,
+        96,
+        183,
+        97
+      ],
+      "evidence_anchors": {
+        "96": [
+          "자주독립의 의지",
+          "민주주의와 자유의지"
+        ],
+        "189": [
+          "백범 김구 선생이 서거",
+          "대한민국 임시정부의 활동 공간"
+        ],
+        "373": [
+          "을사늑약이 이곳",
+          "헤이그 특사"
+        ],
+        "183": [
+          "자주독립 정신을 후손에게"
+        ],
+        "97": [
+          "독립선언문을 검토하고 배부"
+        ]
+      },
+      "cases": [
+        {
+          "case_suffix": 1,
+          "case_type": "exact_name",
+          "query": "서울 경교장을 찾아줘.",
+          "judgments": [
+            {
+              "place_id": 189,
+              "relevance": 3,
+              "rationale": "요청한 장소이다."
+            },
+            {
+              "place_id": 373,
+              "relevance": 0,
+              "rationale": "중명전은 다른 역사 현장이다."
+            },
+            {
+              "place_id": 96,
+              "relevance": 0,
+              "rationale": "독립문은 다른 기념물이다."
+            }
+          ]
+        },
+        {
+          "case_suffix": 2,
+          "case_type": "semantic",
+          "query": "을사늑약이 체결되고 헤이그 특사 파견으로 이어진 역사 현장을 방문하고 싶어.",
+          "judgments": [
+            {
+              "place_id": 373,
+              "relevance": 3,
+              "rationale": "을사늑약 체결과 헤이그 특사 파견이 명시되어 있다."
+            },
+            {
+              "place_id": 189,
+              "relevance": 1,
+              "rationale": "근현대사 장소지만 질문의 사건 현장은 아니다."
+            },
+            {
+              "place_id": 96,
+              "relevance": 1,
+              "rationale": "자주독립 관련 기념물이지만 질문의 사건 현장은 아니다."
+            }
+          ]
+        },
+        {
+          "case_suffix": 3,
+          "case_type": "multiple_relevant",
+          "query": "서울에서 자주독립과 근현대사의 현장을 살펴볼 장소를 추천해줘.",
+          "judgments": [
+            {
+              "place_id": 189,
+              "relevance": 3,
+              "rationale": "임시정부 활동과 김구의 역사가 담긴 공간이다."
+            },
+            {
+              "place_id": 373,
+              "relevance": 3,
+              "rationale": "대한제국 외교와 을사늑약의 현장이다."
+            },
+            {
+              "place_id": 96,
+              "relevance": 3,
+              "rationale": "자주독립 의지를 다짐한 기념물이다."
+            },
+            {
+              "place_id": 183,
+              "relevance": 3,
+              "rationale": "애국지사의 자주독립 정신을 기억시키기 위해 조성한 독립공원으로 독립문을 포함한다."
+            },
+            {
+              "place_id": 97,
+              "relevance": 3,
+              "rationale": "3·1운동 때 독립선언문을 검토하고 배부한 위치를 알리는 자주독립 관련 역사 현장이다."
+            }
+          ]
+        },
+        {
+          "case_suffix": 4,
+          "case_type": "context_constraints",
+          "query": "중명전은 봤어. 이번에는 종로에서 임시정부 활동을 살펴볼 곳을 찾아줘.",
+          "judgments": [
+            {
+              "place_id": 189,
+              "relevance": 3,
+              "rationale": "종로의 대한민국 임시정부 활동 공간이다."
+            },
+            {
+              "place_id": 373,
+              "relevance": 0,
+              "rationale": "방문 완료로 제외했다."
+            },
+            {
+              "place_id": 96,
+              "relevance": 0,
+              "rationale": "서대문이며 임시정부 활동 공간 조건의 근거가 없다."
+            }
+          ],
+          "city": "종로",
+          "exclude_place_ids": [
+            373
+          ],
+          "conversation": [
+            [
+              "user",
+              "중명전 관람을 마쳤어."
+            ]
+          ]
+        },
+        {
+          "case_suffix": 5,
+          "case_type": "clarification_required",
+          "query": "그 역사 장소를 빼고 같은 시대의 다른 곳을 알려줘.",
+          "judgments": [],
+          "missing_information": [
+            "제외할 장소",
+            "관심 시대"
+          ],
+          "expected_action": "기준 장소와 관심 시대가 없어 먼저 확인한다."
+        }
+      ]
+    },
+    {
+      "group_id": "literary_homes",
+      "split": "development",
+      "place_ids": [
+        336,
+        337,
+        349,
+        437
+      ],
+      "evidence_anchors": {
+        "336": [
+          "반달 할아버지",
+          "동요집",
+          "생전에 그가 머물렀던 가옥"
+        ],
+        "337": [
+          "별 헤는 밤",
+          "누상동"
+        ],
+        "349": [
+          "작가 이상",
+          "아카이브"
+        ],
+        "437": [
+          "작곡가 홍난파",
+          "고향의 봄"
+        ]
+      },
+      "cases": [
+        {
+          "case_suffix": 1,
+          "case_type": "exact_name",
+          "query": "윤극영가옥을 검색해줘.",
+          "judgments": [
+            {
+              "place_id": 336,
+              "relevance": 3,
+              "rationale": "요청한 가옥이다."
+            },
+            {
+              "place_id": 337,
+              "relevance": 0,
+              "rationale": "윤동주의 별개 장소이다."
+            },
+            {
+              "place_id": 349,
+              "relevance": 0,
+              "rationale": "이상의 별개 장소이다."
+            }
+          ]
+        },
+        {
+          "case_suffix": 2,
+          "case_type": "semantic",
+          "query": "윤동주가 별 헤는 밤을 썼던 누상동 하숙집 터를 찾아줘.",
+          "judgments": [
+            {
+              "place_id": 337,
+              "relevance": 3,
+              "rationale": "누상동 하숙집에서 별 헤는 밤 등을 썼다고 명시되어 있다."
+            },
+            {
+              "place_id": 336,
+              "relevance": 0,
+              "rationale": "동요 작곡가 윤극영의 가옥이다."
+            },
+            {
+              "place_id": 349,
+              "relevance": 1,
+              "rationale": "문학가 집터이지만 윤동주의 장소는 아니다."
+            }
+          ]
+        },
+        {
+          "case_suffix": 3,
+          "case_type": "multiple_relevant",
+          "query": "서울에서 작가나 동요 작곡가가 살았던 집 또는 집터를 둘러보고 싶어.",
+          "judgments": [
+            {
+              "place_id": 336,
+              "relevance": 3,
+              "rationale": "동요 작곡가 윤극영이 머물렀던 가옥이다.",
+              "semantic_constraint_support": {
+                "writer_or_childrens_song_composer_home": "supported"
+              }
+            },
+            {
+              "place_id": 337,
+              "relevance": 3,
+              "rationale": "시인 윤동주가 머물렀던 집터이다.",
+              "semantic_constraint_support": {
+                "writer_or_childrens_song_composer_home": "supported"
+              }
+            },
+            {
+              "place_id": 349,
+              "relevance": 3,
+              "rationale": "작가 이상이 살았던 집터이다.",
+              "semantic_constraint_support": {
+                "writer_or_childrens_song_composer_home": "supported"
+              }
+            },
+            {
+              "place_id": 437,
+              "relevance": 1,
+              "rationale": "작곡가 홍난파의 가옥이지만 원문에 동요 작곡가라는 근거가 없고 작가도 아니어서 정답에서 제외한다. 외부 근거를 인정할지는 사람 검수에서 정한다.",
+              "semantic_constraint_support": {
+                "writer_or_childrens_song_composer_home": "not_supported"
+              }
+            }
+          ],
+          "semantic_constraints": [
+            {
+              "id": "writer_or_childrens_song_composer_home",
+              "description": "작가 또는 동요 작곡가가 살았던 집이나 집터라는 근거가 있다."
+            }
+          ]
+        },
+        {
+          "case_suffix": 4,
+          "case_type": "context_constraints",
+          "query": "윤동주 하숙집 터는 빼고, 종로에서 다른 작가의 작품 아카이브를 볼 수 있는 집터를 골라줘.",
+          "judgments": [
+            {
+              "place_id": 349,
+              "relevance": 3,
+              "rationale": "종로의 이상 집터에 작품 아카이브가 있다."
+            },
+            {
+              "place_id": 337,
+              "relevance": 0,
+              "rationale": "방문 완료로 제외했다."
+            },
+            {
+              "place_id": 336,
+              "relevance": 0,
+              "rationale": "강북의 작곡가 가옥으로 조건이 다르다."
+            }
+          ],
+          "city": "종로",
+          "exclude_place_ids": [
+            337
+          ],
+          "conversation": [
+            [
+              "user",
+              "윤동주 하숙집 터를 보고 왔어."
+            ]
+          ]
+        },
+        {
+          "case_suffix": 5,
+          "case_type": "insufficient_evidence",
+          "query": "내일 윤극영가옥에 해설사가 몇 시부터 몇 시까지 상주하는지 확정해줘.",
+          "judgments": [],
+          "reference_place_ids": [
+            336
+          ],
+          "missing_information": [
+            "내일 해설사 근무 일정"
+          ],
+          "expected_action": "정적 가옥 소개로 내일 근무 일정을 확정하지 않는다."
+        }
+      ]
+    },
+    {
+      "group_id": "urban_walks",
+      "split": "development",
+      "place_ids": [
+        215,
+        91,
+        14
+      ],
+      "evidence_anchors": {
+        "14": [
+          "책 테마거리",
+          "폐선부지"
+        ],
+        "91": [
+          "문화산책 코스",
+          "보행자 중심"
+        ],
+        "215": [
+          "고가도로를 재활용",
+          "보행길",
+          "역사문화유산"
+        ]
+      },
+      "cases": [
+        {
+          "case_suffix": 1,
+          "case_type": "exact_name",
+          "query": "서울로 7017을 찾아줘.",
+          "judgments": [
+            {
+              "place_id": 215,
+              "relevance": 3,
+              "rationale": "요청 장소이다."
+            },
+            {
+              "place_id": 91,
+              "relevance": 0,
+              "rationale": "다른 산책길이다."
+            },
+            {
+              "place_id": 14,
+              "relevance": 0,
+              "rationale": "다른 문화거리이다."
+            }
+          ]
+        },
+        {
+          "case_suffix": 2,
+          "case_type": "semantic",
+          "query": "옛 철길 부지에서 책을 주제로 꾸며 놓은 마포의 문화거리를 걷고 싶어.",
+          "judgments": [
+            {
+              "place_id": 14,
+              "relevance": 3,
+              "rationale": "마포의 경의선 폐선부지 책 테마거리이다."
+            },
+            {
+              "place_id": 215,
+              "relevance": 0,
+              "rationale": "중구의 고가도로 재활용 공간이다."
+            },
+            {
+              "place_id": 91,
+              "relevance": 0,
+              "rationale": "중구의 돌담길이다."
+            }
+          ],
+          "city": "마포"
+        },
+        {
+          "case_suffix": 3,
+          "case_type": "multiple_relevant",
+          "query": "서울 도심에서 걸으며 역사나 문화 분위기를 느낄 수 있는 길을 추천해줘.",
+          "judgments": [
+            {
+              "place_id": 215,
+              "relevance": 3,
+              "rationale": "보행길과 역사문화 탐방을 제공한다."
+            },
+            {
+              "place_id": 91,
+              "relevance": 3,
+              "rationale": "역사적 경관과 문화산책 코스이다."
+            },
+            {
+              "place_id": 14,
+              "relevance": 3,
+              "rationale": "책을 주제로 조성한 문화거리이다."
+            }
+          ]
+        },
+        {
+          "case_suffix": 4,
+          "case_type": "context_constraints",
+          "query": "서울로는 빼고, 중구에서 궁궐 돌담을 따라 걷는 문화산책 코스를 찾아줘.",
+          "judgments": [
+            {
+              "place_id": 91,
+              "relevance": 3,
+              "rationale": "중구의 덕수궁 돌담길이며 문화산책 코스로 설명된다."
+            },
+            {
+              "place_id": 215,
+              "relevance": 0,
+              "rationale": "이미 방문하여 제외했다."
+            },
+            {
+              "place_id": 14,
+              "relevance": 0,
+              "rationale": "마포의 책거리로 조건과 다르다."
+            }
+          ],
+          "city": "중",
+          "exclude_place_ids": [
+            215
+          ],
+          "conversation": [
+            [
+              "user",
+              "서울로 7017은 걸어봤어."
+            ]
+          ]
+        },
+        {
+          "case_suffix": 5,
+          "case_type": "clarification_required",
+          "query": "지금 여기에서 걸어서 10분 이내인 산책길을 찾아줘.",
+          "judgments": [],
+          "missing_information": [
+            "현재 위치",
+            "도보 경로 정보"
+          ],
+          "expected_action": "현재 위치를 먼저 요청하고 직선거리만으로 도보 10분을 단정하지 않는다."
+        }
+      ]
+    },
+    {
+      "group_id": "gardens",
+      "split": "test",
+      "place_ids": [
+        412,
+        222,
+        45,
+        219
+      ],
+      "evidence_anchors": {
+        "45": [
+          "전통 염색에 사용",
+          "국립중앙박물관 후원"
+        ],
+        "222": [
+          "붓꽃을 주제로",
+          "약용식물",
+          "습지 생물"
+        ],
+        "412": [
+          "20개의 주제정원",
+          "생태교육 및 가드닝"
+        ],
+        "219": [
+          "열대 식물과 다양한 곤충을 관찰"
+        ]
+      },
+      "cases": [
+        {
+          "case_suffix": 1,
+          "case_type": "exact_name",
+          "query": "푸른수목원을 검색해줘.",
+          "judgments": [
+            {
+              "place_id": 412,
+              "relevance": 3,
+              "rationale": "요청 장소이다."
+            },
+            {
+              "place_id": 222,
+              "relevance": 0,
+              "rationale": "다른 식물 공원이다."
+            },
+            {
+              "place_id": 45,
+              "relevance": 0,
+              "rationale": "다른 식물원이다."
+            }
+          ]
+        },
+        {
+          "case_suffix": 2,
+          "case_type": "semantic",
+          "query": "박물관 뒤에서 옛날 천에 색을 들일 때 썼던 식물들을 보고 싶어.",
+          "judgments": [
+            {
+              "place_id": 45,
+              "relevance": 3,
+              "rationale": "국립중앙박물관 후원의 전통염료식물원이다."
+            },
+            {
+              "place_id": 412,
+              "relevance": 1,
+              "rationale": "다양한 식물 정원이지만 전통염료 중심의 근거는 없다."
+            },
+            {
+              "place_id": 222,
+              "relevance": 1,
+              "rationale": "식물 공원이지만 박물관 후원과 염료식물 조건은 아니다."
+            }
+          ]
+        },
+        {
+          "case_suffix": 3,
+          "case_type": "multiple_relevant",
+          "query": "서울에서 여러 식물을 관찰하고 식물의 쓰임도 배울 수 있는 정원을 알려줘.",
+          "judgments": [
+            {
+              "place_id": 412,
+              "relevance": 1,
+              "rationale": "20개 주제정원과 생태·가드닝 교육은 있으나 식물의 쓰임을 배운다는 원문 근거가 없어 정답에서 제외한다.",
+              "semantic_constraint_support": {
+                "plant_observation": "supported",
+                "plant_use_learning": "not_supported"
+              }
+            },
+            {
+              "place_id": 222,
+              "relevance": 3,
+              "rationale": "붓꽃·수생식물·약용식물 관찰과 생태교육이 있다.",
+              "semantic_constraint_support": {
+                "plant_observation": "supported",
+                "plant_use_learning": "supported"
+              }
+            },
+            {
+              "place_id": 45,
+              "relevance": 3,
+              "rationale": "전통 염료식물의 역할을 알리는 교육 공간이다.",
+              "semantic_constraint_support": {
+                "plant_observation": "supported",
+                "plant_use_learning": "supported"
+              }
+            },
+            {
+              "place_id": 219,
+              "relevance": 1,
+              "rationale": "열대 식물과 곤충을 관찰하는 학습 공간이지만 식물의 쓰임을 배운다는 근거가 없어 정답에서 제외한다.",
+              "semantic_constraint_support": {
+                "plant_observation": "supported",
+                "plant_use_learning": "not_supported"
+              }
+            }
+          ],
+          "semantic_constraints": [
+            {
+              "id": "plant_observation",
+              "description": "여러 식물을 관찰할 수 있다."
+            },
+            {
+              "id": "plant_use_learning",
+              "description": "식물의 쓰임(용도)을 배울 수 있다는 근거가 있다."
+            }
+          ]
+        },
+        {
+          "case_suffix": 4,
+          "case_type": "context_constraints",
+          "query": "구로 수목원은 빼고, 도봉에서 붓꽃을 주제로 만든 공원으로 찾아줘.",
+          "judgments": [
+            {
+              "place_id": 222,
+              "relevance": 3,
+              "rationale": "도봉의 붓꽃 주제 생태공원이다."
+            },
+            {
+              "place_id": 412,
+              "relevance": 0,
+              "rationale": "방문 완료로 제외했다."
+            },
+            {
+              "place_id": 45,
+              "relevance": 0,
+              "rationale": "용산의 식물원으로 조건과 다르다."
+            }
+          ],
+          "city": "도봉",
+          "exclude_place_ids": [
+            412
+          ],
+          "conversation": [
+            [
+              "user",
+              "푸른수목원은 어제 다녀왔어."
+            ]
+          ]
+        },
+        {
+          "case_suffix": 5,
+          "case_type": "insufficient_evidence",
+          "query": "제주에 있는 식물원이나 수목원만 추천해줘.",
+          "judgments": [],
+          "reference_place_ids": [],
+          "missing_information": [
+            "제주 관광지 레코드"
+          ],
+          "expected_action": "현재 스냅샷에 제주 장소가 없으므로 서울 식물원을 제주 장소처럼 답하지 않는다.",
+          "region": "제주",
+          "absence_check": {
+            "field": "region",
+            "value": "제주",
+            "expected_matches": 0
+          }
+        }
+      ]
+    },
+    {
+      "group_id": "hanok_neighborhoods",
+      "split": "development",
+      "place_ids": [
+        165,
+        341,
+        355,
+        64
+      ],
+      "evidence_anchors": {
+        "165": [
+          "전통한옥이 밀집",
+          "전통 주거지역"
+        ],
+        "341": [
+          "현대식 한옥마을",
+          "북한산",
+          "주민들이 거주"
+        ],
+        "355": [
+          "골목과 한옥이 어우러진",
+          "감성 식당"
+        ],
+        "64": [
+          "한옥 5동",
+          "모두 다섯 채의 한옥"
+        ]
+      },
+      "cases": [
+        {
+          "case_suffix": 1,
+          "case_type": "exact_name",
+          "query": "익선동 한옥거리를 찾아줘.",
+          "judgments": [
+            {
+              "place_id": 355,
+              "relevance": 3,
+              "rationale": "요청 장소이다. city가 비어 있어도 지역 필터 없는 검색에서는 정답이다."
+            },
+            {
+              "place_id": 165,
+              "relevance": 0,
+              "rationale": "다른 한옥 주거지역이다."
+            },
+            {
+              "place_id": 341,
+              "relevance": 0,
+              "rationale": "은평의 별개 한옥마을이다."
+            }
+          ]
+        },
+        {
+          "case_suffix": 2,
+          "case_type": "semantic",
+          "query": "북한산과 어우러져 있고 주민들이 실제로 거주하는 현대식 한옥마을을 보고 싶어.",
+          "judgments": [
+            {
+              "place_id": 341,
+              "relevance": 3,
+              "rationale": "북한산과 어우러진 현대식 한옥마을이며 주민 거주가 명시되어 있다.",
+              "semantic_constraint_support": {
+                "modern_hanok_bukhansan": "supported"
+              }
+            },
+            {
+              "place_id": 165,
+              "relevance": 1,
+              "rationale": "한옥 주거지역이라는 주제는 관련되지만 북한산·현대식 한옥마을이라는 필수 조건을 충족한다는 근거가 없어 정답에서 제외한다.",
+              "semantic_constraint_support": {
+                "modern_hanok_bukhansan": "not_supported"
+              }
+            },
+            {
+              "place_id": 355,
+              "relevance": 1,
+              "rationale": "한옥 골목이지만 북한산과 주민 거주 조건의 직접 근거는 없다.",
+              "semantic_constraint_support": {
+                "modern_hanok_bukhansan": "not_supported"
+              }
+            }
+          ],
+          "semantic_constraints": [
+            {
+              "id": "modern_hanok_bukhansan",
+              "description": "북한산과 어우러진 현대식 한옥마을이며 주민이 거주한다."
+            }
+          ]
+        },
+        {
+          "case_suffix": 3,
+          "case_type": "multiple_relevant",
+          "query": "서울에서 한옥이 모인 마을이나 골목을 구경하고 싶어.",
+          "judgments": [
+            {
+              "place_id": 165,
+              "relevance": 3,
+              "rationale": "전통한옥이 밀집한 주거지역이다."
+            },
+            {
+              "place_id": 341,
+              "relevance": 3,
+              "rationale": "현대식 한옥마을이다."
+            },
+            {
+              "place_id": 355,
+              "relevance": 3,
+              "rationale": "한옥과 골목이 어우러진 거리이다."
+            },
+            {
+              "place_id": 64,
+              "relevance": 3,
+              "rationale": "이전·복원한 한옥 다섯 채가 모인 한옥마을로, 한옥이 모인 마을을 구경하려는 질문에 직접 부합한다."
+            }
+          ]
+        },
+        {
+          "case_suffix": 4,
+          "case_type": "context_constraints",
+          "query": "북촌은 이미 갔어. 이번에는 은평구 안의 한옥마을을 보여줘.",
+          "judgments": [
+            {
+              "place_id": 341,
+              "relevance": 3,
+              "rationale": "은평의 한옥마을이다."
+            },
+            {
+              "place_id": 165,
+              "relevance": 0,
+              "rationale": "방문 완료로 제외했다."
+            },
+            {
+              "place_id": 355,
+              "relevance": 0,
+              "rationale": "city가 누락되어 은평 필터를 만족하지 않는다."
+            }
+          ],
+          "city": "은평",
+          "exclude_place_ids": [
+            165
+          ],
+          "conversation": [
+            [
+              "user",
+              "북촌한옥마을은 다녀왔어."
+            ]
+          ]
+        },
+        {
+          "case_suffix": 5,
+          "case_type": "clarification_required",
+          "query": "그 한옥마을 말고 근처 다른 한옥 골목으로 바꿔줘.",
+          "judgments": [],
+          "missing_information": [
+            "기준 한옥마을",
+            "거리 범위"
+          ],
+          "expected_action": "기준 마을이 대화에 없으므로 어느 마을인지 먼저 확인한다."
+        }
+      ]
+    }
+  ],
+  "annotation_policy": {
+    "hard_constraints": "질문에 명시한 핵심 시설·기능·장소 조건은 필수다. 근거 미확인 또는 조건 불충족은 0–1점으로 두며 정답에 넣지 않는다.",
+    "grade_2": "필수 조건을 충족하는 근거가 있지만 직접성·시설 범위가 낮은 유용한 대안. 같은 시설의 상위 공간은 다른 인용 문서로 위치 관계와 기능을 확인할 때만 허용한다.",
+    "grade_3": "질문의 핵심 의도와 모든 명시 필수 조건을 직접 충족하는 장소.",
+    "unjudged": "미판정은 무관한 장소를 뜻하지 않는다. 검색 결과 pool을 사람 검수로 확장한다.",
+    "human_review": "이번 수정은 AI의 원문 대조이며 사람 검수 완료를 뜻하지 않는다."
+  },
+  "revision_review": {
+    "reviewer": "Claude",
+    "type": "ai_source_review",
+    "based_on_version": "1.2.0",
+    "human_review_completed": false
+  }
+}

@@ -1,0 +1,14 @@
+case_id,place_id,place_name,before_grade,after_grade,reason,review_status
+TM-palaces-03,10,건청궁,,3,경복궁 안에서 고종과 명성황후가 약 10년 생활한 왕과 왕비의 생활공간으로 종로 조건을 만족한다.,pending_human_review
+TM-railway-03,14,경의선책거리,,3,경의선 폐선부지에 조성한 책 테마거리로 옛 철도 시설을 문화공간으로 바꾼 사례이다.,pending_human_review
+TM-railway-03,134,문화철도959,,1,역사 내 유휴공간 복합문화공간이며 옛 철도 시설 전환 근거가 없어 정답에서 제외한다.,pending_human_review
+TM-churches-02,88,대한성공회 서울주교좌성당,,1,로마네스크 양식은 명시되나 벽돌조 근거가 없어 정답에서 제외한다.,pending_human_review
+TM-churches-02,302,옛 용산신학교와 원효로 예수성심성당,,1,벽돌 건물이지만 약식화된 고딕풍이라 로마네스크 조건에 맞지 않는다.,pending_human_review
+TM-churches-03,302,옛 용산신학교와 원효로 예수성심성당,,3,가톨릭 성지로 등록된 한국 최초의 신학교 건물과 성당이며 벽돌·고딕풍 건축이 설명된다.,pending_human_review
+TM-churches-03,364,절두산 순교성지,,1,순교 역사는 있으나 성당 건축 설명이 없어 필수 조건 미확인으로 제외한다.,pending_human_review
+TM-churches-03,187,서소문역사공원,,1,순교 처형지 역사만 있고 성당 건축이 아니어서 제외한다.,pending_human_review
+TM-churches-04,88,대한성공회 서울주교좌성당,,3,중구에 있는 성당이며 제외 장소가 아니다. 성공회 성당이라는 점은 사람 검수 대상이다.,pending_human_review
+TM-literary_homes-03,437,홍파동 홍난파 가옥,,2,작곡가 홍난파가 살며 고향의 봄 등을 작곡한 가옥이다. 동요 작곡가 표현이 없어 2점으로 둔다.,pending_human_review
+TM-modern_history-03,183,서대문독립공원,,3,애국지사의 자주독립 정신을 기억시키기 위해 조성한 독립공원이다.,pending_human_review
+TM-modern_history-03,97,독립선언문 배부 터,,3,3·1운동 때 독립선언문을 배부한 위치를 알리는 역사 현장이다.,pending_human_review
+TM-wetlands-03,8,개봉유수지 생태공원,,2,생태습지와 서식공간을 갖춘 생태공원이다. 생물 관찰 설명은 약해 2점 대안으로 둔다.,pending_human_review

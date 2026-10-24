@@ -1,0 +1,223 @@
+{
+  "scope": "Uploaded snapshot verification; no connection to user PC and no live retrieval/RAGAS run",
+  "independent_checks": {
+    "snapshot_places_unique": {
+      "passed": true,
+      "detail": null
+    },
+    "snapshot_raw_unique": {
+      "passed": true,
+      "detail": null
+    },
+    "all_raw_processed": {
+      "passed": true,
+      "detail": null
+    },
+    "corpus_equals_snapshot": {
+      "passed": true,
+      "detail": null
+    },
+    "case_count_and_unique_ids": {
+      "passed": true,
+      "detail": null
+    },
+    "no_normalized_exact_question_duplicates": {
+      "passed": true,
+      "detail": null
+    },
+    "snapshot.json_digest": {
+      "passed": true,
+      "detail": null
+    },
+    "cases.source.json_digest": {
+      "passed": true,
+      "detail": null
+    },
+    "golden.jsonl_digest": {
+      "passed": true,
+      "detail": null
+    },
+    "all_cases_snapshot_id": {
+      "passed": true,
+      "detail": null
+    },
+    "case_versions": {
+      "passed": true,
+      "detail": null
+    },
+    "raw_place_identity": {
+      "passed": true,
+      "detail": null
+    },
+    "development_export": {
+      "passed": true,
+      "detail": null
+    },
+    "test_export": {
+      "passed": true,
+      "detail": null
+    },
+    "places_csv_count": {
+      "passed": true,
+      "detail": null
+    },
+    "places_csv_fields": {
+      "passed": true,
+      "detail": null
+    },
+    "review_csv_case_coverage": {
+      "passed": true,
+      "detail": null
+    },
+    "review_csv_judgments": {
+      "passed": true,
+      "detail": null
+    },
+    "all_pending_no_false_human_verification": {
+      "passed": true,
+      "detail": null
+    },
+    "no_prefilled_system_outputs": {
+      "passed": true,
+      "detail": null
+    },
+    "judgment_metadata_consistency": {
+      "passed": true,
+      "detail": []
+    },
+    "relevant_ids_match_declared_threshold": {
+      "passed": true,
+      "detail": []
+    },
+    "all_conditional_counts_and_positive_filters": {
+      "passed": true,
+      "detail": []
+    },
+    "all_evidence_content_offsets_and_provenance": {
+      "passed": true,
+      "detail": []
+    },
+    "group_split_disjoint": {
+      "passed": true,
+      "detail": null
+    },
+    "judged_place_split_disjoint": {
+      "passed": true,
+      "detail": null
+    },
+    "reference_exclusion_center_place_split_disjoint": {
+      "passed": true,
+      "detail": null
+    },
+    "manifest_development_count": {
+      "passed": true,
+      "detail": null
+    },
+    "manifest_test_count": {
+      "passed": true,
+      "detail": null
+    }
+  },
+  "failed_independent_checks": [],
+  "statistics": {
+    "places": 449,
+    "raw_records": 449,
+    "embedded_places": 448,
+    "cases": 100,
+    "answerable": 80,
+    "judgment_count": 237,
+    "judged_unique_places": 61,
+    "evidence_items": 1461,
+    "unique_evidence_items": 363,
+    "review_csv_rows": 257,
+    "grades": {
+      "3": 116,
+      "0": 96,
+      "1": 23,
+      "2": 2
+    },
+    "missing_embedding": [
+      {
+        "id": 394,
+        "name": "청담도로공원"
+      }
+    ],
+    "missing_city": [
+      {
+        "id": 355,
+        "name": "익선동 한옥거리"
+      }
+    ],
+    "test_topic_groups": [
+      "ancient_history",
+      "crafts",
+      "future_technology",
+      "gardens"
+    ],
+    "base_search_api_compatible_answerable_cases": 60
+  },
+  "reproduction": {
+    "corpus.json": {
+      "bytes_equal": true,
+      "structural_equal": true,
+      "input_CRLF_count": 0,
+      "reproduced_CRLF_count": 0
+    },
+    "places.csv": {
+      "bytes_equal": true,
+      "structural_equal": true,
+      "input_CRLF_count": 0,
+      "reproduced_CRLF_count": 0
+    },
+    "golden.jsonl": {
+      "bytes_equal": true,
+      "structural_equal": true,
+      "input_CRLF_count": 0,
+      "reproduced_CRLF_count": 0
+    },
+    "development.jsonl": {
+      "bytes_equal": true,
+      "structural_equal": true,
+      "input_CRLF_count": 0,
+      "reproduced_CRLF_count": 0
+    },
+    "test.jsonl": {
+      "bytes_equal": true,
+      "structural_equal": true,
+      "input_CRLF_count": 0,
+      "reproduced_CRLF_count": 0
+    },
+    "review.csv": {
+      "bytes_equal": true,
+      "structural_equal": true,
+      "input_CRLF_count": 0,
+      "reproduced_CRLF_count": 0
+    },
+    "manifest.json": {
+      "bytes_equal": true,
+      "structural_equal": true,
+      "input_CRLF_count": 0,
+      "reproduced_CRLF_count": 0
+    },
+    "validation.json": {
+      "bytes_equal": true,
+      "structural_equal": true,
+      "input_CRLF_count": 0,
+      "reproduced_CRLF_count": 0
+    }
+  },
+  "validator_mutation_probes": [
+    {
+      "mutation": "unknown_relevant_id",
+      "uploaded_validate_cases_accepted": false
+    },
+    {
+      "mutation": "stale_eligible_count",
+      "uploaded_validate_cases_accepted": false
+    },
+    {
+      "mutation": "false_source_fetched_at",
+      "uploaded_validate_cases_accepted": false
+    }
+  ]
+}
