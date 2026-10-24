@@ -18,6 +18,7 @@ CREATE TABLE IF NOT EXISTS users (
     role VARCHAR(255),                     -- 권한 (USER, ADMIN 등)
     status VARCHAR(255) NOT NULL,          -- 상태 (ACTIVE, QUIT 등)
     provider VARCHAR(255) NOT NULL,        -- 로그인 제공자 (KAKAO, NAVER 등)
+    provider_id VARCHAR(255),
     created_at TIMESTAMP WITHOUT TIME ZONE, -- 생성일
     updated_at TIMESTAMP WITHOUT TIME ZONE  -- 수정일
 );
@@ -160,6 +161,21 @@ CREATE TABLE pin_activities (
 );
 
 CREATE INDEX idx_pin_activities_pin_id ON pin_activities (pin_id);
+
+-- ============================================
+-- tour_api_raw (TourAPI 원본 JSON 스테이징 - 가공/임베딩 전 단계)
+-- ============================================
+CREATE TABLE tour_api_raw (
+    tour_content_id       VARCHAR(50) PRIMARY KEY,
+    tour_content_type_id  VARCHAR(10) NOT NULL,
+    raw_list               JSONB,      -- areaBasedList2 item
+    raw_common              JSONB,      -- detailCommon2 (overview 등)
+    raw_info                JSONB,      -- detailInfo2 items 배열
+    fetched_at              TIMESTAMPTZ NOT NULL DEFAULT now(),
+    processed_at            TIMESTAMPTZ           -- null이면 아직 places로 가공/적재 안 됨
+);
+
+CREATE INDEX idx_tour_api_raw_unprocessed ON tour_api_raw (fetched_at) WHERE processed_at IS NULL;
 
 -- ============================================
 -- place_details / place_programs (RAG 상세)

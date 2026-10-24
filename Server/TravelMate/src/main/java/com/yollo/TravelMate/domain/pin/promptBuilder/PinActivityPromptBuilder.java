@@ -10,7 +10,7 @@ import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.yollo.TravelMate.domain.tourAPI.repository.PlaceDetailRepository.ProgramInsert;
+import com.yollo.TravelMate.domain.place.repository.PlaceDetailRepository.ProgramInsert;
 
 
 public class PinActivityPromptBuilder {

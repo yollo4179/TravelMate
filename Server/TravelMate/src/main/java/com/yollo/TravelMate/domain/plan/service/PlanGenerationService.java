@@ -12,7 +12,7 @@ import com.yollo.TravelMate.ai.embedding.base.EmbeddingClient;
 import com.yollo.TravelMate.ai.llm.base.LlmClient;
 import com.yollo.TravelMate.domain.place.data.result.PlaceResult;
 import com.yollo.TravelMate.domain.place.formatter.CandidateFormatter;
-import com.yollo.TravelMate.domain.place.repository.PlaceVectorRepository;
+import com.yollo.TravelMate.domain.place.repository.PlaceSemanticSearchRepository;
 import com.yollo.TravelMate.domain.plan.data.internal.GeneratedPlan;
 import com.yollo.TravelMate.domain.plan.prompts.PlanPrompts;
 import com.yollo.TravelMate.domain.plan.repository.PlanRepository;
@@ -29,7 +29,7 @@ public class PlanGenerationService {
 	private static final Logger log = LoggerFactory.getLogger(PlanGenerationService.class);
 
     private final EmbeddingClient embeddingClient;
-    private final PlaceVectorRepository placeRepository;
+    private final PlaceSemanticSearchRepository placeSearchRepository;
     private final LlmClient llmClient;
 
     private final  PlanRepository planRepository;
@@ -46,7 +46,7 @@ public class PlanGenerationService {
 
         // [2] 벡터 검색으로 실재 후보 확보
         List<PlaceResult> candidates =
-                placeRepository.searchSimilar(queryVec, region, null, null, 0.3, 10);
+                placeSearchRepository.searchSimilar(queryVec, region, null, null, 0.3, 10);
 
         if (candidates.isEmpty()) {
             log.warn("검색 후보 없음: {} (region={})", userRequest, region);
@@ -75,7 +75,7 @@ public class PlanGenerationService {
     public Long generateAndSave(String userRequest, String region, String userUid) {
         float[] queryVec = embeddingClient.embed(userRequest);
         List<PlaceResult> candidates =
-                placeRepository.searchSimilar(queryVec, region, null, null, 0.3, 10);
+                placeSearchRepository.searchSimilar(queryVec, region, null, null, 0.3, 10);
         if (candidates.isEmpty()) {
             throw new ErrorCodeException(ErrorCode.PLAN_NO_CANDIDATES);
         }

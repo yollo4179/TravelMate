@@ -1,14 +1,20 @@
+import torch
 from sentence_transformers import SentenceTransformer
 from app.config import MODEL_NAME_EMBEDDING, MODEL_DEVICE_EMBEDDING
 
 class Embedder :
     # 생성자
     def __init__(self):
+        device = MODEL_DEVICE_EMBEDDING
+        if device == "cuda" and not torch.cuda.is_available():
+            print("[Embedder] CUDA unavailable, falling back to CPU")
+            device = "cpu"
+
         # 모델 (멤버)
-        print(f"[Embedder] 모델 로딩 중: {MODEL_NAME_EMBEDDING} (device={MODEL_DEVICE_EMBEDDING})")
+        print(f"[Embedder] 모델 로딩 중: {MODEL_NAME_EMBEDDING} (device={device})")
         self.model = SentenceTransformer(
             model_name_or_path=MODEL_NAME_EMBEDDING,
-            device=MODEL_DEVICE_EMBEDDING
+            device=device
         )
         print(f"[Embedder] 로딩 완료. 차원={self.getDimension()}")
     
