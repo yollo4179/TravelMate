@@ -99,10 +99,19 @@ public class ContextPlanningService {
             String query,
             int limit
     ) {
+        return search(context, query, limit, com.yollo.TravelMate.domain.place.service.PlaceSemanticSearchService.RankingMode.RERANKED);
+    }
+
+    public List<com.yollo.TravelMate.domain.place.data.result.PlaceSemanticSearchResult> search(
+            PlanContext context,
+            String query,
+            int limit,
+            com.yollo.TravelMate.domain.place.service.PlaceSemanticSearchService.RankingMode rankingMode
+    ) {
         validateArea(context);
         String intent = query + " " + String.join(" ", context.preferences().themes())
                 + " " + Objects.toString(context.additionalRequest(), "");
-        return searchService.search(intent.trim(), null, null, null, limit, context.area());
+        return searchService.search(intent.trim(), null, null, null, limit, context.area(), rankingMode);
     }
 
     public static void validateArea(PlanContext context) {

@@ -1,0 +1,11 @@
+{
+  "measurement": "direct_fastapi_embedding_smoke",
+  "measured_at": "2026-10-24T08:36:55.359175+00:00",
+  "method": "POST",
+  "url": "http://127.0.0.1:8000/embed",
+  "http_status": 200,
+  "text_count": 1,
+  "embedding_count": 1,
+  "elapsed_seconds": 0.137,
+  "scope": "warm FastAPI /embed HTTP round trip; excludes Spring and database search"
+}

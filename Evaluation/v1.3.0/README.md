@@ -2,7 +2,7 @@
 
 서울 관광지 449건과 TourAPI 원본 449건의 스냅샷을 기준으로 만든 질문 100개입니다. 현재 버전의 작성 원본·산출물·검수 자료를 함께 관리합니다.
 
-**상태: AI의 원문 대조·구조 검증 완료 / 사람 검수 대기.** 검색·LLM 실행이나 RAGAS 성능 측정은 수행하지 않았습니다.
+**상태: 사람 검수 대기.** 개발 검색 API를 일부 실행했고, 완료된 공통 문항에 RAGAS ID 기반 검색 평가를 실행했습니다. 전체 문항의 성능 측정은 아직 완료되지 않았습니다.
 
 ## 먼저 사용할 파일
 
@@ -155,3 +155,26 @@ JSONL에 `reference`를 직접 추가하지 말고 작성 원본을 수정한 �
 - [검토 메타데이터](review_notes_metadata.json)
 
 `review.csv`는 이 버전의 작성 원본으로부터 재생성되는 검증 대상 파일입니다. 사용자가 검토할 메모는 `review_notes_filled_v1.3.0.csv`에서 이어서 작성하세요. `--build`는 메모 사본을 덮어쓰지 않습니다. 리뷰 반영은 `case_id + place_id`로 비교하고, 사람이 확정한 판정과 검수 이력을 작성 원본에 반영한 뒤 새 버전을 만드세요. AI 초안을 사람 검수 완료로 처리하지 않았습니다.
+
+## Development ranking comparison
+
+The development run records two ranking versions for each answerable search case:
+
+- `v1_semantic_only`: embedding similarity order before the BGE reranker.
+- `v2_reranked`: BGE reranker order over the same top-30 embedding candidate pool.
+
+Run `python -X utf8 Evaluation/v1.3.0/run_development.py --split development` to capture both versions. The comparison is scored against authored place judgments with `NDCG@10`, `MRR@10`, `Recall@10`, and `Precision@10`. Results are grouped by version in `ranking_results.jsonl` and `ranking_summary.json`. Judgments are partial, so unjudged places are not asserted to be irrelevant and the scores indicate the judged candidate pool only.
+### Versioned RAGAS samples
+
+`api_embedding/v1.jsonl` stores embedding-only API outputs; `api_reranking/v2.jsonl` stores reranked API outputs. Both contain place judgments from `review_notes_filled_v1.3.0.csv`, request duration, and metric-specific flags:
+
+- `ranking_eligible`: the completed response has authored judgments for ranking evaluation.
+- `ragas_id_metrics_eligible`: the completed response has at least one positive judged place ID for RAGAS ID-based Context Precision/Recall.
+- `ragas_llm_eligible`: the completed response has complete condition coverage and an authored text `reference` for reference-based LLM metrics.
+
+`run_ragas_evaluation.py` runs the RAGAS ID-based metrics against paired completed outputs using CSV judgments with relevance `>= 2` as reference IDs. It writes case scores to `ragas_results.jsonl` and averages and run scope to `ragas_summary.json`. These ID metrics compare sets and do not consider result order; use `ranking_results.jsonl` for order-sensitive NDCG/MRR. Each RAGAS result also records judged and unjudged retrieved ID counts. Because ID precision divides relevant retrieved IDs by all retrieved IDs, scores remain provisional while the review CSV is only partially judged. The current run contains one paired completed case; incomplete and failed API requests are excluded, not counted as search errors.
+
+`ragas_llm_precheck.json` reports LLM metrics separately. Answer Correctness and basic LLM Context Recall require a reference. Faithfulness does not require a reference, but it does require an LLM evaluator and response/context inputs. The current policy runs these three metrics as one batch; the batch is deferred while the reference metrics lack references and no LLM evaluator is configured. The precheck records Faithfulness as deferred by that batch policy, not blocked by a missing reference.
+
+`ragas_eligible` is no longer used because it did not identify which RAGAS metric family it referred to. Use `ragas_id_metrics_eligible` or `ragas_llm_eligible` instead.
+Per-version API wall time is stored in each version file's `request_duration_seconds` and in `development.jsonl` at `ranking_comparison.<version>.execution.duration_seconds`. The paired total remains `execution.duration_seconds` on the development case.

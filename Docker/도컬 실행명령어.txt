@@ -17,3 +17,8 @@ ALTER TABLE place RENAME TO places;
 PlaceCollector 확인하기
 SELECT region, category, COUNT(*) FROM place GROUP BY region, category ORDER BY region, category;
 SELECT name, description FROM place ORDER BY id DESC LIMIT 20;
+
+
+이미지 파일 굽고 컨테이너 실행하기
+bash Docker/stack-up.sh
+bash Docker/stack-wait.sh

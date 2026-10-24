@@ -30,14 +30,17 @@ public class PlaceSearchController {
             @RequestParam(name = "region", required = false) String region,
             @RequestParam(name = "city", required = false) String city,
             @RequestParam(name = "category", required = false) String category,
-            @Min(1) @Max(20) @RequestParam(name = "limit", defaultValue = "10") int limit
+            @Min(1) @Max(20) @RequestParam(name = "limit", defaultValue = "10") int limit,
+            @RequestParam(name = "rankingMode", defaultValue = "RERANKED") PlaceSemanticSearchService.RankingMode rankingMode
     ) {
         return placeSemanticSearchService.search(
                         query,
                         region,
                         city,
                         category,
-                        limit
+                        limit,
+                        null,
+                        rankingMode
                 ).stream()
                 .map(PlaceSearchResponseDto::from)
                 .toList();

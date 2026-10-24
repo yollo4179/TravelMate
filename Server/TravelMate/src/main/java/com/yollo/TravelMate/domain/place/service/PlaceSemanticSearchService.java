@@ -6,7 +6,6 @@ import org.springframework.stereotype.Service;
 
 import com.yollo.TravelMate.ai.embedding.base.EmbeddingClient;
 import com.yollo.TravelMate.ai.rerank.base.RerankClient;
-import com.yollo.TravelMate.ai.rerank.base.RerankClient.Scored;
 import com.yollo.TravelMate.domain.place.data.result.PlaceResult;
 import com.yollo.TravelMate.domain.place.data.result.PlaceSemanticSearchResult;
 import com.yollo.TravelMate.domain.place.repository.PlaceSemanticSearchRepository;
@@ -22,6 +21,11 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class PlaceSemanticSearchService {
 
+    public enum RankingMode {
+        RERANKED,
+        SEMANTIC_ONLY
+    }
+
     private static final int RETRIEVE_TOP_K = 30;
 
     private final EmbeddingClient embeddingClient;
@@ -29,7 +33,7 @@ public class PlaceSemanticSearchService {
     private final RerankClient rerankClient;
 
     public List<PlaceSemanticSearchResult> search(String query, String region, String city, String category, int limit) {
-        return search(query, region, city, category, limit, null);
+        return search(query, region, city, category, limit, null, RankingMode.RERANKED);
     }
 
     public List<PlaceSemanticSearchResult> search(
@@ -39,6 +43,18 @@ public class PlaceSemanticSearchService {
             String category,
             int limit,
             com.yollo.TravelMate.domain.plan.data.request.PlanContext.Area area
+    ) {
+        return search(query, region, city, category, limit, area, RankingMode.RERANKED);
+    }
+
+    public List<PlaceSemanticSearchResult> search(
+            String query,
+            String region,
+            String city,
+            String category,
+            int limit,
+            com.yollo.TravelMate.domain.plan.data.request.PlanContext.Area area,
+            RankingMode rankingMode
     ) {
         if (query == null || query.isBlank()) {
             throw new IllegalArgumentException("검색어는 비어 있을 수 없습니다.");
@@ -55,11 +71,16 @@ public class PlaceSemanticSearchService {
             return List.of();
         }
 
-        List<Scored<PlaceResult>> reranked = rerankClient.rerank(query, candidates, PlaceResult::description);
-
-        return reranked.stream()
-                .limit(limit)
-                .map(scored -> new PlaceSemanticSearchResult(scored.candidate(), scored.score()))
-                .toList();
+        return switch (rankingMode) {
+            case RERANKED -> rerankClient.rerank(query, candidates, PlaceResult::description)
+                    .stream()
+                    .limit(limit)
+                    .map(scored -> new PlaceSemanticSearchResult(scored.candidate(), scored.score()))
+                    .toList();
+            case SEMANTIC_ONLY -> candidates.stream()
+                    .limit(limit)
+                    .map(candidate -> new PlaceSemanticSearchResult(candidate, null))
+                    .toList();
+        };
     }
 }

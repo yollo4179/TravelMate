@@ -13,7 +13,7 @@ public record PlaceSearchResponseDto(
         Double latitude,
         Double longitude,
         Double semanticScore,
-        float rerankScore,
+        Float rerankScore,
         String tourContentId,
         String imageUrl,
         String homepageUrl

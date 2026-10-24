@@ -1,0 +1,33 @@
+{
+  "status": "completed",
+  "ragas_version": "0.4.4.dev8+g298b68274",
+  "dataset_version": "1.3.0",
+  "paired_case_count": 1,
+  "metrics": [
+    "id_based_context_precision",
+    "id_based_context_recall"
+  ],
+  "metric_scope": "ID sets; retrieval ordering is not considered",
+  "judgment_source": "review_notes_filled_v1.3.0.csv",
+  "relevance_threshold": 2,
+  "eligibility_flag": "ragas_id_metrics_eligible",
+  "judgment_coverage": "Unjudged retrieved IDs are reported separately; ID precision still treats IDs outside the positive reference set as non-relevant.",
+  "review_statuses": [
+    "pending_human_review"
+  ],
+  "skipped_case_counts": {
+    "not_completed_or_incomplete_conditions": 63,
+    "no_relevant_review_ids": 0
+  },
+  "scores_by_strategy_version": {
+    "v1_semantic_only": {
+      "id_based_context_precision": 0.05,
+      "id_based_context_recall": 1.0
+    },
+    "v2_reranked": {
+      "id_based_context_precision": 0.05,
+      "id_based_context_recall": 1.0
+    }
+  },
+  "results_file": "ragas_results.jsonl"
+}

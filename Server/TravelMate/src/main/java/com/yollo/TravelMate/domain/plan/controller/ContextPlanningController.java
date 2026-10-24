@@ -50,8 +50,11 @@ public class ContextPlanningController {
     }
 
     @PostMapping("/places/search")
-    public List<PlaceSearchResponseDto> search(@Valid @RequestBody PlaceSearchRequest request) {
-        return planningService.search(request.context(), request.query(), request.limit())
+    public List<PlaceSearchResponseDto> search(
+            @Valid @RequestBody PlaceSearchRequest request,
+            @RequestParam(name = "rankingMode", defaultValue = "RERANKED") PlaceSemanticSearchService.RankingMode rankingMode
+    ) {
+        return planningService.search(request.context(), request.query(), request.limit(), rankingMode)
                 .stream().map(PlaceSearchResponseDto::from).toList();
     }
 
