@@ -8,8 +8,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import com.yollo.TravelMate.ai.embedding.base.EmbeddingClient;
-import com.yollo.TravelMate.domain.place.repository.PlaceJpaRepository;
-import com.yollo.TravelMate.domain.place.repository.PlaceVectorRepository;
+import com.yollo.TravelMate.domain.place.data.internal.PlaceEmbeddingTarget;
+import com.yollo.TravelMate.domain.place.data.internal.PlaceEmbeddingUpdate;
+import com.yollo.TravelMate.domain.place.repository.PlaceEmbeddingRepository;
 
 import lombok.RequiredArgsConstructor;
 
@@ -23,7 +24,7 @@ public class ReembeddingService {
 	
     private static final int PAGE_SIZE = 64;
 
-    private final PlaceVectorRepository placeRepository;
+    private final PlaceEmbeddingRepository placeEmbeddingRepository;
     private final EmbeddingClient  embeddingClient;
     
     public int reembedAll() {
@@ -31,8 +32,8 @@ public class ReembeddingService {
         int updated = 0;
 
         while (true) {
-            List<PlaceVectorRepository.PlaceText> page =
-                    placeRepository.findAllForReembedding(afterId, PAGE_SIZE);
+            List<PlaceEmbeddingTarget> page =
+                    placeEmbeddingRepository.findTargets(afterId, PAGE_SIZE);
             if (page.isEmpty()) break;
 
             List<String> texts = page.stream()
@@ -41,12 +42,12 @@ public class ReembeddingService {
 
             List<float[]> embeddings = embeddingClient.embedBatch(texts);
 
-            List<PlaceVectorRepository.PlaceEmbedding> updates = new ArrayList<>(page.size());
+            List<PlaceEmbeddingUpdate> updates = new ArrayList<>(page.size());
             for (int i = 0; i < page.size(); i++) {
-                updates.add(new PlaceVectorRepository.PlaceEmbedding(
+                updates.add(new PlaceEmbeddingUpdate(
                         page.get(i).id(), embeddings.get(i)));
             }
-            placeRepository.updateEmbeddings(updates);
+            placeEmbeddingRepository.updateAll(updates);
 
             updated += page.size();
             afterId = page.get(page.size() - 1).id();

@@ -126,6 +126,8 @@ fun NavigatedHomeScreens(
     navController: NavHostController
 ){
     val meViewModel: MeViewModel = hiltViewModel()
+    val searchViewModel: com.ssafy.travelmate.viewmodels.search.SearchViewModel = hiltViewModel()
+    val planningViewModel: com.ssafy.travelmate.viewmodels.search.TravelPlanningViewModel = hiltViewModel()
 
     NavHost(
         navController = navController,
@@ -148,7 +150,11 @@ fun NavigatedHomeScreens(
             }
         }
         composable("나") {
-            com.ssafy.travelmate.screens.me.MeScreen(viewModel = meViewModel)
+            com.ssafy.travelmate.screens.me.MeScreen(
+                viewModel = meViewModel,
+                searchViewModel = searchViewModel,
+                planningViewModel = planningViewModel
+            )
         }
     }
 }

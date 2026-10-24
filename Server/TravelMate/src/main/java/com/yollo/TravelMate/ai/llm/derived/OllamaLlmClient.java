@@ -27,8 +27,13 @@ public class OllamaLlmClient implements LlmClient{
 	 public OllamaLlmClient(
 	            @Value("${ollama.base-url:http://localhost:11434}") String baseUrl,
 	            @Value("${ollama.model:qwen3:8b}") String model) {
+
+                var requestFactory = new org.springframework.http.client.SimpleClientHttpRequestFactory();
+                requestFactory.setConnectTimeout(5000);
+                requestFactory.setReadTimeout(240000);
 	        this.restClient = RestClient.builder()
 	                .baseUrl(baseUrl)
+                        .requestFactory(requestFactory)
 	                .build();
 	        this.model = model;
 	        logger.info("OllamaLlmClient 초기화 - baseUrl={}, model={}", baseUrl, model);
@@ -42,6 +47,7 @@ public class OllamaLlmClient implements LlmClient{
 				"model", model,
 				"think", false,
 				"stream",false,
+                                "format", "json",
 				"messages",List.of(
 						Map.of("role", "system",
 								"content", systemPrompt),
@@ -51,7 +57,8 @@ public class OllamaLlmClient implements LlmClient{
 				
 				"options", Map.of(
 						"temperature",0.3,
-						"num_ctx",8192
+						"num_ctx",8192,
+                                                "num_predict", 1536
 						)
 				);
 				

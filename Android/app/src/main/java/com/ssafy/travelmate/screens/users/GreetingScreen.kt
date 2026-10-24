@@ -15,9 +15,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.ssafy.travelmate.components.GoogleLoginButton
-import com.ssafy.travelmate.components.KakaoLoginButton
-import com.ssafy.travelmate.components.NaverLoginButton
+import com.ssafy.travelmate.common.components.GoogleLoginButton
+import com.ssafy.travelmate.common.components.KakaoLoginButton
+import com.ssafy.travelmate.common.components.NaverLoginButton
 import com.ssafy.travelmate.ui.theme.TravelMateTheme
 import com.ssafy.travelmate.util.enums.EProviders
 import com.ssafy.travelmate.util.managers.GoogleAuthManager

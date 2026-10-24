@@ -13,9 +13,9 @@ import com.yollo.TravelMate.domain.pin.promptBuilder.PinActivityPromptBuilder;
 import com.yollo.TravelMate.domain.pin.prompts.PinActivityPrompts;
 import com.yollo.TravelMate.domain.pin.repository.PinActivityRepository;
 import com.yollo.TravelMate.domain.pin.validator.PinActivityValidator;
-import com.yollo.TravelMate.domain.tourAPI.repository.PlaceDetailRepository;
-import com.yollo.TravelMate.domain.tourAPI.repository.PlaceDetailRepository.ProgramInsert;
-import com.yollo.TravelMate.domain.tourAPI.service.PlaceDetailSyncService;
+import com.yollo.TravelMate.domain.place.repository.PlaceDetailRepository;
+import com.yollo.TravelMate.domain.place.repository.PlaceDetailRepository.ProgramInsert;
+import com.yollo.TravelMate.domain.place.source.tourapi.service.TourPlaceDetailSyncService;
  
 
 @Service
@@ -24,19 +24,19 @@ public class PinActivityService {
     private static final Logger log = LoggerFactory.getLogger(PinActivityService.class);
  
     private final PlaceDetailRepository placeDetailRepository;
-    private final PlaceDetailSyncService placeDetailSyncService;
+    private final TourPlaceDetailSyncService tourPlaceDetailSyncService;
     private final PinActivityValidator pinActivityValidator;
     private final PinActivityRepository pinActivityRepository;
     private final LlmClient llmClient;
  
     public PinActivityService(
             PlaceDetailRepository placeDetailRepository,
-            PlaceDetailSyncService placeDetailSyncService,
+            TourPlaceDetailSyncService tourPlaceDetailSyncService,
             PinActivityValidator pinActivityValidator,
             PinActivityRepository pinActivityRepository,
             LlmClient llmClient) {
         this.placeDetailRepository = placeDetailRepository;
-        this.placeDetailSyncService = placeDetailSyncService;
+        this.tourPlaceDetailSyncService = tourPlaceDetailSyncService;
         this.pinActivityValidator = pinActivityValidator;
         this.pinActivityRepository = pinActivityRepository;
         this.llmClient = llmClient;
@@ -84,7 +84,7 @@ public class PinActivityService {
         }
         if (!placeDetailRepository.existsByPlaceId(placeId)) {
             log.info("place_details 캐시 없음, TourAPI 최초 동기화: placeId={}, tourContentId={}", placeId, tourContentId);
-            placeDetailSyncService.syncDetail(placeId, tourContentId, tourContentTypeId);
+            tourPlaceDetailSyncService.syncDetail(placeId, tourContentId, tourContentTypeId);
         }
     }
 }

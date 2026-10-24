@@ -1,4 +1,19 @@
 services:
+  redis:
+    image: redis:7-alpine
+    container_name: travel-redis
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:6379:6379"
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - redisdata:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   postgres:
     image: pgvector/pgvector:pg17
     container_name: travel-postgres
@@ -13,6 +28,7 @@ services:
     volumes:
       - pgdata:/var/lib/postgresql/data  # 데이터 영속성
       - ./init:/docker-entrypoint-initdb.d # 최초 1회 SQL 실행
+      - ./migrations/20261013_add_planning_context.sql:/docker-entrypoint-initdb.d/02-planning-context.sql:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ssafy -d travel_db"]
       interval: 10s
@@ -21,3 +37,4 @@ services:
 
 volumes:
   pgdata:
+  redisdata:

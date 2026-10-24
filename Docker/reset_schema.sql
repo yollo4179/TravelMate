@@ -1,6 +1,9 @@
 -- ============================================
 -- users만 보존, 나머지 전부 재생성
 -- ============================================
+-- 주의: tour_api_raw는 절대 DROP하지 마세요.
+-- TourAPI는 일 1,000건 트래픽 제한이라 다시 수집하려면 며칠이 걸립니다.
+-- places와 FK로 안 엮여 있어서 이 스크립트에 안 넣으면 자동으로 보존됩니다 (users와 동일 취급).
 
 -- [1] 자식 테이블부터 삭제 (FK 역순), CASCADE로 관련 제약도 정리
 DROP TABLE IF EXISTS pin_activities CASCADE;
@@ -19,6 +22,18 @@ DROP TABLE IF EXISTS places CASCADE;
 
 CREATE EXTENSION IF NOT EXISTS vector;
 
+-- tour_api_raw: 위 DROP 목록에 없으므로 기존 데이터는 보존됨. 아직 없는 환경을 위해 IF NOT EXISTS로만 생성.
+CREATE TABLE IF NOT EXISTS tour_api_raw (
+    tour_content_id       VARCHAR(50) PRIMARY KEY,
+    tour_content_type_id  VARCHAR(10) NOT NULL,
+    raw_list               JSONB,
+    raw_common              JSONB,
+    raw_info                JSONB,
+    fetched_at              TIMESTAMPTZ NOT NULL DEFAULT now(),
+    processed_at            TIMESTAMPTZ
+);
+CREATE INDEX IF NOT EXISTS idx_tour_api_raw_unprocessed ON tour_api_raw (fetched_at) WHERE processed_at IS NULL;
+
 
 CREATE TABLE IF NOT EXISTS users (
     uid VARCHAR(36) PRIMARY KEY,           -- 기본키 (PK)
@@ -31,6 +46,7 @@ CREATE TABLE IF NOT EXISTS users (
     role VARCHAR(255),                     -- 권한 (USER, ADMIN 등)
     status VARCHAR(255) NOT NULL,          -- 상태 (ACTIVE, QUIT 등)
     provider VARCHAR(255) NOT NULL,        -- 로그인 제공자 (KAKAO, NAVER 등)
+    provider_id VARCHAR(255),
     created_at TIMESTAMP WITHOUT TIME ZONE, -- 생성일
     updated_at TIMESTAMP WITHOUT TIME ZONE  -- 수정일
 );

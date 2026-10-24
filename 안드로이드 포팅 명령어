@@ -1,0 +1,9 @@
+C:\Users\SSAFY\AppData\Local\Android\Sdk\cmdline-tools\latest\
+$sdk = "C:\Users\SSAFY\AppData\Local\Android\Sdk"
+& "$sdk\cmdline-tools\latest\bin\sdkmanager.bat" --licenses
+& "$sdk\cmdline-tools\latest\bin\sdkmanager.bat" "emulator" "system-images;android-35;google_apis;x86_64"
+& "$sdk\cmdline-tools\latest\bin\avdmanager.bat" create avd -n TravelMate_API_35 -k "system-images;android-35;google_apis;x86_64" -d pixel_2
+
+
+이후에는 VS Code에서 Ctrl+Shift+P → Emulator 명령을 찾아 실행하고, TravelMate_API_35를 선택하면 됩니다. 확장 설정의 emulator.emulatorPathWindows는 다음 경로로 지정하세요.
+C:\Users\SSAFY\AppData\Local\Android\Sdk\emulator
