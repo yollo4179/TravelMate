@@ -1,0 +1,145 @@
+"""Regression tests for dataset labels, provenance, leakage and reproducibility."""
+from __future__ import annotations
+
+import copy
+import hashlib
+import importlib.util
+import json
+from pathlib import Path
+import shutil
+import tempfile
+import unittest
+from typing import Any, Callable
+
+ROOT = Path(__file__).resolve().parents[1]
+spec = importlib.util.spec_from_file_location('dataset_builder', ROOT / 'build_dataset.py')
+builder = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(builder)
+
+
+class DatasetTests(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls) -> None:
+        cls.snapshot = builder.read_json(ROOT / 'snapshot.json')
+        cls.cases = [json.loads(line) for line in (ROOT / 'golden.jsonl').read_text().splitlines()]
+        cls.index = {case['case_id']: case for case in cls.cases}
+
+    def reject(self, mutate: Callable[[list[dict[str, Any]]], None], message: str) -> None:
+        altered = copy.deepcopy(self.cases)
+        mutate(altered)
+        with self.assertRaisesRegex(ValueError, message):
+            builder.validate_cases(altered, self.snapshot, 100)
+
+    def test_full_dataset_check_does_not_modify_inputs(self) -> None:
+        before = {path.name: hashlib.sha256(path.read_bytes()).hexdigest() for path in ROOT.iterdir() if path.is_file()}
+        result = builder.check(ROOT)
+        self.assertEqual(result['status'], 'passed')
+        self.assertEqual(result['case_count'], 100)
+        self.assertEqual(result['counts_by_evaluation_track'], {'search_api': 60, 'context_search': 20, 'answer_behavior': 20})
+        after = {path.name: hashlib.sha256(path.read_bytes()).hexdigest() for path in ROOT.iterdir() if path.is_file()}
+        self.assertEqual(before, after)
+        self.assertFalse(result['human_review_completed'])
+
+    def test_original_snapshot_bytes_are_preserved(self) -> None:
+        self.assertEqual(builder.digest_file(ROOT / 'snapshot.json'), '410a9c3c46004cb30644455fe9d5ddb01a52a04a700ffe04159605cf94661218')
+        self.assertEqual(len(self.snapshot['places']), 449)
+        self.assertEqual(len(self.snapshot['tour_api_raw']), 449)
+
+    def test_unsupported_hard_conditions_are_no_longer_answers(self) -> None:
+        reviewed = {'TM-hanok_neighborhoods-02': 165, 'TM-aquariums-02': 109, 'TM-future_technology-02': 230, 'TM-safety_education-02': 278}
+        for case_id, place_id in reviewed.items():
+            with self.subTest(case_id=case_id):
+                case = self.index[case_id]
+                judgment = next(item for item in case['judgments'] if item['place_id'] == place_id)
+                self.assertLess(judgment['relevance'], case['relevance_threshold'])
+                self.assertNotIn(place_id, case['relevant_place_ids'])
+                self.assertTrue(case['semantic_constraints'])
+
+    def test_dj_box_question_has_direct_quoted_evidence(self) -> None:
+        case = self.index['TM-food_streets-02']
+        target = next(item for item in case['judgments'] if item['place_id'] == 254)
+        self.assertTrue(any('떡볶이집마다 있었던 DJ박스' in item.get('quote', '') for item in target['evidence']))
+        self.assertEqual(case['relevant_place_ids'], [254])
+
+    def test_missing_hanok_answer_is_added_with_evidence(self) -> None:
+        case = self.index['TM-hanok_neighborhoods-03']
+        self.assertIn(64, case['relevant_place_ids'])
+        target = next(item for item in case['judgments'] if item['place_id'] == 64)
+        self.assertTrue(any('한옥' in item.get('quote', '') for item in target['evidence']))
+
+    def test_unknown_and_zero_grade_relevant_ids_are_rejected(self) -> None:
+        for invalid in [[999999], [208]]:
+            with self.subTest(invalid=invalid):
+                self.reject(lambda cases: cases[0].__setitem__('relevant_place_ids', invalid), 'relevant_place_ids')
+
+    def test_stale_eligible_count_is_rejected(self) -> None:
+        self.reject(lambda cases: cases[0]['condition_check'].__setitem__('eligible_place_count', 123456), 'stale corpus/eligible')
+
+    def test_changed_provenance_is_rejected(self) -> None:
+        for field, value in [('source_fetched_at', '2099-01-01'), ('tour_content_id', 'wrong'), ('snapshot_exported_at', 'wrong'), ('source_provider', 'wrong')]:
+            with self.subTest(field=field):
+                self.reject(lambda cases: cases[0]['judgments'][0]['evidence'][0].__setitem__(field, value), 'provenance')
+
+    def test_incorrect_quote_offset_and_identity_are_rejected(self) -> None:
+        self.reject(lambda cases: cases[0]['judgments'][0]['evidence'][1].__setitem__('char_end', 999999), 'invalid evidence span')
+        self.reject(lambda cases: cases[0]['judgments'][0].__setitem__('name', 'wrong'), 'identity mismatch')
+
+    def test_semantically_unsupported_candidate_cannot_be_promoted(self) -> None:
+        def mutate(cases: list[dict[str, Any]]) -> None:
+            case = next(item for item in cases if item['case_id'] == 'TM-hanok_neighborhoods-02')
+            judgment = next(item for item in case['judgments'] if item['place_id'] == 165)
+            judgment['relevance'] = 2
+            case['relevant_place_ids'].append(165)
+        self.reject(mutate, 'required semantic condition')
+
+    def test_reference_only_split_leakage_is_rejected(self) -> None:
+        def mutate(cases: list[dict[str, Any]]) -> None:
+            test_case = next(item for item in cases if item['case_id'] == 'TM-crafts-01')
+            evidence = copy.deepcopy(next(item for item in test_case['judgments'] if item['place_id'] == 55)['evidence'])
+            cases[4]['reference_evidence'].append({'place_id': 55, 'evidence': evidence})
+        self.reject(mutate, 'Referenced place split leakage')
+
+    def test_wrong_track_is_rejected(self) -> None:
+        self.reject(lambda cases: cases[0].__setitem__('evaluation_track', 'context_search'), 'evaluation track mismatch')
+
+    def test_radius_checks_inside_outside_and_exclusion(self) -> None:
+        conditions = {'region': '서울', 'city': None, 'category': None, 'exclude_place_ids': [], 'area': {'center': {'latitude': 37.0, 'longitude': 127.0}, 'radius_meters': 500}}
+        base = {'id': 1, 'region': '서울', 'city': '시험', 'category': '관광지', 'longitude': 127.0}
+        self.assertTrue(builder.matches_conditions({**base, 'latitude': 37.003}, conditions))
+        self.assertFalse(builder.matches_conditions({**base, 'latitude': 37.01}, conditions))
+        conditions['exclude_place_ids'] = [1]
+        self.assertFalse(builder.matches_conditions({**base, 'latitude': 37.0}, conditions))
+
+    def test_source_and_derived_outputs_must_stay_in_sync(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            target = Path(directory)
+            for source in ROOT.iterdir():
+                if source.is_file():
+                    shutil.copy2(source, target / source.name)
+            authored = builder.read_json(target / 'cases.source.json')
+            authored['groups'][0]['cases'][0]['query'] = '변경했지만 재생성하지 않은 질문'
+            builder.write_json(target / 'cases.source.json', authored)
+            manifest = builder.read_json(target / 'manifest.json')
+            manifest['authoring_sha256'] = builder.digest_file(target / 'cases.source.json')
+            builder.write_json(target / 'manifest.json', manifest)
+            with self.assertRaisesRegex(ValueError, 'authoring source'):
+                builder.check(target)
+
+    def test_build_is_byte_reproducible_and_generated_lines_are_lf(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            target = Path(directory)
+            for filename in ['snapshot.json', 'cases.source.json', 'build_dataset.py']:
+                shutil.copy2(ROOT / filename, target / filename)
+            builder.build(target)
+            first = {path.name: path.read_bytes() for path in target.iterdir() if path.is_file()}
+            builder.build(target)
+            second = {path.name: path.read_bytes() for path in target.iterdir() if path.is_file()}
+            self.assertEqual(first, second)
+            for name, content in first.items():
+                if name.endswith(('.json', '.jsonl')) and name != 'snapshot.json':
+                    self.assertNotIn(b'\r\n', content)
+            self.assertEqual(builder.check(target)['status'], 'passed')
+
+
+if __name__ == '__main__':
+    unittest.main()
