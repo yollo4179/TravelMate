@@ -1,0 +1,117 @@
+# Additive overlay; retain the existing postgres checkout/volume.
+# Start with: bash Docker/stack-up.sh
+services:
+  postgres:
+    volumes:
+      - ${STACK_STATE_DIR}/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ssafy -d travel_db && psql -U ssafy -d travel_db -Atqc 'SELECT 1' | grep -qx 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  redis:
+    image: redis:7-alpine
+    container_name: travelmate-redis
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - stack_redis:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+  embedding:
+    image: travelmate-embedding:local
+    container_name: travelmate-embedding
+    build:
+      context: ..
+      dockerfile: Docker/embedding.Dockerfile
+      network: host
+      args:
+        HTTP_PROXY: ${HTTP_PROXY:-}
+        HTTPS_PROXY: ${HTTPS_PROXY:-}
+        NO_PROXY: ${NO_PROXY:-}
+      secrets:
+        - ca_bundle
+    restart: on-failure:3
+    ports:
+      - "127.0.0.1:${EMBEDDING_PORT:-8000}:8000"
+    environment:
+      EMBEDDING_DEVICE: ${EMBEDDING_DEVICE:-cpu}
+      EMBEDDING_MODEL: BAAI/bge-m3
+      EMBEDDING_REVISION: 5617a9f61b028005a4858fdac845db406aefb181
+      EMBEDDING_WEIGHTS_SHA256: b5e0ce3470abf5ef3831aa1bd5553b486803e83251590ab7ff35a117cf6aad38
+      HF_HOME: /models
+      HF_HUB_DISABLE_XET: "1"
+      HTTP_PROXY: ${HTTP_PROXY:-}
+      HTTPS_PROXY: ${HTTPS_PROXY:-}
+      NO_PROXY: localhost,127.0.0.1,postgres,redis,embedding,server
+      no_proxy: localhost,127.0.0.1,postgres,redis,embedding,server
+      SSL_CERT_FILE: /run/travelmate/ca-bundle.pem
+      REQUESTS_CA_BUNDLE: /run/travelmate/ca-bundle.pem
+    volumes:
+      - stack_models:/models
+      - ${STACK_STATE_DIR}/ca-bundle.pem:/run/travelmate/ca-bundle.pem:ro
+    cpus: 2
+    mem_limit: 8g
+
+  server:
+    image: travelmate-server:local
+    container_name: travelmate-server
+    build:
+      context: ..
+      dockerfile: Docker/server.Dockerfile
+      network: host
+      args:
+        HTTP_PROXY: ${HTTP_PROXY:-}
+        HTTPS_PROXY: ${HTTPS_PROXY:-}
+        NO_PROXY: ${NO_PROXY:-}
+      secrets:
+        - java_cacerts
+        - gradle_properties
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:${SERVER_PORT:-8080}:8080"
+    environment:
+      DB_URL: jdbc:postgresql://postgres:5432/travel_db
+      DB_USERNAME: ssafy
+      DB_PASSWORD: ssafy
+      JWT_SECRET: ${JWT_SECRET:?Use Docker/stack-up.sh to create local runtime configuration}
+      REDIS_HOST: redis
+      REDIS_PORT: "6379"
+      REDIS_PASSWORD: ""
+      SPRING_DATA_REDIS_SSL_ENABLED: "false"
+      EMBEDDING_SERVER_URL: http://embedding:8000
+      NO_PROXY: localhost,127.0.0.1,postgres,redis,embedding,server,host.docker.internal
+      no_proxy: localhost,127.0.0.1,postgres,redis,embedding,server,host.docker.internal
+      SPRING_APPLICATION_JSON: >-
+        {"logging":{"level":{"com.yollo":"INFO","com.yollo.TravelMate.jwt.JwtTokenProvider":"OFF","com.yollo.TravelMate.config.FilterChannelInterceptor":"OFF"}}}
+      KAKAO_REST_API_KEY: ${KAKAO_REST_API_KEY:-}
+    command:
+      - --ollama.base-url=${OLLAMA_BASE_URL:-http://host.docker.internal:11434}
+    extra_hosts:
+      - host.docker.internal:host-gateway
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      embedding:
+        condition: service_started
+    mem_limit: 2g
+
+volumes:
+  stack_redis:
+  stack_models:
+
+secrets:
+  ca_bundle:
+    file: ${STACK_STATE_DIR}/ca-bundle.pem
+  java_cacerts:
+    file: ${STACK_STATE_DIR}/java-cacerts
+  gradle_properties:
+    file: ${STACK_STATE_DIR}/gradle.properties
