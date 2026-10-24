@@ -1,5 +1,11 @@
 # Travel-Mate
 
+## 개인화 투어 가이드 설계 자료
+
+[문서 목록](docs/README.md) · [전체 구조도](docs/architecture/personal-tour-guide.md) · [상세 명세서](docs/specifications/personal-tour-guide.md)
+
+기존 문서를 기반으로 사용자 취향·리뷰·일기 기억, 검색과 일정 관리 툴 호출, 계획 롤백, 음성 가이드와 카메라 합성 사진 앨범의 연결을 정리한 구현 참고안입니다. 현재 구현과 신규 설계를 구분합니다.
+
 
 
 ## 실행 준비
