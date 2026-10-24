@@ -287,6 +287,7 @@ def build_case(
         "group_id": group["group_id"],
         "case_type": case_type.value,
         "query": authored_case["query"],
+        "reference": authored_case.get("reference"),
         "conditions": conditions,
         "semantic_constraints": authored_case.get("semantic_constraints", []),
         "answerability": answerability.value,
@@ -442,6 +443,13 @@ def validate_cases(
     evidence_count = 0
     for case in cases:
         case_id = case["case_id"]
+        require("reference" in case, f"{case_id}: reference field missing; rebuild JSONL from cases.source.json")
+        reference_answer = case["reference"]
+        require(
+            reference_answer is None
+            or (isinstance(reference_answer, str) and bool(reference_answer.strip())),
+            f"{case_id}: reference must be a nonempty string or null when not authored",
+        )
         case_type = CaseType(case["case_type"])
         expected_answerability = ANSWERABILITY_BY_TYPE.get(case_type, Answerability.ANSWERABLE)
         require(case["answerability"] == expected_answerability, f"{case_id}: answerability/type mismatch")
@@ -530,6 +538,12 @@ def validate_cases(
         "counts_by_case_type": dict(Counter(case["case_type"] for case in cases)),
         "counts_by_answerability": dict(Counter(case["answerability"] for case in cases)),
         "counts_by_evaluation_track": dict(Counter(case["evaluation_track"] for case in cases)),
+        "reference_count": sum(case["reference"] is not None for case in cases),
+        "missing_reference_count": sum(case["reference"] is None for case in cases),
+        "answerable_missing_reference_count": sum(
+            case["answerability"] == Answerability.ANSWERABLE and case["reference"] is None
+            for case in cases
+        ),
         "checks": [
             "unique_case_ids_and_queries", "all_place_ids_and_threshold_sets_match",
             "exact_evidence_offsets_identity_and_provenance", "all_eligible_counts_recalculated",
@@ -537,6 +551,7 @@ def validate_cases(
             "semantic_requirement_annotations_are_consistent_not_automatically_proven",
             "absence_checked_against_entire_corpus", "no_question_group_crosses_splits",
             "evaluation_tracks_match_supported_inputs", "no_system_outputs_in_gold",
+            "reference_is_authored_text_or_explicitly_missing",
         ],
         "human_review_completed": all(case["review"]["status"] == ReviewStatus.HUMAN_REVIEWED for case in cases),
         "retrieval_or_generation_evaluation_run": False,
@@ -686,6 +701,9 @@ def build_manifest(
         "counts_by_case_type": validation["counts_by_case_type"],
         "counts_by_answerability": validation["counts_by_answerability"],
         "counts_by_evaluation_track": validation["counts_by_evaluation_track"],
+        "reference_count": validation["reference_count"],
+        "missing_reference_count": validation["missing_reference_count"],
+        "answerable_missing_reference_count": validation["answerable_missing_reference_count"],
         "corpus_regions": dict(Counter(place["region"] for place in snapshot["places"])),
         "corpus_categories": dict(Counter(place["category"] for place in snapshot["places"])),
         "missing_embedding_place_ids": [place["id"] for place in snapshot["places"] if not place["has_embedding"]],
@@ -714,7 +732,7 @@ def build_manifest(
     }
 
 
-def check(root: Path) -> dict[str, Any]:
+def check(root: Path, *, require_reference: bool = False) -> dict[str, Any]:
     snapshot = read_json(root / "snapshot.json")
     authored = read_json(root / "cases.source.json")
     manifest = read_json(root / "manifest.json")
@@ -738,6 +756,17 @@ def check(root: Path) -> dict[str, Any]:
     require((root / "review.csv").read_bytes() == render_review_sheet(cases), "Review CSV mismatch; merge notes into source before rebuilding")
     require(read_json(root / "validation.json") == validation, "Validation report mismatch")
     require(manifest == build_manifest(root, snapshot, authored, cases, validation), "Manifest metadata/digest mismatch")
+    if require_reference:
+        missing_references = [
+            case["case_id"] for case in cases
+            if case["answerability"] == Answerability.ANSWERABLE and case["reference"] is None
+        ]
+        require(
+            not missing_references,
+            f"{len(missing_references)} answerable cases lack reference; "
+            "author expected answers in cases.source.json and rebuild JSONL. "
+            f"Missing case IDs: {', '.join(missing_references)}",
+        )
     return validation
 
 
@@ -745,9 +774,16 @@ def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--root", type=Path, default=ROOT)
     parser.add_argument("--check", action="store_true", help="Validate existing files without overwriting them")
+    parser.add_argument(
+        "--require-reference",
+        action="store_true",
+        help="With --check, also require an authored reference for every answerable case",
+    )
     arguments = parser.parse_args()
+    if arguments.require_reference and not arguments.check:
+        parser.error("--require-reference requires --check")
     if arguments.check:
-        print(json.dumps(check(arguments.root), ensure_ascii=False, indent=2))
+        print(json.dumps(check(arguments.root, require_reference=arguments.require_reference), ensure_ascii=False, indent=2))
         return
     print(json.dumps(build(arguments.root), ensure_ascii=False, indent=2))
 

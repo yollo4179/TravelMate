@@ -26,6 +26,9 @@
     "context_search": 20,
     "answer_behavior": 20
   },
+  "reference_count": 0,
+  "missing_reference_count": 100,
+  "answerable_missing_reference_count": 80,
   "checks": [
     "unique_case_ids_and_queries",
     "all_place_ids_and_threshold_sets_match",
@@ -36,7 +39,8 @@
     "absence_checked_against_entire_corpus",
     "no_question_group_crosses_splits",
     "evaluation_tracks_match_supported_inputs",
-    "no_system_outputs_in_gold"
+    "no_system_outputs_in_gold",
+    "reference_is_authored_text_or_explicitly_missing"
   ],
   "human_review_completed": false,
   "retrieval_or_generation_evaluation_run": false,

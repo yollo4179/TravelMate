@@ -110,6 +110,37 @@ python -m unittest discover -s Evaluation/v1.3.0/tests -v
 
 `required_facts`는 후보별 추천 판정 이유를 포함하며, 모범 답변 문자열 그 자체는 아닙니다. 정답이 필요한 지표에는 검수한 사실과 원문에서 reference를 작성하거나 해당 지표가 요구하는 형식으로 변환하세요. 일부 지표는 reference가 없어도 실행할 수 있습니다. 수정 완료나 자동 검사 통과를 RAGAS 성능 점수로 해석하지 않습니다.
 
+### 기대 답변 작성과 JSONL 재생성
+
+`reference`는 `cases.source.json`의 개별 문항에 작성합니다. 예를 들어 `TM-palaces-01`에 대응하는 `palaces` 그룹의 `case_suffix: 1` 문항에는 다음 필드를 추가할 수 있습니다.
+
+```json
+"reference": "요청하신 장소는 창경궁입니다."
+```
+
+위 문장은 장소 식별 질문에 대한 작성 예시이며 실제 데이터에 자동 입력하지 않습니다. 기존 문항의 다른 필드는 유지하고 기대 답변의 사실과 완결성을 사람이 검토하세요. 판정 해설이나 장소별 점수를 기대 답변으로 자동 변환하지 않습니다.
+
+작성 원본을 수정한 뒤에는 반드시 다시 생성합니다. `--check`는 기존 JSONL을 검사하며 갱신하지 않습니다.
+
+```bash
+bash Evaluation/v1.3.0/run.sh --build
+bash Evaluation/v1.3.0/run.sh --check
+```
+
+빌더는 원본의 `reference`를 `golden.jsonl`, `development.jsonl`, `test.jsonl`, `search_api.jsonl`, `context_search.jsonl`, `answer_behavior.jsonl`의 해당 문항에 그대로 전달합니다. 작성하지 않은 문항은 `"reference": null`로 표시합니다. 빈 문자열·공백뿐인 문자열·문자열이 아닌 값은 거부합니다.
+
+검증 결과와 manifest에는 `reference_count`, `missing_reference_count`, `answerable_missing_reference_count`를 기록합니다. 구조 검증 통과가 기대 답변 작성 완료를 뜻하지 않습니다. 현재 원본에는 기대 답변이 없으므로 100문항 모두 미작성이고, 그중 답변 가능한 문항은 80개입니다.
+
+Answer Correctness 등 정답이 필요한 평가에 앞서 답변 가능한 80문항의 기대 답변 누락을 차단하려면 다음 명령을 사용하세요.
+
+```bash
+bash Evaluation/v1.3.0/run.sh --check --require-reference
+```
+
+호스트 Python에서는 `python -X utf8 Evaluation/v1.3.0/build_dataset.py --check --require-reference`로 실행할 수 있습니다. 이 모드는 기대 답변이 빠진 답변 가능 문항이 있으면 실패하며 문항 ID를 표시합니다. 답변 불가·확인 질문 20문항은 별도 행동 기준으로 검수하므로 이 옵션에서 기대 답변을 강제하지 않습니다. 기대 답변이 모두 있어도 의미 검수나 실제 시스템 출력 수집이 완료됐다는 뜻은 아닙니다.
+
+JSONL에 `reference`를 직접 추가하지 말고 작성 원본을 수정한 뒤 재생성하세요. 필드가 빠진 이전 JSONL이나 원본에서 수정한 기대 답변이 반영되지 않은 산출물은 검증기가 거부합니다. 재생성은 별도 리뷰 메모 파일을 덮어쓰지 않습니다.
+
 ## 버전별 폴더 관리
 
 이 버전은 `Evaluation/v1.3.0/`에서 독립적으로 관리합니다. 다른 버전과 원본·산출물을 섞지 않습니다. [전체 버전 목록](../README.md)을 참고하세요.

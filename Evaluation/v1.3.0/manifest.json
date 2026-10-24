@@ -14,20 +14,20 @@
   "source_of_truth": "snapshot.json",
   "authoring_source": "cases.source.json",
   "authoring_sha256": "efe13d14621fcf6d5f1c0bbd0fb9e07a10c9d380d8cb047ead5e7b2c14a4295c",
-  "golden_sha256": "63c53606e31d74c46461244de6b1d9da61caf4a8518c4b935aa3489c9bf09884",
+  "golden_sha256": "448695d72622aa741af1cdab1cd1be23e506a6c8bda8b5429862828a3fff8ae8",
   "artifact_sha256": {
-    "golden.jsonl": "63c53606e31d74c46461244de6b1d9da61caf4a8518c4b935aa3489c9bf09884",
-    "development.jsonl": "5464e29203f49432930e1c84566b4a127db280abce840f6b1c36d3b2cf5f8260",
-    "test.jsonl": "f0788414640e82339101608ae37e8a8bf2a385c3077078e90c5e2e4e678237f5",
+    "golden.jsonl": "448695d72622aa741af1cdab1cd1be23e506a6c8bda8b5429862828a3fff8ae8",
+    "development.jsonl": "03a2500fce5992a7f5c057067f177a396735105f2248574207f4b02bd615efe1",
+    "test.jsonl": "682a26d6e83bfe9aa1019d1da9689088238aea3cc7a7dec626af0606f9caa79b",
     "corpus.json": "c74e902620687cbe8b7ec61a24eb7932e95f8cf7a90762baef5e78ad0b134f9e",
     "places.csv": "9adf76b5f0d6f3ac01c3286ff059e0abd0e3806f8a863380a6778edd758c3c94",
     "review.csv": "944fa1d382fd1442dd5d792f47ff4b33127e665df8f370b2a2610787cfb34345",
-    "validation.json": "e7e3329cc1dad1474ca512f693489302506b1938c6c5f407926bed5581952346",
-    "search_api.jsonl": "af8d58fc29c9adb74f60fe87e859c9b5fb4bcf95a44ed5661877be3bfd735b85",
-    "context_search.jsonl": "ca50c1df8eb0ca3fa0d12649b5f6250acfc3911d08670511baf03a58c7873c08",
-    "answer_behavior.jsonl": "08a722ad22c541447b4f3ce45e31db1fc5ab30335e550f003669b7c6744d7f48"
+    "validation.json": "e949e0ed4f9121ded9630079042dc3aca8ad3d122fd9ded8caefa6181a1b8d48",
+    "search_api.jsonl": "f3b57abd3514ad2e7344b81964207723407b6d496af2c37d8ddf6a52d6880d3c",
+    "context_search.jsonl": "c969ddd3ad2fd17b9a0acc30cd861cd62c02f46c8a8382c6e0ce794dbeb566e1",
+    "answer_behavior.jsonl": "c7a201eed6ee217284840e8f6f4cae37d0d61e204ccbeb56eac90522c083371e"
   },
-  "builder_sha256": "294af4b48d78b756999d99779b90c028ca21465a197f1495fc66e885b7baeea0",
+  "builder_sha256": "08d4dc2b28b35e650cc34bee9a79e9b0726add81df126f3fc4e454757ff881b9",
   "case_count": 100,
   "counts_by_split": {
     "development": 80,
@@ -51,6 +51,9 @@
     "context_search": 20,
     "answer_behavior": 20
   },
+  "reference_count": 0,
+  "missing_reference_count": 100,
+  "answerable_missing_reference_count": 80,
   "corpus_regions": {
     "서울": 449
   },

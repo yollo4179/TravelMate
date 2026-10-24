@@ -145,6 +145,94 @@ class DatasetTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, 'authoring source'):
                 builder.check(target)
 
+    def test_reference_survives_rebuild_in_every_matching_export(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            target = Path(directory)
+            for filename in ['snapshot.json', 'cases.source.json', 'build_dataset.py']:
+                shutil.copy2(ROOT / filename, target / filename)
+            authored = builder.read_json(target / 'cases.source.json')
+            expected = {}
+            for group in authored['groups']:
+                for case in group['cases']:
+                    if case['case_suffix'] not in (1, 4, 5):
+                        continue
+                    case_id = f"TM-{group['group_id']}-{case['case_suffix']:02d}"
+                    if case['judgments']:
+                        place_id = case['judgments'][0]['place_id']
+                        place = next(place for place in self.snapshot['places'] if place['id'] == place_id)
+                        reference = f"{place['name']}을 찾으시면 됩니다.\n이는 회귀 테스트용 기대 답변입니다."
+                    else:
+                        reference = case['expected_action']
+                    case['reference'] = reference
+                    expected[case_id] = reference
+            builder.write_json(target / 'cases.source.json', authored)
+            builder.build(target)
+            self.assertEqual(builder.check(target)['reference_count'], len(expected))
+            for filename in ['golden.jsonl', 'development.jsonl', 'test.jsonl',
+                             'search_api.jsonl', 'context_search.jsonl', 'answer_behavior.jsonl']:
+                for line in (target / filename).read_text(encoding='utf-8').splitlines():
+                    case = json.loads(line)
+                    self.assertIn('reference', case)
+                    self.assertEqual(case['reference'], expected.get(case['case_id']))
+
+    def test_reference_source_edits_require_jsonl_regeneration(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            target = Path(directory)
+            for source in ROOT.iterdir():
+                if source.is_file():
+                    shutil.copy2(source, target / source.name)
+            authored = builder.read_json(target / 'cases.source.json')
+            authored['groups'][0]['cases'][0]['reference'] = '창경궁을 찾으시면 됩니다.'
+            builder.write_json(target / 'cases.source.json', authored)
+            manifest = builder.read_json(target / 'manifest.json')
+            manifest['authoring_sha256'] = builder.digest_file(target / 'cases.source.json')
+            builder.write_json(target / 'manifest.json', manifest)
+            with self.assertRaisesRegex(ValueError, 'authoring source'):
+                builder.check(target)
+            builder.build(target)
+            self.assertEqual(builder.check(target)['reference_count'], 1)
+
+    def test_invalid_or_absent_reference_field_is_rejected(self) -> None:
+        for invalid in ['', '  \n ', 3, False, [], {}]:
+            with self.subTest(reference=invalid):
+                self.reject(lambda cases: cases[0].__setitem__('reference', invalid), 'reference must be')
+        self.reject(lambda cases: cases[0].pop('reference'), 'reference field missing; rebuild JSONL')
+
+    def test_structure_pass_does_not_imply_references_are_ready(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            target = Path(directory)
+            for filename in ['snapshot.json', 'cases.source.json', 'build_dataset.py']:
+                shutil.copy2(ROOT / filename, target / filename)
+            authored = builder.read_json(target / 'cases.source.json')
+            for group in authored['groups']:
+                for case in group['cases']:
+                    case.pop('reference', None)
+            builder.write_json(target / 'cases.source.json', authored)
+            builder.build(target)
+            result = builder.check(target)
+            self.assertEqual(result['reference_count'], 0)
+            self.assertEqual(result['missing_reference_count'], 100)
+            self.assertEqual(result['answerable_missing_reference_count'], 80)
+            with self.assertRaisesRegex(ValueError, '80 answerable cases lack reference'):
+                builder.check(target, require_reference=True)
+
+    def test_reference_requirement_applies_to_answerable_cases(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            target = Path(directory)
+            for filename in ['snapshot.json', 'cases.source.json', 'build_dataset.py']:
+                shutil.copy2(ROOT / filename, target / filename)
+            authored = builder.read_json(target / 'cases.source.json')
+            for group in authored['groups']:
+                for case in group['cases']:
+                    if case['judgments']:
+                        case['reference'] = '회귀 테스트용 기대 답변입니다.'
+            builder.write_json(target / 'cases.source.json', authored)
+            builder.build(target)
+            result = builder.check(target, require_reference=True)
+            self.assertEqual(result['answerable_missing_reference_count'], 0)
+            self.assertEqual(result['missing_reference_count'], 20)
+            self.assertFalse(result['human_review_completed'])
+
     def test_build_is_byte_reproducible_and_generated_lines_are_lf(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             target = Path(directory)
