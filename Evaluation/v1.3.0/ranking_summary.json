@@ -14,25 +14,31 @@
     "v1_semantic_only": {
       "description": "Embedding similarity order, before reranking",
       "ndcg_at_10": 1.0,
+      "map_at_10": 1.0,
       "mrr_at_10": 1.0,
       "recall_at_10": 1.0,
-      "precision_at_10": 0.1
+      "precision_at_10": 0.1,
+      "f1_at_10": 0.18181818181818182
     },
     "v2_reranked": {
       "description": "BGE reranker order over the same embedding top-30 candidate pool",
       "ndcg_at_10": 1.0,
+      "map_at_10": 1.0,
       "mrr_at_10": 1.0,
       "recall_at_10": 1.0,
-      "precision_at_10": 0.1
+      "precision_at_10": 0.1,
+      "f1_at_10": 0.18181818181818182
     }
   },
   "delta_v2_minus_v1": {
     "ndcg_at_10": 0.0,
+    "map_at_10": 0.0,
     "mrr_at_10": 0.0,
     "recall_at_10": 0.0,
-    "precision_at_10": 0.0
+    "precision_at_10": 0.0,
+    "f1_at_10": 0.0
   },
   "judgment_scope": "partial_explicit_judgments; unjudged places are not asserted irrelevant",
   "judgment_source": "review_notes_filled_v1.3.0.csv",
-  "metric_interpretation": "Ranking metrics use only authored place relevance judgments. Scores are candidate-pool indicators, not exhaustive corpus recall."
+  "metric_interpretation": "Ranking metrics use authored relevance grades >= 2 as relevant; NDCG uses graded relevance. Precision, recall, F1, MAP, NDCG and MRR are measured at cutoff 10. Scores use explicit judgments only and are candidate-pool indicators, not exhaustive corpus recall."
 }
