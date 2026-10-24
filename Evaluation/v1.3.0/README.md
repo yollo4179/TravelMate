@@ -1,23 +1,18 @@
 # TravelMate 장소 검색 평가셋 v1.3.0
 
-서울 관광지 449건과 TourAPI 원본 449건의 **기존 스냅샷을 보존**하고, 질문 100개를 수정·재검증했습니다. 사용자 PC의 DB를 변경하거나 조회한 작업은 아닙니다. 원본 v1.0.0은 별도 검증 자료에 보존되어 있습니다.
+서울 관광지 449건과 TourAPI 원본 449건의 스냅샷을 기준으로 만든 질문 100개입니다. 현재 버전의 작성 원본·산출물·검수 자료를 함께 관리합니다.
 
 **상태: AI의 원문 대조·구조 검증 완료 / 사람 검수 대기.** 검색·LLM 실행이나 RAGAS 성능 측정은 수행하지 않았습니다.
 
-## 수정 내용
+## 먼저 사용할 파일
 
-- v1.3.0: 시험 문항 crafts-03·gardens-03의 근거 없는 정답을 정정하고, 장소 ID 분할 규칙을 완화했습니다(질문 그룹만 분리). 자세한 내용은 CHANGELOG.md와 `changes_1.3.0.csv`를 보세요.
-- v1.2.0: 개발 문항 8개에 판정 13건을 추가했습니다. 자세한 내용은 CHANGELOG.md와 `changes_1.2.0.csv`를 보세요.
+- **검수할 리뷰:** [review_notes_filled_v1.3.0.csv](review_notes_filled_v1.3.0.csv)
+- **읽기 쉬운 리뷰:** [review_notes_by_question.md](review_notes_by_question.md)
+- **평가용 정답:** [golden.jsonl](golden.jsonl)
+- **정답·점수 수정 원본:** [cases.source.json](cases.source.json)
+- **관광지 원문:** [corpus.json](corpus.json)
 
-- 핵심 조건의 근거가 부족한 후보 4개를 2점에서 1점으로 변경해 정답에서 제외했습니다.
-- DJ박스 질문에 직접 근거를 인용했습니다.
-- 한옥마을 추천에 누락됐던 남산골한옥마을(64)을 원문에 근거해 추가했습니다.
-- 관련도·필수 조건·동일 시설의 상위 공간을 인정하는 기준을 명시했습니다.
-- 기본 검색 60개, 문맥/제약 검색 20개, 응답 행동 20개를 별도 파일로 제공합니다.
-- 잘못된 정답 ID·조건별 후보 수·출처 정보·분할 누출·작성 원본과 산출물 불일치를 검출하도록 검증을 강화했습니다.
-- 생성 JSON/JSONL과 CSV 레코드의 줄바꿈은 LF로 고정했습니다. 스냅샷은 원래 바이트와 SHA-256을 유지합니다.
-
-자세한 수정 이력은 [CHANGELOG.md](CHANGELOG.md)에 있습니다.
+v1.3.0에서는 문항 4개의 판정을 정정하고, 질문 그룹은 분리하되 같은 장소가 두 분할에 나오는 것은 허용했습니다. 현재 변경 내용은 [CHANGELOG.md](CHANGELOG.md)와 [changes_1.3.0.csv](changes_1.3.0.csv)를 보세요. 이전 변경 기록은 [v1.1.0](../v1.1.0/README.md)·[v1.2.0](../v1.2.0/README.md)에 보관합니다.
 
 ## 로컬 실행
 
@@ -61,9 +56,7 @@ python -m unittest discover -s Evaluation/v1.3.0/tests -v
 | `answer_behavior.jsonl` | 근거 부족·추가 질문 행동을 확인할 20개 |
 | `review.csv` | 질문·조건·관련도·인용을 함께 확인하는 검수표 |
 | `manifest.json`, `validation.json` | 버전·분포·파일 해시·검증 결과 |
-| `changes.csv`, `CHANGELOG.md` | v1.0.0 대비 수정 내역 |
-| `changes_1.2.0.csv` | v1.1.0 대비 판정 추가 내역 |
-| `changes_1.3.0.csv` | v1.2.0 대비 판정 정정 내역 |
+| `CHANGELOG.md`, `changes_1.3.0.csv` | 현재 v1.3.0의 변경 내용 |
 | `build_dataset.py`, `tests/` | 생성·검증·회귀 테스트 |
 
 ## 관련도 판정
@@ -125,7 +118,6 @@ python -m unittest discover -s Evaluation/v1.3.0/tests -v
 
 - [질문별 리뷰 읽기](review_notes_by_question.md): 100문항·273행, 후보별 들여쓰기와 원문 인용
 - [메모가 채워진 검수표](review_notes_filled_v1.3.0.csv): 기존 develop의 review.csv를 바이트 단위로 보존한 사본
-- [원본 CSV 2~100행 발췌](review_notes_rows_002_100.csv)
 - [평가 기준](evaluation_review_criteria.md): 검색 적합도와 생성 답변 평가를 구분한 기준
 - [검토 메타데이터](review_notes_metadata.json)
 
