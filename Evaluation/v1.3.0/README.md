@@ -106,6 +106,8 @@ python -m unittest discover -s Evaluation/v1.3.0/tests -v
 
 ## RAGAS 연결
 
+ID 지표 두 개와 OpenAI LLM 지표 세 개의 실행기는 [RAGAS_RUNNER.md](RAGAS_RUNNER.md)에 정리했습니다. `run_ragas_evaluation.py`는 실제 API 결과를 읽어 평가하며, `run.sh --check`는 계속 데이터셋 구조 검사만 수행합니다.
+
 이 파일은 사용자 정의 검색 판정 형식입니다. RAGAS의 `user_input`에는 실제 질문·대화 입력을 넣고, `retrieved_contexts`와 `response`는 시스템을 실행한 결과로 채워야 합니다. 골든 evidence를 검색된 문맥처럼 복사하지 않습니다.
 
 `required_facts`는 후보별 추천 판정 이유를 포함하며, 모범 답변 문자열 그 자체는 아닙니다. 정답이 필요한 지표에는 검수한 사실과 원문에서 reference를 작성하거나 해당 지표가 요구하는 형식으로 변환하세요. 일부 지표는 reference가 없어도 실행할 수 있습니다. 수정 완료나 자동 검사 통과를 RAGAS 성능 점수로 해석하지 않습니다.
