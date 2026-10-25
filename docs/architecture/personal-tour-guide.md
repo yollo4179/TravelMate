@@ -4,7 +4,7 @@
 
 기존 TravelMate에 사용자 기억·대화·일정 변경·카메라 합성 사진 앨범을 연결하는 구조안입니다. 명시적 취향 자동 저장, 추론 취향 확인 후 저장, 계획 변경만 롤백, 실제 카메라에 가이드 아바타 합성은 사용자가 지정한 요구사항입니다. 신규 모듈·테이블·API는 구현 전 제안입니다.
 
-2026-10-25 갱신: **Spring 원본 → Outbox → Kafka → FastAPI 검색 인덱스**의 CQRS 구조로 변경했습니다. FastAPI는 본문·필터 복사본으로 검색·리랭킹하고 Spring은 반환 ID로 최신 상세를 일괄 조회합니다. 상세 계약은 [추천 API·이벤트·DB 명세](../specifications/fastapi-place-recommendation.md)에 있습니다. 현재 코드가 이미 이전됐다는 뜻은 아닙니다.
+2026-10-25 갱신: Spring DB와 FastAPI DB를 분리하고 추천 요청·완료도 Kafka로 전달하는 구조입니다. FastAPI는 자신의 복사본으로 검색·리랭킹하고 상세가 포함된 장소 목록을 완료 이벤트로 보냅니다. Spring은 응답 상세를 보충하려고 원본을 재조회하지 않습니다. [이벤트·DB 명세](../specifications/fastapi-place-recommendation.md)를 참고하며 현재 코드가 이미 이전됐다는 뜻은 아닙니다.
 
 ## 1. 전체 구성
 
@@ -36,15 +36,17 @@ flowchart TB
         Media[AlbumMediaService]
     end
     subgraph STORAGE[저장소]
-        PG[(PostgreSQL 원본과 업무 데이터)]
+        PG[(Spring DB 원본·업무·요청·수신 결과)]
         Outbox[(place_change_outbox)]
-        Index[(place_embeddings 검색 복사본)]
+        Index[(별도 FastAPI DB<br/>검색 복사본·작업·결과 Outbox)]
         Redis[(Redis)]
         Files[사진 파일 저장 어댑터]
     end
     Embed[FastAPI 임베딩·DB 검색·리랭킹]
     Indexer[FastAPI 이벤트 접수·인덱싱 작업자]
     Kafka[Kafka 관광지 변경 토픽]
+    Requests[Kafka 추천 요청 토픽]
+    Results[Kafka 추천 완료·실패 토픽]
     LLM[Ollama LLM]
 
     Input --> Auth
@@ -65,10 +67,12 @@ flowchart TB
     Tools --> Memory
     Auth -->|기존 생성 API| Planner
     Planner --> Search
-    Search -->|검색 HTTP 한 번| Embed
+    Search -->|추천 요청 발행| Requests
+    Requests --> Embed
     Embed -->|검색용 복사본 조회| Index
-    Embed -->|순위별 ID와 버전| Search
-    Search -->|최신 상세 일괄 조회와 검증| PG
+    Embed -->|상세를 포함한 완료 결과| Results
+    Results --> Search
+    Search -->|결과 영속 수신| PG
     Source -->|같은 트랜잭션| PG
     Source -->|같은 트랜잭션| Outbox
     Outbox --> Relay
@@ -90,14 +94,15 @@ flowchart TB
     classDef existing fill:#e6f4ea,stroke:#238636,color:#172b1d
     classDef proposed fill:#fff4ce,stroke:#9a6700,color:#332700
     class Auth,Planner,PG,Redis,LLM existing
-    class Input,Voice,Editor,Review,Album,Turn,Context,Memory,Analysis,Tools,Search,Source,Relay,Outbox,Index,Embed,Indexer,Kafka,Preview,Commit,Undo,Media,Files proposed
+    class Input,Voice,Editor,Review,Album,Turn,Context,Memory,Analysis,Tools,Search,Source,Relay,Outbox,Index,Embed,Indexer,Kafka,Requests,Results,Preview,Commit,Undo,Media,Files proposed
 ```
 
 - 지도·조건 입력·계획 조회는 부분 구현입니다. 공통 편집기와 대화 동기화 전체를 완료한 상태는 아닙니다.
 - Spring Boot가 사용자 권한·조건·검증·저장을 관리합니다. LLM은 사용자 UID를 선택하거나 직접 SQL을 실행하지 않습니다.
-- 검색 툴은 Spring에서 FastAPI를 한 번 호출합니다. FastAPI 내부에서 쿼리 임베딩 → 검색 복사본 Top-K → 모드별 리랭킹을 수행하고 순위별 ID·버전·점수를 반환합니다. Spring이 원본을 일괄 조회·검증합니다. 임베딩·리랭킹을 LLM 툴로 각각 노출하지 않습니다.
+- 추천 툴은 Kafka로 요청하고 완료 이벤트의 상세 장소 목록을 받습니다. FastAPI 내부에서 쿼리 임베딩 → 전용 DB 복사본 Top-K → 모드별 리랭킹을 수행합니다. Spring은 완료 payload로 응답을 구성하며 상세 재조회를 하지 않습니다. 세 Kafka 노드는 같은 브로커의 서로 다른 토픽입니다.
 - Spring은 원본과 Outbox를 같은 트랜잭션으로 기록하고 Kafka로 전달합니다. FastAPI는 이벤트로 자신의 검색 인덱스만 수정합니다. 원본 JOIN이나 직접 수정 권한은 부여하지 않습니다. 개인 기억·계획·일기·사진의 소유권 검증과 저장은 Spring이 관리합니다.
-- 검색용 복사본은 비동기 반영됩니다. 이벤트 ID·원본 버전·삭제 표식·최종 상세 검증으로 정합성을 관리합니다. Kafka 적용과 리랭커 추론 속도 최적화는 별도 검증입니다.
+- 검색용 복사본은 비동기 반영됩니다. 이벤트 ID·원본 버전·삭제 표식·결과 payload 검증으로 정합성을 관리합니다. Kafka 적용과 리랭커 추론 속도 최적화는 별도 검증입니다.
+- Spring DB와 FastAPI DB는 별도 서비스입니다. 결과 payload는 사용한 인덱스 버전을 표시하며 최신 원본을 동기 확인한 결과라고 표시하지 않습니다. 추천 표시와 계획 확정 시의 소유권·버전·필수 조건 검증은 구분합니다.
 - PostgreSQL 활용은 기존 [대화 영속화 비교안](../../MDs/chat_persistence_options.md)을 계승하는 구조 제안입니다. 신규 테이블은 아직 적용하지 않습니다.
 - Redis는 재구성 가능한 세션 Context·작업 캐시 후보입니다. 장기 취향·계획 이력·사진의 유일한 저장소로 사용하지 않는 구조안입니다.
 - STT/TTS 제공자, 카메라 합성의 2D/3D 방식, 파일 저장소는 미정입니다. 촬영 범위를 별도 VR 공간이나 VR 기기로 확대하지 않습니다.
@@ -215,7 +220,6 @@ sequenceDiagram
     participant LLM as Ollama
     participant Tools as ToolRegistry
     participant Search as FastAPI 추천 파이프라인
-    participant Source as Spring 원본 상세 조회
     participant Preview as 일정 계산과 변경안
     participant Store as 계획 저장
     User->>App: 한 곳 또는 한 번에 여러 곳 요청
@@ -224,12 +228,10 @@ sequenceDiagram
     Server->>LLM: messages와 허용 tools
     LLM-->>Server: search_places tool_calls
     Server->>Tools: 이름·인수·소유권·범위 검증
-    Tools->>Search: 검색 클라이언트로 query·확정 조건·모드 전달
+    Tools->>Search: Kafka로 query·확정 조건·모드·request_id 전달
     Search->>Search: 임베딩·검색 복사본 Top-K·모드별 순위
-    Search-->>Tools: 실제 후보 ID·원본 버전·점수
-    Tools->>Source: 후보 ID의 최신 상세 일괄 조회
-    Source-->>Tools: 원본과 content_version
-    Tools->>Tools: 버전·조건 확인과 순위 복원
+    Search-->>Tools: Kafka 완료, 상세·순위·점수·스냅샷 버전
+    Tools->>Tools: 요청·Context·조건·완료 payload 검증
     Tools-->>Server: 이번 요청의 candidateSetId
     Server->>LLM: assistant 원문과 tool 결과 추가
     LLM-->>Server: 상세 확인·일정 계산·변경 미리보기 요청
@@ -294,7 +296,7 @@ flowchart LR
 | 역할 | 현재 코드 | 추가 설계 |
 |---|---|---|
 | 이번 조건 | [PlanContext](../../Server/TravelMate/src/main/java/com/yollo/TravelMate/domain/plan/data/request/PlanContext.java) | 장기 취향과 이번 확정 조건을 구분하는 ContextAssembler |
-| 장소 검색 | [PlaceSemanticSearchService](../../Server/TravelMate/src/main/java/com/yollo/TravelMate/domain/place/service/PlaceSemanticSearchService.java) | FastAPI 검색 인덱스 조회·리랭킹 후 Spring이 최신 상세 일괄 조회. [CQRS 구조](fastapi-place-recommendation.md) 참고 |
+| 장소 검색 | [PlaceSemanticSearchService](../../Server/TravelMate/src/main/java/com/yollo/TravelMate/domain/place/service/PlaceSemanticSearchService.java) | 별도 FastAPI DB·Kafka 요청/완료로 이전. 상세를 포함한 결과 payload 사용. [CQRS 구조](fastapi-place-recommendation.md) 참고 |
 | 생성 | [ContextPlanningService](../../Server/TravelMate/src/main/java/com/yollo/TravelMate/domain/plan/service/ContextPlanningService.java) | 1개·일괄 제안, 배정·시간표 계산 |
 | LLM 계약 | [LlmClient](../../Server/TravelMate/src/main/java/com/yollo/TravelMate/ai/llm/base/LlmClient.java) | messages·tool_calls·tool 결과를 보존하는 호출 |
 | LLM 구현 | [OllamaLlmClient](../../Server/TravelMate/src/main/java/com/yollo/TravelMate/ai/llm/derived/OllamaLlmClient.java) | 도구 반복 호출과 최종 구조화 출력 |

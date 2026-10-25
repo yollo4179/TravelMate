@@ -51,6 +51,8 @@ docker compose -p docker -f Docker/docker-compose.kafka.yml stop
 
 이 Compose는 **브로커·토픽·GUI 기반 시설**입니다. Spring Outbox producer, FastAPI consumer·임베딩 작업자, CQRS 테이블 마이그레이션은 [이벤트·DB 명세](../docs/specifications/fastapi-place-recommendation.md)에 정의한 후속 구현입니다. 브로커나 UI가 healthy라는 이유로 관광지 이벤트가 실제로 발행·반영됐다고 판단하지 않습니다.
 
+최신 설계는 별도 FastAPI DB와 Kafka 추천 요청·완료 흐름입니다. 요청 토픽 `travelmate.recommendation-requests.v1`, 결과 토픽 `travelmate.recommendation-results.v1`은 명세의 계약이며 현재 이 Compose가 자동 생성하는 토픽은 `travelmate.place-changes.v1` 하나입니다. 별도 DB·추가 토픽 초기화·애플리케이션 연결은 로컬 Codex 구현과 대조할 대상으로, 이번 문서 갱신에서 Compose를 변경하지 않았습니다.
+
 UI에서 Topics·메시지·consumer group과 lag를 확인할 수 있습니다. 소비자 그룹은 실제 consumer가 연결된 뒤 나타납니다. DB에 작업을 영속 접수한 뒤 offset을 commit하는 설계에서는 Kafka lag와 DB 인덱싱 작업 backlog를 함께 관측해야 합니다. Kafka lag가 0이어도 임베딩 반영이 끝나지 않았을 수 있습니다.
 
 ## 검증 기록
