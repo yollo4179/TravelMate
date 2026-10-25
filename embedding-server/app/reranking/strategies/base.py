@@ -11,6 +11,7 @@ from sentence_transformers import CrossEncoder
 class RerankingStrategyType(StrEnum):
     CROSS_ENCODER_PREDICT = "cross_encoder_predict"
     INSTRUMENTED_PREDICT = "instrumented_predict"
+    AUTOCAST_FP16 = "autocast_fp16"
     MANUAL_DIAGNOSTIC = "manual_diagnostic"
 
 

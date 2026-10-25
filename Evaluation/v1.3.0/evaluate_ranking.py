@@ -7,6 +7,7 @@ import math
 import csv
 import argparse
 from collections import Counter
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
@@ -15,16 +16,23 @@ from ragas_support.langsmith_observability import evaluation_span
 
 
 ROOT = Path(__file__).resolve().parent
-CUTOFF = 10
+CUTOFFS = (5, 10)
 RANKING_VERSIONS = ("v1_semantic_only", "v2_reranked")
-METRIC_NAMES = (
-    "ndcg_at_10",
-    "map_at_10",
-    "mrr_at_10",
-    "recall_at_10",
-    "precision_at_10",
-    "f1_at_10",
-)
+METRIC_BASE_NAMES = ("ndcg", "map", "mrr", "recall", "precision", "f1")
+
+
+def metric_names(cutoff: int) -> tuple[str, ...]:
+    return tuple(f"{metric}_at_{cutoff}" for metric in METRIC_BASE_NAMES)
+
+
+def log_progress(root: Path, cutoff: int, message: str) -> None:
+    output_dir = root / f"ranking_at_{cutoff}"
+    output_dir.mkdir(parents=True, exist_ok=True)
+    log_path = output_dir / "run.log"
+    timestamp = datetime.now(timezone.utc).isoformat()
+    with log_path.open("a", encoding="utf-8", newline="\n") as log_file:
+        log_file.write(f"{timestamp} {message}\n")
+    print(message, flush=True)
 
 
 def read_jsonl(path: Path) -> list[dict[str, Any]]:
@@ -51,19 +59,19 @@ def group_review_rows(rows: Any) -> dict[str, list[dict[str, str]]]:
     return grouped_rows
 
 
-def dcg(relevances: list[int]) -> float:
+def dcg(relevances: list[int], cutoff: int) -> float:
     return sum(
         (2**grade - 1) / math.log2(rank + 1)
-        for rank, grade in enumerate(relevances[:CUTOFF], start=1)
+        for rank, grade in enumerate(relevances[:cutoff], start=1)
     )
 
 
-def score_order(place_ids: list[int], judgments: dict[int, int]) -> dict[str, float]:
+def score_order(place_ids: list[int], judgments: dict[int, int], cutoff: int = 10) -> dict[str, float]:
     relevant_ids = {place_id for place_id, grade in judgments.items() if grade >= 2}
-    top_ids = place_ids[:CUTOFF]
+    top_ids = place_ids[:cutoff]
     top_grades = [judgments.get(place_id, 0) for place_id in top_ids]
     ideal_grades = sorted(judgments.values(), reverse=True)
-    ideal_dcg = dcg(ideal_grades)
+    ideal_dcg = dcg(ideal_grades, cutoff)
     reciprocal_rank = next(
         (1 / rank for rank, place_id in enumerate(top_ids, start=1) if place_id in relevant_ids),
         0.0,
@@ -75,34 +83,35 @@ def score_order(place_ids: list[int], judgments: dict[int, int]) -> dict[str, fl
             relevant_ranks.append(rank)
             seen_relevant_ids.add(place_id)
     relevant_hits = len(relevant_ranks)
-    precision_at_cutoff = relevant_hits / CUTOFF
+    precision_at_cutoff = relevant_hits / cutoff
     recall_at_cutoff = relevant_hits / len(relevant_ids) if relevant_ids else 0.0
     average_precision = (
         sum(
             len({place_id for place_id in top_ids[:rank] if place_id in relevant_ids}) / rank
             for rank in relevant_ranks
         )
-        / min(len(relevant_ids), CUTOFF)
+        / min(len(relevant_ids), cutoff)
         if relevant_ids
         else 0.0
     )
-    return {
-        "ndcg_at_10": dcg(top_grades) / ideal_dcg if ideal_dcg else 0.0,
-        "map_at_10": average_precision,
-        "mrr_at_10": reciprocal_rank,
-        "recall_at_10": recall_at_cutoff,
-        "precision_at_10": precision_at_cutoff,
-        "f1_at_10": (
+    return dict(zip(metric_names(cutoff), (
+        dcg(top_grades, cutoff) / ideal_dcg if ideal_dcg else 0.0,
+        average_precision,
+        reciprocal_rank,
+        recall_at_cutoff,
+        precision_at_cutoff,
+        (
             2 * precision_at_cutoff * recall_at_cutoff / (precision_at_cutoff + recall_at_cutoff)
             if precision_at_cutoff + recall_at_cutoff
             else 0.0
         ),
-    }
+    )))
 
 
 def evaluate_case(
     case: dict[str, Any],
     review_judgments: dict[str, dict[int, int]],
+    cutoff: int,
 ) -> dict[str, Any] | None:
     if case["answerability"] != "answerable":
         return None
@@ -123,16 +132,17 @@ def evaluate_case(
             operation="travelmate.ranking_metrics",
             case_id=case["case_id"],
             strategy_version=version,
-            metric_name="ranking_metrics_at_10",
+            metric_name=f"ranking_metrics_at_{cutoff}",
+            project_name=f"travelmate-ragas-v1.3.0-at-{cutoff}",
             inputs={
                 "query": case["query"],
-                "cutoff": CUTOFF,
+                "cutoff": cutoff,
                 "relevance_threshold": 2,
                 "judgment_count": len(judgments),
                 "retrieved_place_count": len(comparison[version]["place_ids"]),
             },
         ) as ranking_trace:
-            scores[version] = score_order(comparison[version]["place_ids"], judgments)
+            scores[version] = score_order(comparison[version]["place_ids"], judgments, cutoff)
             if ranking_trace is not None:
                 for metric_name, metric_score in scores[version].items():
                     ranking_trace.set_attribute(f"evaluation.{metric_name}", metric_score)
@@ -140,23 +150,25 @@ def evaluate_case(
         "case_id": case["case_id"],
         "query": case["query"],
         "evaluation_track": case["evaluation_track"],
+        "cutoff": cutoff,
         "judgment_count": len(judgments),
         "relevant_judgment_count": sum(grade >= 2 for grade in judgments.values()),
         "ranking_versions": scores,
         "delta_v2_minus_v1": {
             metric: scores["v2_reranked"][metric] - scores["v1_semantic_only"][metric]
-            for metric in METRIC_NAMES
+            for metric in metric_names(cutoff)
         },
     }
 
 
-def aggregate(results: list[dict[str, Any]]) -> dict[str, Any]:
+def aggregate(results: list[dict[str, Any]], cutoff: int) -> dict[str, Any]:
+    names = metric_names(cutoff)
     if not results:
-        return {version: {metric: None for metric in METRIC_NAMES} for version in RANKING_VERSIONS}
+        return {version: {metric: None for metric in names} for version in RANKING_VERSIONS}
     return {
         version: {
             metric: sum(result["ranking_versions"][version][metric] for result in results) / len(results)
-            for metric in METRIC_NAMES
+            for metric in names
         }
         for version in RANKING_VERSIONS
     }
@@ -171,42 +183,62 @@ def evaluate(root: Path = ROOT, env_file: Path | None = None) -> dict[str, Any]:
 
     cases = read_jsonl(root / "development.jsonl")
     review_judgments = read_review_judgments(root / "review_notes_filled_v1.3.0.csv")
-    results = []
-    skipped_cases = []
-    for case in cases:
-        if case["answerability"] != "answerable":
-            continue
-        result = evaluate_case(case, review_judgments)
-        if result is None:
-            skipped_cases.append(case)
-            continue
-        results.append(result)
-    skipped = Counter(
-        case.get("execution", {}).get("condition_coverage", "not_run")
-        for case in skipped_cases
-    )
-    averages = aggregate(results)
-    summary = {
-        "status": "completed" if results else "not_run",
-        "split": "development",
-        "dataset_version": "1.3.0",
-        "cutoff": CUTOFF,
-        "case_count": len(results),
-        "skipped_answerable_case_count": sum(skipped.values()),
-        "skipped_by_condition_coverage": dict(skipped),
-        "ranking_versions": {
-            "v1_semantic_only": {"description": "Embedding similarity order, before reranking", **averages["v1_semantic_only"]},
-            "v2_reranked": {"description": "BGE reranker order over the same embedding top-30 candidate pool", **averages["v2_reranked"]},
-        },
-        "delta_v2_minus_v1": {
-            metric: averages["v2_reranked"][metric] - averages["v1_semantic_only"][metric]
-            if results else None
-            for metric in METRIC_NAMES
-        },
-        "judgment_scope": "partial_explicit_judgments; unjudged places are not asserted irrelevant",
-        "judgment_source": "review_notes_filled_v1.3.0.csv",
-        "metric_interpretation": "Ranking metrics use authored relevance grades >= 2 as relevant; NDCG uses graded relevance. Precision, recall, F1, MAP, NDCG and MRR are measured at cutoff 10. Scores use explicit judgments only and are candidate-pool indicators, not exhaustive corpus recall.",
-    }
+    cutoff_summaries: dict[str, dict[str, Any]] = {}
+    results_by_cutoff: dict[int, list[dict[str, Any]]] = {}
+    for cutoff in CUTOFFS:
+        output_dir = root / f"ranking_at_{cutoff}"
+        output_dir.mkdir(parents=True, exist_ok=True)
+        (output_dir / "run.log").write_text("", encoding="utf-8")
+        log_progress(root, cutoff, f"ranking @{cutoff}: 채점 시작")
+        results: list[dict[str, Any]] = []
+        skipped_cases: list[dict[str, Any]] = []
+        eligible_cases = [case for case in cases if case["answerability"] == "answerable"]
+        for case in eligible_cases:
+            result = evaluate_case(case, review_judgments, cutoff)
+            if result is None:
+                skipped_cases.append(case)
+                continue
+            results.append(result)
+            log_progress(root, cutoff, f"ranking @{cutoff}: {case['case_id']} 완료 ({len(results)}/{len(eligible_cases)})")
+        skipped = Counter(
+            case.get("execution", {}).get("condition_coverage", "not_run")
+            for case in skipped_cases
+        )
+        averages = aggregate(results, cutoff)
+        names = metric_names(cutoff)
+        summary = {
+            "status": "completed" if results else "not_run",
+            "split": "development",
+            "dataset_version": "1.3.0",
+            "cutoff": cutoff,
+            "case_count": len(results),
+            "skipped_answerable_case_count": sum(skipped.values()),
+            "skipped_by_condition_coverage": dict(skipped),
+            "ranking_versions": {
+                "v1_semantic_only": {"description": "Embedding similarity order, before reranking", **averages["v1_semantic_only"]},
+                "v2_reranked": {"description": "BGE reranker order over the same embedding top-30 candidate pool", **averages["v2_reranked"]},
+            },
+            "delta_v2_minus_v1": {
+                metric: averages["v2_reranked"][metric] - averages["v1_semantic_only"][metric]
+                if results else None
+                for metric in names
+            },
+            "judgment_scope": "partial_explicit_judgments; unjudged places are not asserted irrelevant",
+            "judgment_source": "review_notes_filled_v1.3.0.csv",
+            "metric_interpretation": f"Ranking metrics use authored relevance grades >= 2 as relevant; NDCG uses graded relevance. Precision, recall, F1, MAP, NDCG and MRR are measured at cutoff {cutoff}. Scores use explicit judgments only and are candidate-pool indicators, not exhaustive corpus recall.",
+            "langsmith_project": f"travelmate-ragas-v1.3.0-at-{cutoff}",
+        }
+        output_dir = root / f"ranking_at_{cutoff}"
+        output_dir.mkdir(parents=True, exist_ok=True)
+        build_dataset.write_jsonl(output_dir / "results.jsonl", results)
+        build_dataset.write_json(output_dir / "summary.json", summary)
+        cutoff_summaries[str(cutoff)] = summary
+        results_by_cutoff[cutoff] = results
+        log_progress(root, cutoff, f"ranking @{cutoff}: 저장 완료 → {output_dir}")
+
+    results = results_by_cutoff[10]
+    summary = dict(cutoff_summaries["10"])
+    summary["cutoffs"] = cutoff_summaries
     build_dataset.write_jsonl(root / "ranking_results.jsonl", results)
     build_dataset.write_json(root / "ranking_summary.json", summary)
     build_dataset.refresh_runtime_exports(root)

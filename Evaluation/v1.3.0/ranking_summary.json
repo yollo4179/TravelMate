@@ -40,5 +40,98 @@
   },
   "judgment_scope": "partial_explicit_judgments; unjudged places are not asserted irrelevant",
   "judgment_source": "review_notes_filled_v1.3.0.csv",
-  "metric_interpretation": "Ranking metrics use authored relevance grades >= 2 as relevant; NDCG uses graded relevance. Precision, recall, F1, MAP, NDCG and MRR are measured at cutoff 10. Scores use explicit judgments only and are candidate-pool indicators, not exhaustive corpus recall."
+  "metric_interpretation": "Ranking metrics use authored relevance grades >= 2 as relevant; NDCG uses graded relevance. Precision, recall, F1, MAP, NDCG and MRR are measured at cutoff 10. Scores use explicit judgments only and are candidate-pool indicators, not exhaustive corpus recall.",
+  "langsmith_project": "travelmate-ragas-v1.3.0-at-10",
+  "cutoffs": {
+    "5": {
+      "status": "completed",
+      "split": "development",
+      "dataset_version": "1.3.0",
+      "cutoff": 5,
+      "case_count": 1,
+      "skipped_answerable_case_count": 63,
+      "skipped_by_condition_coverage": {
+        "complete": 2,
+        "partial": 1,
+        "not_run": 60
+      },
+      "ranking_versions": {
+        "v1_semantic_only": {
+          "description": "Embedding similarity order, before reranking",
+          "ndcg_at_5": 1.0,
+          "map_at_5": 1.0,
+          "mrr_at_5": 1.0,
+          "recall_at_5": 1.0,
+          "precision_at_5": 0.2,
+          "f1_at_5": 0.33333333333333337
+        },
+        "v2_reranked": {
+          "description": "BGE reranker order over the same embedding top-30 candidate pool",
+          "ndcg_at_5": 1.0,
+          "map_at_5": 1.0,
+          "mrr_at_5": 1.0,
+          "recall_at_5": 1.0,
+          "precision_at_5": 0.2,
+          "f1_at_5": 0.33333333333333337
+        }
+      },
+      "delta_v2_minus_v1": {
+        "ndcg_at_5": 0.0,
+        "map_at_5": 0.0,
+        "mrr_at_5": 0.0,
+        "recall_at_5": 0.0,
+        "precision_at_5": 0.0,
+        "f1_at_5": 0.0
+      },
+      "judgment_scope": "partial_explicit_judgments; unjudged places are not asserted irrelevant",
+      "judgment_source": "review_notes_filled_v1.3.0.csv",
+      "metric_interpretation": "Ranking metrics use authored relevance grades >= 2 as relevant; NDCG uses graded relevance. Precision, recall, F1, MAP, NDCG and MRR are measured at cutoff 5. Scores use explicit judgments only and are candidate-pool indicators, not exhaustive corpus recall.",
+      "langsmith_project": "travelmate-ragas-v1.3.0-at-5"
+    },
+    "10": {
+      "status": "completed",
+      "split": "development",
+      "dataset_version": "1.3.0",
+      "cutoff": 10,
+      "case_count": 1,
+      "skipped_answerable_case_count": 63,
+      "skipped_by_condition_coverage": {
+        "complete": 2,
+        "partial": 1,
+        "not_run": 60
+      },
+      "ranking_versions": {
+        "v1_semantic_only": {
+          "description": "Embedding similarity order, before reranking",
+          "ndcg_at_10": 1.0,
+          "map_at_10": 1.0,
+          "mrr_at_10": 1.0,
+          "recall_at_10": 1.0,
+          "precision_at_10": 0.1,
+          "f1_at_10": 0.18181818181818182
+        },
+        "v2_reranked": {
+          "description": "BGE reranker order over the same embedding top-30 candidate pool",
+          "ndcg_at_10": 1.0,
+          "map_at_10": 1.0,
+          "mrr_at_10": 1.0,
+          "recall_at_10": 1.0,
+          "precision_at_10": 0.1,
+          "f1_at_10": 0.18181818181818182
+        }
+      },
+      "delta_v2_minus_v1": {
+        "ndcg_at_10": 0.0,
+        "map_at_10": 0.0,
+        "mrr_at_10": 0.0,
+        "recall_at_10": 0.0,
+        "precision_at_10": 0.0,
+        "f1_at_10": 0.0
+      },
+      "judgment_scope": "partial_explicit_judgments; unjudged places are not asserted irrelevant",
+      "judgment_source": "review_notes_filled_v1.3.0.csv",
+      "metric_interpretation": "Ranking metrics use authored relevance grades >= 2 as relevant; NDCG uses graded relevance. Precision, recall, F1, MAP, NDCG and MRR are measured at cutoff 10. Scores use explicit judgments only and are candidate-pool indicators, not exhaustive corpus recall.",
+      "langsmith_project": "travelmate-ragas-v1.3.0-at-10"
+    }
+  }
 }

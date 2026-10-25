@@ -40,6 +40,17 @@ class RankingMetricTests(unittest.TestCase):
         self.assertEqual(scores["f1_at_10"], 0.0)
         self.assertEqual(scores["map_at_10"], 0.0)
 
+    def test_cutoff_five_uses_only_the_first_five_results(self) -> None:
+        scores = score_order(
+            [10, 11, 12, 13, 14, 20],
+            {10: 3, 20: 2},
+            cutoff=5,
+        )
+
+        self.assertEqual(scores["precision_at_5"], 0.2)
+        self.assertEqual(scores["recall_at_5"], 0.5)
+        self.assertEqual(scores["mrr_at_5"], 1.0)
+
 
 if __name__ == "__main__":
     unittest.main()

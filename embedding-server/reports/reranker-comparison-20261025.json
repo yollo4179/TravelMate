@@ -1,0 +1,486 @@
+{
+  "query": "서울 카페",
+  "query_embedding_device": "cuda",
+  "candidate_count": 30,
+  "candidate_place_ids_in_semantic_order": [
+    446,
+    180,
+    441,
+    233,
+    112,
+    209,
+    406,
+    332,
+    355,
+    184,
+    69,
+    434,
+    234,
+    157,
+    178,
+    221,
+    311,
+    386,
+    430,
+    216,
+    166,
+    241,
+    285,
+    394,
+    235,
+    357,
+    442,
+    89,
+    76,
+    214
+  ],
+  "candidate_text_fingerprint": "61c86c055cf5e175f50239047264b9fc9c5f5eb6eb2e8fddb59e3ed83386b92d",
+  "candidate_text_characters": [
+    335,
+    261,
+    299,
+    406,
+    378,
+    219,
+    286,
+    571,
+    246,
+    299,
+    316,
+    362,
+    271,
+    367,
+    438,
+    432,
+    300,
+    273,
+    194,
+    447,
+    398,
+    557,
+    321,
+    9,
+    262,
+    614,
+    134,
+    269,
+    138,
+    353
+  ],
+  "model": "BAAI/bge-reranker-v2-m3",
+  "device": "cuda",
+  "gpu_name": "NVIDIA GeForce RTX 4050 Laptop GPU",
+  "parameter_dtype": "float32",
+  "batch_size": 32,
+  "warmup_runs_per_strategy": 2,
+  "measured_runs_per_strategy": 5,
+  "timings": {
+    "cross_encoder_predict": {
+      "runs": 5,
+      "median_ms": 1902.2966379998252,
+      "mean_ms": 1900.7778567996866,
+      "min_ms": 1896.5765819993976,
+      "max_ms": 1904.8002529998485,
+      "p95_ms": 1904.5646671998838,
+      "speedup_vs_original_predict": 1.0
+    },
+    "instrumented_predict": {
+      "runs": 5,
+      "median_ms": 1904.8941000000923,
+      "mean_ms": 1906.421116400088,
+      "min_ms": 1903.1054920014867,
+      "max_ms": 1912.190319999354,
+      "p95_ms": 1911.4339125993865,
+      "speedup_vs_original_predict": 0.998636427085229
+    },
+    "autocast_fp16": {
+      "runs": 5,
+      "median_ms": 617.6121770004102,
+      "mean_ms": 618.7199309999414,
+      "min_ms": 615.7291299987264,
+      "max_ms": 624.4671290005499,
+      "p95_ms": 623.3964662005747,
+      "speedup_vs_original_predict": 3.080082791176188
+    },
+    "manual_diagnostic": {
+      "runs": 5,
+      "median_ms": 1924.4425979995867,
+      "mean_ms": 1924.095421200036,
+      "min_ms": 1909.1477220008528,
+      "max_ms": 1935.6018039998162,
+      "p95_ms": 1934.2593801997282,
+      "speedup_vs_original_predict": 0.9884922730234813
+    }
+  },
+  "tokenization_comparison": {
+    "configured_max_sequence_length": 8192,
+    "raw_untruncated_token_lengths": [
+      182,
+      157,
+      183,
+      245,
+      194,
+      117,
+      162,
+      317,
+      159,
+      161,
+      184,
+      190,
+      150,
+      229,
+      254,
+      242,
+      162,
+      148,
+      113,
+      240,
+      249,
+      319,
+      169,
+      13,
+      162,
+      338,
+      76,
+      143,
+      82,
+      199
+    ],
+    "actual_model_inputs_by_strategy": {
+      "cross_encoder_predict": {
+        "captured_pair_count": 30,
+        "raw_pair_count": 30,
+        "truncated_pair_count": 0,
+        "batch_count": 1,
+        "batch_sizes": [
+          30
+        ],
+        "padded_sequence_lengths": [
+          338
+        ],
+        "actual_sequence_lengths": [
+          338,
+          317,
+          319,
+          240,
+          254,
+          242,
+          245,
+          249,
+          194,
+          229,
+          190,
+          199,
+          182,
+          169,
+          184,
+          162,
+          161,
+          183,
+          162,
+          148,
+          150,
+          143,
+          162,
+          157,
+          159,
+          117,
+          113,
+          82,
+          76,
+          13
+        ],
+        "input_id_hashes": [
+          "2e06e4abc57fdc689cfa854a1c03daf0fecd81f24670abc1e88503ed4714c8c1"
+        ],
+        "attention_mask_hashes": [
+          "5b99a0f070fedc17fb4bff745480556377ca1bee6d98d6c5b90ef88d3f56ad3b"
+        ],
+        "token_type_id_hashes": [
+          null
+        ],
+        "tensor_dtypes": [
+          {
+            "input_ids": "int64",
+            "attention_mask": "int64"
+          }
+        ]
+      },
+      "autocast_fp16": {
+        "captured_pair_count": 30,
+        "raw_pair_count": 30,
+        "truncated_pair_count": 0,
+        "batch_count": 1,
+        "batch_sizes": [
+          30
+        ],
+        "padded_sequence_lengths": [
+          338
+        ],
+        "actual_sequence_lengths": [
+          338,
+          317,
+          319,
+          240,
+          254,
+          242,
+          245,
+          249,
+          194,
+          229,
+          190,
+          199,
+          182,
+          169,
+          184,
+          162,
+          161,
+          183,
+          162,
+          148,
+          150,
+          143,
+          162,
+          157,
+          159,
+          117,
+          113,
+          82,
+          76,
+          13
+        ],
+        "input_id_hashes": [
+          "2e06e4abc57fdc689cfa854a1c03daf0fecd81f24670abc1e88503ed4714c8c1"
+        ],
+        "attention_mask_hashes": [
+          "5b99a0f070fedc17fb4bff745480556377ca1bee6d98d6c5b90ef88d3f56ad3b"
+        ],
+        "token_type_id_hashes": [
+          null
+        ],
+        "tensor_dtypes": [
+          {
+            "input_ids": "int64",
+            "attention_mask": "int64"
+          }
+        ]
+      },
+      "manual_diagnostic": {
+        "captured_pair_count": 30,
+        "raw_pair_count": 30,
+        "truncated_pair_count": 0,
+        "batch_count": 1,
+        "batch_sizes": [
+          30
+        ],
+        "padded_sequence_lengths": [
+          338
+        ],
+        "actual_sequence_lengths": [
+          338,
+          317,
+          319,
+          240,
+          254,
+          242,
+          245,
+          249,
+          194,
+          229,
+          190,
+          199,
+          182,
+          169,
+          184,
+          162,
+          161,
+          183,
+          162,
+          148,
+          150,
+          143,
+          162,
+          157,
+          159,
+          117,
+          113,
+          82,
+          76,
+          13
+        ],
+        "input_id_hashes": [
+          "2e06e4abc57fdc689cfa854a1c03daf0fecd81f24670abc1e88503ed4714c8c1"
+        ],
+        "attention_mask_hashes": [
+          "5b99a0f070fedc17fb4bff745480556377ca1bee6d98d6c5b90ef88d3f56ad3b"
+        ],
+        "token_type_id_hashes": [
+          null
+        ],
+        "tensor_dtypes": [
+          {
+            "input_ids": "int64",
+            "attention_mask": "int64"
+          }
+        ]
+      }
+    },
+    "model_inputs_identical_to_original_predict": {
+      "autocast_fp16": true,
+      "manual_diagnostic": true
+    }
+  },
+  "score_and_rank_comparison_to_original_predict": {
+    "instrumented_predict": {
+      "scores_exactly_equal": true,
+      "max_absolute_score_delta": 0.0,
+      "mean_absolute_score_delta": 0.0,
+      "rank_order_exactly_equal": true,
+      "top_10_overlap": 1.0,
+      "ranking_quality_preserved_for_fixed_judgments": true
+    },
+    "autocast_fp16": {
+      "scores_exactly_equal": false,
+      "max_absolute_score_delta": 0.00028198957443237305,
+      "mean_absolute_score_delta": 4.374055048780671e-05,
+      "rank_order_exactly_equal": true,
+      "top_10_overlap": 1.0,
+      "ranking_quality_preserved_for_fixed_judgments": true
+    },
+    "manual_diagnostic": {
+      "scores_exactly_equal": true,
+      "max_absolute_score_delta": 0.0,
+      "mean_absolute_score_delta": 0.0,
+      "rank_order_exactly_equal": true,
+      "top_10_overlap": 1.0,
+      "ranking_quality_preserved_for_fixed_judgments": true
+    }
+  },
+  "captured_run_output_comparison_to_original_predict": {
+    "autocast_fp16": {
+      "scores_exactly_equal": false,
+      "max_absolute_score_delta": 0.00028198957443237305,
+      "mean_absolute_score_delta": 4.374055048780671e-05,
+      "rank_order_exactly_equal": true,
+      "top_10_overlap": 1.0,
+      "ranking_quality_preserved_for_fixed_judgments": true
+    },
+    "manual_diagnostic": {
+      "scores_exactly_equal": true,
+      "max_absolute_score_delta": 0.0,
+      "mean_absolute_score_delta": 0.0,
+      "rank_order_exactly_equal": true,
+      "top_10_overlap": 1.0,
+      "ranking_quality_preserved_for_fixed_judgments": true
+    }
+  },
+  "execution_differences": {
+    "cross_encoder_predict": "Direct CrossEncoder.predict(pairs) call with library defaults; no explicit synchronization added by the strategy.",
+    "instrumented_predict": "Same CrossEncoder.predict(pairs) call, with CUDA synchronization before and after for an isolated wall-time measurement.",
+    "autocast_fp16": "Original CrossEncoder.predict(pairs) under CUDA float16 autocast; experimental optimization candidate.",
+    "manual_diagnostic": "Manual batching, preprocessing, device transfer, forward, activation, and original-order restoration; CUDA synchronization and events split the stages."
+  },
+  "ranked_place_ids": {
+    "cross_encoder_predict": [
+      180,
+      233,
+      157,
+      446,
+      166,
+      234,
+      184,
+      178,
+      441,
+      241,
+      355,
+      112,
+      285,
+      434,
+      357,
+      442,
+      406,
+      216,
+      221,
+      332,
+      89,
+      209,
+      386,
+      311,
+      235,
+      214,
+      430,
+      69,
+      76,
+      394
+    ],
+    "autocast_fp16": [
+      180,
+      233,
+      157,
+      446,
+      166,
+      234,
+      184,
+      178,
+      441,
+      241,
+      355,
+      112,
+      285,
+      434,
+      357,
+      442,
+      406,
+      216,
+      221,
+      332,
+      89,
+      209,
+      386,
+      311,
+      235,
+      214,
+      430,
+      69,
+      76,
+      394
+    ],
+    "manual_diagnostic": [
+      180,
+      233,
+      157,
+      446,
+      166,
+      234,
+      184,
+      178,
+      441,
+      241,
+      355,
+      112,
+      285,
+      434,
+      357,
+      442,
+      406,
+      216,
+      221,
+      332,
+      89,
+      209,
+      386,
+      311,
+      235,
+      214,
+      430,
+      69,
+      76,
+      394
+    ]
+  },
+  "relevance_metrics": {
+    "status": "not_calculated",
+    "reason": "No human relevance judgments were provided for this exact query and candidate set.",
+    "quality_preservation_check": "Exact rank parity implies identical deterministic ranking metrics for any fixed relevance labels."
+  }
+}

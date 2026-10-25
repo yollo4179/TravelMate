@@ -166,7 +166,7 @@ The development run records two ranking versions for each answerable search case
 - `v1_semantic_only`: embedding similarity order before the BGE reranker.
 - `v2_reranked`: BGE reranker order over the same top-30 embedding candidate pool.
 
-Run `python -X utf8 Evaluation/v1.3.0/run_development.py --split development` to capture both versions. The comparison is scored against authored place judgments with `NDCG@10`, `MRR@10`, `Recall@10`, and `Precision@10`. Results are grouped by version in `ranking_results.jsonl` and `ranking_summary.json`. Judgments are partial, so unjudged places are not asserted to be irrelevant and the scores indicate the judged candidate pool only.
+Run `python -X utf8 Evaluation/v1.3.0/run_development.py --split development` to capture both versions. The comparison is scored against authored place judgments at `@5` and `@10`, including NDCG, MAP, MRR, Recall, Precision, and F1. Results are separated into `ranking_at_5/` and `ranking_at_10/`, each with `results.jsonl`, `summary.json`, and a live progress copy in `run.log`; the root ranking files remain the `@10` compatibility view. Each cutoff is also traced to its own LangSmith project. Judgments are partial, so unjudged places are not asserted to be irrelevant and the scores indicate the judged candidate pool only.
 ### Versioned RAGAS samples
 
 `api_embedding/v1.jsonl` stores embedding-only API outputs; `api_reranking/v2.jsonl` stores reranked API outputs. Both contain place judgments from `review_notes_filled_v1.3.0.csv`, request duration, and metric-specific flags:

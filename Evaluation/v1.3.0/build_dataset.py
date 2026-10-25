@@ -680,6 +680,12 @@ def build(root: Path) -> dict[str, Any]:
     })
     write_jsonl(root / "ranking_results.jsonl", [])
     write_json(root / "ranking_summary.json", {"status": "not_run", "case_count": 0})
+    for cutoff in (5, 10):
+        ranking_dir = root / f"ranking_at_{cutoff}"
+        ranking_dir.mkdir(parents=True, exist_ok=True)
+        write_jsonl(ranking_dir / "results.jsonl", [])
+        write_json(ranking_dir / "summary.json", {"status": "not_run", "case_count": 0, "cutoff": cutoff})
+        (ranking_dir / "run.log").write_text("", encoding="utf-8", newline="\n")
     write_json(root / "validation.json", validation)
     write_json(root / "manifest.json", build_manifest(root, snapshot, authored, cases, validation))
     return validation
@@ -699,6 +705,10 @@ def build_manifest(
         "api_reranking/v2.jsonl", "ragas_results.jsonl",
         "ragas_summary.json", "ragas_llm_precheck.json",
         "ranking_results.jsonl", "ranking_summary.json",
+        "ranking_at_5/results.jsonl", "ranking_at_5/summary.json",
+        "ranking_at_5/run.log",
+        "ranking_at_10/results.jsonl", "ranking_at_10/summary.json",
+        "ranking_at_10/run.log",
     ]
     artifacts.extend(f"{track.value}.jsonl" for track in EvaluationTrack)
     development_cases = [

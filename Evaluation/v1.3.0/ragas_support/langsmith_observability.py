@@ -24,6 +24,7 @@ def evaluation_span(
     strategy_version: str,
     metric_name: str,
     inputs: dict[str, Any] | None = None,
+    project_name: str | None = None,
 ) -> Iterator[EvaluationTrace | None]:
     """Record a metric result and nest wrapped model calls under its trace."""
     tracing_enabled = (
@@ -40,7 +41,7 @@ def evaluation_span(
     run = RunTree(
         name=operation,
         run_type="chain",
-        project_name=os.getenv("LANGCHAIN_PROJECT", "travelmate-ragas-v1.3.0"),
+        project_name=project_name or os.getenv("LANGCHAIN_PROJECT", "travelmate-ragas-v1.3.0"),
         inputs={
             "case_id": case_id,
             "strategy_version": strategy_version,
