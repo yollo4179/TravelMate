@@ -10,7 +10,7 @@ COPY --chown=10001:10001 Docker/embedding-entrypoint.py /app/embedding-entrypoin
 RUN --mount=type=cache,target=/root/.cache/pip \
     --mount=type=secret,id=ca_bundle \
     if [ -s /run/secrets/ca_bundle ]; then export PIP_CERT=/run/secrets/ca_bundle; fi; \
-    pip install --index-url https://download.pytorch.org/whl/cpu 'torch==2.14.1+cpu' && \
+    pip install --index-url https://download.pytorch.org/whl/cu129 'torch==2.13.0+cu129' && \
     pip install -r /tmp/embedding-requirements.txt && pip check && \
     mkdir /models && chown 10001:10001 /models
 USER 10001:10001

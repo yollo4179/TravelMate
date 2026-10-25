@@ -12,6 +12,9 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
 
 import com.yollo.TravelMate.ai.rerank.base.RerankClient;
+import com.yollo.TravelMate.config.observability.SearchTracing;
+
+import io.opentelemetry.api.trace.Span;
 
 @Component
 public class BgeRerankerClient implements RerankClient {
@@ -21,20 +24,32 @@ public class BgeRerankerClient implements RerankClient {
 	private final RestClient restClient;
 
 	// 임베딩 서버와 같은 프로세스(FastAPI)에 /rerank로 얹혀있음
-	public BgeRerankerClient(@Value("${embedding.server.url:http://127.0.0.1:8000}") String baseUrl) {
-		this.restClient = RestClient.builder().baseUrl(baseUrl).build();
+	public BgeRerankerClient(
+			@Value("${embedding.server.url:http://127.0.0.1:8000}") String baseUrl,
+			SearchTracing searchTracing
+	) {
+		this.restClient = RestClient.builder()
+				.baseUrl(baseUrl)
+				.requestInterceptor(searchTracing.tracePropagationInterceptor())
+				.build();
+		this.searchTracing = searchTracing;
 	}
+
+	private final SearchTracing searchTracing;
 
 	@Override
 	public <T> List<Scored<T>> rerank(String query, List<T> candidates, Function<T, String> textOf) {
 		List<String> texts = candidates.stream().map(textOf).toList();
 
-		RerankResponse res = restClient
-				.post()
-				.uri("/rerank")
-				.body(new RerankRequest(query, texts))
-				.retrieve()
-				.body(RerankResponse.class);
+		RerankResponse res = searchTracing.trace("reranking.http", () -> {
+			Span.current().setAttribute("reranking.candidate_count", texts.size());
+			return restClient
+					.post()
+					.uri("/rerank")
+					.body(new RerankRequest(query, texts))
+					.retrieve()
+					.body(RerankResponse.class);
+		});
 
 		logger.debug("rerank 호출: query={}, 후보={}건", query, texts.size());
 

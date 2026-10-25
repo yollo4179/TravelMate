@@ -1,6 +1,24 @@
 # Additive overlay; retain the existing postgres checkout/volume.
 # Start with: bash Docker/stack-up.sh
 services:
+  searchdb:
+    image: pgvector/pgvector:pg17
+    container_name: travelmate-search-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: travel_search_db
+      POSTGRES_USER: ${FASTAPI_DB_USERNAME:-travel_search}
+      POSTGRES_PASSWORD: ${FASTAPI_DB_PASSWORD:?Use Docker/stack-up.sh to create local runtime configuration}
+      TZ: Asia/Seoul
+    volumes:
+      - stack_search_pgdata:/var/lib/postgresql/data
+      - ../Docker/search-init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U \"$$POSTGRES_USER\" -d travel_search_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   postgres:
     volumes:
       - ${STACK_STATE_DIR}/init:/docker-entrypoint-initdb.d:ro
@@ -42,10 +60,22 @@ services:
     ports:
       - "127.0.0.1:${EMBEDDING_PORT:-8000}:8000"
     environment:
-      EMBEDDING_DEVICE: ${EMBEDDING_DEVICE:-cpu}
+      DATABASE_URL: postgresql://${FASTAPI_DB_USERNAME:-travel_search}:${FASTAPI_DB_PASSWORD}@searchdb:5432/travel_search_db
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      KAFKA_PLACE_CHANGES_TOPIC: travelmate.place-changes.v1
+      KAFKA_RECOMMENDATION_REQUESTS_TOPIC: travelmate.recommendation-requests.v1
+      KAFKA_RECOMMENDATION_RESULTS_TOPIC: travelmate.recommendation-results.v1
+      EMBEDDING_DEVICE: ${EMBEDDING_DEVICE:-cuda}
+      RERANKER_DEVICE: ${RERANKER_DEVICE:-cuda}
+      RERANK_BATCH_SIZE: ${RERANK_BATCH_SIZE:-32}
+      RERANK_DIAGNOSTICS_ENABLED: ${RERANK_DIAGNOSTICS_ENABLED:-false}
+      RERANK_EXECUTION_STRATEGY: ${RERANK_EXECUTION_STRATEGY:-}
       EMBEDDING_MODEL: BAAI/bge-m3
       EMBEDDING_REVISION: 5617a9f61b028005a4858fdac845db406aefb181
       EMBEDDING_WEIGHTS_SHA256: b5e0ce3470abf5ef3831aa1bd5553b486803e83251590ab7ff35a117cf6aad38
+      LANGSMITH_API_KEY: ${LANGSMITH_API_KEY:-}
+      LANGSMITH_PROJECT: ${LANGSMITH_PROJECT:-travelmate-search-observability}
+      LANGSMITH_ENDPOINT: ${LANGSMITH_ENDPOINT:-https://api.smith.langchain.com}
       HF_HOME: /models
       HF_HUB_DISABLE_XET: "1"
       HTTP_PROXY: ${HTTP_PROXY:-}
@@ -57,6 +87,11 @@ services:
     volumes:
       - stack_models:/models
       - ${STACK_STATE_DIR}/ca-bundle.pem:/run/travelmate/ca-bundle.pem:ro
+    depends_on:
+      searchdb:
+        condition: service_healthy
+      kafka-init:
+        condition: service_completed_successfully
     cpus: 2
     mem_limit: 8g
 
@@ -86,6 +121,12 @@ services:
       REDIS_PASSWORD: ""
       SPRING_DATA_REDIS_SSL_ENABLED: "false"
       EMBEDDING_SERVER_URL: http://embedding:8000
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      KAFKA_RECOMMENDATION_REQUESTS_TOPIC: travelmate.recommendation-requests.v1
+      KAFKA_RECOMMENDATION_RESULTS_TOPIC: travelmate.recommendation-results.v1
+      LANGSMITH_API_KEY: ${LANGSMITH_API_KEY:-}
+      LANGSMITH_PROJECT: ${LANGSMITH_PROJECT:-travelmate-search-observability}
+      LANGSMITH_ENDPOINT: ${LANGSMITH_ENDPOINT:-https://api.smith.langchain.com}
       NO_PROXY: localhost,127.0.0.1,postgres,redis,embedding,server,host.docker.internal
       no_proxy: localhost,127.0.0.1,postgres,redis,embedding,server,host.docker.internal
       SPRING_APPLICATION_JSON: >-
@@ -98,6 +139,8 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+      kafka-init:
+        condition: service_completed_successfully
       redis:
         condition: service_healthy
       embedding:
@@ -107,6 +150,7 @@ services:
 volumes:
   stack_redis:
   stack_models:
+  stack_search_pgdata:
 
 secrets:
   ca_bundle:

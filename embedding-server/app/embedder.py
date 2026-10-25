@@ -1,21 +1,33 @@
-import torch
+import logging
+
 from sentence_transformers import SentenceTransformer
 from app.config import MODEL_NAME_EMBEDDING, MODEL_DEVICE_EMBEDDING
+from app.device import select_inference_device
 
 class Embedder :
     # 생성자
     def __init__(self):
-        device = MODEL_DEVICE_EMBEDDING
-        if device == "cuda" and not torch.cuda.is_available():
-            print("[Embedder] CUDA unavailable, falling back to CPU")
-            device = "cpu"
+        device = select_inference_device(MODEL_DEVICE_EMBEDDING)
 
         # 모델 (멤버)
         print(f"[Embedder] 모델 로딩 중: {MODEL_NAME_EMBEDDING} (device={device})")
-        self.model = SentenceTransformer(
-            model_name_or_path=MODEL_NAME_EMBEDDING,
-            device=device
-        )
+        try:
+            self.model = SentenceTransformer(
+                model_name_or_path=MODEL_NAME_EMBEDDING,
+                device=device
+            )
+        except Exception:
+            if device != "cuda":
+                raise
+            logging.getLogger(__name__).exception(
+                "Embedding model failed to initialize on CUDA; retrying on CPU"
+            )
+            device = "cpu"
+            self.model = SentenceTransformer(
+                model_name_or_path=MODEL_NAME_EMBEDDING,
+                device=device
+            )
+        self.device = device
         print(f"[Embedder] 로딩 완료. 차원={self.getDimension()}")
     
     # To Vector
@@ -29,6 +41,6 @@ class Embedder :
         vectors=  self.model.encode(texts, normalize_embeddings=True)
         return vectors.tolist()
 
-    def getDimension(self):
+    def getDimension(self) -> int:
         return self.model.get_sentence_embedding_dimension() 
 embedder = Embedder()# static 입니다.

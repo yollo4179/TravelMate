@@ -10,6 +10,9 @@ import org.springframework.web.client.RestClient;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.yollo.TravelMate.ai.embedding.base.EmbeddingClient;
+import com.yollo.TravelMate.config.observability.SearchTracing;
+
+import io.opentelemetry.api.trace.Span;
 
 @Component
 public class BgeM3EmbeddingClient implements EmbeddingClient{
@@ -18,12 +21,19 @@ public class BgeM3EmbeddingClient implements EmbeddingClient{
 	private static final Logger logger = LoggerFactory.getLogger(BgeM3EmbeddingClient.class);
 	
 
-    public BgeM3EmbeddingClient(
-    		@Value("${embedding.server.url:http://127.0.0.1:8000}") String baseUrl) {
-	        this.restClient = RestClient.builder().baseUrl(baseUrl).build();
-	    }
+	public BgeM3EmbeddingClient(
+			@Value("${embedding.server.url:http://127.0.0.1:8000}") String baseUrl,
+			SearchTracing searchTracing
+	) {
+		this.restClient = RestClient.builder()
+				.baseUrl(baseUrl)
+				.requestInterceptor(searchTracing.tracePropagationInterceptor())
+				.build();
+		this.searchTracing = searchTracing;
+	}
 	
 	private final RestClient restClient;
+	private final SearchTracing searchTracing;
 	
 	
 	@Override
@@ -39,13 +49,15 @@ public class BgeM3EmbeddingClient implements EmbeddingClient{
 
 	@Override
 	public List<float[]> embedBatch(List<String> texts) {
-		EmbedResponse res = 
-				restClient
-				.post()
-				.uri("/embed")
-				.body(new EmbedRequest(texts))
-				.retrieve() 
-				.body(EmbedResponse.class);
+		EmbedResponse res = searchTracing.trace("embedding.http", () -> {
+			Span.current().setAttribute("embedding.text_count", texts.size());
+			return restClient
+					.post()
+					.uri("/embed")
+					.body(new EmbedRequest(texts))
+					.retrieve()
+					.body(EmbedResponse.class);
+		});
 		
 		logger.info("Raw API Response: " + res);
 		return res.embeddings().stream()

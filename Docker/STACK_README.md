@@ -1,8 +1,8 @@
 # TravelMate Docker 개발 스택
 
-기존 PostgreSQL Compose에 Spring Boot, FastAPI embedding, Redis를 더하는 개발용 구성입니다. 기존 `docker-compose.yml`과 앱 소스·의존성 파일은 변경하지 않습니다. Java는 Docker 다단계 빌드에서 컴파일하며, FastAPI는 컨테이너 진입점에서 기존 CUDA 설정을 CPU로 재정의합니다.
+기존 PostgreSQL Compose에 Spring Boot, FastAPI embedding, Redis를 더하는 개발용 구성입니다. Java는 Docker 다단계 빌드에서 컴파일하며, 임베딩과 리랭커는 CUDA를 우선 사용하고 사용할 수 없으면 CPU로 전환합니다.
 
-Kafka와 웹 GUI는 [별도 실행 안내](KAFKA_README.md)를 따릅니다. 기존 스택과 같은 프로젝트·네트워크에서 선택적으로 시작하며 UI 기본 주소는 `http://localhost:8989`입니다. 관광지 CQRS producer·consumer 연결은 별도 구현 대상입니다.
+Kafka KRaft 브로커·세 토픽·Kafka UI와 FastAPI 전용 PostgreSQL을 앱 스택과 함께 시작합니다. UI 기본 주소는 `http://localhost:8989`입니다. 관광지 변경 인덱싱과 Kafka 추천 요청·완료 흐름이 앱에 연결됩니다.
 
 ## 실행과 상태
 
@@ -26,7 +26,7 @@ bash Docker/stack-up.sh && bash Docker/stack-wait.sh
 
 Git Bash에서는 Docker에 전달할 호스트 경로를 `cygpath`로 변환하고, `/stack` 같은 컨테이너 경로의 MSYS 자동 변환을 끕니다. `.gitattributes`는 실행 스크립트의 LF 줄바꿈을 유지합니다. Windows 실기기 실행은 별도로 확인해야 합니다. `Python was not found` 메시지를 해결하기 위해 Microsoft Store Python을 설치할 필요는 없습니다.
 
-`stack-up.sh`는 컨테이너 시작까지 수행합니다. `stack-wait.sh`는 기본 600초 동안 네 서비스가 모두 healthy인지 확인하며, 실패하면 nonzero로 종료합니다. `STACK_WAIT_TIMEOUT`으로 대기시간을 조정할 수 있습니다. 모델 다운로드 실패가 무한 재시도로 이어지지 않도록 embedding은 최대 3회 자동 재시작합니다.
+`stack-up.sh`는 컨테이너 시작까지 수행합니다. `stack-wait.sh`는 기본 600초 동안 앱·Kafka·두 PostgreSQL 등 일곱 서비스를 healthy 상태로 확인하며, 실패하면 nonzero로 종료합니다. `STACK_WAIT_TIMEOUT`으로 대기시간을 조정할 수 있습니다. 모델 다운로드 실패가 무한 재시도로 이어지지 않도록 embedding은 최대 3회 자동 재시작합니다.
 
 일반 시작에서는 기존 이미지를 재사용하고, 누락된 이미지만 빌드합니다. 앱 소스·Dockerfile·라이브러리를 변경한 뒤에는 `bash Docker/stack-up.sh --build`로 다시 빌드하세요. FastAPI 설치는 Docker의 VFS 저장 드라이버에서도 큰 라이브러리 레이어가 불필요하게 여러 번 복제되지 않도록 최종 단일 RUN에 모았습니다.
 
@@ -61,7 +61,7 @@ Docker 내부 서비스 이름은 대·소문자 `NO_PROXY`/`no_proxy` 양쪽에
 
 BGE-M3 원본 다운로드에는 `huggingface.co`와 대용량 파일 전달 도메인 접근이 필요합니다. 이번 모델 파일에서 `us.aws.cdn.hf.co` redirect를 관찰했으며, 전달 경로에 따라 `cas-bridge.xethub.hf.co`도 사용됩니다. 현재 정책에서 거부된다면 환경 설정에서 해당 도메인을 검토·허용한 후 컨테이너를 다시 시작하세요. 공개 모델을 받기 위한 개인 토큰을 불필요하게 입력하지 마세요. 다른 redirect host가 관찰되면 그 목적지를 확인한 뒤 허용 범위를 추가합니다.
 
-GPU가 없는 현재 구성은 `EMBEDDING_DEVICE=cpu`, Uvicorn worker 1개입니다. CPU 응답 속도는 GPU보다 느릴 수 있습니다. `EMBEDDING_DEVICE=cuda`만 바꿔서는 GPU 구성이 완성되지 않습니다. CUDA PyTorch 이미지·NVIDIA container runtime·GPU device 예약이 별도로 필요합니다.
+`stack-up.sh`는 기본적으로 NVIDIA GPU가 감지되면 컨테이너에 전달하고, GPU를 연결할 수 없으면 CPU 모드로 스택을 시작합니다. `/health` 응답의 `embedding_device`, `reranker_device`, `cuda_available`, `gpu_name`에서 실제 선택된 장치를 확인할 수 있습니다. GPU를 명시적으로 요청하려면 `--gpu`, CPU 실행을 고정하려면 `--cpu`를 지정합니다. GPU 실행에는 CUDA PyTorch 이미지와 Docker의 NVIDIA GPU 지원이 필요합니다.
 
 ## 수동 Compose 명령
 

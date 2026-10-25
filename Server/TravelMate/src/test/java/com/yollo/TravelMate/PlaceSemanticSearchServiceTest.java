@@ -72,7 +72,15 @@ class PlaceSemanticSearchServiceTest {
 
 
 
-        List<PlaceSemanticSearchResult> results = searchService.search(query, null, city, null, 10);
+        List<PlaceSemanticSearchResult> results = searchService.search(
+                query,
+                null,
+                city,
+                null,
+                10,
+                null,
+                PlaceSemanticSearchService.RankingMode.RERANKED
+        );
         System.out.println("=== 실제 파이프라인 결과 (query=\"" + query + "\", city=" + city + ") ===");
         for (PlaceSemanticSearchResult r : results) {
             System.out.printf("%.4f  %s (id=%d, tourContentId=%s)%n",

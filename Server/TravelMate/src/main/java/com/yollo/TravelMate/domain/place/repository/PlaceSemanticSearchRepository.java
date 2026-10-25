@@ -8,7 +8,9 @@ import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
 
 import com.yollo.TravelMate.domain.place.data.result.PlaceResult;
+import com.yollo.TravelMate.config.observability.SearchTracing;
 import com.yollo.TravelMate.util.VectorUtil;
+import io.opentelemetry.api.trace.Span;
 
 @Repository
 public class PlaceSemanticSearchRepository {
@@ -31,9 +33,11 @@ public class PlaceSemanticSearchRepository {
             );
 
     private final JdbcTemplate jdbcTemplate;
+    private final SearchTracing searchTracing;
 
-    public PlaceSemanticSearchRepository(JdbcTemplate jdbcTemplate) {
+    public PlaceSemanticSearchRepository(JdbcTemplate jdbcTemplate, SearchTracing searchTracing) {
         this.jdbcTemplate = jdbcTemplate;
+        this.searchTracing = searchTracing;
     }
 
     public List<PlaceResult> searchSimilar(
@@ -93,11 +97,19 @@ public class PlaceSemanticSearchRepository {
         parameters.add(vector);
         parameters.add(limit);
 
-        return jdbcTemplate.query(
-                sql.toString(),
-                PLACE_ROW_MAPPER,
-                parameters.toArray()
-        );
+        return searchTracing.trace("database.pgvector_search", () -> {
+            Span.current().setAttribute("db.system", "postgresql");
+            Span.current().setAttribute("db.operation.name", "SELECT");
+            Span.current().setAttribute("db.collection.name", "places");
+            Span.current().setAttribute("search.candidate_limit", limit);
+            List<PlaceResult> results = jdbcTemplate.query(
+                    sql.toString(),
+                    PLACE_ROW_MAPPER,
+                    parameters.toArray()
+            );
+            Span.current().setAttribute("search.candidate_count", results.size());
+            return results;
+        });
     }
 
     private static void appendFilter(

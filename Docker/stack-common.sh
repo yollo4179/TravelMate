@@ -20,4 +20,5 @@ fi
 compose=(docker compose --project-name docker --env-file "$STACK_STATE_DIR/runtime.env"
   -f "$compose_repo_dir/Docker/docker-compose.yml"
   -f "$compose_repo_dir/Docker/docker-compose.stack.yml"
+  -f "$compose_repo_dir/Docker/docker-compose.kafka.yml"
   -f "$STACK_STATE_DIR/proxy.compose.yml")

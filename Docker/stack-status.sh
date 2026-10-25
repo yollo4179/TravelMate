@@ -6,6 +6,6 @@ if [ ! -f "$state_dir/runtime.env" ]; then
   exit 1
 fi
 "${compose[@]}" ps
-for service in travel-postgres travelmate-redis travelmate-server travelmate-embedding; do
+for service in travel-postgres travelmate-search-postgres travelmate-redis travelmate-server travelmate-embedding travelmate-kafka travelmate-kafka-ui; do
   docker inspect --format '{{.Name}}: {{if .State.Health}}{{.State.Health.Status}}{{else}}{{.State.Status}}{{end}}' "$service"
 done

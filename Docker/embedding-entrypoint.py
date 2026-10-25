@@ -8,9 +8,10 @@ from huggingface_hub import snapshot_download
 
 import app.config as config
 
-# The original config pins CUDA. Containers default to CPU on non-GPU machines.
-config.MODEL_DEVICE_EMBEDDING = os.environ.get("EMBEDDING_DEVICE", "cpu")
+# Prefer CUDA when Docker exposes a GPU; model initialization falls back to CPU otherwise.
+config.MODEL_DEVICE_EMBEDDING = os.environ.get("EMBEDDING_DEVICE", "cuda")
 config.MODEL_NAME_EMBEDDING = os.environ.get("EMBEDDING_MODEL", "BAAI/bge-m3")
+config.MODEL_DEVICE_RERANKER = os.environ.get("RERANKER_DEVICE", "cuda")
 
 if __name__ == "__main__":
     revision = os.environ.get("EMBEDDING_REVISION")

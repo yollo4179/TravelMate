@@ -11,7 +11,57 @@ from urllib.parse import urlsplit
 def prepare(state: Path) -> None:
     runtime = state / "runtime.env"
     if not runtime.exists():
-        runtime.write_text("JWT_SECRET=" + secrets.token_urlsafe(64) + "\n")
+        runtime.write_text(
+            "JWT_SECRET=" + secrets.token_urlsafe(64) + "\n"
+            + "FASTAPI_DB_PASSWORD=" + secrets.token_urlsafe(32) + "\n"
+        )
+    runtime_values = {
+        line.split("=", 1)[0]: line.split("=", 1)[1]
+        for line in runtime.read_text(encoding="utf-8").splitlines()
+        if "=" in line
+    }
+    runtime_values.setdefault("FASTAPI_DB_PASSWORD", secrets.token_urlsafe(32))
+    runtime.write_text(
+        "".join(f"{key}={value}\n" for key, value in runtime_values.items()),
+        encoding="utf-8",
+    )
+    source_env = state / "source.env"
+    if source_env.is_file():
+        source_values = {
+            key: value
+            for line in source_env.read_text(encoding="utf-8").splitlines()
+            if "=" in line
+            for key, value in [line.split("=", 1)]
+            if key in {
+                "LANGSMITH_API_KEY",
+                "LANGCHAIN_API_KEY",
+                "LANGSMITH_PROJECT",
+                "RERANK_BATCH_SIZE",
+                "RERANK_DIAGNOSTICS_ENABLED",
+                "RERANK_EXECUTION_STRATEGY",
+            }
+        }
+        api_key = source_values.get("LANGSMITH_API_KEY") or source_values.get("LANGCHAIN_API_KEY")
+        runtime_values = {
+            line.split("=", 1)[0]: line.split("=", 1)[1]
+            for line in runtime.read_text(encoding="utf-8").splitlines()
+            if "=" in line
+        }
+        if api_key:
+            runtime_values["LANGSMITH_API_KEY"] = api_key
+        if source_values.get("LANGSMITH_PROJECT"):
+            runtime_values["LANGSMITH_PROJECT"] = source_values["LANGSMITH_PROJECT"]
+        for key in (
+            "RERANK_BATCH_SIZE",
+            "RERANK_DIAGNOSTICS_ENABLED",
+            "RERANK_EXECUTION_STRATEGY",
+        ):
+            if source_values.get(key):
+                runtime_values[key] = source_values[key]
+        runtime.write_text(
+            "".join(f"{key}={value}\n" for key, value in runtime_values.items()),
+            encoding="utf-8",
+        )
     runtime.chmod(0o600)
 
     # Use this Linux image's standard CA store unless a custom host bundle was

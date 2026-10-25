@@ -31,7 +31,8 @@ class BootstrapTests(unittest.TestCase):
         secret = (self.state / 'runtime.env').read_text()
         self.assertTrue(secret.startswith('JWT_SECRET='))
         self.assertGreater(len(secret), 70)
-        self.assertEqual((self.state / 'runtime.env').stat().st_mode & 0o777, 0o600)
+        if os.name != 'nt':
+            self.assertEqual((self.state / 'runtime.env').stat().st_mode & 0o777, 0o600)
         self.assertEqual(json.loads((self.state / 'proxy.compose.yml').read_text()), {'services': {}})
         bootstrap.prepare(self.state)
         self.assertEqual((self.state / 'runtime.env').read_text(), secret)
@@ -41,6 +42,24 @@ class BootstrapTests(unittest.TestCase):
         (self.state / 'ca-bundle.pem').write_text('custom CA')
         bootstrap.prepare(self.state)
         self.assertEqual((self.state / 'ca-bundle.pem').read_text(), 'custom CA')
+
+    def test_langsmith_credentials_are_copied_without_printing_into_runtime_env(self):
+        os.environ['STACK_CUSTOM_CA'] = '1'
+        (self.state / 'ca-bundle.pem').write_text('test certificate', encoding='utf-8')
+        bootstrap.prepare(self.state)
+        (self.state / 'source.env').write_text(
+            'LANGCHAIN_API_KEY=private-test-key\nLANGCHAIN_PROJECT=unrelated-evaluation-project\n',
+            encoding='utf-8',
+        )
+
+        bootstrap.prepare(self.state)
+
+        runtime = (self.state / 'runtime.env').read_text(encoding='utf-8')
+        self.assertIn('LANGSMITH_API_KEY=private-test-key\n', runtime)
+        self.assertNotIn('LANGCHAIN_API_KEY=', runtime)
+        self.assertNotIn('LANGSMITH_PROJECT=unrelated-evaluation-project', runtime)
+        if os.name != 'nt':
+            self.assertEqual((self.state / 'runtime.env').stat().st_mode & 0o777, 0o600)
 
     def test_proxy_mapping_is_optional_and_host_network_only_when_requested(self):
         os.environ['HTTPS_PROXY'] = 'http://proxy.test:8080'
@@ -68,8 +87,7 @@ class ShellTests(unittest.TestCase):
             shutil.copyfile(source, self.scripts / source.name)
         (self.scripts / 'init').mkdir()
         (self.scripts / 'init/01-schema.sql').write_text('-- test schema\n')
-        (self.scripts / 'migrations').mkdir()
-        (self.scripts / 'migrations/20261013_add_planning_context.sql').write_text('-- planning migration\n')
+        shutil.copytree(DOCKER_DIR / 'migrations', self.scripts / 'migrations')
         self.bin = self.root / 'bin'
         self.bin.mkdir()
         self.log = self.root / 'calls.jsonl'
@@ -117,7 +135,11 @@ if args[0] == 'inspect':
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertEqual(
             (self.scripts / 'build/stack/init/02-planning-context.sql').read_text(),
-            '-- planning migration\n',
+            (DOCKER_DIR / 'migrations/20261013_add_planning_context.sql').read_text(),
+        )
+        self.assertEqual(
+            (self.scripts / 'build/stack/init/03-place-recommendation-messaging.sql').read_text(),
+            (DOCKER_DIR / 'migrations/20261025_place_recommendation_messaging.sql').read_text(),
         )
         calls = self.calls()
         helper = next(x['args'] for x in calls if x['args'][0] == 'run')
@@ -147,7 +169,9 @@ if args[0] == 'inspect':
     def test_wait_needs_no_python_and_succeeds_when_all_healthy(self):
         result = self.run_script('stack-wait.sh')
         self.assertEqual(result.returncode, 0, result.stderr)
-        self.assertIn('All four services', result.stdout)
+        self.assertIn('passed Docker healthchecks', result.stdout)
+        inspected_names = {call['args'][-1] for call in self.calls() if call['args'][0] == 'inspect'}
+        self.assertTrue({'travelmate-search-postgres', 'travelmate-kafka', 'travelmate-kafka-ui'} <= inspected_names)
 
     def test_wait_rejects_missing_and_unhealthy_services(self):
         for state in ['missing', 'unhealthy', 'starting', 'exited']:
@@ -155,7 +179,7 @@ if args[0] == 'inspect':
                 self.env.update(FAKE_STATE=state, STACK_WAIT_TIMEOUT='0')
                 result = self.run_script('stack-wait.sh')
                 self.assertNotEqual(result.returncode, 0)
-                self.assertNotIn('All four services passed', result.stdout)
+                self.assertNotIn('passed Docker healthchecks', result.stdout)
 
     def test_invalid_timeout_and_uninitialized_status_fail_clearly(self):
         self.env['STACK_WAIT_TIMEOUT'] = 'invalid'

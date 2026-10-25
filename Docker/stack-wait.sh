@@ -5,7 +5,7 @@ if ! [[ "$wait_timeout" =~ ^[0-9]+$ ]]; then
   echo 'STACK_WAIT_TIMEOUT must be a non-negative integer (seconds).' >&2
   exit 1
 fi
-names=(travel-postgres travelmate-redis travelmate-server travelmate-embedding)
+names=(travel-postgres travelmate-search-postgres travelmate-redis travelmate-server travelmate-embedding travelmate-kafka travelmate-kafka-ui)
 deadline=$((SECONDS + wait_timeout))
 last=''
 while true; do
@@ -23,7 +23,7 @@ while true; do
     last="$states"
   fi
   if [ "$all_healthy" = true ]; then
-    echo 'All four services passed Docker healthchecks.'
+    echo 'All seven application and infrastructure services passed Docker healthchecks.'
     exit 0
   fi
   if [ "$failed" = true ]; then
