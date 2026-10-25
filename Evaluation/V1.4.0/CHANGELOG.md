@@ -1,5 +1,6 @@
 # V1.4.0
 
+- 단일 LLM이 일정 도구를 호출한다는 평가 명세를 명시했다. 기존 폴더명·200문항·분할·점수 기준은 유지한다.
 - 사용자 지정 루트 Evaluation/V1.4.0 아래 common/plannerLLM/managerLLM을 구성했다.
 - 단일 대화·제어 LLM의 기능별 평가로 각 100문항을 작성했다. 공통 200문항에 reference와 expected_response_type을 기록했다.
 - PLACES/PLAN/PLAN_DIFF/CLARIFICATION/TEXT 타입별 뷰와 다중 evaluation_tracks 뷰를 공통 원본에서 생성한다.

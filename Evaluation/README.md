@@ -3,6 +3,8 @@
 현재 Agent 평가 버전은 [V1.4.0](V1.4.0/README.md)입니다.
 `Evaluation/V1.4.0/` 아래 common에 공통 원본과 타입별 생성 뷰를 두고,
 plannerLLM·managerLLM에 같은 대화·제어 LLM의 기능별 평가를 각각 100문항씩 관리합니다.
+일정 생성·수정은 이 LLM의 도구입니다. [도구 중심 평가 명세](V1.4.0/TOOL_EVALUATION.md)는
+도구 선택·인자, 실행 결과, 최종 응답을 구분해 골든셋과 채점기를 연결합니다.
 기존 v1.3.0의 사람 판정·참조 답변·실행 결과는 그대로 보존합니다.
 새 데이터셋의 기대 응답 타입은 PLACES, PLAN, PLAN_DIFF, CLARIFICATION, TEXT이며,
 한 문항이 검색·도구·계획·상태·대화 등 여러 평가 트랙에 속할 수 있습니다.
