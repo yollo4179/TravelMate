@@ -93,6 +93,25 @@ class RunnerFixture(unittest.TestCase):
 
 
 class RunnerTests(RunnerFixture):
+    def test_gold_reference_contexts_are_loaded_without_replacing_retrieved_evidence(self) -> None:
+        write_jsonl(self.root / 'golden.jsonl', [{
+            'case_id': 'case-1', 'query': '창경궁을 찾아줘.',
+            'reference': '요청한 장소는 창경궁입니다.',
+            'reference_contexts': ['정답 근거로 별도 저장한 창경궁 원문'],
+        }])
+        batch = load_batch(self.root)
+        for samples in batch.samples_by_version.values():
+            self.assertEqual(samples[0]['reference_contexts'], ['정답 근거로 별도 저장한 창경궁 원문'])
+            self.assertEqual(samples[0]['retrieved_contexts'], ['창경궁은 왕실 가족의 생활공간이었다.', '다른 장소 소개'])
+        write_jsonl(self.root / 'golden.jsonl', [{
+            'case_id': 'case-1', 'query': '창경궁을 찾아줘.',
+            'reference': '요청한 장소는 창경궁입니다.',
+            'reference_contexts': '문맥 배열이 아닌 잘못된 문자열',
+        }])
+        with self.assertRaisesRegex(ValueError, 'reference_contexts must contain source text'):
+            load_batch(self.root)
+        self.assertEqual(load_batch(self.root, include_reference=False).paired_case_count, 1)
+
     def test_missing_reference_does_not_block_faithfulness_inputs_but_blocks_batch(self) -> None:
         report = build_precheck(load_batch(self.root), self.settings)
         self.assertEqual(report['status'], RunStatus.BLOCKED)

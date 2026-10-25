@@ -10,6 +10,7 @@
 - **검수 완료 리뷰:** [review_notes_filled_v1.3.0.csv](review_notes_filled_v1.3.0.csv)
 - **읽기 쉬운 리뷰:** [review_notes_by_question.md](review_notes_by_question.md)
 - **평가용 정답:** [golden.jsonl](golden.jsonl)
+- **참조 답변·근거 문맥:** 같은 파일의 `reference`, `reference_contexts`, `reference_context_ids` 필드
 - **정답·점수 수정 원본:** [cases.source.json](cases.source.json)
 - **관광지 원문:** [corpus.json](corpus.json)
 
@@ -115,13 +116,17 @@ ID 지표 두 개와 OpenAI LLM 지표 세 개의 실행기는 [RAGAS_RUNNER.md]
 
 ### 기대 답변 작성과 JSONL 재생성
 
-`reference`는 `cases.source.json`의 개별 문항에 작성합니다. 예를 들어 `TM-palaces-01`에 대응하는 `palaces` 그룹의 `case_suffix: 1` 문항에는 다음 필드를 추가할 수 있습니다.
+`reference`는 `cases.source.json`의 개별 문항에 작성돼 있으며 전체 100문항의 JSONL에 반영했습니다. `TM-palaces-01`의 실제 값은 다음과 같습니다.
 
 ```json
-"reference": "요청하신 장소는 창경궁입니다."
+"reference": "찾으신 장소는 창경궁입니다."
 ```
 
-위 문장은 장소 식별 질문에 대한 작성 예시이며 실제 데이터에 자동 입력하지 않습니다. 기존 문항의 다른 필드는 유지하고 기대 답변의 사실과 완결성을 사람이 검토하세요. 판정 해설이나 장소별 점수를 기대 답변으로 자동 변환하지 않습니다.
+80개 답변 가능 문항은 기존 사람 판정·원문·질문 조건에서 기대 답변을 작성했습니다. 나머지 20개에는 실제로 사용할 확인 질문 또는 답변 보류 문장을 작성했습니다. 새 문장은 Codex가 작성했으며 `reference_provenance`에 출처를 기록했습니다. 기존 사람 검수는 장소별 판정과 기대 행동에 대한 기록으로 보존하고 새 문장을 사람이 작성했다고 표시하지 않습니다.
+
+`reference_contexts`는 정답·관련 근거 장소의 원문 인용이며 `reference_context_ids`와 순서가 일치합니다. 88문항에 총 130개 근거 문맥을 연결했습니다. 기준 장소·대화 정보나 해당 지역 자료가 없는 12문항은 근거를 꾸며 넣지 않고 빈 배열로 둡니다. `conditions.conversation`과 `missing_information`에서 그 이유를 확인할 수 있습니다. 실제 검색된 문맥인 `retrieved_contexts`는 API 실행 결과에 보관합니다.
+
+추천형 문항의 참조 답변은 알려진 허용 후보를 서술한 예시입니다. 유효한 추천 전체를 열거한 것으로 해석하지 않습니다. LLM Context Recall은 이 참조 문장에 적힌 사실의 검색 근거 포함 여부이고, 사용자가 지정한 Top-1·Top-K 정확도와 Recall@K는 기존 정답 장소 ID로 계산합니다.
 
 작성 원본을 수정한 뒤에는 반드시 다시 생성합니다. `--check`는 기존 JSONL을 검사하며 갱신하지 않습니다.
 
@@ -132,7 +137,7 @@ bash Evaluation/v1.3.0/run.sh --check
 
 빌더는 원본의 `reference`를 `golden.jsonl`, `development.jsonl`, `test.jsonl`, `search_api.jsonl`, `context_search.jsonl`, `answer_behavior.jsonl`의 해당 문항에 그대로 전달합니다. 작성하지 않은 문항은 `"reference": null`로 표시합니다. 빈 문자열·공백뿐인 문자열·문자열이 아닌 값은 거부합니다.
 
-검증 결과와 manifest에는 `reference_count`, `missing_reference_count`, `answerable_missing_reference_count`를 기록합니다. 구조 검증 통과가 기대 답변 작성 완료를 뜻하지 않습니다. 현재 원본에는 기대 답변이 없으므로 100문항 모두 미작성이고, 그중 답변 가능한 문항은 80개입니다.
+검증 결과와 manifest에는 `reference_count: 100`, `missing_reference_count: 0`, `answerable_missing_reference_count: 0`과 근거 문맥 수를 기록합니다. 검증기는 문맥과 원문 인용의 일치도 확인합니다.
 
 Answer Correctness 등 정답이 필요한 평가에 앞서 답변 가능한 80문항의 기대 답변 누락을 차단하려면 다음 명령을 사용하세요.
 
@@ -200,7 +205,7 @@ python -X utf8 Evaluation/v1.3.0/evaluate_ranking.py --cutoffs 5 10
 
 `run_ragas_evaluation.py` runs the RAGAS ID-based metrics against paired completed outputs using CSV judgments with relevance `>= 2` as reference IDs. It writes case scores to `ragas_results.jsonl` and averages and run scope to `ragas_summary.json`. These ID metrics compare sets and do not consider result order; use `ranking_results.jsonl` for order-sensitive NDCG/MRR. Each RAGAS result also records judged and unjudged retrieved ID counts. Because ID precision divides relevant retrieved IDs by all retrieved IDs, scores remain provisional while the review CSV is only partially judged. The current run contains one paired completed case; incomplete and failed API requests are excluded, not counted as search errors.
 
-`ragas_llm_precheck.json` reports LLM metrics separately. Answer Correctness and basic LLM Context Recall require a reference. Faithfulness does not require a reference, but it does require an LLM evaluator and response/context inputs. The current policy runs these three metrics as one batch; the batch is deferred while the reference metrics lack references and no LLM evaluator is configured. The precheck records Faithfulness as deferred by that batch policy, not blocked by a missing reference.
+`ragas_llm_precheck.json` is the saved prerequisite report from before these references were authored; its old missing-reference reason is historical. The runner recomputes prerequisites from the current golden and API files each time. All 100 references are now present. Answer Correctness and LLM Context Recall read these references; Faithfulness uses the actual response and retrieved contexts. Model credentials are checked in the execution environment, independently of human review completion.
 
 `ragas_eligible` is no longer used because it did not identify which RAGAS metric family it referred to. Use `ragas_id_metrics_eligible` or `ragas_llm_eligible` instead.
 Per-version API wall time is stored in each version file's `request_duration_seconds` and in `development.jsonl` at `ranking_comparison.<version>.execution.duration_seconds`. The paired total remains `execution.duration_seconds` on the development case.

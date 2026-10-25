@@ -13,20 +13,20 @@
   ],
   "source_of_truth": "snapshot.json",
   "authoring_source": "cases.source.json",
-  "authoring_sha256": "5d778fee2dc2edf4155476ff8228c9aa246afa6729d736a6b7e4ff8860dbdb97",
-  "golden_sha256": "c82ee80e4c9ad3c4a263db4b2714ae1f43a87c0fb23bbfe87b40a7b5a1c0362c",
+  "authoring_sha256": "ca7632955691d0b043b02b1fd5216767c747855ccbe314388f5ac22b83ebf72b",
+  "golden_sha256": "a78586859b6010dca40b5b68c3c98cbbec3834c863f620d0b3e919fb605eaac3",
   "artifact_sha256": {
-    "golden.jsonl": "c82ee80e4c9ad3c4a263db4b2714ae1f43a87c0fb23bbfe87b40a7b5a1c0362c",
-    "development.jsonl": "add6c9c45feb06e52968f5aecfc714bc72cd504f58b0ba43687ee3439a68db4b",
-    "test.jsonl": "07f4bdda56fe2be7268c2096b1fa433a15da94a5b7654b87c84376e957f6fc34",
+    "golden.jsonl": "a78586859b6010dca40b5b68c3c98cbbec3834c863f620d0b3e919fb605eaac3",
+    "development.jsonl": "40a155755f18c87bba43388ec9ecabe7835f857ea75946bc8467164abc97c2cc",
+    "test.jsonl": "832b59d0fb48964896b79f551eff73a740dd75dbf0458dc40a05adb5a59460ca",
     "corpus.json": "c74e902620687cbe8b7ec61a24eb7932e95f8cf7a90762baef5e78ad0b134f9e",
     "places.csv": "9adf76b5f0d6f3ac01c3286ff059e0abd0e3806f8a863380a6778edd758c3c94",
     "review.csv": "97ed1ed8c39711867c9848269360e6ef4afaf1c3e6144933c2e6e82170c37d3f",
-    "validation.json": "3970be3a4116d772a20d296edb2335182605aaaa6af33da04cf65dbe4e8d3efd",
+    "validation.json": "5941ef18f989a339d78a6fdf957cdfa9525a884fad764dd2b46166b633e4fb1c",
     "development_run.json": "e1696c2644758bbfc380b0f6fa29264cd2344cb2d7fde1a9fcaa2989ae5fcd44",
-    "api_embedding/v1.jsonl": "03471621c9281123e688c1de65cca0a1d92083a02eddf0993604e6a339743875",
+    "api_embedding/v1.jsonl": "34fdbed2784de5a4cf539ff3504bf35f7725662942916ea56e7f7acce4b87c8f",
     "api_embedding/fastapi_embed_smoke.json": "5231313825f67204f16e694450a0b53ff8f6b9e4c7e48a7cfb11749c6da0f784",
-    "api_reranking/v2.jsonl": "b1db3155b39dc72b7f5bb538341480c1db9b1c6b311184306f10700e57bf80e2",
+    "api_reranking/v2.jsonl": "9d3d0ffe7839a823ab15fd68ee34bd378aafb54e5e1bd9c5b49d22f42e842b03",
     "ragas_results.jsonl": "c0c6745b715cae39d0c2e0b85163d3dd81f799b585510ef4d710b2522e0c2510",
     "ragas_summary.json": "bbc79f756d618241c5da15b28c8443659c812cbf2d06f2ff4f84d38eac546ce4",
     "ragas_llm_precheck.json": "423b9c3898ea4a5f2d644af7776749bd54d652afa4e689d85b0da785ab4700bc",
@@ -38,11 +38,11 @@
     "ranking_at_10/results.jsonl": "5ea1ea5abec16aa554d3529298ad45be8fadd0a85eed8f94d39bc6d3bb13a6b3",
     "ranking_at_10/summary.json": "e5e323b374f02648cd28c84524a29f02be5eb3c707c9fbfb954e1bec9ecf803b",
     "ranking_at_10/run.log": "84507fbc31cbe1988f207e7bdd6a92c593506ec51d8bbf0da29bef38ecca939e",
-    "search_api.jsonl": "0e29dc2bb6bd2753589170b2627f23babc2a1f94cca57c41c36864c5086ac50f",
-    "context_search.jsonl": "3eeaa56bb982b2350b6db2a20d640c5458c4096aa8c792f14ad5a78e0a0e5bbe",
-    "answer_behavior.jsonl": "45fcbbffdc3bb2b580646e06295418815f458d3295d93fbe9517bb76c830a5b6"
+    "search_api.jsonl": "be2a553a935629f0797b7dff14d0431ca3184087d74af9ac670319f16112c8c4",
+    "context_search.jsonl": "88596e52d7eb3507866ef182f09fb9b482fd4b7c6d5c45fbc27ec95974e7b196",
+    "answer_behavior.jsonl": "f3a7fe9014be0287abbb5ff1c9ed4a09094ec222b54e164618aa76059ff6c255"
   },
-  "builder_sha256": "0a055ffba2bde928850d0124f6b544728baa5453d7b5a49c99230de631260bfe",
+  "builder_sha256": "573a8651e15a2ab0e3ddebab5ab876a4d3f59981cd06b186ba84e96de50d0359",
   "case_count": 100,
   "counts_by_split": {
     "development": 80,
@@ -66,9 +66,11 @@
     "context_search": 20,
     "answer_behavior": 20
   },
-  "reference_count": 0,
-  "missing_reference_count": 100,
-  "answerable_missing_reference_count": 80,
+  "reference_count": 100,
+  "missing_reference_count": 0,
+  "reference_context_case_count": 88,
+  "reference_context_count": 130,
+  "answerable_missing_reference_count": 0,
   "actual_execution_counts": {
     "completed": 1,
     "request_failed": 3,
@@ -100,6 +102,21 @@
     "grade_3": "질문의 핵심 의도와 모든 명시 필수 조건을 직접 충족하는 장소.",
     "unjudged": "미판정은 무관한 장소를 뜻하지 않는다. 검색 결과 pool을 사람 검수로 확장한다.",
     "human_review": "사용자가 기존 100문항·273행의 검수 완료를 대화에서 확인했다. 검수자 표기는 user이며 시각은 완료 확인 기록 시각이다. 기존 점수와 근거는 유지한다."
+  },
+  "reference_authoring": {
+    "author": "Codex",
+    "authored_at": "2026-10-25T20:58:43.267562+09:00",
+    "basis": [
+      "existing human-reviewed relevance labels",
+      "expected answer behavior",
+      "snapshot evidence",
+      "normalized conditions and conversation"
+    ],
+    "actual_system_outputs_used_to_author_reference": false,
+    "human_review_scope": "Existing labels and expected behaviors; new answer wording is authored by Codex.",
+    "retrieval_metric_policy": "Top-1/Top-K accuracy and Recall use human-reviewed place IDs, not reference prose.",
+    "multiple_answer_policy": "References illustrate known accepted alternatives; not an exhaustive list of all valid recommendations. LLM Context Recall measures coverage of authored claims, not place-ID recall.",
+    "empty_reference_context_policy": "No source snippets are invented for missing-conversation or absent-region cases; reference_contexts remains empty when no source evidence applies."
   },
   "revision_review": {
     "reviewer": "user",

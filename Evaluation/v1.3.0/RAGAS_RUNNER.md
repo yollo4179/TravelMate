@@ -59,7 +59,7 @@ Ragas 0.4.3과 호환되는 `langchain-community==0.3.31`을 명시했습니다.
 
 ## 3. 실제 입력 파일
 
-아래 기존 로컬 파일을 그대로 사용합니다. 이번 구현에서 테스트 결과나 문장형 정답을 만들어 입력하지 않습니다.
+아래 파일을 사용합니다. 골든셋의 100문항에는 기존 사람 판정·기대 행동·원문에 근거한 참조 답변을 작성했고 API 입력 파일에도 연결했습니다. `reference_provenance`는 새 문장의 작성자가 Codex임을 기록합니다. 실제 시스템 응답과 검색 문맥은 작성하거나 대체하지 않았습니다.
 
 ```text
 Evaluation/v1.3.0/
@@ -76,6 +76,7 @@ Evaluation/v1.3.0/
 - API 파일의 예전 `ragas_eligible`, `ragas_id_metrics_eligible`, `ragas_llm_eligible` 값에 의존하지 않고 현재 입력과 설정으로 조건을 재검사합니다.
 - `user_input`, `response`, `retrieved_contexts`는 실제 API 실행값을 사용합니다. CSV 해설을 답변으로 바꾸거나 골든 근거를 검색 결과로 복사하지 않습니다.
 - `reference`는 `golden.jsonl` 또는 API 입력에 작성한 기대 답변 문자열을 연결합니다. 자연어 문장뿐 아니라 사용자가 정한 구조화 정답의 JSON 문자열도 입력할 수 있으며, 실행기가 정답 형식을 대신 정하거나 변환하지 않습니다. 골든에 작성한 reference를 사용하면 API를 다시 실행하지 않아도 됩니다. 둘 다 값이 있으면서 서로 다르면 조용히 하나를 선택하지 않고 동기화를 요청합니다.
+- `reference_contexts`는 골든셋에서 정답 근거 원문을 읽습니다. `retrieved_contexts`는 실제 검색 결과를 유지하며 정답 원문으로 덮어쓰지 않습니다. 골든셋의 `review.human_reviewer`는 기존 사람 판정의 검수자이고 참조 문장의 작성자는 별도 provenance로 구분합니다.
 - 현재 API의 `response`가 장소 목록 JSON 문자열이라면 그 실제 내용을 평가합니다. 이 결과를 자연어 가이드 발화 품질이나 계획 저장 성공률로 해석하지 않습니다.
 
 작성 원본의 reference를 수정했다면 기존 절차대로 `--build`로 golden과 분할 파일을 먼저 재생성하세요. 기대 답변을 자동 생성하거나 사람 검수 완료로 바꾸지 않습니다.

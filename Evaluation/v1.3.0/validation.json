@@ -26,9 +26,11 @@
     "context_search": 20,
     "answer_behavior": 20
   },
-  "reference_count": 0,
-  "missing_reference_count": 100,
-  "answerable_missing_reference_count": 80,
+  "reference_count": 100,
+  "missing_reference_count": 0,
+  "reference_context_case_count": 88,
+  "reference_context_count": 130,
+  "answerable_missing_reference_count": 0,
   "checks": [
     "unique_case_ids_and_queries",
     "all_place_ids_and_threshold_sets_match",
@@ -40,7 +42,8 @@
     "no_question_group_crosses_splits",
     "evaluation_tracks_match_supported_inputs",
     "no_system_outputs_in_gold",
-    "reference_is_authored_text_or_explicitly_missing"
+    "reference_is_authored_text_or_explicitly_missing",
+    "reference_contexts_match_positive_and_supporting_source_evidence"
   ],
   "human_review_completed": true,
   "retrieval_or_generation_evaluation_run": false,

@@ -237,6 +237,32 @@ def evaluation_track(case: dict[str, Any]) -> str:
     return EvaluationTrack.SEARCH_API.value
 
 
+def reference_documents(case: dict[str, Any]) -> list[dict[str, Any]]:
+    positive_judgments = [
+        judgment for judgment in case["judgments"]
+        if judgment["relevance"] >= MINIMUM_RELEVANT_GRADE
+    ]
+    available = {
+        item["place_id"]: item
+        for item in [*case["judgments"], *case["reference_evidence"]]
+    }
+    ordered_ids = list(dict.fromkeys([
+        *(judgment["place_id"] for judgment in positive_judgments),
+        *(item["place_id"] for item in case["reference_evidence"]),
+        *(place_id for judgment in positive_judgments for place_id in judgment.get("supporting_place_ids", [])),
+    ]))
+    require(set(ordered_ids) <= available.keys(), f"{case['case_id']}: reference context has no evidence")
+    return [available[place_id] for place_id in ordered_ids]
+
+
+def render_reference_context(document: dict[str, Any]) -> str:
+    return "\n".join(
+        item["quote"] if "quote" in item else f"{item['field']}: {item['value']}"
+        for item in document["evidence"]
+        if "quote" in item or "value" in item
+    )
+
+
 def build_case(
     *,
     authored_case: dict[str, Any],
@@ -289,6 +315,7 @@ def build_case(
         "case_type": case_type.value,
         "query": authored_case["query"],
         "reference": authored_case.get("reference"),
+        "reference_provenance": authored_case.get("reference_provenance"),
         "conditions": conditions,
         "semantic_constraints": authored_case.get("semantic_constraints", []),
         "answerability": answerability.value,
@@ -334,6 +361,9 @@ def build_case(
         }),
     }
 
+    documents = reference_documents(case)
+    case["reference_context_ids"] = [document["place_id"] for document in documents]
+    case["reference_contexts"] = [render_reference_context(document) for document in documents]
     case["evaluation_track"] = evaluation_track(case)
     return case
 
@@ -523,6 +553,12 @@ def validate_cases(
         )
         for reference in [*judgments, *case["reference_evidence"]]:
             evidence_count += validate_evidence(reference, snapshot, places, raw_records, case_id)
+        documents = reference_documents(case)
+        require(
+            case.get("reference_context_ids") == [document["place_id"] for document in documents]
+            and case.get("reference_contexts") == [render_reference_context(document) for document in documents],
+            f"{case_id}: reference contexts differ from positive/supporting source evidence",
+        )
         if case["absence_check"] is not None:
             absence = case["absence_check"]
             matches = sum(place[absence["field"]] == absence["value"] for place in places.values())
@@ -541,6 +577,8 @@ def validate_cases(
         "counts_by_evaluation_track": dict(Counter(case["evaluation_track"] for case in cases)),
         "reference_count": sum(case["reference"] is not None for case in cases),
         "missing_reference_count": sum(case["reference"] is None for case in cases),
+        "reference_context_case_count": sum(bool(case["reference_contexts"]) for case in cases),
+        "reference_context_count": sum(len(case["reference_contexts"]) for case in cases),
         "answerable_missing_reference_count": sum(
             case["answerability"] == Answerability.ANSWERABLE and case["reference"] is None
             for case in cases
@@ -553,6 +591,7 @@ def validate_cases(
             "absence_checked_against_entire_corpus", "no_question_group_crosses_splits",
             "evaluation_tracks_match_supported_inputs", "no_system_outputs_in_gold",
             "reference_is_authored_text_or_explicitly_missing",
+            "reference_contexts_match_positive_and_supporting_source_evidence",
         ],
         "human_review_completed": all(case["review"]["status"] == ReviewStatus.HUMAN_REVIEWED for case in cases),
         "retrieval_or_generation_evaluation_run": False,
@@ -739,6 +778,8 @@ def build_manifest(
         "counts_by_evaluation_track": validation["counts_by_evaluation_track"],
         "reference_count": validation["reference_count"],
         "missing_reference_count": validation["missing_reference_count"],
+        "reference_context_case_count": validation["reference_context_case_count"],
+        "reference_context_count": validation["reference_context_count"],
         "answerable_missing_reference_count": validation["answerable_missing_reference_count"],
         "actual_execution_counts": dict(Counter(
             case.get("execution", {}).get("status", "not_run") for case in development_cases
@@ -755,6 +796,7 @@ def build_manifest(
             "0": "의도 불일치 또는 명시 조건 위반",
         },
         "annotation_policy": authored["annotation_policy"],
+        "reference_authoring": authored.get("reference_authoring"),
         "revision_review": authored["revision_review"],
         "unjudged_policy": "미판정 장소를 0점으로 간주하지 않는다. 전수 관련도 판정이 아니다.",
         "review_status": ReviewStatus.HUMAN_REVIEWED.value if validation["human_review_completed"] else ReviewStatus.PENDING_HUMAN.value,

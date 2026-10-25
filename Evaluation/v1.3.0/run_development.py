@@ -279,7 +279,7 @@ def export_ragas_inputs(root: build_dataset.Path) -> list[dict[str, Any]]:
                 "retrieved_contexts": variant.get("retrieved_contexts", []),
                 "retrieved_context_ids": variant.get("place_ids", []),
                 "reference": case.get("reference"),
-                "reference_contexts": [judgment["evidence"] for judgment in judgments if judgment["relevance"] >= 2],
+                "reference_contexts": case.get("reference_contexts", []),
                 "judgments": judgments,
                 "judgment_source": "review_notes_filled_v1.3.0.csv",
                 "judged_retrieved_place_ids": judged_retrieved_place_ids,

@@ -39,6 +39,35 @@ class DatasetTests(unittest.TestCase):
         after = {path.name: hashlib.sha256(path.read_bytes()).hexdigest() for path in ROOT.iterdir() if path.is_file()}
         self.assertEqual(before, after)
         self.assertTrue(result['human_review_completed'])
+        self.assertEqual(result['reference_count'], 100)
+        self.assertEqual(result['missing_reference_count'], 0)
+        self.assertEqual(result['answerable_missing_reference_count'], 0)
+
+    def test_reference_contexts_exclude_distractors_and_preserve_real_runtime_boundary(self) -> None:
+        case = self.index['TM-palaces-01']
+        self.assertEqual(case['reference'], '찾으신 장소는 창경궁입니다.')
+        self.assertEqual(case['reference_context_ids'], [378])
+        self.assertTrue(any('창경궁' in context for context in case['reference_contexts']))
+        self.assertNotIn('retrieved_contexts', case)
+        self.assertEqual(case['reference_provenance']['author'], 'Codex')
+        self.assertEqual(case['review']['human_reviewer'], 'user')
+        self.reject(
+            lambda cases: cases[0]['reference_contexts'].append('원문에 없는 근거'),
+            'reference contexts differ',
+        )
+        self.reject(
+            lambda cases: cases[0]['reference_context_ids'].append(208),
+            'reference contexts differ',
+        )
+
+    def test_behavior_references_are_actual_refusal_or_clarification_answers(self) -> None:
+        refusal = self.index['TM-palaces-05']
+        self.assertIn('확인할 수 없습니다', refusal['reference'])
+        clarification = self.index['TM-churches-05']
+        self.assertIn('어느 성당', clarification['reference'])
+        self.assertEqual(clarification['reference_contexts'], [])
+        self.assertEqual(clarification['reference_context_ids'], [])
+        self.assertEqual(self.index['TM-aquariums-05']['reference_contexts'], [])
 
     def test_review_completion_is_authored_and_requires_attribution(self) -> None:
         authored = builder.read_json(ROOT / 'cases.source.json')
@@ -184,6 +213,7 @@ class DatasetTests(unittest.TestCase):
             expected = {}
             for group in authored['groups']:
                 for case in group['cases']:
+                    case.pop('reference', None)
                     if case['case_suffix'] not in (1, 4, 5):
                         continue
                     case_id = f"TM-{group['group_id']}-{case['case_suffix']:02d}"
@@ -220,7 +250,9 @@ class DatasetTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, 'authoring source'):
                 builder.check(target)
             builder.build(target)
-            self.assertEqual(builder.check(target)['reference_count'], 1)
+            self.assertEqual(builder.check(target)['reference_count'], 100)
+            rebuilt_case = json.loads((target / 'golden.jsonl').read_text().splitlines()[0])
+            self.assertEqual(rebuilt_case['reference'], '창경궁을 찾으시면 됩니다.')
 
     def test_invalid_or_absent_reference_field_is_rejected(self) -> None:
         for invalid in ['', '  \n ', 3, False, [], {}]:
@@ -254,6 +286,7 @@ class DatasetTests(unittest.TestCase):
             authored = builder.read_json(target / 'cases.source.json')
             for group in authored['groups']:
                 for case in group['cases']:
+                    case['reference'] = None
                     if case['judgments']:
                         case['reference'] = '회귀 테스트용 기대 답변입니다.'
             builder.write_json(target / 'cases.source.json', authored)

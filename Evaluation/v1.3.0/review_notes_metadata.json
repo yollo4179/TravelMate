@@ -61,5 +61,12 @@
   "historical_evaluation_reports_preserved": true,
   "review_notes_sha256": "2f2f3ebc4287fb96ab3ad5977a81834ad966228327ca3829189926eac346f9c2",
   "review_csv_sha256": "97ed1ed8c39711867c9848269360e6ef4afaf1c3e6144933c2e6e82170c37d3f",
-  "authoring_sha256": "5d778fee2dc2edf4155476ff8228c9aa246afa6729d736a6b7e4ff8860dbdb97"
+  "authoring_sha256": "ca7632955691d0b043b02b1fd5216767c747855ccbe314388f5ac22b83ebf72b",
+  "reference_count": 100,
+  "missing_reference_count": 0,
+  "reference_author": "Codex",
+  "reference_authored_at": "2026-10-25T20:58:43.267562+09:00",
+  "reference_basis": "existing human-reviewed place judgments and expected behavior plus snapshot evidence",
+  "reference_wording_separate_from_existing_human_review": true,
+  "reference_context_case_count": 88
 }

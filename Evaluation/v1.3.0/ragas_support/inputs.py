@@ -143,6 +143,9 @@ def load_batch(root: Path, *, include_reference: bool = True) -> EvaluationBatch
             response = row.get("response")
             if response is not None and not isinstance(response, str):
                 raise ValueError(f"{case_id}: response must be actual response text or null")
+            reference_contexts = authored.get("reference_contexts", row.get("reference_contexts", [])) if include_reference else []
+            if not isinstance(reference_contexts, list) or any(not isinstance(context, str) or not context.strip() for context in reference_contexts):
+                raise ValueError(f"{case_id}: reference_contexts must contain source text")
             samples[version].append({
                 "case_id": case_id,
                 "strategy_version": version,
@@ -150,6 +153,7 @@ def load_batch(root: Path, *, include_reference: bool = True) -> EvaluationBatch
                 "response": response,
                 "retrieved_contexts": list(contexts),
                 "reference": reference,
+                "reference_contexts": list(reference_contexts),
                 "retrieved_context_ids": list(row["retrieved_context_ids"]),
                 "reference_context_ids": [int(value) if value.isdecimal() else value for value in positives],
                 "judged_retrieved_context_ids": [original for original, value in zip(row["retrieved_context_ids"], ids) if value in case_judgments],
