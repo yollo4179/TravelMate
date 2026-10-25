@@ -1,173 +1,168 @@
-# FastAPI DB 직접 조회 기반 장소 추천 구조
+# Kafka·CQRS 기반 FastAPI 장소 추천 구조
 
-[문서 목록](../README.md) · [검색 API·DB 명세](../specifications/fastapi-place-recommendation.md) · [투어 가이드 전체 구조](personal-tour-guide.md)
+[문서 목록](../README.md) · [API·이벤트·DB 명세](../specifications/fastapi-place-recommendation.md) · [투어 가이드 전체 구조](personal-tour-guide.md)
 
-작성일: 2026-10-25, 한국 시간. 코드 확인 기준: `f9f09db`. **검색 책임을 옮기기 위한 구현 설계이며, 아직 서버·Docker·DB에 적용한 상태는 아닙니다.**
+갱신일: 2026-10-25, 한국 시간. 코드 확인 기준: `f9f09db`, 이전 문서: `6e18c16`. **사용자가 확정한 Kafka와 검색용 복사본 저장을 반영한 구현 설계입니다. 서버·DB·Kafka에 아직 적용한 상태는 아닙니다.** 기존 FastAPI의 `places` 조회 전용 설계를 이 문서의 CQRS 구조로 대체합니다.
 
-## 1. 이번에 정한 방향
+## 1. 확정한 역할
 
-사용자 요청에 따라 **FastAPI가 쿼리 임베딩 → PostgreSQL 후보 조회 → 리랭킹 → 최종 추천 목록을 한 요청 안에서 처리**합니다. Spring은 사용자 인증, 여행 Context 구성, 도구 호출, 계획 검증·저장을 관리합니다.
+- **Spring:** 관광지 원본 `places`의 등록·수정·삭제와 사용자·기억·계획을 관리합니다.
+- **FastAPI:** 관광지 임베딩을 생성하고 자신이 소유한 `place_embeddings`에 벡터·본문·필터용 복사본을 저장합니다. 온라인 요청에서는 쿼리 임베딩·후보 검색·리랭킹을 수행합니다.
+- **Kafka:** Spring의 관광지 변경 이벤트를 FastAPI로 전달합니다. 검색 요청 자체는 Spring → FastAPI HTTP 한 번으로 처리합니다.
+- **Spring 최종 응답:** FastAPI가 반환한 순위별 ID로 원본 상세를 일괄 조회하고, 버전·조건을 검증해 앱에 반환합니다.
+- 같은 PostgreSQL 인스턴스를 사용할 수 있습니다. 원본과 검색 테이블의 수정 계정·책임을 분리하며 FastAPI는 원본을 JOIN하지 않습니다.
 
-- Spring → FastAPI의 검색 호출은 한 번입니다. FastAPI가 자기 `/embed`, `/rerank` 엔드포인트를 HTTP로 호출하지 않고 내부 모델 어댑터를 호출합니다.
-- 기존 PostgreSQL의 `places.embedding vector(1024)`와 장소 ID를 사용합니다. 관광지 데이터를 다른 DB에 복제하거나 벡터를 다시 만들 필요는 없습니다.
-- FastAPI에는 관광지 조회 권한을 부여합니다. 개인 기억·사용자·계획 변경은 Spring의 책임으로 유지합니다.
-- 구조 이전과 추론 속도 개선을 나눠 검증합니다. DB 조회를 옮기는 것만으로 리랭커의 9.95초 추론이 0.5초가 되지는 않습니다.
-- 이름 조회·하이브리드 검색은 확장 지점입니다. 첫 이전에서는 기존 검색 순위·후보 수·점수 계산을 유지해 전후 비교가 가능하게 합니다.
+두 테이블의 소유권을 분리해도 동기화 책임은 남습니다. 원본과 검색 인덱스는 **최종적 일관성**으로 연결되며, 원본 저장 성공과 검색 반영 완료를 구분합니다.
 
-## 2. 현재 구조와 변경 구조
-
-### 현재 코드
-
-```mermaid
-sequenceDiagram
-    participant App as 앱
-    participant Spring as Spring 검색 서비스
-    participant Python as FastAPI 모델 서버
-    participant DB as PostgreSQL
-    App->>Spring: 검색 문장과 조건
-    Spring->>Python: POST /embed
-    Python-->>Spring: 쿼리 벡터
-    Spring->>DB: 조건 적용 후 pgvector Top-K
-    DB-->>Spring: 후보 장소와 설명
-    Spring->>Python: POST /rerank, 질문과 후보 설명
-    Python-->>Spring: 후보별 점수
-    Spring->>Spring: 정렬과 limit 적용
-    Spring-->>App: 장소 목록
-```
-
-Spring의 [PlaceSemanticSearchService](../../Server/TravelMate/src/main/java/com/yollo/TravelMate/domain/place/service/PlaceSemanticSearchService.java)가 파이프라인을 조율하고, [PlaceSemanticSearchRepository](../../Server/TravelMate/src/main/java/com/yollo/TravelMate/domain/place/repository/PlaceSemanticSearchRepository.java)가 SQL을 실행합니다. FastAPI는 현재 모델 추론만 담당합니다. `SEMANTIC_ONLY`는 리랭킹 호출을 생략합니다.
-
-### 목표 구조
+## 2. 전체 구조도
 
 ```mermaid
 flowchart LR
-    App[지도·대화·음성 앱] --> Spring
-    subgraph Spring[Spring Boot]
-        Auth[인증과 사용자 Context]
-        Client[PlaceRecommendationClient]
-        Plan[계획 미리보기·검증·확정]
-        Auth --> Client
-        Auth --> Plan
+    App[지도·대화·음성 앱] --> Spring[Spring 인증·Context·원본 관리]
+    subgraph PG[같은 PostgreSQL, 테이블별 소유권 분리]
+        Places[(places 원본<br/>Spring 수정)]
+        Outbox[(place_change_outbox<br/>Spring 관리)]
+        Jobs[(place_index_jobs<br/>FastAPI 관리)]
+        Index[(place_embeddings<br/>FastAPI 수정)]
     end
-    subgraph FastAPI[FastAPI 추천 서비스]
-        API[검색 API와 입력 검증]
-        Pipeline[RecommendationPipeline]
-        Embedding[EmbeddingAdapter]
-        Repository[PlaceRepository]
-        Reranker[RerankerAdapter와 실행 제한]
-        API --> Pipeline
-        Pipeline --> Embedding
-        Pipeline --> Repository
-        Pipeline --> Reranker
-    end
-    Client -->|검색 HTTP 한 번| API
-    Repository -->|관광지 SELECT| Places[(같은 PostgreSQL의 places)]
-    Plan -->|소유권 검증 후 읽기·쓰기| Business[(users·plans·pins·기억)]
-    API -->|실제 placeId와 점수| Client
-    Client --> Plan
+    Spring -->|같은 트랜잭션| Places
+    Spring -->|같은 트랜잭션| Outbox
+    Outbox --> Relay[Spring Outbox 전달 작업자]
+    Relay --> Kafka[Kafka 관광지 변경 토픽]
+    Kafka --> Consumer[FastAPI 이벤트 소비자]
+    Consumer -->|중복·버전 확인 후 영속 접수| Jobs
+    Consumer -->|최신 수신 버전 기록| Index
+    Jobs --> Worker[FastAPI 임베딩 작업자]
+    Worker -->|본문·벡터·필터·버전 함께 반영| Index
+    Spring -->|온라인 검색 HTTP 한 번| Search[FastAPI 검색·리랭킹]
+    Search -->|검색용 복사본만 조회| Index
+    Search -->|순위별 ID·버전·점수| Spring
+    Spring -->|최신 상세 일괄 조회| Places
     Spring --> App
 ```
 
-`Places`와 `Business`는 접근 책임을 구분해 그린 것입니다. 현재는 같은 PostgreSQL 인스턴스입니다. FastAPI가 계획 테이블까지 접근한다는 뜻은 아닙니다.
+`places`와 `place_embeddings`가 두 도메인 테이블입니다. Outbox와 작업 접수 기록은 전달 유실·중복·재시도 제어를 위한 보조 저장소입니다. 기존 계획 테이블은 Spring이 계속 관리합니다.
 
-## 3. 추천 한 번의 처리 순서
+## 3. 등록·수정·삭제 흐름
+
+```mermaid
+sequenceDiagram
+    actor User as 사용자·수집 작업
+    participant Spring as Spring 원본 서비스
+    participant DB as 원본과 Outbox
+    participant Relay as Outbox 전달 작업자
+    participant Kafka as Kafka
+    participant Consumer as FastAPI 소비자
+    participant Jobs as 작업 접수 기록
+    participant Worker as 임베딩 작업자
+    participant Index as 검색 인덱스
+    User->>Spring: 관광지 등록·수정
+    Spring->>DB: 한 트랜잭션으로 places 버전 변경과 이벤트 기록
+    DB-->>Spring: commit
+    Spring-->>User: 원본 저장 성공, 검색 반영은 비동기
+    Relay->>DB: 미전달 이벤트 조회
+    Relay->>Kafka: key=place_id로 발행
+    Kafka-->>Relay: 발행 확인
+    Relay->>DB: 전달 상태 갱신
+    Kafka->>Consumer: 변경 이벤트, 중복 가능
+    Consumer->>Jobs: event_id 중복 확인과 작업 저장
+    Consumer->>Index: 최신 수신 버전 기록, DELETE면 삭제 표식 반영
+    Note over Jobs,Index: 접수와 버전 갱신을 같은 짧은 DB 트랜잭션으로 commit
+    Consumer->>Kafka: 영속 접수된 연속 offset까지 commit
+    Worker->>Jobs: 작업 확보 후 DB 연결 반환
+    Worker->>Worker: 본문 해시 확인과 임베딩 생성
+    Worker->>Index: 최신 버전인지 확인 후 복사본·벡터 원자 반영
+    Worker->>Jobs: 같은 반영 트랜잭션에서 성공 기록
+```
+
+- Kafka 전송은 원본 저장 트랜잭션 밖에서 수행합니다. 전송 실패 시 Outbox를 재시도합니다.
+- Kafka 발행 성공 직후 프로세스가 종료되면 같은 이벤트가 다시 발행될 수 있습니다. `event_id`로 중복 처리하고, exactly-once 처리를 달성했다고 가정하지 않습니다.
+- 소비자는 임베딩이 끝날 때까지 Kafka poll을 막지 않고 DB에 작업을 영속 접수한 뒤 offset을 commit합니다. 이것은 **접수 완료**이며 **검색 반영 완료**는 아닙니다.
+- offset을 먼저 commit하지 않습니다. 파티션에서 앞선 미접수 메시지를 건너뛰어 뒤의 offset을 commit하지도 않습니다.
+- 작업자는 재시도·재시작 후에도 버전 검사와 원자적 갱신을 지킵니다. 모델 추론 중 DB 트랜잭션을 열어 두지 않습니다.
+- DELETE는 임베딩 없이 처리합니다. 버전 표식을 남겨 늦게 도착한 과거 UPSERT가 삭제된 관광지를 되살리지 못하게 합니다.
+
+## 4. 온라인 추천과 상세 조회
 
 ```mermaid
 sequenceDiagram
     actor User as 사용자
     participant Spring as Spring Context·검색 클라이언트
-    participant API as FastAPI RecommendationPipeline
-    participant Embed as 임베딩 어댑터
-    participant DB as places / pgvector
-    participant Rank as 리랭커 실행기
-    User->>Spring: 장소 추천 요청
-    Spring->>Spring: 인증·소유권·확정 조건 검증
-    Spring->>API: POST /internal/v1/place-search, query·filters·ranking_mode
-    API->>Embed: query 임베딩, 프로세스 내부 호출
-    Embed-->>API: 1024차원 벡터
-    API->>DB: 지역·분류·반경·제외 적용 후 후보 조회
-    DB-->>API: 실제 placeId·원문·벡터 점수
-    Note over API,DB: 조회 완료 후 DB 연결 반환, 추론 중 트랜잭션 유지 금지
-    alt SEMANTIC_ONLY 또는 후보 없음
-        API->>API: 기존 벡터 순위 사용
-    else RERANKED와 후보 있음
-        API->>Rank: 질문과 같은 후보의 설명
-        Rank-->>API: 후보와 일대일 대응하는 점수
-        API->>API: 점수 정렬과 limit 적용
+    participant API as FastAPI 추천 파이프라인
+    participant Index as place_embeddings
+    participant Rank as 리랭커
+    participant Source as places 원본
+    User->>Spring: 검색 문장·조건
+    Spring->>Spring: 인증·확정 지역·반경·제외 조건 구성
+    Spring->>API: POST /internal/v1/place-search
+    API->>API: 쿼리 임베딩, 내부 함수 호출
+    API->>Index: 조건을 적용한 pgvector Top-K 조회
+    Index-->>API: ID·동일 버전 본문·필터·벡터 점수
+    alt RERANKED와 후보 있음
+        API->>Rank: 같은 후보의 복사본 본문
+        Rank-->>API: 후보별 점수
+    else SEMANTIC_ONLY 또는 후보 없음
+        API->>API: 벡터 순위 사용
     end
-    API-->>Spring: items·실제 적용 모드·조건·request_id
-    Spring->>Spring: 응답 계약과 후보 범위 검증
-    Spring-->>User: 지도 핀·추천 카드
-    opt 계획 변경 요청
-        Spring-->>User: 변경안 미리보기
-        User->>Spring: 음성 또는 버튼 확정
-        Spring->>Spring: 최신 계획·소유권 재검증 후 저장
-    end
+    API-->>Spring: 순위별 place_id·source_version·점수
+    Spring->>Source: 모든 후보의 최신 상세를 한 번에 조회
+    Source-->>Spring: 원본과 content_version
+    Spring->>Spring: 버전·존재·조건 재검증, 검색 순서 복원
+    Spring-->>User: 기존 DTO의 지도 핀·추천 카드
 ```
 
-일반 검색 API는 계획을 저장하지 않습니다. 기존 계획 생성 API와 새 대화 미리보기의 차이는 [기존 명세](../specifications/personal-tour-guide.md#6-검색자동-생성자동-배정-계약-초안)를 따릅니다.
+- FastAPI는 리랭킹 본문을 얻으려고 원본 DB를 JOIN하거나 Spring에 후보별 HTTP 요청을 하지 않습니다.
+- 지역·분류·반경·제외 필터는 FastAPI 복사본에서 Top-K 전에 적용합니다. 필터용 복사본도 벡터·본문과 같은 원본 버전이어야 합니다.
+- Spring 상세 조회는 `WHERE id IN (...)` 등 일괄 조회입니다. 그 결과의 DB 순서를 신뢰하지 않고 FastAPI 반환 순서대로 재구성합니다.
+- 삭제·버전 불일치·필수 조건 변경 후보를 정상 추천에 조용히 섞지 않습니다. 부분 반환·후보 보충·재시도 등 사용자 응답 정책은 별도 확정하며, 내부 결과는 `INDEX_LAG`로 구분할 수 있게 합니다.
+- 추천은 계획 저장과 분리합니다. 기존 대화 변경은 미리보기 → 음성/버튼 확정 → 최신 계획과 소유권 재검증 후 반영합니다.
 
-## 4. FastAPI 내부 책임 분리
+## 5. 데이터 소유권과 정합성
 
-| 모듈 제안 | 역할 | 자원 수명 |
+| 저장소 | 쓰기 책임 | 핵심 규칙 |
 |---|---|---|
-| `PlaceSearchRouter` | 내부 서비스 인증, DTO 검증, 응답 매핑 | 요청 단위 |
-| `RecommendationPipeline` | 임베딩·조회·순위 결정 조율 | 상태 없는 서비스 |
-| `EmbeddingAdapter` | 현재 BGE-M3 쿼리 임베딩 | lifespan에서 모델 로드 |
-| `PlaceRepository` | 고정 SQL·바인딩으로 조건과 pgvector 조회 | lifespan의 비동기 DB 풀 사용 |
-| `RankingStrategyRegistry` | 요청 모드에 맞는 전략 선택 | 전략 목록 주입 |
-| `SemanticRankingStrategy` | 현재 벡터 순위 유지 | `SEMANTIC_ONLY` 지원 |
-| `CrossEncoderRankingStrategy` | 같은 후보의 리랭킹·정렬 | `RERANKED` 지원 |
-| `InferenceExecutor` | 모델별 동시 실행 제한·대기·취소 상태 | 애플리케이션 단위 |
-| `SearchTelemetry` | trace 연결, 단계 시간과 후보 수 기록 | 요청 Context |
+| `places` | Spring | 원본과 `content_version` 관리 |
+| `place_change_outbox` | Spring과 전달 작업자 | 원본 변경과 이벤트 기록을 같은 트랜잭션에 포함 |
+| `place_embeddings` | FastAPI | 벡터·복사본·원본 버전을 함께 반영 |
+| `place_index_jobs` | FastAPI | 영속 접수·중복·재시도·실패·완료 기록 |
+| 사용자·계획·기억 | Spring | FastAPI 검색 계정에 접근 권한 부여하지 않음 |
 
-전략은 `is_applicable(mode)`를 제공하고 레지스트리가 선택합니다. Router에 검색 SQL이나 모드별 모델 처리를 몰아넣지 않습니다. 비동기 DB I/O와 모델 연산을 분리하고, 동기 추론으로 FastAPI 이벤트 루프를 막지 않도록 실행기를 둡니다. 추론용 스레드만 추가해도 CPU/GPU 연산량은 줄지 않습니다.
+검색용 복사본은 원본을 대신하는 편집 저장소가 아닙니다. FastAPI가 관광지 설명을 임의로 수정하거나 모델이 만든 설명을 원본처럼 저장하지 않습니다. 복사본은 Spring 이벤트로 재구성 가능한 읽기 모델입니다.
 
-## 5. 실행 자원과 배포
-
-```mermaid
-flowchart TB
-    subgraph Network[Docker 내부 네트워크]
-        Spring[server :8080]
-        FastAPI[embedding :8000<br/>추천 API와 모델 실행기]
-        Postgres[(postgres :5432<br/>places와 기존 업무 테이블)]
-        Spring -->|HTTP, traceparent| FastAPI
-        FastAPI -->|전용 조회 계정과 비동기 풀| Postgres
-        Spring -->|기존 업무 계정| Postgres
-    end
-    FastAPI --> CPU[임베딩 실행 자원]
-    FastAPI -. CUDA 구성 시 .-> GPU[리랭커 실행 자원<br/>로컬 RTX 4050 Laptop, 전용 6GB]
-```
-
-- 로컬 GPU는 RTX 4050 Laptop 전용 VRAM 6GB입니다. 운영 GPU는 미정입니다. 공유 GPU 메모리를 전용 VRAM 용량에 더하지 않습니다.
-- CPU/GPU 프로필 모두 동일 추천 API를 사용합니다. GPU 프로필은 CUDA 지원 PyTorch·Docker GPU 연결·실제 CUDA 장치 확인이 필요합니다. 현재 GitHub Dockerfile은 CPU 전용입니다.
-- 임베딩 CPU·리랭커 GPU 배치는 실행 자원 제안입니다. Ollama 동시 실행, 실제 피크 VRAM·대기시간을 확인한 뒤 확정합니다.
-- 처음에는 기존 FastAPI 서비스 안의 모듈로 구현합니다. 자원 경쟁이 확인되면 같은 어댑터 뒤의 리랭커 실행기를 별도 프로세스·GPU 서비스로 분리할 수 있습니다. 처음부터 서비스 수를 늘리는 요구는 아닙니다.
-- 모델·DB 풀은 lifespan에서 준비·종료합니다. 모델을 요청마다 로드하거나 Uvicorn worker를 무작정 늘려 VRAM을 중복 점유하지 않습니다.
-- DB 풀 연결은 SQL 조회 동안만 사용하고 모델 대기·추론 전에 반환합니다.
-
-## 6. 속도 목표와 장애 처리
-
-사용자가 제시한 목표는 **리랭커 추론 약 9.95초 → 약 0.5초 이하**입니다. 검색 API 전체 시간 목표, 평균·백분위 기준, 후보 수·토큰 수·배치 크기·정밀도는 아직 확정하지 않았습니다. 사용자 전달 CPU 측정에서 검색 API 전체는 108.723초, 리랭커 추론은 108.564초였습니다. GPU 반복 실행 약 9.95초를 포함해 이번 문서 작업에서 재실행하지 않았으며, 비교 시 단계와 입력 조건을 맞춰 확인해야 합니다.
-
-| 상황 | 설계 |
+| 위험 | 처리 |
 |---|---|
-| 모델 정상 | 요청한 모드와 실제 사용 모드를 기록하고 결과 반환 |
-| DB 정상, 조건 내 후보 0개 | 빈 성공 결과. 조건을 자동으로 넓히지 않음 |
-| DB 연결·SQL 실패 | 검색 실패로 반환. 후보 0개와 구분 |
-| `RERANKED` 모델 사용 불가·대기 초과 | 장애 상태를 명시. 기본 순위 대체 허용 여부는 운영 정책으로 확정 |
-| 기본 순위 대체가 허용된 요청 | `ranking_mode_applied=SEMANTIC_ONLY`와 이유를 명시. 리랭킹 성공으로 기록하지 않음 |
-| 요청 취소·기한 만료 | 대기 작업 제거. 이미 시작한 연산의 실제 종료까지 실행 슬롯 점유 추적 |
+| 원본 저장 후 Kafka 장애 | Outbox에 남겨 재전송 |
+| Kafka 발행 확인 후 Outbox 표시 실패 | 같은 event_id 재발행을 허용하고 소비자가 중복 제거 |
+| v5 작업보다 v6 작업이 먼저 완료 | 최신 수신 버전과 조건부 갱신으로 v5 완료 반영 차단 |
+| v6 삭제 후 v5 UPSERT 도착 | 삭제 버전 표식으로 재생성 차단 |
+| 설명은 v6, 벡터는 v5 | 복사본·벡터·해시·source_version을 한 번에 교체해 혼합 차단 |
+| 원본 v6, 아직 검색 복사본 v5 | 인덱스 지연으로 추적하고 Spring 최종 조회에서 식별 |
+| 임베딩 생성 실패 | 작업 실패·재시도 상태 보존. 성공으로 offset/상태를 꾸미지 않음 |
+| 모델 revision 변경 | 별도 인덱스 세대·재색인 작업으로 관리. 원본 버전만으로 중복 판정하지 않음 |
 
-시간 제한·동시 실행 수의 숫자는 여기서 임의로 정하지 않습니다. 평가의 `RERANKED` 비교에서는 실제 리랭킹이 완료된 결과를 사용하고, 대체 결과·실패·취소를 따로 집계합니다. HTTP 타임아웃만으로 이미 실행 중인 GPU 연산이 중단된다고 가정하지 않습니다.
+동일 Kafka key는 장소별 같은 파티션으로 보내는 데 사용합니다. 재시도·여러 전달 작업자·비동기 임베딩 완료 순서는 여전히 달라질 수 있으므로 버전 검사를 생략하지 않습니다.
 
-## 7. 이전 순서
+## 6. 실행 자원과 운영 범위
 
-1. FastAPI의 조회 계정·비동기 DB 풀·모델 수명 관리와 내부 검색 계약을 준비합니다.
-2. 기존 SQL의 필터·거리식·벡터 점수를 보존해 후보 조회를 옮깁니다. 현행 Top-K=30·모드·리랭킹 입력도 우선 보존합니다.
-3. 같은 DB·질문·조건으로 기존 Spring 경로와 FastAPI 경로의 후보·점수·모드별 결과를 비교합니다.
-4. Spring의 일반 검색, Context 검색, 계획 생성 후보 조회, `search_places`가 같은 추천 클라이언트를 사용하도록 연결합니다.
-5. 기존 공개 응답 DTO와 평가 입력 형식을 유지합니다. 기존 `/embed`는 재임베딩 배치와의 호환을 위해 유지합니다.
-6. 경로 동등성이 확인되면 모델 정밀도·입력 길이·배치·후보 수·검색 전략을 각각 독립적으로 비교합니다. 평가 문항과 합의한 6개 지표를 유지합니다.
+Kafka는 오프라인 관광지 인덱싱을 비동기화합니다. 사용자의 온라인 쿼리 임베딩·리랭킹 추론 자체를 빠르게 만드는 장치는 아닙니다. 리랭커 약 9.95초 → 약 0.5초 이하 목표는 별도 최적화·측정 대상으로 유지합니다.
 
-이 문서와 [상세 명세](../specifications/fastapi-place-recommendation.md)가 변경 목표입니다. 코드·DB 계정·컨테이너 재빌드·GPU 속도 달성은 후속 구현·검증 대상입니다.
+- 로컬 GPU: RTX 4050 Laptop 전용 VRAM 6GB. 운영 GPU는 미정입니다.
+- 검색 API와 Kafka 소비자·인덱싱 작업자는 내부 모듈을 공유하되 실행 책임을 분리합니다. 무거운 관광지 배치 임베딩이 온라인 리랭킹을 무제한 밀어내지 않도록 작업량·동시 실행을 제어합니다.
+- 모델·비동기 DB 풀·Kafka 클라이언트 수명을 관리합니다. 여러 프로세스에서 모델을 각각 로드해 VRAM을 중복 점유하지 않도록 배포 단위를 설계합니다.
+- Kafka 브로커·토픽·소비자 운영은 선택 범위에 포함됩니다. 파티션 수·복제 수·보관 기간·재시도 횟수·모델 실행 한도는 운영 요구를 확인한 뒤 확정합니다.
+- 로컬 브로커·토픽 초기화·Kafka UI는 [Docker 실행 안내](../../Docker/KAFKA_README.md)를 따릅니다. 기반 시설 준비와 Spring Outbox·FastAPI consumer 구현 완료를 구분합니다.
+- 검색 API readiness와 인덱싱 readiness를 구분합니다. Kafka 장애 때 기존 인덱스 조회 가능 여부와 새 데이터 반영 실패를 각각 관측합니다.
+- 온라인 요청의 fallback·응답시간 예산과 인덱스 최신성 사용자 응답 정책은 아직 확정하지 않았습니다.
+
+## 7. 현재 코드에서 이전하는 순서
+
+1. 기존 `places` 원본과 공개 placeId를 보존하고 `content_version`·Outbox·검색 인덱스·작업 상태의 마이그레이션을 준비합니다.
+2. Spring의 원본 변경 경로를 모두 같은 이벤트 규약으로 연결합니다. 관리자·수집 배치의 직접 UPDATE가 이벤트를 빠뜨리지 않게 합니다.
+3. Kafka 전달·접수·작업·버전·삭제 처리를 구현하고, 새 테이블에 FastAPI만 쓰도록 권한을 나눕니다.
+4. 기존 벡터의 모델·전처리·원문 대응이 확인되면 초기 이관에 재사용합니다. 확인되지 않는 행은 재색인 대상으로 구분합니다.
+5. 초기 복사와 실시간 이벤트를 버전으로 병합하고 인덱스 준비를 확인합니다. 오래된 초기 복사가 최신 이벤트를 덮어쓰지 않게 합니다.
+6. 같은 데이터 버전으로 기존 경로와 새 경로의 모드별 후보·점수·조건을 비교합니다. Spring의 최신 상세 일괄 조회와 순위 복원도 검증합니다.
+7. 일반 검색·Context 검색·계획 생성 후보·`search_places`를 새 추천 클라이언트로 연결합니다.
+8. 전환이 검증된 뒤 기존 `places.embedding`과 Spring 벡터 UPDATE 경로의 폐기를 진행합니다. 문서 작성 단계에서 기존 컬럼·볼륨·데이터를 삭제하지 않습니다.
+
+공개 검색 DTO·기존 평가 문항과 6개 순위 지표는 유지합니다. 상세 계약은 [API·이벤트·DB 명세](../specifications/fastapi-place-recommendation.md)에 있습니다.

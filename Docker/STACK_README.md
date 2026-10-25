@@ -2,6 +2,8 @@
 
 기존 PostgreSQL Compose에 Spring Boot, FastAPI embedding, Redis를 더하는 개발용 구성입니다. 기존 `docker-compose.yml`과 앱 소스·의존성 파일은 변경하지 않습니다. Java는 Docker 다단계 빌드에서 컴파일하며, FastAPI는 컨테이너 진입점에서 기존 CUDA 설정을 CPU로 재정의합니다.
 
+Kafka와 웹 GUI는 [별도 실행 안내](KAFKA_README.md)를 따릅니다. 기존 스택과 같은 프로젝트·네트워크에서 선택적으로 시작하며 UI 기본 주소는 `http://localhost:8989`입니다. 관광지 CQRS producer·consumer 연결은 별도 구현 대상입니다.
+
 ## 실행과 상태
 
 저장소 루트에서:

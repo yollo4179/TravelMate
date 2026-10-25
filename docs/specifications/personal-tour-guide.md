@@ -4,7 +4,7 @@
 
 작성일 2026-10-24. 코드 분석 기준 `a275e49`. 이 문서는 **기존 문서·코드에 연결할 구현 참고안**입니다. 사용자 지정 요구사항, 현재 구현 사실, 신규 계약 제안을 구분합니다. 신규 API·테이블·도구는 아직 적용하지 않았습니다.
 
-2026-10-25 검색 경계 갱신: FastAPI가 DB 조회·쿼리 임베딩·리랭킹을 통합하고 Spring은 인증·Context·계획 반영을 담당하는 구조로 구체화했습니다. [신규 검색 계약](fastapi-place-recommendation.md)은 `f9f09db` 기준입니다. 아래 기존 코드 사실과 새 구현 목표를 구분합니다.
+2026-10-25 검색 경계 갱신: Spring 원본 → Outbox → Kafka → FastAPI 검색 인덱스의 CQRS 구조로 구체화했습니다. FastAPI는 본문·필터용 복사본으로 검색·리랭킹하고, Spring은 최신 상세 일괄 조회·인증·Context·계획 반영을 담당합니다. [신규 검색 계약](fastapi-place-recommendation.md)은 `f9f09db` 코드와 사용자 선택을 기준으로 작성했습니다. 아래 기존 코드 사실과 새 구현 목표를 구분합니다.
 
 ## 1. 요구사항과 확정 범위
 
@@ -19,7 +19,8 @@
 | FR-07 | 장소 추가·삭제·배정 등 계획 변경 롤백 | D-02 사용자 답변으로 확정. 기억·일기·사진은 계획 롤백 대상 아님 |
 | FR-08 | 실제 카메라에 가이드 아바타를 합성해 함께 촬영 | D-03 사용자 답변으로 확정. 별도 VR 세계 촬영으로 바꾸지 않음 |
 | FR-09 | 사진을 여행별 앨범 목록에 저장하고 일기·장소와 연결 | 사용자 지정 |
-| FR-10 | FastAPI가 관광지 DB 직접 조회·쿼리 임베딩·리랭킹을 한 추천 요청으로 처리 | 사용자 지정. [구조도](../architecture/fastapi-place-recommendation.md)·[명세](fastapi-place-recommendation.md) |
+| FR-10 | FastAPI가 자신의 검색 테이블에서 후보를 조회·리랭킹하고 Spring이 반환 ID로 원본 상세 일괄 조회 | 사용자 지정. [구조도](../architecture/fastapi-place-recommendation.md)·[명세](fastapi-place-recommendation.md) |
+| FR-11 | Kafka로 원본 변경 전달, FastAPI가 임베딩·본문·지역·좌표 복사본 저장 | 사용자 선택 확정. 원본과 검색 인덱스 수정 소유권 분리 |
 
 아직 고정하지 않는 항목은 대화·음성·사진·기억의 보관/삭제 정책, 기억 검색 인덱스 도입, Top-K·툴 반복 한도, 제공자·렌더링 엔진입니다. 아래 상태·필드·API 이름과 경계 사례는 구체화를 위한 검토안이며 제품 정책의 최종 승인으로 간주하지 않습니다. 평가 범위·지표·정답 형식은 이 문서에서 새로 지정하지 않습니다.
 
@@ -53,7 +54,8 @@
 | MemoryService | 출처·사용자·version 검증, 명시 취향 자동 반영, 추론 확인 처리 | 계획 롤백에 맞춰 기억을 함께 되돌리지 않음 |
 | HistoryRecallService | 개인 기록에서 이번 질문에 관련된 경험을 검색 | 다른 사용자 자료나 미확인 방문을 실제 경험으로 섞지 않음 |
 | ToolRegistry / ToolExecutor | 허용 함수·스키마·호출 범위·호출 결과 식별자 검증 | 임의 함수명·SQL·사용자 UID를 모델에 위임하지 않음 |
-| PlaceRecommendationClient / FastAPI RecommendationPipeline | Spring은 한 번 호출하고 FastAPI가 임베딩·관광지 DB 조회·모드별 순위를 처리 | 관광지 검색 권한을 개인 기억·계획 쓰기 권한으로 확장하지 않음 |
+| PlaceRecommendationClient / FastAPI RecommendationPipeline | Spring은 한 번 호출하고 FastAPI가 임베딩·검색 복사본 조회·모드별 순위를 처리. Spring이 최신 원본 일괄 조회·버전 확인 | FastAPI가 원본·개인 기억·계획 테이블을 조회·수정하지 않음 |
+| OutboxRelay / PlaceIndexConsumer·Worker | 원본과 이벤트 원자 기록 → Kafka → 영속 접수 → 버전 확인 후 검색 복사본·벡터 반영 | Kafka 접수 완료와 검색 반영 완료를 혼동하지 않음 |
 | ScheduleBuilder / Validator | 후보 선택 결과로 실제 시간·경로·제약 계산 | LLM이 쓴 이동시간을 계산 결과로 채택하지 않음 |
 | PlanMutationService | 미리보기·확정·실제 계획 변경·revision·롤백 | 외부 모델 호출을 긴 DB 트랜잭션 안에서 수행하지 않음 |
 | AlbumMediaService | 사용자 소유 앨범·업로드·파일 상태·가이드 설정 연결 | 파일 업로드 성공과 앨범 DB 저장 성공을 혼동하지 않음 |
@@ -177,9 +179,10 @@
 → 지역·반경·제외·필수 조건 정리
 → Spring 추천 클라이언트가 FastAPI 한 번 호출
 → FastAPI 내부 의미 쿼리 임베딩
-→ FastAPI가 조건 필터 후 DB Top-K 조회
+→ FastAPI가 조건 필터 후 검색용 복사본 DB Top-K 조회
 → 요청 모드에 따라 같은 후보를 리랭킹
-→ 실제 장소 ID·원문·점수를 Spring으로 반환
+→ 실제 장소 ID·원본 버전·점수를 Spring으로 반환
+→ Spring이 최신 원본 상세 일괄 조회·버전 검증·순위 복원
 → 1개 또는 일괄 선택
 → 필요한 상세·실제 경로·시간 검증
 → 변경안과 가이드 설명
@@ -189,7 +192,7 @@
 
 현재 Top-K=30과 생성 1~6곳은 코드 사실입니다. 새 모드에 같은 한도를 유지할지, 날짜·슬롯·다일 여행까지 지원할지는 지정 전 확장하지 않습니다. 실제 도보 경로·운영정보가 연결되지 않은 현재 단계에서는 검증 완료 일정으로 표시하지 않습니다.
 
-검색 책임 이전의 첫 검증에서는 현행 후보 수·모드·모델·점수를 보존합니다. 공개 검색 응답은 Spring이 기존 DTO로 매핑하며, DB 직접 조회 권한·필터·실패·trace 계약은 [FastAPI 추천 API·DB 명세](fastapi-place-recommendation.md)를 따릅니다.
+검색 책임 이전의 첫 검증에서는 현행 후보 수·모드·모델·점수를 보존합니다. 공개 검색 응답은 Spring이 기존 DTO로 매핑하며, Kafka 동기화·검색 복사본·권한·필터·실패·trace 계약은 [추천 API·이벤트·DB 명세](fastapi-place-recommendation.md)를 따릅니다.
 
 ## 7. 툴 호출은 어떻게 동작하는가
 
