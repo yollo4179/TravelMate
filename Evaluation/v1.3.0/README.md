@@ -166,7 +166,30 @@ The development run records two ranking versions for each answerable search case
 - `v1_semantic_only`: embedding similarity order before the BGE reranker.
 - `v2_reranked`: BGE reranker order over the same top-30 embedding candidate pool.
 
-Run `python -X utf8 Evaluation/v1.3.0/run_development.py --split development` to capture both versions. The comparison is scored against authored place judgments at `@5` and `@10`, including NDCG, MAP, MRR, Recall, Precision, and F1. Results are separated into `ranking_at_5/` and `ranking_at_10/`, each with `results.jsonl`, `summary.json`, and a live progress copy in `run.log`; the root ranking files remain the `@10` compatibility view. Each cutoff is also traced to its own LangSmith project. Judgments are partial, so unjudged places are not asserted to be irrelevant and the scores indicate the judged candidate pool only.
+Run `python -X utf8 Evaluation/v1.3.0/run_development.py --split development` to capture both versions. The comparison retains the six ranking metrics and adds the user's selected Top-1 and Top-K accuracy at the existing K=5 and K=10 cutoffs. Results are grouped by version and cutoff in `ranking_at_5/` and `ranking_at_10/`, each with `results.jsonl`, `summary.json`, and progress logs in `run.log`. The combined `ranking_summary.json` retains the existing top-level @10 fields and cutoff mapping. Each cutoff continues to use its existing LangSmith project.
+
+### Top-1·Top-K 정확도와 Recall
+
+사람이 검수한 `relevance >= 2` 장소를 정답으로 사용합니다. 문장형 `reference`나 OpenAI 호출 없이 실제 검색된 장소 ID와 비교합니다.
+
+| 지표 | 문항별 계산 | 전체 집계 |
+|---|---|---|
+| Top-1 정확도 | 첫 결과가 정답이면 1, 아니면 0 | 평가한 문항의 평균 |
+| Top-K 정확도 (Hit@K) | 상위 K개에 정답이 하나 이상 있으면 1 | 평가한 문항의 평균 |
+| Recall@K | 상위 K개에서 찾은 서로 다른 정답 수 ÷ 해당 문항의 알려진 정답 수 | 문항별 Recall의 평균 |
+| Precision@K | 상위 K개에서 찾은 서로 다른 정답 수 ÷ K | 문항별 Precision의 평균 |
+
+정답 4개 중 상위 5개에서 1개를 찾으면 Top-5 정확도는 1, Recall@5는 0.25입니다. Top-K 정확도를 정밀도나 Recall로 해석하지 않습니다.
+
+저장된 실제 검색 응답을 다시 채점하려면 다음을 실행합니다. 검색 API와 OpenAI를 재호출하지 않습니다.
+
+```bash
+python -X utf8 Evaluation/v1.3.0/evaluate_ranking.py --cutoffs 5 10
+```
+
+`ranking_at_5/results.jsonl`과 `ranking_at_10/results.jsonl`에 문항별 점수·판정 범위가, 각 폴더의 `summary.json`에 평균이 저장됩니다. 루트의 `ranking_summary.json`은 두 cutoff를 합칩니다. LangSmith 추적을 설정한 환경에서는 같은 지표가 기존 `travelmate-ragas-v1.3.0-at-5`·`travelmate-ragas-v1.3.0-at-10` 프로젝트의 평가 trace에도 기록됩니다.
+
+평가 대상은 기존과 동일하게 두 전략의 완료된 응답과 완전한 조건 적용이 확인된 개발 문항입니다. 실제 평가 문항 수와 제외 수를 함께 기록하며, 미실행 문항을 오답으로 집계하지 않습니다. 정답 후보 판정은 부분적이므로 미판정 결과를 확인된 오답으로 표시하지 않습니다. 첫 결과 미판정 문항 수와 상위 K개에 알려진 정답은 없지만 미판정 후보가 있는 문항 수도 보고합니다. 이런 경우 정확도는 알려진 정답에 대한 보수적인 값이며 Recall도 현재 정답 집합에 대한 값입니다.
 ### Versioned RAGAS samples
 
 `api_embedding/v1.jsonl` stores embedding-only API outputs; `api_reranking/v2.jsonl` stores reranked API outputs. Both contain place judgments from `review_notes_filled_v1.3.0.csv`, request duration, and metric-specific flags:

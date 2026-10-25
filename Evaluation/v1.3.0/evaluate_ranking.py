@@ -22,7 +22,16 @@ METRIC_BASE_NAMES = ("ndcg", "map", "mrr", "recall", "precision", "f1")
 
 
 def metric_names(cutoff: int) -> tuple[str, ...]:
-    return tuple(f"{metric}_at_{cutoff}" for metric in METRIC_BASE_NAMES)
+    return tuple(dict.fromkeys((
+        *(f"{metric}_at_{cutoff}" for metric in METRIC_BASE_NAMES),
+        "top_1_accuracy",
+        f"top_{cutoff}_accuracy",
+    )))
+
+
+def validate_cutoff(cutoff: int) -> None:
+    if type(cutoff) is not int or cutoff <= 0:
+        raise ValueError("cutoff must be a positive integer")
 
 
 def log_progress(root: Path, cutoff: int, message: str) -> None:
@@ -67,6 +76,7 @@ def dcg(relevances: list[int], cutoff: int) -> float:
 
 
 def score_order(place_ids: list[int], judgments: dict[int, int], cutoff: int = 10) -> dict[str, float]:
+    validate_cutoff(cutoff)
     relevant_ids = {place_id for place_id, grade in judgments.items() if grade >= 2}
     top_ids = place_ids[:cutoff]
     top_grades = [judgments.get(place_id, 0) for place_id in top_ids]
@@ -105,7 +115,26 @@ def score_order(place_ids: list[int], judgments: dict[int, int], cutoff: int = 1
             if precision_at_cutoff + recall_at_cutoff
             else 0.0
         ),
+        float(bool(top_ids) and top_ids[0] in relevant_ids),
+        float(relevant_hits > 0),
     )))
+
+
+def judgment_coverage(
+    place_ids: list[int],
+    judgments: dict[int, int],
+    cutoff: int,
+) -> dict[str, Any]:
+    top_ids = place_ids[:cutoff]
+    unjudged_ids = [place_id for place_id in top_ids if place_id not in judgments]
+    relevant_ids = {place_id for place_id, grade in judgments.items() if grade >= 2}
+    return {
+        "returned_at_k": len(top_ids),
+        "judged_at_k": len(top_ids) - len(unjudged_ids),
+        "unjudged_place_ids_at_k": unjudged_ids,
+        "top_1_unjudged": bool(top_ids) and top_ids[0] not in judgments,
+        "top_k_no_known_hit_with_unjudged_candidates": bool(unjudged_ids) and not relevant_ids.intersection(top_ids),
+    }
 
 
 def evaluate_case(
@@ -153,6 +182,10 @@ def evaluate_case(
         "cutoff": cutoff,
         "judgment_count": len(judgments),
         "relevant_judgment_count": sum(grade >= 2 for grade in judgments.values()),
+        "judgment_coverage": {
+            version: judgment_coverage(comparison[version]["place_ids"], judgments, cutoff)
+            for version in RANKING_VERSIONS
+        },
         "ranking_versions": scores,
         "delta_v2_minus_v1": {
             metric: scores["v2_reranked"][metric] - scores["v1_semantic_only"][metric]
@@ -174,9 +207,18 @@ def aggregate(results: list[dict[str, Any]], cutoff: int) -> dict[str, Any]:
     }
 
 
-def evaluate(root: Path = ROOT, env_file: Path | None = None) -> dict[str, Any]:
+def evaluate(
+    root: Path = ROOT,
+    env_file: Path | None = None,
+    *,
+    cutoffs: tuple[int, ...] = CUTOFFS,
+) -> dict[str, Any]:
     from dotenv import load_dotenv
 
+    if not cutoffs or len(set(cutoffs)) != len(cutoffs):
+        raise ValueError("cutoffs must be nonempty and unique")
+    for cutoff in cutoffs:
+        validate_cutoff(cutoff)
     configured_env_file = env_file or root.resolve().parents[1] / ".env"
     if configured_env_file.is_file():
         load_dotenv(configured_env_file, override=False)
@@ -185,7 +227,7 @@ def evaluate(root: Path = ROOT, env_file: Path | None = None) -> dict[str, Any]:
     review_judgments = read_review_judgments(root / "review_notes_filled_v1.3.0.csv")
     cutoff_summaries: dict[str, dict[str, Any]] = {}
     results_by_cutoff: dict[int, list[dict[str, Any]]] = {}
-    for cutoff in CUTOFFS:
+    for cutoff in cutoffs:
         output_dir = root / f"ranking_at_{cutoff}"
         output_dir.mkdir(parents=True, exist_ok=True)
         (output_dir / "run.log").write_text("", encoding="utf-8")
@@ -206,12 +248,14 @@ def evaluate(root: Path = ROOT, env_file: Path | None = None) -> dict[str, Any]:
         )
         averages = aggregate(results, cutoff)
         names = metric_names(cutoff)
+        evaluated_case_ids = {result["case_id"] for result in results}
         summary = {
             "status": "completed" if results else "not_run",
             "split": "development",
             "dataset_version": "1.3.0",
             "cutoff": cutoff,
             "case_count": len(results),
+            "evaluated_case_ids": [result["case_id"] for result in results],
             "skipped_answerable_case_count": sum(skipped.values()),
             "skipped_by_condition_coverage": dict(skipped),
             "ranking_versions": {
@@ -225,7 +269,29 @@ def evaluate(root: Path = ROOT, env_file: Path | None = None) -> dict[str, Any]:
             },
             "judgment_scope": "partial_explicit_judgments; unjudged places are not asserted irrelevant",
             "judgment_source": "review_notes_filled_v1.3.0.csv",
-            "metric_interpretation": f"Ranking metrics use authored relevance grades >= 2 as relevant; NDCG uses graded relevance. Precision, recall, F1, MAP, NDCG and MRR are measured at cutoff {cutoff}. Scores use explicit judgments only and are candidate-pool indicators, not exhaustive corpus recall.",
+            "accuracy_definitions": {
+                "top_1_accuracy": "Fraction of evaluated queries whose first result has human relevance >= 2.",
+                f"top_{cutoff}_accuracy": f"Fraction of evaluated queries with at least one human relevance >= 2 result in the first {cutoff} positions (Hit@{cutoff}).",
+                f"recall_at_{cutoff}": "Mean per-query fraction of the known relevant place IDs retrieved in the first K positions; distinct from Top-K accuracy.",
+            },
+            "judgment_coverage": {
+                version: {
+                    "top_1_unjudged_case_count": sum(result["judgment_coverage"][version]["top_1_unjudged"] for result in results),
+                    "top_k_no_known_hit_with_unjudged_case_count": sum(result["judgment_coverage"][version]["top_k_no_known_hit_with_unjudged_candidates"] for result in results),
+                    "judged_result_count_at_k": sum(result["judgment_coverage"][version]["judged_at_k"] for result in results),
+                    "returned_result_count_at_k": sum(result["judgment_coverage"][version]["returned_at_k"] for result in results),
+                }
+                for version in RANKING_VERSIONS
+            },
+            "input_sha256": {
+                name: build_dataset.digest_file(root / name)
+                for name in ("development.jsonl", "review_notes_filled_v1.3.0.csv")
+            },
+            "review_statuses": sorted({
+                case["review"]["status"] for case in cases
+                if case["case_id"] in evaluated_case_ids
+            }),
+            "metric_interpretation": f"Human relevance >= 2 defines a known relevant place. Top-1 accuracy and Top-{cutoff} accuracy are query-level hit rates, not precision or recall. Ranking metrics use cutoff {cutoff}; NDCG uses graded relevance. Unjudged candidates are not confirmed errors: no-known-hit scores are conservative when candidates remain unjudged. Recall covers the known relevant set, not exhaustive corpus recall.",
             "langsmith_project": f"travelmate-ragas-v1.3.0-at-{cutoff}",
         }
         output_dir = root / f"ranking_at_{cutoff}"
@@ -236,8 +302,9 @@ def evaluate(root: Path = ROOT, env_file: Path | None = None) -> dict[str, Any]:
         results_by_cutoff[cutoff] = results
         log_progress(root, cutoff, f"ranking @{cutoff}: 저장 완료 → {output_dir}")
 
-    results = results_by_cutoff[10]
-    summary = dict(cutoff_summaries["10"])
+    primary_cutoff = 10 if 10 in cutoffs else cutoffs[0]
+    results = results_by_cutoff[primary_cutoff]
+    summary = dict(cutoff_summaries[str(primary_cutoff)])
     summary["cutoffs"] = cutoff_summaries
     build_dataset.write_jsonl(root / "ranking_results.jsonl", results)
     build_dataset.write_json(root / "ranking_summary.json", summary)
@@ -249,5 +316,6 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--root", type=Path, default=ROOT)
     parser.add_argument("--env-file", type=Path, help="Defaults to the repository root .env")
+    parser.add_argument("--cutoffs", type=int, nargs="+", default=list(CUTOFFS), help="Top-K and Recall cutoffs; defaults to the existing K=5 and K=10")
     arguments = parser.parse_args()
-    print(json.dumps(evaluate(arguments.root, arguments.env_file), ensure_ascii=False, indent=2))
+    print(json.dumps(evaluate(arguments.root, arguments.env_file, cutoffs=tuple(arguments.cutoffs)), ensure_ascii=False, indent=2))

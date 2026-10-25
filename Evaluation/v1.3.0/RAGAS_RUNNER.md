@@ -144,10 +144,10 @@ Evaluation/v1.3.0/
 .\.venv-ragas\Scripts\python.exe -m pip install -r Evaluation/v1.3.0/requirements-langsmith-observability.txt
 ```
 
-순위 평가를 실행하면 v1 임베딩 검색과 v2 리랭킹 각각의 Precision@10, Recall@10, F1@10, NDCG@10, MAP@10, MRR@10이 문항별 trace로 기록됩니다.
+순위 평가를 실행하면 v1 임베딩 검색과 v2 리랭킹 각각의 Top-1 정확도, Top-K 정확도(Hit@K), Recall@K와 기존 순위 지표가 K=5·10의 문항별 trace로 기록됩니다. 사람 검수 CSV의 장소 ID와 관련도를 사용하며 문장형 reference와 OpenAI 호출은 필요하지 않습니다. LangSmith 기록은 추적 설정과 연결이 있는 실행 환경에서만 전송됩니다.
 
 ```powershell
-.\.venv-ragas\Scripts\python.exe Evaluation/v1.3.0/evaluate_ranking.py --env-file .env
+.\.venv-ragas\Scripts\python.exe Evaluation/v1.3.0/evaluate_ranking.py --env-file .env --cutoffs 5 10
 ```
 
 추적을 켜고 평가를 실행합니다. `--mode judge`는 실제 검색된 장소를 Markdown 기준으로 보조 채점합니다. 이 결과는 사람 검수 CSV를 대체하지 않습니다. OpenAI API 호출 비용이 발생할 수 있습니다.

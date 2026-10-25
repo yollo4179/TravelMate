@@ -4,6 +4,9 @@
   "dataset_version": "1.3.0",
   "cutoff": 5,
   "case_count": 1,
+  "evaluated_case_ids": [
+    "TM-palaces-01"
+  ],
   "skipped_answerable_case_count": 63,
   "skipped_by_condition_coverage": {
     "complete": 2,
@@ -18,7 +21,9 @@
       "mrr_at_5": 1.0,
       "recall_at_5": 1.0,
       "precision_at_5": 0.2,
-      "f1_at_5": 0.33333333333333337
+      "f1_at_5": 0.33333333333333337,
+      "top_1_accuracy": 1.0,
+      "top_5_accuracy": 1.0
     },
     "v2_reranked": {
       "description": "BGE reranker order over the same embedding top-30 candidate pool",
@@ -27,7 +32,9 @@
       "mrr_at_5": 1.0,
       "recall_at_5": 1.0,
       "precision_at_5": 0.2,
-      "f1_at_5": 0.33333333333333337
+      "f1_at_5": 0.33333333333333337,
+      "top_1_accuracy": 1.0,
+      "top_5_accuracy": 1.0
     }
   },
   "delta_v2_minus_v1": {
@@ -36,10 +43,38 @@
     "mrr_at_5": 0.0,
     "recall_at_5": 0.0,
     "precision_at_5": 0.0,
-    "f1_at_5": 0.0
+    "f1_at_5": 0.0,
+    "top_1_accuracy": 0.0,
+    "top_5_accuracy": 0.0
   },
   "judgment_scope": "partial_explicit_judgments; unjudged places are not asserted irrelevant",
   "judgment_source": "review_notes_filled_v1.3.0.csv",
-  "metric_interpretation": "Ranking metrics use authored relevance grades >= 2 as relevant; NDCG uses graded relevance. Precision, recall, F1, MAP, NDCG and MRR are measured at cutoff 5. Scores use explicit judgments only and are candidate-pool indicators, not exhaustive corpus recall.",
+  "accuracy_definitions": {
+    "top_1_accuracy": "Fraction of evaluated queries whose first result has human relevance >= 2.",
+    "top_5_accuracy": "Fraction of evaluated queries with at least one human relevance >= 2 result in the first 5 positions (Hit@5).",
+    "recall_at_5": "Mean per-query fraction of the known relevant place IDs retrieved in the first K positions; distinct from Top-K accuracy."
+  },
+  "judgment_coverage": {
+    "v1_semantic_only": {
+      "top_1_unjudged_case_count": 0,
+      "top_k_no_known_hit_with_unjudged_case_count": 0,
+      "judged_result_count_at_k": 1,
+      "returned_result_count_at_k": 5
+    },
+    "v2_reranked": {
+      "top_1_unjudged_case_count": 0,
+      "top_k_no_known_hit_with_unjudged_case_count": 0,
+      "judged_result_count_at_k": 2,
+      "returned_result_count_at_k": 5
+    }
+  },
+  "input_sha256": {
+    "development.jsonl": "add6c9c45feb06e52968f5aecfc714bc72cd504f58b0ba43687ee3439a68db4b",
+    "review_notes_filled_v1.3.0.csv": "2f2f3ebc4287fb96ab3ad5977a81834ad966228327ca3829189926eac346f9c2"
+  },
+  "review_statuses": [
+    "human_reviewed"
+  ],
+  "metric_interpretation": "Human relevance >= 2 defines a known relevant place. Top-1 accuracy and Top-5 accuracy are query-level hit rates, not precision or recall. Ranking metrics use cutoff 5; NDCG uses graded relevance. Unjudged candidates are not confirmed errors: no-known-hit scores are conservative when candidates remain unjudged. Recall covers the known relevant set, not exhaustive corpus recall.",
   "langsmith_project": "travelmate-ragas-v1.3.0-at-5"
 }
