@@ -688,7 +688,98 @@ def assemble_cases(
     return cases
 
 
-def build(root: Path) -> dict[str, Any]:
+def read_existing_jsonl(path: Path) -> list[dict[str, Any]]:
+    if not path.exists():
+        return []
+    return [
+        json.loads(line)
+        for line in path.read_text(encoding="utf-8-sig").splitlines()
+        if line.strip()
+    ]
+
+
+def require_same_search_input(previous: dict[str, Any], current: dict[str, Any]) -> None:
+    input_fields = ("case_id", "snapshot_id", "dataset_version", "query", "conditions", "evaluation_track")
+    require(
+        all(previous.get(field) == current.get(field) for field in input_fields),
+        f"{previous['case_id']}: search inputs changed; existing outputs were not overwritten. "
+        "Use a new dataset version or explicitly --reset-runtime.",
+    )
+
+
+def preserve_development_runtime(root: Path, cases: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    development = [{**case} for case in cases if case["split"] == Split.DEVELOPMENT]
+    indexed = {case["case_id"]: case for case in development}
+    previous = read_existing_jsonl(root / "development.jsonl")
+    require(len({case["case_id"] for case in previous}) == len(previous), "Duplicate stored development case IDs")
+    for stored in previous:
+        if not RUNTIME_FIELDS.intersection(stored):
+            continue
+        case_id = stored["case_id"]
+        require(case_id in indexed, f"{case_id}: existing runtime case removed; use a new dataset version")
+        current = indexed[case_id]
+        require_same_search_input(stored, current)
+        validate_runtime_output(stored)
+        current.update({field: value for field, value in stored.items() if field in RUNTIME_FIELDS})
+    return development
+
+
+def preserve_api_inputs(root: Path, cases: list[dict[str, Any]]) -> dict[str, list[dict[str, Any]]]:
+    indexed = {case["case_id"]: case for case in cases}
+    previous = {case["case_id"]: case for case in read_existing_jsonl(root / "golden.jsonl")}
+    exports: dict[str, list[dict[str, Any]]] = {}
+    for filename in ("api_embedding/v1.jsonl", "api_reranking/v2.jsonl"):
+        rows = read_existing_jsonl(root / filename)
+        require(len({row["case_id"] for row in rows}) == len(rows), f"{filename}: duplicate stored case IDs")
+        for row in rows:
+            case_id = row["case_id"]
+            require(case_id in indexed and case_id in previous, f"{case_id}: cannot verify stored API input")
+            current = indexed[case_id]
+            require_same_search_input(previous[case_id], current)
+            require(row.get("user_input") == current["query"], f"{case_id}: stored API query differs from gold")
+            for field in ("reference", "reference_contexts", "reference_context_ids", "reference_provenance"):
+                row[field] = current[field]
+            row["ragas_llm_eligible"] = bool(
+                row.get("execution_status") == "completed"
+                and row.get("condition_coverage") == "complete"
+                and current["reference"]
+            )
+        exports[filename] = rows
+    return exports
+
+
+def initialize_runtime_artifacts(root: Path, *, reset_runtime: bool) -> None:
+    defaults = {
+        "development_run.json": {"status": "not_run", "case_count": 0},
+        "api_embedding/fastapi_embed_smoke.json": {"status": "not_run"},
+        "ragas_summary.json": {"status": "not_run", "score_count": 0},
+        "ragas_llm_precheck.json": {"status": "not_run", "metric_family": "reference_based_llm", "score_count": 0},
+        "ranking_summary.json": {"status": "not_run", "case_count": 0},
+        **{
+            f"ranking_at_{cutoff}/summary.json": {"status": "not_run", "case_count": 0, "cutoff": cutoff}
+            for cutoff in (5, 10)
+        },
+    }
+    for filename, document in defaults.items():
+        path = root / filename
+        if reset_runtime or not path.exists():
+            path.parent.mkdir(parents=True, exist_ok=True)
+            write_json(path, document)
+    for filename in (
+        "ragas_results.jsonl", "ranking_results.jsonl",
+        "ranking_at_5/results.jsonl", "ranking_at_10/results.jsonl",
+    ):
+        path = root / filename
+        if reset_runtime or not path.exists():
+            write_jsonl(path, [])
+    for cutoff in (5, 10):
+        path = root / f"ranking_at_{cutoff}/run.log"
+        if reset_runtime or not path.exists():
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_text("", encoding="utf-8", newline="\n")
+
+
+def build(root: Path, *, reset_runtime: bool = False) -> dict[str, Any]:
     snapshot_path = root / "snapshot.json"
     source_path = root / "cases.source.json"
     snapshot = read_json(snapshot_path)
@@ -698,33 +789,26 @@ def build(root: Path) -> dict[str, Any]:
     validation = validate_cases(cases, snapshot, authored["expected_case_count"])
     validation["snapshot_id"] = snapshot_id
     validation["dataset_version"] = authored["dataset_version"]
+    development = (
+        [case for case in cases if case["split"] == Split.DEVELOPMENT]
+        if reset_runtime else preserve_development_runtime(root, cases)
+    )
+    api_exports = (
+        {filename: [] for filename in ("api_embedding/v1.jsonl", "api_reranking/v2.jsonl")}
+        if reset_runtime else preserve_api_inputs(root, cases)
+    )
     write_jsonl(root / "golden.jsonl", cases)
     for split in Split:
-        write_jsonl(root / f"{split.value}.jsonl", [case for case in cases if case["split"] == split])
+        exported = development if split == Split.DEVELOPMENT else [case for case in cases if case["split"] == split]
+        write_jsonl(root / f"{split.value}.jsonl", exported)
     for track in EvaluationTrack:
         write_jsonl(root / f"{track.value}.jsonl", [case for case in cases if case["evaluation_track"] == track])
     write_json(root / "corpus.json", snapshot["places"])
     write_corpus_sheet(root / "places.csv", snapshot["places"])
     write_review_sheet(root / "review.csv", cases)
-    write_json(root / "development_run.json", {"status": "not_run", "case_count": 0})
-    write_jsonl(root / "api_embedding" / "v1.jsonl", [])
-    write_json(root / "api_embedding" / "fastapi_embed_smoke.json", {"status": "not_run"})
-    write_jsonl(root / "api_reranking" / "v2.jsonl", [])
-    write_jsonl(root / "ragas_results.jsonl", [])
-    write_json(root / "ragas_summary.json", {"status": "not_run", "score_count": 0})
-    write_json(root / "ragas_llm_precheck.json", {
-        "status": "not_run",
-        "metric_family": "reference_based_llm",
-        "score_count": 0,
-    })
-    write_jsonl(root / "ranking_results.jsonl", [])
-    write_json(root / "ranking_summary.json", {"status": "not_run", "case_count": 0})
-    for cutoff in (5, 10):
-        ranking_dir = root / f"ranking_at_{cutoff}"
-        ranking_dir.mkdir(parents=True, exist_ok=True)
-        write_jsonl(ranking_dir / "results.jsonl", [])
-        write_json(ranking_dir / "summary.json", {"status": "not_run", "case_count": 0, "cutoff": cutoff})
-        (ranking_dir / "run.log").write_text("", encoding="utf-8", newline="\n")
+    initialize_runtime_artifacts(root, reset_runtime=reset_runtime)
+    for filename, rows in api_exports.items():
+        write_jsonl(root / filename, rows)
     write_json(root / "validation.json", validation)
     write_json(root / "manifest.json", build_manifest(root, snapshot, authored, cases, validation))
     return validation
@@ -944,6 +1028,7 @@ def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--root", type=Path, default=ROOT)
     parser.add_argument("--check", action="store_true", help="Validate existing files without overwriting them")
+    parser.add_argument("--reset-runtime", action="store_true", help="Explicitly reset captured API outputs and builder-managed score artifacts; normal builds preserve them")
     parser.add_argument(
         "--require-reference",
         action="store_true",
@@ -952,10 +1037,12 @@ def main() -> None:
     arguments = parser.parse_args()
     if arguments.require_reference and not arguments.check:
         parser.error("--require-reference requires --check")
+    if arguments.reset_runtime and arguments.check:
+        parser.error("--reset-runtime cannot be combined with --check")
     if arguments.check:
         print(json.dumps(check(arguments.root, require_reference=arguments.require_reference), ensure_ascii=False, indent=2))
         return
-    print(json.dumps(build(arguments.root), ensure_ascii=False, indent=2))
+    print(json.dumps(build(arguments.root, reset_runtime=arguments.reset_runtime), ensure_ascii=False, indent=2))
 
 
 if __name__ == "__main__":

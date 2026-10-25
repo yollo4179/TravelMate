@@ -6,8 +6,8 @@ readonly_mount=',readonly'
 case "$mode" in
   --check) arguments=(python /dataset/build_dataset.py --check "${@:2}") ;;
   --test) arguments=(python -m unittest discover -s /dataset/tests -v) ;;
-  --build) arguments=(python /dataset/build_dataset.py); readonly_mount='' ;;
-  *) echo 'Usage: bash run.sh [--check [--require-reference]|--test|--build]' >&2; exit 1 ;;
+  --build) arguments=(python /dataset/build_dataset.py "${@:2}"); readonly_mount='' ;;
+  *) echo 'Usage: bash run.sh [--check [--require-reference]|--test|--build [--reset-runtime]]' >&2; exit 1 ;;
 esac
 if command -v cygpath >/dev/null 2>&1; then
   dataset_dir=$(cygpath -m "$dataset_dir")

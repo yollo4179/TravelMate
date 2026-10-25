@@ -311,6 +311,89 @@ class DatasetTests(unittest.TestCase):
                     self.assertNotIn(b'\r\n', content)
             self.assertEqual(builder.check(target)['status'], 'passed')
 
+    def copy_runtime_dataset(self, target: Path) -> None:
+        shutil.copytree(ROOT, target, ignore=shutil.ignore_patterns('__pycache__', 'tests'))
+
+    def test_reference_rebuild_preserves_api_outputs_and_existing_score_reports(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            target = Path(directory) / 'dataset'
+            self.copy_runtime_dataset(target)
+            api_names = ('api_embedding/v1.jsonl', 'api_reranking/v2.jsonl')
+            previous_api = {
+                name: [json.loads(line) for line in (target / name).read_text().splitlines()]
+                for name in api_names
+            }
+            previous_development = {
+                case['case_id']: {key: value for key, value in case.items() if key in builder.RUNTIME_FIELDS}
+                for case in map(json.loads, (target / 'development.jsonl').read_text().splitlines())
+            }
+            protected = {
+                name: (target / name).read_bytes()
+                for name in ('development_run.json', 'ragas_results.jsonl', 'ragas_summary.json',
+                             'ragas_llm_precheck.json', 'ranking_results.jsonl', 'ranking_summary.json',
+                             'ranking_at_5/results.jsonl', 'ranking_at_5/summary.json', 'ranking_at_5/run.log',
+                             'ranking_at_10/results.jsonl', 'ranking_at_10/summary.json', 'ranking_at_10/run.log',
+                             'review_notes_filled_v1.3.0.csv')
+            }
+            authored = builder.read_json(target / 'cases.source.json')
+            changed_reference = '창경궁 참조 답변을 변경한 회귀 테스트용 문장입니다.'
+            authored['groups'][0]['cases'][0]['reference'] = changed_reference
+            builder.write_json(target / 'cases.source.json', authored)
+            builder.build(target)
+            mutable = {'reference', 'reference_contexts', 'reference_context_ids',
+                       'reference_provenance', 'ragas_llm_eligible'}
+            for name in api_names:
+                updated = [json.loads(line) for line in (target / name).read_text().splitlines()]
+                self.assertEqual(
+                    [{key: value for key, value in row.items() if key not in mutable} for row in updated],
+                    [{key: value for key, value in row.items() if key not in mutable} for row in previous_api[name]],
+                )
+                self.assertEqual(updated[0]['reference'], changed_reference)
+            for case in map(json.loads, (target / 'development.jsonl').read_text().splitlines()):
+                self.assertEqual(
+                    {key: value for key, value in case.items() if key in builder.RUNTIME_FIELDS},
+                    previous_development[case['case_id']],
+                )
+            self.assertTrue(all((target / name).read_bytes() == content for name, content in protected.items()))
+            self.assertEqual(builder.check(target, require_reference=True)['status'], 'passed')
+
+    def test_unchanged_rebuild_preserves_serialized_captures(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            target = Path(directory) / 'dataset'
+            self.copy_runtime_dataset(target)
+            protected = {
+                name: (target / name).read_bytes()
+                for name in ('development.jsonl', 'api_embedding/v1.jsonl', 'api_reranking/v2.jsonl',
+                             'development_run.json', 'ragas_results.jsonl', 'ranking_results.jsonl')
+            }
+            builder.build(target)
+            self.assertTrue(all((target / name).read_bytes() == content for name, content in protected.items()))
+
+    def test_changed_search_inputs_abort_before_overwriting_any_outputs(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            target = Path(directory) / 'dataset'
+            self.copy_runtime_dataset(target)
+            authored = builder.read_json(target / 'cases.source.json')
+            authored['groups'][0]['cases'][0]['query'] = '기존 실행과 다른 창경궁 검색 질문입니다.'
+            builder.write_json(target / 'cases.source.json', authored)
+            before = {path.relative_to(target): path.read_bytes() for path in target.rglob('*') if path.is_file()}
+            with self.assertRaisesRegex(ValueError, 'search inputs changed'):
+                builder.build(target)
+            after = {path.relative_to(target): path.read_bytes() for path in target.rglob('*') if path.is_file()}
+            self.assertEqual(before, after)
+
+    def test_runtime_reset_requires_explicit_option(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            target = Path(directory) / 'dataset'
+            self.copy_runtime_dataset(target)
+            builder.build(target, reset_runtime=True)
+            self.assertEqual((target / 'api_embedding/v1.jsonl').read_text(), '')
+            self.assertEqual((target / 'api_reranking/v2.jsonl').read_text(), '')
+            self.assertEqual(builder.read_json(target / 'ranking_summary.json')['status'], 'not_run')
+            development = map(json.loads, (target / 'development.jsonl').read_text().splitlines())
+            self.assertTrue(all(not builder.RUNTIME_FIELDS.intersection(case) for case in development))
+            self.assertEqual(builder.check(target)['status'], 'passed')
+
 
 if __name__ == '__main__':
     unittest.main()
