@@ -1,0 +1,8 @@
+{
+  "provider": "openai",
+  "judge_model": "gpt-4.1-mini",
+  "api_key_environment": "OPENAI_API_KEY",
+  "model_override_environment": "RAGAS_JUDGE_MODEL",
+  "score_scale": [0, 1, 2, 3],
+  "overall_weighted_score": null
+}

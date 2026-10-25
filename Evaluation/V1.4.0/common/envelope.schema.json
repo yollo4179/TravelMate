@@ -1,0 +1,285 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": [
+    "type",
+    "message",
+    "data",
+    "conversationId"
+  ],
+  "properties": {
+    "type": {
+      "enum": [
+        "PLACES",
+        "PLAN",
+        "PLAN_DIFF",
+        "CLARIFICATION",
+        "TEXT"
+      ]
+    },
+    "message": {
+      "type": "string",
+      "minLength": 1
+    },
+    "data": {},
+    "conversationId": {
+      "type": "string",
+      "minLength": 1
+    }
+  },
+  "additionalProperties": false,
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "const": "PLACES"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "placeId",
+                "name"
+              ],
+              "properties": {
+                "placeId": {
+                  "type": "integer"
+                },
+                "name": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "const": "PLAN"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "data": {
+            "type": "object",
+            "required": [
+              "stops",
+              "applied"
+            ],
+            "properties": {
+              "stops": {
+                "type": "array",
+                "minItems": 1,
+                "maxItems": 6,
+                "items": {
+                  "type": "object",
+                  "required": [
+                    "placeId"
+                  ],
+                  "properties": {
+                    "placeId": {
+                      "type": "integer"
+                    },
+                    "sequence": {
+                      "type": "integer",
+                      "minimum": 1
+                    },
+                    "stayMinutes": {
+                      "type": "number",
+                      "minimum": 0
+                    },
+                    "arrivalAt": {
+                      "type": "string"
+                    },
+                    "departureAt": {
+                      "type": "string"
+                    }
+                  }
+                }
+              },
+              "applied": {
+                "type": "boolean"
+              },
+              "planId": {
+                "type": [
+                  "string",
+                  "integer"
+                ]
+              },
+              "version": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "proposalId": {
+                "type": "string"
+              }
+            },
+            "allOf": [
+              {
+                "if": {
+                  "properties": {
+                    "applied": {
+                      "const": true
+                    }
+                  }
+                },
+                "then": {
+                  "required": [
+                    "planId",
+                    "version"
+                  ]
+                },
+                "else": {
+                  "required": [
+                    "proposalId"
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "const": "PLAN_DIFF"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "data": {
+            "type": "object",
+            "required": [
+              "planId",
+              "baseVersion",
+              "changes",
+              "applied"
+            ],
+            "properties": {
+              "planId": {
+                "type": [
+                  "string",
+                  "integer"
+                ]
+              },
+              "baseVersion": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "changes": {
+                "type": "array",
+                "minItems": 1,
+                "items": {
+                  "type": "object",
+                  "required": [
+                    "operation"
+                  ],
+                  "properties": {
+                    "operation": {
+                      "enum": [
+                        "replace",
+                        "remove",
+                        "add",
+                        "reorder"
+                      ]
+                    }
+                  }
+                }
+              },
+              "applied": {
+                "type": "boolean"
+              },
+              "proposalId": {
+                "type": "string"
+              },
+              "version": {
+                "type": "integer",
+                "minimum": 1
+              }
+            },
+            "allOf": [
+              {
+                "if": {
+                  "properties": {
+                    "applied": {
+                      "const": true
+                    }
+                  }
+                },
+                "then": {
+                  "required": [
+                    "version"
+                  ]
+                },
+                "else": {
+                  "required": [
+                    "proposalId"
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "const": "CLARIFICATION"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "data": {
+            "type": "object",
+            "required": [
+              "missing"
+            ],
+            "properties": {
+              "missing": {
+                "type": "array",
+                "minItems": 1,
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "const": "TEXT"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "data": {
+            "type": "null"
+          }
+        }
+      }
+    }
+  ]
+}

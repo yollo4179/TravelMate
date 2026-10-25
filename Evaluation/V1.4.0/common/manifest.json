@@ -1,0 +1,85 @@
+{
+  "dataset_version": "1.4.0",
+  "architecture": "one LLM, two functional evaluation groups",
+  "case_count": 200,
+  "reference_count": 200,
+  "counts_by_group": {
+    "plannerLLM": 100,
+    "managerLLM": 100
+  },
+  "counts_by_split": {
+    "development": 160,
+    "test": 40
+  },
+  "counts_by_type": {
+    "PLACES": 85,
+    "PLAN": 29,
+    "TEXT": 47,
+    "CLARIFICATION": 20,
+    "PLAN_DIFF": 19
+  },
+  "counts_by_track": {
+    "tool_call": 200,
+    "search": 85,
+    "message": 200,
+    "plan": 50,
+    "state": 70,
+    "behavior": 45,
+    "memory": 20
+  },
+  "canonical_source": "common/cases.source.json",
+  "source_git_commit": "1e2104b55635884b3f5892189b284389d5051485",
+  "source_sha256": {
+    "common/cases.source.json": "69a9f84a51d936fe24b312eda788ddce5e7d854a888b172f91ae672245c6ef66",
+    "common/corpus.json": "c74e902620687cbe8b7ec61a24eb7932e95f8cf7a90762baef5e78ad0b134f9e",
+    "common/snapshot.json": "410a9c3c46004cb30644455fe9d5ddb01a52a04a700ffe04159605cf94661218",
+    "common/source_goldenset_v1.3.0.jsonl": "a78586859b6010dca40b5b68c3c98cbbec3834c863f620d0b3e919fb605eaac3",
+    "common/source_review_notes.csv": "2f2f3ebc4287fb96ab3ad5977a81834ad966228327ca3829189926eac346f9c2"
+  },
+  "contract_sha256": {
+    "common/envelope.schema.json": "d6b5c315db4bc0ea46f0cd7b6e280280036411f831e23ee3975f2e2182adfa0a",
+    "common/tool_contracts.json": "69574ebfc08a9e3bd53fb7e31af33abb8a2eb1c72edd482a637fae995d6a699e",
+    "common/tool_arguments.schema.json": "445d5324ec952e7bbac16a20e2098779bb0c9514aae72cdba3b30f1d68cc2499",
+    "common/persona/guide_v1.json": "3b41ec5b4003ca479ff251227a8903ca67f167644dfda0950876aa00707d8621",
+    "common/judge_config.json": "18af21f72e6f150bc24d3406c2504f8bc75a4482b14d1d6cda511d185b1d237a",
+    "common/response_record.schema.json": "f53ce3b11cb36ad607f86a008ad451865a4b61e0ba9bcfa93d4464e8041f56b8"
+  },
+  "view_sha256": {
+    "common/golden.jsonl": "ea298b5b0d690c3dc8b8f6962e3f9c726039d75e8119c39ed1b602882c9dd609",
+    "common/development.jsonl": "22222ddba11595827dd8df48208f5307b167157b9380ef86f0dece3407203f85",
+    "common/test.jsonl": "5e1ec992c9c3e3107a99f743892e1b4819d0b24b4443be213c2973279fdf1682",
+    "common/by_type/PLACES.jsonl": "05e98720b3a6ff6b6f3c2e1bbe4ca8c25fc6a20d38c40e969d0ef02a71715ea5",
+    "common/by_type/PLAN.jsonl": "d0ecca72e46704f05c6497f65a81a1667139cf3a8b42662fc0e8867d7364d5fc",
+    "common/by_type/PLAN_DIFF.jsonl": "d2083ddc7131d4cec217e300d63336718212c240557852cfc68ee5a6d5ad2507",
+    "common/by_type/CLARIFICATION.jsonl": "2ba4864ce1addc91d48051f29bbb8dfcf8fd30f38fc0133ca72a6d56bf08dfb1",
+    "common/by_type/TEXT.jsonl": "4d9e0190c112c40fd7097e8d5c6c2ea632c4460ed5e12b1fbc586d7f5edc0bab",
+    "common/by_track/behavior.jsonl": "6b36d6a707f989aa9873054f0ad39e5991502bce94bb6bd97e6bc32f1a33dc93",
+    "common/by_track/memory.jsonl": "9eae016368d82cb2416c7f8a29f4dce90342cfc8c5175dad282ccf08fc9c1853",
+    "common/by_track/message.jsonl": "ea298b5b0d690c3dc8b8f6962e3f9c726039d75e8119c39ed1b602882c9dd609",
+    "common/by_track/plan.jsonl": "8d423c91ca652fc58a0aa3c3f1cfd576a955619e8f93728feffa0399741a7bfd",
+    "common/by_track/search.jsonl": "05e98720b3a6ff6b6f3c2e1bbe4ca8c25fc6a20d38c40e969d0ef02a71715ea5",
+    "common/by_track/state.jsonl": "21c7b21db6df2773afc556b1183b576e66f89ffa0396f97fc58138aa4a1f0af5",
+    "common/by_track/tool_call.jsonl": "ea298b5b0d690c3dc8b8f6962e3f9c726039d75e8119c39ed1b602882c9dd609",
+    "plannerLLM/golden.jsonl": "923804a8a4d56ff6dbdba7d627781c38a2926eb224941ee561deff65a36a6166",
+    "plannerLLM/development.jsonl": "56647354cb0c805b144d5d1a05c2f3b1167e2e65803f974c7ef837e360530ee7",
+    "plannerLLM/test.jsonl": "ef604d821d49e629db9992dca0ef5befff9d092fa45ad57b5b7ef276aa508a2b",
+    "plannerLLM/by_type/PLACES.jsonl": "f6823147f5bb9684ada27daf3fd2dfbf43aba2ddfb282c1fd33ad3f6b012912b",
+    "plannerLLM/by_type/PLAN.jsonl": "fd46444dce04bc25c980c236216d954620428357ff4b9901d3376ba8aed4bcbd",
+    "plannerLLM/by_type/PLAN_DIFF.jsonl": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "plannerLLM/by_type/CLARIFICATION.jsonl": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "plannerLLM/by_type/TEXT.jsonl": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "managerLLM/golden.jsonl": "aa10b5dfc281054535d12b312c0570b553a92c0cbd6fa62917b92248bef5543b",
+    "managerLLM/development.jsonl": "6a792b29633c299a56cf485256bf7837b3767066e124483f29105faf8e8406d8",
+    "managerLLM/test.jsonl": "af6f361fbec158a3f04faca19431228f808133c7f2796a59d77453ec81cc0041",
+    "managerLLM/by_type/PLACES.jsonl": "b283e1a2bfaf05fca68b5d539df32564f287efd4392dcf9070ad0088cc856151",
+    "managerLLM/by_type/PLAN.jsonl": "02b8acd4c054402a0461b53210bb388d3d17a024126641ec128d70027a7cf6b8",
+    "managerLLM/by_type/PLAN_DIFF.jsonl": "d2083ddc7131d4cec217e300d63336718212c240557852cfc68ee5a6d5ad2507",
+    "managerLLM/by_type/CLARIFICATION.jsonl": "2ba4864ce1addc91d48051f29bbb8dfcf8fd30f38fc0133ca72a6d56bf08dfb1",
+    "managerLLM/by_type/TEXT.jsonl": "4d9e0190c112c40fd7097e8d5c6c2ea632c4460ed5e12b1fbc586d7f5edc0bab"
+  },
+  "all_views_generated_not_independently_authored": true,
+  "new_role_expectations_human_reviewed": false,
+  "source_human_review_preserved": true,
+  "system_outputs_embedded_in_gold": false,
+  "runtime_results_managed_separately": true
+}

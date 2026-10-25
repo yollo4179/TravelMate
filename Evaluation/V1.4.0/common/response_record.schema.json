@@ -1,0 +1,42 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Recorded server response and raw pre-validation agent tool calls",
+  "type": "object",
+  "required": ["case_id", "input_sha256", "response", "tool_calls"],
+  "properties": {
+    "case_id": {"type": "string", "minLength": 1},
+    "input_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "model": {"type": "string"},
+    "response": {"$ref": "envelope.schema.json"},
+    "tool_calls": {"type": "array", "items": {"type": "object"}},
+    "primary_result_id": {"type": ["string", "null"]},
+    "tool_results": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["result_id", "status"],
+        "properties": {
+          "result_id": {"type": "string"},
+          "status": {"enum": ["completed", "failed"]},
+          "response_type": {"type": ["string", "null"]},
+          "llm_summary": {},
+          "public_data": {}
+        }
+      }
+    },
+    "memory_retrieval_ids": {"type": "array", "items": {"type": "string"}},
+    "observations": {
+      "type": "object",
+      "properties": {
+        "source": {"const": "backend_observation"},
+        "plan_before": {"type": "object"},
+        "plan_after": {"type": "object"},
+        "nonplan_before": {},
+        "nonplan_after": {},
+        "memory_job_completed": {"type": "boolean"},
+        "memory_events": {"type": "array"}
+      }
+    }
+  },
+  "additionalProperties": true
+}
