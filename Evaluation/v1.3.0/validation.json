@@ -42,7 +42,7 @@
     "no_system_outputs_in_gold",
     "reference_is_authored_text_or_explicitly_missing"
   ],
-  "human_review_completed": false,
+  "human_review_completed": true,
   "retrieval_or_generation_evaluation_run": false,
   "snapshot_id": "sha256:410a9c3c46004cb30644455fe9d5ddb01a52a04a700ffe04159605cf94661218",
   "dataset_version": "1.3.0"

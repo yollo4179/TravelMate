@@ -38,7 +38,37 @@ class DatasetTests(unittest.TestCase):
         self.assertEqual(result['counts_by_evaluation_track'], {'search_api': 60, 'context_search': 20, 'answer_behavior': 20})
         after = {path.name: hashlib.sha256(path.read_bytes()).hexdigest() for path in ROOT.iterdir() if path.is_file()}
         self.assertEqual(before, after)
+        self.assertTrue(result['human_review_completed'])
+
+    def test_review_completion_is_authored_and_requires_attribution(self) -> None:
+        authored = builder.read_json(ROOT / 'cases.source.json')
+        for group in authored['groups']:
+            for case in group['cases']:
+                self.assertEqual(case['review']['status'], 'human_reviewed')
+                self.assertTrue(case['review']['human_reviewer'])
+                self.assertTrue(case['review']['human_reviewed_at'])
+        self.reject(
+            lambda cases: cases[0]['review'].__setitem__('human_reviewer', None),
+            'reviewed label requires reviewer and date',
+        )
+        self.reject(
+            lambda cases: cases[0]['review'].__setitem__('human_reviewed_at', None),
+            'reviewed label requires reviewer and date',
+        )
+
+    def test_unauthored_review_remains_pending(self) -> None:
+        authored = copy.deepcopy(builder.read_json(ROOT / 'cases.source.json'))
+        for group in authored['groups']:
+            for case in group['cases']:
+                case.pop('review', None)
+        cases = builder.assemble_cases(
+            self.snapshot,
+            authored,
+            self.cases[0]['snapshot_id'],
+        )
+        result = builder.validate_cases(cases, self.snapshot, 100)
         self.assertFalse(result['human_review_completed'])
+        self.assertTrue(all(case['review']['status'] == 'pending_human_review' for case in cases))
 
     def test_original_snapshot_bytes_are_preserved(self) -> None:
         self.assertEqual(builder.digest_file(ROOT / 'snapshot.json'), '410a9c3c46004cb30644455fe9d5ddb01a52a04a700ffe04159605cf94661218')
@@ -231,7 +261,7 @@ class DatasetTests(unittest.TestCase):
             result = builder.check(target, require_reference=True)
             self.assertEqual(result['answerable_missing_reference_count'], 0)
             self.assertEqual(result['missing_reference_count'], 20)
-            self.assertFalse(result['human_review_completed'])
+            self.assertTrue(result['human_review_completed'])
 
     def test_build_is_byte_reproducible_and_generated_lines_are_lf(self) -> None:
         with tempfile.TemporaryDirectory() as directory:

@@ -751,7 +751,11 @@ def build_manifest(
         "split_policy": "질문·유사 의도 그룹(group_id)을 분할 간 분리한다. 같은 장소가 다른 그룹 질문의 정답·근거로 등장하는 것은 허용한다.",
         "line_endings": {"generated_json_jsonl_csv": "LF", "snapshot": "original bytes preserved; Git -text"},
         "limitations": [
-            "AI의 원문 대조 후 수정했으며 독립적인 사람 검수는 아직 없다.",
+            (
+                "사용자가 기존 판정의 사람 검수 완료를 확인했다. 미판정 후보는 검수 범위에 포함되지 않는다."
+                if validation["human_review_completed"]
+                else "AI의 원문 대조 후 수정했으며 독립적인 사람 검수는 아직 없다."
+            ),
             "인용 일치와 의미 조건 주석의 일관성 검증은 의미적 타당성의 자동 증명이 아니다.",
             "미판정 관련 장소가 남아 있을 수 있다. 여러 검색기 결과 pool을 검수해야 한다.",
             "서울 코퍼스만 평가하며 시험 검색 문항은 16개·주제 그룹은 4개다.",

@@ -51,7 +51,17 @@
               "relevance": 0,
               "rationale": "별개의 장소 레코드이다."
             }
-          ]
+          ],
+          "review": {
+            "author": "Codex",
+            "status": "human_reviewed",
+            "human_reviewer": "user",
+            "human_reviewed_at": "2026-10-25T16:37:52.278153+09:00",
+            "evidence_validation": "exact_snapshot_match",
+            "semantic_validation": "human_review_confirmed_by_user",
+            "confirmation_basis": "user_reported_completed_review_in_chat",
+            "timestamp_basis": "completion_confirmation_recorded_at; original_review_time_not_recorded"
+          }
         },
         {
           "case_suffix": 2,
@@ -73,7 +83,17 @@
               "relevance": 0,
               "rationale": "헌종의 서재와 마지막 황실 가족의 거처로 설명된다."
             }
-          ]
+          ],
+          "review": {
+            "author": "Codex",
+            "status": "human_reviewed",
+            "human_reviewer": "user",
+            "human_reviewed_at": "2026-10-25T16:37:52.278153+09:00",
+            "evidence_validation": "exact_snapshot_match",
+            "semantic_validation": "human_review_confirmed_by_user",
+            "confirmation_basis": "user_reported_completed_review_in_chat",
+            "timestamp_basis": "completion_confirmation_recorded_at; original_review_time_not_recorded"
+          }
         },
         {
           "case_suffix": 3,
@@ -101,7 +121,17 @@
               "rationale": "경복궁 안 건청궁은 고종과 명성황후가 약 10년간 생활한 왕과 왕비의 생활공간으로, 종로 조건을 만족한다."
             }
           ],
-          "city": "종로"
+          "city": "종로",
+          "review": {
+            "author": "Codex",
+            "status": "human_reviewed",
+            "human_reviewer": "user",
+            "human_reviewed_at": "2026-10-25T16:37:52.278153+09:00",
+            "evidence_validation": "exact_snapshot_match",
+            "semantic_validation": "human_review_confirmed_by_user",
+            "confirmation_basis": "user_reported_completed_review_in_chat",
+            "timestamp_basis": "completion_confirmation_recorded_at; original_review_time_not_recorded"
+          }
         },
         {
           "case_suffix": 4,
@@ -133,7 +163,17 @@
               "user",
               "창경궁은 이미 봤어. 종로 안에서 다음 장소를 찾고 있어."
             ]
-          ]
+          ],
+          "review": {
+            "author": "Codex",
+            "status": "human_reviewed",
+            "human_reviewer": "user",
+            "human_reviewed_at": "2026-10-25T16:37:52.278153+09:00",
+            "evidence_validation": "exact_snapshot_match",
+            "semantic_validation": "human_review_confirmed_by_user",
+            "confirmation_basis": "user_reported_completed_review_in_chat",
+            "timestamp_basis": "completion_confirmation_recorded_at; original_review_time_not_recorded"
+          }
         },
         {
           "case_suffix": 5,
@@ -146,7 +186,17 @@
           "missing_information": [
             "실시간 야간 관람 잔여 표"
           ],
-          "expected_action": "실시간 재고를 확인할 수 없다고 밝히고 공식 예매처 확인을 안내한다."
+          "expected_action": "실시간 재고를 확인할 수 없다고 밝히고 공식 예매처 확인을 안내한다.",
+          "review": {
+            "author": "Codex",
+            "status": "human_reviewed",
+            "human_reviewer": "user",
+            "human_reviewed_at": "2026-10-25T16:37:52.278153+09:00",
+            "evidence_validation": "exact_snapshot_match",
+            "semantic_validation": "human_review_confirmed_by_user",
+            "confirmation_basis": "user_reported_completed_review_in_chat",
+            "timestamp_basis": "completion_confirmation_recorded_at; original_review_time_not_recorded"
+          }
         }
       ]
     },
@@ -214,7 +264,17 @@
               "relevance": 0,
               "rationale": "약현성당으로 요청 장소와 다르다."
             }
-          ]
+          ],
+          "review": {
+            "author": "Codex",
+            "status": "human_reviewed",
+            "human_reviewer": "user",
+            "human_reviewed_at": "2026-10-25T16:37:52.278153+09:00",
+            "evidence_validation": "exact_snapshot_match",
+            "semantic_validation": "human_review_confirmed_by_user",
+            "confirmation_basis": "user_reported_completed_review_in_chat",
+            "timestamp_basis": "completion_confirmation_recorded_at; original_review_time_not_recorded"
+          }
         },
         {
           "case_suffix": 2,
@@ -276,7 +336,17 @@
               "id": "romanesque_style",
               "description": "전체적으로 로마네스크 양식이다."
             }
-          ]
+          ],
+          "review": {
+            "author": "Codex",
+            "status": "human_reviewed",
+            "human_reviewer": "user",
+            "human_reviewed_at": "2026-10-25T16:37:52.278153+09:00",
+            "evidence_validation": "exact_snapshot_match",
+            "semantic_validation": "human_review_confirmed_by_user",
+            "confirmation_basis": "user_reported_completed_review_in_chat",
+            "timestamp_basis": "completion_confirmation_recorded_at; original_review_time_not_recorded"
+          }
         },
         {
           "case_suffix": 3,
@@ -347,7 +417,17 @@
               "id": "church_architecture",
               "description": "성당 건축을 살펴볼 수 있다."
             }
-          ]
+          ],
+          "review": {
+            "author": "Codex",
+            "status": "human_reviewed",
+            "human_reviewer": "user",
+            "human_reviewed_at": "2026-10-25T16:37:52.278153+09:00",
+            "evidence_validation": "exact_snapshot_match",
+            "semantic_validation": "human_review_confirmed_by_user",
+            "confirmation_basis": "user_reported_completed_review_in_chat",
+            "timestamp_basis": "completion_confirmation_recorded_at; original_review_time_not_recorded"
+          }
         },
         {
           "case_suffix": 4,
@@ -384,7 +464,17 @@
               "user",
               "서울 성당 건축을 구경하는 중이야."
             ]
-          ]
+          ],
+          "review": {
+            "author": "Codex",
+            "status": "human_reviewed",
+            "human_reviewer": "user",
+            "human_reviewed_at": "2026-10-25T16:37:52.278153+09:00",
+            "evidence_validation": "exact_snapshot_match",
+            "semantic_validation": "human_review_confirmed_by_user",
+            "confirmation_basis": "user_reported_completed_review_in_chat",
+            "timestamp_basis": "completion_confirmation_recorded_at; original_review_time_not_recorded"
+          }
         },
         {
           "case_suffix": 5,
@@ -395,7 +485,17 @@
             "기준 성당",
             "원하는 거리 범위"
           ],
-          "expected_action": "이전 대화에 성당이 없으므로 어느 성당인지 먼저 묻는다."
+          "expected_action": "이전 대화에 성당이 없으므로 어느 성당인지 먼저 묻는다.",
+          "review": {
+            "author": "Codex",
+            "status": "human_reviewed",
+            "human_reviewer": "user",
+            "human_reviewed_at": "2026-10-25T16:37:52.278153+09:00",
+            "evidence_validation": "exact_snapshot_match",
+            "semantic_validation": "human_review_confirmed_by_user",
+            "confirmation_basis": "user_reported_completed_review_in_chat",
+            "timestamp_basis": "completion_confirmation_recorded_at; original_review_time_not_recorded"
+          }
         }
       ]
     },
@@ -443,7 +543,17 @@
               "relevance": 0,
               "rationale": "한복 체험 업체로 요청 장소와 다르다."
             }
-          ]
+          ],
+          "review": {
+            "author": "Codex",
+            "status": "human_reviewed",
+            "human_reviewer": "user",
+            "human_reviewed_at": "2026-10-25T16:37:52.278153+09:00",
+            "evidence_validation": "exact_snapshot_match",
+            "semantic_validation": "human_review_confirmed_by_user",
+            "confirmation_basis": "user_reported_completed_review_in_chat",
+            "timestamp_basis": "completion_confirmation_recorded_at; original_review_time_not_recorded"
+          }
         },
         {
           "case_suffix": 2,
@@ -465,7 +575,17 @@
               "relevance": 0,
               "rationale": "한복 체험과 촬영 중심이다."
             }
-          ]
+          ],
+          "review": {
+            "author": "Codex",
+            "status": "human_reviewed",
+            "human_reviewer": "user",
+            "human_reviewed_at": "2026-10-25T16:37:52.278153+09:00",
+            "evidence_validation": "exact_snapshot_match",
+            "semantic_validation": "human_review_confirmed_by_user",
+            "confirmation_basis": "user_reported_completed_review_in_chat",
+            "timestamp_basis": "completion_confirmation_recorded_at; original_review_time_not_recorded"
+          }
         },
         {
           "case_suffix": 3,
@@ -488,7 +608,17 @@
               "rationale": "여러 한복을 입어 보고 촬영할 수 있다."
             }
           ],
-          "city": "종로"
+          "city": "종로",
+          "review": {
+            "author": "Codex",
+            "status": "human_reviewed",
+            "human_reviewer": "user",
+            "human_reviewed_at": "2026-10-25T16:37:52.278153+09:00",
+            "evidence_validation": "exact_snapshot_match",
+            "semantic_validation": "human_review_confirmed_by_user",
+            "confirmation_basis": "user_reported_completed_review_in_chat",
+            "timestamp_basis": "completion_confirmation_recorded_at; original_review_time_not_recorded"
+          }
         },
         {
           "case_suffix": 4,
@@ -520,7 +650,17 @@
               "user",
               "북촌전통공예체험관은 예약했어. 다른 체험도 하고 싶어."
             ]
-          ]
+          ],
+          "review": {
+            "author": "Codex",
+            "status": "human_reviewed",
+            "human_reviewer": "user",
+            "human_reviewed_at": "2026-10-25T16:37:52.278153+09:00",
+            "evidence_validation": "exact_snapshot_match",
+            "semantic_validation": "human_review_confirmed_by_user",
+            "confirmation_basis": "user_reported_completed_review_in_chat",
+            "timestamp_basis": "completion_confirmation_recorded_at; original_review_time_not_recorded"
+          }
         },
         {
           "case_suffix": 5,
@@ -534,7 +674,17 @@
             "내일 수업 일정",
             "예약 잔여 인원"
           ],
-          "expected_action": "프로그램 소개만으로 예약 가능 여부를 확정하지 않고 운영처 확인이 필요하다고 답한다."
+          "expected_action": "프로그램 소개만으로 예약 가능 여부를 확정하지 않고 운영처 확인이 필요하다고 답한다.",
+          "review": {
+            "author": "Codex",
+            "status": "human_reviewed",
+            "human_reviewer": "user",
+            "human_reviewed_at": "2026-10-25T16:37:52.278153+09:00",
+            "evidence_validation": "exact_snapshot_match",
+            "semantic_validation": "human_review_confirmed_by_user",
+            "confirmation_basis": "user_reported_completed_review_in_chat",
+            "timestamp_basis": "completion_confirmation_recorded_at; original_review_time_not_recorded"
+          }
         }
       ]
     },
@@ -582,7 +732,17 @@
               "relevance": 0,
               "rationale": "풍납동 토성은 다른 유적이다."
             }
-          ]
+          ],
+          "review": {
+            "author": "Codex",
+            "status": "human_reviewed",
+            "human_reviewer": "user",
+            "human_reviewed_at": "2026-10-25T16:37:52.278153+09:00",
+            "evidence_validation": "exact_snapshot_match",
+            "semantic_validation": "human_review_confirmed_by_user",
+            "confirmation_basis": "user_reported_completed_review_in_chat",
+            "timestamp_basis": "completion_confirmation_recorded_at; original_review_time_not_recorded"
+          }
         },
         {
           "case_suffix": 2,
@@ -604,7 +764,17 @@
               "relevance": 1,
               "rationale": "고대 유적이지만 신석기 집터가 아닌 백제 토성이다."
             }
-          ]
+          ],
+          "review": {
+            "author": "Codex",
+            "status": "human_reviewed",
+            "human_reviewer": "user",
+            "human_reviewed_at": "2026-10-25T16:37:52.278153+09:00",
+            "evidence_validation": "exact_snapshot_match",
+            "semantic_validation": "human_review_confirmed_by_user",
+            "confirmation_basis": "user_reported_completed_review_in_chat",
+            "timestamp_basis": "completion_confirmation_recorded_at; original_review_time_not_recorded"
+          }
         },
         {
           "case_suffix": 3,
@@ -627,7 +797,17 @@
               "rationale": "강동의 신석기 유적이며 송파 조건에 맞지 않는다."
             }
           ],
-          "city": "송파"
+          "city": "송파",
+          "review": {
+            "author": "Codex",
+            "status": "human_reviewed",
+            "human_reviewer": "user",
+            "human_reviewed_at": "2026-10-25T16:37:52.278153+09:00",
+            "evidence_validation": "exact_snapshot_match",
+            "semantic_validation": "human_review_confirmed_by_user",
+            "confirmation_basis": "user_reported_completed_review_in_chat",
+            "timestamp_basis": "completion_confirmation_recorded_at; original_review_time_not_recorded"
+          }
         },
         {
           "case_suffix": 4,
@@ -659,7 +839,17 @@
               "user",
               "송파의 백제 성곽을 보고 있어."
             ]
-          ]
+          ],
+          "review": {
+            "author": "Codex",
+            "status": "human_reviewed",
+            "human_reviewer": "user",
+            "human_reviewed_at": "2026-10-25T16:37:52.278153+09:00",
+            "evidence_validation": "exact_snapshot_match",
+            "semantic_validation": "human_review_confirmed_by_user",
+            "confirmation_basis": "user_reported_completed_review_in_chat",
+            "timestamp_basis": "completion_confirmation_recorded_at; original_review_time_not_recorded"
+          }
         },
         {
           "case_suffix": 5,
@@ -670,7 +860,17 @@
             "기준 유적",
             "도보 거리 또는 시간"
           ],
-          "expected_action": "기준 유적과 도보 범위를 확인한 뒤 장소를 선택한다."
+          "expected_action": "기준 유적과 도보 범위를 확인한 뒤 장소를 선택한다.",
+          "review": {
+            "author": "Codex",
+            "status": "human_reviewed",
+            "human_reviewer": "user",
+            "human_reviewed_at": "2026-10-25T16:37:52.278153+09:00",
+            "evidence_validation": "exact_snapshot_match",
+            "semantic_validation": "human_review_confirmed_by_user",
+            "confirmation_basis": "user_reported_completed_review_in_chat",
+            "timestamp_basis": "completion_confirmation_recorded_at; original_review_time_not_recorded"
+          }
         }
       ]
     },
@@ -707,7 +907,17 @@
               "relevance": 0,
               "rationale": "코엑스의 별개 수족관이다."
             }
-          ]
+          ],
+          "review": {
+            "author": "Codex",
+            "status": "human_reviewed",
+            "human_reviewer": "user",
+            "human_reviewed_at": "2026-10-25T16:37:52.278153+09:00",
+            "evidence_validation": "exact_snapshot_match",
+            "semantic_validation": "human_review_confirmed_by_user",
+            "confirmation_basis": "user_reported_completed_review_in_chat",
+            "timestamp_basis": "completion_confirmation_recorded_at; original_review_time_not_recorded"
+          }
         },
         {
           "case_suffix": 2,
@@ -736,7 +946,17 @@
               "id": "many_shark_species",
               "description": "상어 종류가 많이 전시되어 있다."
             }
-          ]
+          ],
+          "review": {
+            "author": "Codex",
+            "status": "human_reviewed",
+            "human_reviewer": "user",
+            "human_reviewed_at": "2026-10-25T16:37:52.278153+09:00",
+            "evidence_validation": "exact_snapshot_match",
+            "semantic_validation": "human_review_confirmed_by_user",
+            "confirmation_basis": "user_reported_completed_review_in_chat",
+            "timestamp_basis": "completion_confirmation_recorded_at; original_review_time_not_recorded"
+          }
         },
         {
           "case_suffix": 3,
@@ -753,7 +973,17 @@
               "relevance": 3,
               "rationale": "다양한 수중생물을 만나는 대형수족관이다."
             }
-          ]
+          ],
+          "review": {
+            "author": "Codex",
+            "status": "human_reviewed",
+            "human_reviewer": "user",
+            "human_reviewed_at": "2026-10-25T16:37:52.278153+09:00",
+            "evidence_validation": "exact_snapshot_match",
+            "semantic_validation": "human_review_confirmed_by_user",
+            "confirmation_basis": "user_reported_completed_review_in_chat",
+            "timestamp_basis": "completion_confirmation_recorded_at; original_review_time_not_recorded"
+          }
         },
         {
           "case_suffix": 4,
@@ -780,7 +1010,17 @@
               "user",
               "롯데월드 아쿠아리움은 지난번에 다녀왔어."
             ]
-          ]
+          ],
+          "review": {
+            "author": "Codex",
+            "status": "human_reviewed",
+            "human_reviewer": "user",
+            "human_reviewed_at": "2026-10-25T16:37:52.278153+09:00",
+            "evidence_validation": "exact_snapshot_match",
+            "semantic_validation": "human_review_confirmed_by_user",
+            "confirmation_basis": "user_reported_completed_review_in_chat",
+            "timestamp_basis": "completion_confirmation_recorded_at; original_review_time_not_recorded"
+          }
         },
         {
           "case_suffix": 5,
@@ -797,6 +1037,16 @@
             "field": "region",
             "value": "부산",
             "expected_matches": 0
+          },
+          "review": {
+            "author": "Codex",
+            "status": "human_reviewed",
+            "human_reviewer": "user",
+            "human_reviewed_at": "2026-10-25T16:37:52.278153+09:00",
+            "evidence_validation": "exact_snapshot_match",
+            "semantic_validation": "human_review_confirmed_by_user",
+            "confirmation_basis": "user_reported_completed_review_in_chat",
+            "timestamp_basis": "completion_confirmation_recorded_at; original_review_time_not_recorded"
           }
         }
       ]
@@ -848,7 +1098,17 @@
               "relevance": 0,
               "rationale": "다른 공원이다."
             }
-          ]
+          ],
+          "review": {
+            "author": "Codex",
+            "status": "human_reviewed",
+            "human_reviewer": "user",
+            "human_reviewed_at": "2026-10-25T16:37:52.278153+09:00",
+            "evidence_validation": "exact_snapshot_match",
+            "semantic_validation": "human_review_confirmed_by_user",
+            "confirmation_basis": "user_reported_completed_review_in_chat",
+            "timestamp_basis": "completion_confirmation_recorded_at; original_review_time_not_recorded"
+          }
         },
         {
           "case_suffix": 2,
@@ -871,7 +1131,17 @@
               "rationale": "서초이므로 지역 조건에서 제외된다."
             }
           ],
-          "city": "용산"
+          "city": "용산",
+          "review": {
+            "author": "Codex",
+            "status": "human_reviewed",
+            "human_reviewer": "user",
+            "human_reviewed_at": "2026-10-25T16:37:52.278153+09:00",
+            "evidence_validation": "exact_snapshot_match",
+            "semantic_validation": "human_review_confirmed_by_user",
+            "confirmation_basis": "user_reported_completed_review_in_chat",
+            "timestamp_basis": "completion_confirmation_recorded_at; original_review_time_not_recorded"
+          }
         },
         {
           "case_suffix": 3,
@@ -893,7 +1163,17 @@
               "relevance": 3,
               "rationale": "어린이놀이터와 가족 나들이 공간이 있다."
             }
-          ]
+          ],
+          "review": {
+            "author": "Codex",
+            "status": "human_reviewed",
+            "human_reviewer": "user",
+            "human_reviewed_at": "2026-10-25T16:37:52.278153+09:00",
+            "evidence_validation": "exact_snapshot_match",
+            "semantic_validation": "human_review_confirmed_by_user",
+            "confirmation_basis": "user_reported_completed_review_in_chat",
+            "timestamp_basis": "completion_confirmation_recorded_at; original_review_time_not_recorded"
+          }
         },
         {
           "case_suffix": 4,
@@ -925,7 +1205,17 @@
               "user",
               "지도에서 올림픽공원피크닉장을 선택했어."
             ]
-          ]
+          ],
+          "review": {
+            "author": "Codex",
+            "status": "human_reviewed",
+            "human_reviewer": "user",
+            "human_reviewed_at": "2026-10-25T16:37:52.278153+09:00",
+            "evidence_validation": "exact_snapshot_match",
+            "semantic_validation": "human_review_confirmed_by_user",
+            "confirmation_basis": "user_reported_completed_review_in_chat",
+            "timestamp_basis": "completion_confirmation_recorded_at; original_review_time_not_recorded"
+          }
         },
         {
           "case_suffix": 5,
@@ -935,7 +1225,17 @@
           "missing_information": [
             "출발 위치"
           ],
-          "expected_action": "집 주소나 현재 위치가 없어 가장 가까운 장소를 정할 수 없으므로 출발 위치를 묻는다."
+          "expected_action": "집 주소나 현재 위치가 없어 가장 가까운 장소를 정할 수 없으므로 출발 위치를 묻는다.",
+          "review": {
+            "author": "Codex",
+            "status": "human_reviewed",
+            "human_reviewer": "user",
+            "human_reviewed_at": "2026-10-25T16:37:52.278153+09:00",
+            "evidence_validation": "exact_snapshot_match",
+            "semantic_validation": "human_review_confirmed_by_user",
+            "confirmation_basis": "user_reported_completed_review_in_chat",
+            "timestamp_basis": "completion_confirmation_recorded_at; original_review_time_not_recorded"
+          }
         }
       ]
     },
@@ -990,7 +1290,17 @@
               "relevance": 0,
               "rationale": "구로의 다른 생태공원이다."
             }
-          ]
+          ],
+          "review": {
+            "author": "Codex",
+            "status": "human_reviewed",
+            "human_reviewer": "user",
+            "human_reviewed_at": "2026-10-25T16:37:52.278153+09:00",
+            "evidence_validation": "exact_snapshot_match",
+            "semantic_validation": "human_review_confirmed_by_user",
+            "confirmation_basis": "user_reported_completed_review_in_chat",
+            "timestamp_basis": "completion_confirmation_recorded_at; original_review_time_not_recorded"
+          }
         },
         {
           "case_suffix": 2,
@@ -1013,7 +1323,17 @@
               "rationale": "구로에 있어 지역 조건을 만족하지 않는다."
             }
           ],
-          "city": "영등포"
+          "city": "영등포",
+          "review": {
+            "author": "Codex",
+            "status": "human_reviewed",
+            "human_reviewer": "user",
+            "human_reviewed_at": "2026-10-25T16:37:52.278153+09:00",
+            "evidence_validation": "exact_snapshot_match",
+            "semantic_validation": "human_review_confirmed_by_user",
+            "confirmation_basis": "user_reported_completed_review_in_chat",
+            "timestamp_basis": "completion_confirmation_recorded_at; original_review_time_not_recorded"
+          }
         },
         {
           "case_suffix": 3,
@@ -1075,7 +1395,17 @@
               "id": "organism_observation",
               "description": "생물을 관찰할 수 있다는 근거가 있다."
             }
-          ]
+          ],
+          "review": {
+            "author": "Codex",
+            "status": "human_reviewed",
+            "human_reviewer": "user",
+            "human_reviewed_at": "2026-10-25T16:37:52.278153+09:00",
+            "evidence_validation": "exact_snapshot_match",
+            "semantic_validation": "human_review_confirmed_by_user",
+            "confirmation_basis": "user_reported_completed_review_in_chat",
+            "timestamp_basis": "completion_confirmation_recorded_at; original_review_time_not_recorded"
+          }
         },
         {
           "case_suffix": 4,
@@ -1107,7 +1437,17 @@
               "user",
               "강서습지생태공원은 지난주에 다녀왔어."
             ]
-          ]
+          ],
+          "review": {
+            "author": "Codex",
+            "status": "human_reviewed",
+            "human_reviewer": "user",
+            "human_reviewed_at": "2026-10-25T16:37:52.278153+09:00",
+            "evidence_validation": "exact_snapshot_match",
+            "semantic_validation": "human_review_confirmed_by_user",
+            "confirmation_basis": "user_reported_completed_review_in_chat",
+            "timestamp_basis": "completion_confirmation_recorded_at; original_review_time_not_recorded"
+          }
         },
         {
           "case_suffix": 5,
@@ -1120,7 +1460,17 @@
           "missing_information": [
             "오늘의 현장 생물 개체 수"
           ],
-          "expected_action": "서식 소개와 현재 개체 수를 구분하고 현장 조사 없이는 수치를 확정할 수 없다고 답한다."
+          "expected_action": "서식 소개와 현재 개체 수를 구분하고 현장 조사 없이는 수치를 확정할 수 없다고 답한다.",
+          "review": {
+            "author": "Codex",
+            "status": "human_reviewed",
+            "human_reviewer": "user",
+            "human_reviewed_at": "2026-10-25T16:37:52.278153+09:00",
+            "evidence_validation": "exact_snapshot_match",
+            "semantic_validation": "human_review_confirmed_by_user",
+            "confirmation_basis": "user_reported_completed_review_in_chat",
+            "timestamp_basis": "completion_confirmation_recorded_at; original_review_time_not_recorded"
+          }
         }
       ]
     },
@@ -1168,7 +1518,17 @@
               "relevance": 0,
               "rationale": "용마산은 다른 산이다."
             }
-          ]
+          ],
+          "review": {
+            "author": "Codex",
+            "status": "human_reviewed",
+            "human_reviewer": "user",
+            "human_reviewed_at": "2026-10-25T16:37:52.278153+09:00",
+            "evidence_validation": "exact_snapshot_match",
+            "semantic_validation": "human_review_confirmed_by_user",
+            "confirmation_basis": "user_reported_completed_review_in_chat",
+            "timestamp_basis": "completion_confirmation_recorded_at; original_review_time_not_recorded"
+          }
         },
         {
           "case_suffix": 2,
@@ -1190,7 +1550,17 @@
               "relevance": 0,
               "rationale": "질문의 연주대 근거가 없다."
             }
-          ]
+          ],
+          "review": {
+            "author": "Codex",
+            "status": "human_reviewed",
+            "human_reviewer": "user",
+            "human_reviewed_at": "2026-10-25T16:37:52.278153+09:00",
+            "evidence_validation": "exact_snapshot_match",
+            "semantic_validation": "human_review_confirmed_by_user",
+            "confirmation_basis": "user_reported_completed_review_in_chat",
+            "timestamp_basis": "completion_confirmation_recorded_at; original_review_time_not_recorded"
+          }
         },
         {
           "case_suffix": 3,
@@ -1212,7 +1582,17 @@
               "relevance": 3,
               "rationale": "정상에서 서울·한강·북한산을 조망할 수 있다."
             }
-          ]
+          ],
+          "review": {
+            "author": "Codex",
+            "status": "human_reviewed",
+            "human_reviewer": "user",
+            "human_reviewed_at": "2026-10-25T16:37:52.278153+09:00",
+            "evidence_validation": "exact_snapshot_match",
+            "semantic_validation": "human_review_confirmed_by_user",
+            "confirmation_basis": "user_reported_completed_review_in_chat",
+            "timestamp_basis": "completion_confirmation_recorded_at; original_review_time_not_recorded"
+          }
         },
         {
           "case_suffix": 4,
@@ -1244,7 +1624,17 @@
               "user",
               "관악산 등산은 끝냈어. 다음 산을 찾고 있어."
             ]
-          ]
+          ],
+          "review": {
+            "author": "Codex",
+            "status": "human_reviewed",
+            "human_reviewer": "user",
+            "human_reviewed_at": "2026-10-25T16:37:52.278153+09:00",
+            "evidence_validation": "exact_snapshot_match",
+            "semantic_validation": "human_review_confirmed_by_user",
+            "confirmation_basis": "user_reported_completed_review_in_chat",
+            "timestamp_basis": "completion_confirmation_recorded_at; original_review_time_not_recorded"
+          }
         },
         {
           "case_suffix": 5,
@@ -1256,7 +1646,17 @@
             "원하는 산행 시간",
             "출발 지역"
           ],
-          "expected_action": "체력 수준과 산행 시간 등 선택에 필요한 조건을 확인한다."
+          "expected_action": "체력 수준과 산행 시간 등 선택에 필요한 조건을 확인한다.",
+          "review": {
+            "author": "Codex",
+            "status": "human_reviewed",
+            "human_reviewer": "user",
+            "human_reviewed_at": "2026-10-25T16:37:52.278153+09:00",
+            "evidence_validation": "exact_snapshot_match",
+            "semantic_validation": "human_review_confirmed_by_user",
+            "confirmation_basis": "user_reported_completed_review_in_chat",
+            "timestamp_basis": "completion_confirmation_recorded_at; original_review_time_not_recorded"
+          }
         }
       ]
     },
@@ -1309,7 +1709,17 @@
               "relevance": 0,
               "rationale": "구 서울역의 별개 공간이다."
             }
-          ]
+          ],
+          "review": {
+            "author": "Codex",
+            "status": "human_reviewed",
+            "human_reviewer": "user",
+            "human_reviewed_at": "2026-10-25T16:37:52.278153+09:00",
+            "evidence_validation": "exact_snapshot_match",
+            "semantic_validation": "human_review_confirmed_by_user",
+            "confirmation_basis": "user_reported_completed_review_in_chat",
+            "timestamp_basis": "completion_confirmation_recorded_at; original_review_time_not_recorded"
+          }
         },
         {
           "case_suffix": 2,
@@ -1334,7 +1744,17 @@
               "relevance": 0,
               "rationale": "구 서울역 복합문화공간으로 질문의 야간 정원이 아니다."
             }
-          ]
+          ],
+          "review": {
+            "author": "Codex",
+            "status": "human_reviewed",
+            "human_reviewer": "user",
+            "human_reviewed_at": "2026-10-25T16:37:52.278153+09:00",
+            "evidence_validation": "exact_snapshot_match",
+            "semantic_validation": "human_review_confirmed_by_user",
+            "confirmation_basis": "user_reported_completed_review_in_chat",
+            "timestamp_basis": "completion_confirmation_recorded_at; original_review_time_not_recorded"
+          }
         },
         {
           "case_suffix": 3,
@@ -1387,7 +1807,17 @@
               "id": "former_railway_facility_converted",
               "description": "옛 철도역·철도 시설이었던 곳을 문화공간으로 바꾸었다."
             }
-          ]
+          ],
+          "review": {
+            "author": "Codex",
+            "status": "human_reviewed",
+            "human_reviewer": "user",
+            "human_reviewed_at": "2026-10-25T16:37:52.278153+09:00",
+            "evidence_validation": "exact_snapshot_match",
+            "semantic_validation": "human_review_confirmed_by_user",
+            "confirmation_basis": "user_reported_completed_review_in_chat",
+            "timestamp_basis": "completion_confirmation_recorded_at; original_review_time_not_recorded"
+          }
         },
         {
           "case_suffix": 4,
@@ -1420,7 +1850,17 @@
               "user",
               "화랑대 철도공원과 노원 불빛정원은 다녀왔어."
             ]
-          ]
+          ],
+          "review": {
+            "author": "Codex",
+            "status": "human_reviewed",
+            "human_reviewer": "user",
+            "human_reviewed_at": "2026-10-25T16:37:52.278153+09:00",
+            "evidence_validation": "exact_snapshot_match",
+            "semantic_validation": "human_review_confirmed_by_user",
+            "confirmation_basis": "user_reported_completed_review_in_chat",
+            "timestamp_basis": "completion_confirmation_recorded_at; original_review_time_not_recorded"
+          }
         },
         {
           "case_suffix": 5,
@@ -1437,6 +1877,16 @@
             "field": "region",
             "value": "강원",
             "expected_matches": 0
+          },
+          "review": {
+            "author": "Codex",
+            "status": "human_reviewed",
+            "human_reviewer": "user",
+            "human_reviewed_at": "2026-10-25T16:37:52.278153+09:00",
+            "evidence_validation": "exact_snapshot_match",
+            "semantic_validation": "human_review_confirmed_by_user",
+            "confirmation_basis": "user_reported_completed_review_in_chat",
+            "timestamp_basis": "completion_confirmation_recorded_at; original_review_time_not_recorded"
           }
         }
       ]
@@ -1485,7 +1935,17 @@
               "relevance": 0,
               "rationale": "캘리그래피 공방으로 다른 장소이다."
             }
-          ]
+          ],
+          "review": {
+            "author": "Codex",
+            "status": "human_reviewed",
+            "human_reviewer": "user",
+            "human_reviewed_at": "2026-10-25T16:37:52.278153+09:00",
+            "evidence_validation": "exact_snapshot_match",
+            "semantic_validation": "human_review_confirmed_by_user",
+            "confirmation_basis": "user_reported_completed_review_in_chat",
+            "timestamp_basis": "completion_confirmation_recorded_at; original_review_time_not_recorded"
+          }
         },
         {
           "case_suffix": 2,
@@ -1507,7 +1967,17 @@
               "relevance": 0,
               "rationale": "돌도장 새김 체험이다."
             }
-          ]
+          ],
+          "review": {
+            "author": "Codex",
+            "status": "human_reviewed",
+            "human_reviewer": "user",
+            "human_reviewed_at": "2026-10-25T16:37:52.278153+09:00",
+            "evidence_validation": "exact_snapshot_match",
+            "semantic_validation": "human_review_confirmed_by_user",
+            "confirmation_basis": "user_reported_completed_review_in_chat",
+            "timestamp_basis": "completion_confirmation_recorded_at; original_review_time_not_recorded"
+          }
         },
         {
           "case_suffix": 3,
@@ -1552,7 +2022,17 @@
               "id": "take_home_product",
               "description": "직접 만든 완성품을 가져가거나 나중에 받을 수 있다는 근거가 있다."
             }
-          ]
+          ],
+          "review": {
+            "author": "Codex",
+            "status": "human_reviewed",
+            "human_reviewer": "user",
+            "human_reviewed_at": "2026-10-25T16:37:52.278153+09:00",
+            "evidence_validation": "exact_snapshot_match",
+            "semantic_validation": "human_review_confirmed_by_user",
+            "confirmation_basis": "user_reported_completed_review_in_chat",
+            "timestamp_basis": "completion_confirmation_recorded_at; original_review_time_not_recorded"
+          }
         },
         {
           "case_suffix": 4,
@@ -1584,7 +2064,17 @@
               "user",
               "향기억에서는 체험을 했어."
             ]
-          ]
+          ],
+          "review": {
+            "author": "Codex",
+            "status": "human_reviewed",
+            "human_reviewer": "user",
+            "human_reviewed_at": "2026-10-25T16:37:52.278153+09:00",
+            "evidence_validation": "exact_snapshot_match",
+            "semantic_validation": "human_review_confirmed_by_user",
+            "confirmation_basis": "user_reported_completed_review_in_chat",
+            "timestamp_basis": "completion_confirmation_recorded_at; original_review_time_not_recorded"
+          }
         },
         {
           "case_suffix": 5,
@@ -1595,7 +2085,17 @@
             "기준 공방",
             "원하는 체험 종류"
           ],
-          "expected_action": "기준 공방과 체험 종류가 대화에 없으므로 먼저 확인한다."
+          "expected_action": "기준 공방과 체험 종류가 대화에 없으므로 먼저 확인한다.",
+          "review": {
+            "author": "Codex",
+            "status": "human_reviewed",
+            "human_reviewer": "user",
+            "human_reviewed_at": "2026-10-25T16:37:52.278153+09:00",
+            "evidence_validation": "exact_snapshot_match",
+            "semantic_validation": "human_review_confirmed_by_user",
+            "confirmation_basis": "user_reported_completed_review_in_chat",
+            "timestamp_basis": "completion_confirmation_recorded_at; original_review_time_not_recorded"
+          }
         }
       ]
     },
@@ -1640,7 +2140,17 @@
               "relevance": 0,
               "rationale": "떡볶이 골목이다."
             }
-          ]
+          ],
+          "review": {
+            "author": "Codex",
+            "status": "human_reviewed",
+            "human_reviewer": "user",
+            "human_reviewed_at": "2026-10-25T16:37:52.278153+09:00",
+            "evidence_validation": "exact_snapshot_match",
+            "semantic_validation": "human_review_confirmed_by_user",
+            "confirmation_basis": "user_reported_completed_review_in_chat",
+            "timestamp_basis": "completion_confirmation_recorded_at; original_review_time_not_recorded"
+          }
         },
         {
           "case_suffix": 2,
@@ -1662,7 +2172,17 @@
               "relevance": 0,
               "rationale": "족발 골목으로 DJ박스 근거가 없다."
             }
-          ]
+          ],
+          "review": {
+            "author": "Codex",
+            "status": "human_reviewed",
+            "human_reviewer": "user",
+            "human_reviewed_at": "2026-10-25T16:37:52.278153+09:00",
+            "evidence_validation": "exact_snapshot_match",
+            "semantic_validation": "human_review_confirmed_by_user",
+            "confirmation_basis": "user_reported_completed_review_in_chat",
+            "timestamp_basis": "completion_confirmation_recorded_at; original_review_time_not_recorded"
+          }
         },
         {
           "case_suffix": 3,
@@ -1684,7 +2204,17 @@
               "relevance": 0,
               "rationale": "떡볶이 골목으로 족발 골목 조건과 다르다."
             }
-          ]
+          ],
+          "review": {
+            "author": "Codex",
+            "status": "human_reviewed",
+            "human_reviewer": "user",
+            "human_reviewed_at": "2026-10-25T16:37:52.278153+09:00",
+            "evidence_validation": "exact_snapshot_match",
+            "semantic_validation": "human_review_confirmed_by_user",
+            "confirmation_basis": "user_reported_completed_review_in_chat",
+            "timestamp_basis": "completion_confirmation_recorded_at; original_review_time_not_recorded"
+          }
         },
         {
           "case_suffix": 4,
@@ -1716,7 +2246,17 @@
               "user",
               "공덕동 족발골목은 다녀왔어."
             ]
-          ]
+          ],
+          "review": {
+            "author": "Codex",
+            "status": "human_reviewed",
+            "human_reviewer": "user",
+            "human_reviewed_at": "2026-10-25T16:37:52.278153+09:00",
+            "evidence_validation": "exact_snapshot_match",
+            "semantic_validation": "human_review_confirmed_by_user",
+            "confirmation_basis": "user_reported_completed_review_in_chat",
+            "timestamp_basis": "completion_confirmation_recorded_at; original_review_time_not_recorded"
+          }
         },
         {
           "case_suffix": 5,
@@ -1729,7 +2269,17 @@
           "missing_information": [
             "개별 가게의 현재 대기 인원"
           ],
-          "expected_action": "골목 소개만으로 가게별 실시간 대기를 비교할 수 없다고 설명한다."
+          "expected_action": "골목 소개만으로 가게별 실시간 대기를 비교할 수 없다고 설명한다.",
+          "review": {
+            "author": "Codex",
+            "status": "human_reviewed",
+            "human_reviewer": "user",
+            "human_reviewed_at": "2026-10-25T16:37:52.278153+09:00",
+            "evidence_validation": "exact_snapshot_match",
+            "semantic_validation": "human_review_confirmed_by_user",
+            "confirmation_basis": "user_reported_completed_review_in_chat",
+            "timestamp_basis": "completion_confirmation_recorded_at; original_review_time_not_recorded"
+          }
         }
       ]
     },
@@ -1777,7 +2327,17 @@
               "relevance": 0,
               "rationale": "강서의 다른 체험관이다."
             }
-          ]
+          ],
+          "review": {
+            "author": "Codex",
+            "status": "human_reviewed",
+            "human_reviewer": "user",
+            "human_reviewed_at": "2026-10-25T16:37:52.278153+09:00",
+            "evidence_validation": "exact_snapshot_match",
+            "semantic_validation": "human_review_confirmed_by_user",
+            "confirmation_basis": "user_reported_completed_review_in_chat",
+            "timestamp_basis": "completion_confirmation_recorded_at; original_review_time_not_recorded"
+          }
         },
         {
           "case_suffix": 2,
@@ -1814,7 +2374,17 @@
               "id": "metaverse_ai_spaces",
               "description": "메타버스 체험관과 AI 융합 체험관으로 나뉜 공간 구성이 있다."
             }
-          ]
+          ],
+          "review": {
+            "author": "Codex",
+            "status": "human_reviewed",
+            "human_reviewer": "user",
+            "human_reviewed_at": "2026-10-25T16:37:52.278153+09:00",
+            "evidence_validation": "exact_snapshot_match",
+            "semantic_validation": "human_review_confirmed_by_user",
+            "confirmation_basis": "user_reported_completed_review_in_chat",
+            "timestamp_basis": "completion_confirmation_recorded_at; original_review_time_not_recorded"
+          }
         },
         {
           "case_suffix": 3,
@@ -1836,7 +2406,17 @@
               "relevance": 3,
               "rationale": "메타버스·로보틱스·AI융합 체험을 제공한다."
             }
-          ]
+          ],
+          "review": {
+            "author": "Codex",
+            "status": "human_reviewed",
+            "human_reviewer": "user",
+            "human_reviewed_at": "2026-10-25T16:37:52.278153+09:00",
+            "evidence_validation": "exact_snapshot_match",
+            "semantic_validation": "human_review_confirmed_by_user",
+            "confirmation_basis": "user_reported_completed_review_in_chat",
+            "timestamp_basis": "completion_confirmation_recorded_at; original_review_time_not_recorded"
+          }
         },
         {
           "case_suffix": 4,
@@ -1868,7 +2448,17 @@
               "user",
               "서울퓨처랩은 방문했어."
             ]
-          ]
+          ],
+          "review": {
+            "author": "Codex",
+            "status": "human_reviewed",
+            "human_reviewer": "user",
+            "human_reviewed_at": "2026-10-25T16:37:52.278153+09:00",
+            "evidence_validation": "exact_snapshot_match",
+            "semantic_validation": "human_review_confirmed_by_user",
+            "confirmation_basis": "user_reported_completed_review_in_chat",
+            "timestamp_basis": "completion_confirmation_recorded_at; original_review_time_not_recorded"
+          }
         },
         {
           "case_suffix": 5,
@@ -1882,7 +2472,17 @@
             "성동구 거주 여부",
             "관내 학교 재학 또는 직장 재직 여부"
           ],
-          "expected_action": "원문에 교육 대상 제한이 있으므로 사용자가 대상에 해당하는지 먼저 확인한다."
+          "expected_action": "원문에 교육 대상 제한이 있으므로 사용자가 대상에 해당하는지 먼저 확인한다.",
+          "review": {
+            "author": "Codex",
+            "status": "human_reviewed",
+            "human_reviewer": "user",
+            "human_reviewed_at": "2026-10-25T16:37:52.278153+09:00",
+            "evidence_validation": "exact_snapshot_match",
+            "semantic_validation": "human_review_confirmed_by_user",
+            "confirmation_basis": "user_reported_completed_review_in_chat",
+            "timestamp_basis": "completion_confirmation_recorded_at; original_review_time_not_recorded"
+          }
         }
       ]
     },
@@ -1930,7 +2530,17 @@
               "relevance": 0,
               "rationale": "별개의 교통안전체험관이다."
             }
-          ]
+          ],
+          "review": {
+            "author": "Codex",
+            "status": "human_reviewed",
+            "human_reviewer": "user",
+            "human_reviewed_at": "2026-10-25T16:37:52.278153+09:00",
+            "evidence_validation": "exact_snapshot_match",
+            "semantic_validation": "human_review_confirmed_by_user",
+            "confirmation_basis": "user_reported_completed_review_in_chat",
+            "timestamp_basis": "completion_confirmation_recorded_at; original_review_time_not_recorded"
+          }
         },
         {
           "case_suffix": 2,
@@ -1967,7 +2577,17 @@
               "id": "child_driving",
               "description": "어린이가 자동차를 직접 운전하는 체험이 있다."
             }
-          ]
+          ],
+          "review": {
+            "author": "Codex",
+            "status": "human_reviewed",
+            "human_reviewer": "user",
+            "human_reviewed_at": "2026-10-25T16:37:52.278153+09:00",
+            "evidence_validation": "exact_snapshot_match",
+            "semantic_validation": "human_review_confirmed_by_user",
+            "confirmation_basis": "user_reported_completed_review_in_chat",
+            "timestamp_basis": "completion_confirmation_recorded_at; original_review_time_not_recorded"
+          }
         },
         {
           "case_suffix": 3,
@@ -1989,7 +2609,17 @@
               "relevance": 1,
               "rationale": "안전교육 시설이지만 교통안전보다 재난 대응 중심이다."
             }
-          ]
+          ],
+          "review": {
+            "author": "Codex",
+            "status": "human_reviewed",
+            "human_reviewer": "user",
+            "human_reviewed_at": "2026-10-25T16:37:52.278153+09:00",
+            "evidence_validation": "exact_snapshot_match",
+            "semantic_validation": "human_review_confirmed_by_user",
+            "confirmation_basis": "user_reported_completed_review_in_chat",
+            "timestamp_basis": "completion_confirmation_recorded_at; original_review_time_not_recorded"
+          }
         },
         {
           "case_suffix": 4,
@@ -2021,7 +2651,17 @@
               "user",
               "키즈오토파크의 자동차 체험은 끝냈어."
             ]
-          ]
+          ],
+          "review": {
+            "author": "Codex",
+            "status": "human_reviewed",
+            "human_reviewer": "user",
+            "human_reviewed_at": "2026-10-25T16:37:52.278153+09:00",
+            "evidence_validation": "exact_snapshot_match",
+            "semantic_validation": "human_review_confirmed_by_user",
+            "confirmation_basis": "user_reported_completed_review_in_chat",
+            "timestamp_basis": "completion_confirmation_recorded_at; original_review_time_not_recorded"
+          }
         },
         {
           "case_suffix": 5,
@@ -2034,7 +2674,17 @@
           "missing_information": [
             "내일 오전 단체 예약 잔여 정원"
           ],
-          "expected_action": "사전 예약이 필요하다는 원문 사실만 안내하고 예약 가능 여부는 확정하지 않는다."
+          "expected_action": "사전 예약이 필요하다는 원문 사실만 안내하고 예약 가능 여부는 확정하지 않는다.",
+          "review": {
+            "author": "Codex",
+            "status": "human_reviewed",
+            "human_reviewer": "user",
+            "human_reviewed_at": "2026-10-25T16:37:52.278153+09:00",
+            "evidence_validation": "exact_snapshot_match",
+            "semantic_validation": "human_review_confirmed_by_user",
+            "confirmation_basis": "user_reported_completed_review_in_chat",
+            "timestamp_basis": "completion_confirmation_recorded_at; original_review_time_not_recorded"
+          }
         }
       ]
     },
@@ -2082,7 +2732,17 @@
               "relevance": 0,
               "rationale": "송파의 별개 워터파크이다."
             }
-          ]
+          ],
+          "review": {
+            "author": "Codex",
+            "status": "human_reviewed",
+            "human_reviewer": "user",
+            "human_reviewed_at": "2026-10-25T16:37:52.278153+09:00",
+            "evidence_validation": "exact_snapshot_match",
+            "semantic_validation": "human_review_confirmed_by_user",
+            "confirmation_basis": "user_reported_completed_review_in_chat",
+            "timestamp_basis": "completion_confirmation_recorded_at; original_review_time_not_recorded"
+          }
         },
         {
           "case_suffix": 2,
@@ -2104,7 +2764,17 @@
               "relevance": 1,
               "rationale": "온천욕은 가능하지만 급류 물놀이 근거는 없다."
             }
-          ]
+          ],
+          "review": {
+            "author": "Codex",
+            "status": "human_reviewed",
+            "human_reviewer": "user",
+            "human_reviewed_at": "2026-10-25T16:37:52.278153+09:00",
+            "evidence_validation": "exact_snapshot_match",
+            "semantic_validation": "human_review_confirmed_by_user",
+            "confirmation_basis": "user_reported_completed_review_in_chat",
+            "timestamp_basis": "completion_confirmation_recorded_at; original_review_time_not_recorded"
+          }
         },
         {
           "case_suffix": 3,
@@ -2127,7 +2797,17 @@
               "rationale": "송파여서 광진 조건에 맞지 않는다."
             }
           ],
-          "city": "광진"
+          "city": "광진",
+          "review": {
+            "author": "Codex",
+            "status": "human_reviewed",
+            "human_reviewer": "user",
+            "human_reviewed_at": "2026-10-25T16:37:52.278153+09:00",
+            "evidence_validation": "exact_snapshot_match",
+            "semantic_validation": "human_review_confirmed_by_user",
+            "confirmation_basis": "user_reported_completed_review_in_chat",
+            "timestamp_basis": "completion_confirmation_recorded_at; original_review_time_not_recorded"
+          }
         },
         {
           "case_suffix": 4,
@@ -2159,7 +2839,17 @@
               "user",
               "강변스파랜드는 이미 이용했어."
             ]
-          ]
+          ],
+          "review": {
+            "author": "Codex",
+            "status": "human_reviewed",
+            "human_reviewer": "user",
+            "human_reviewed_at": "2026-10-25T16:37:52.278153+09:00",
+            "evidence_validation": "exact_snapshot_match",
+            "semantic_validation": "human_review_confirmed_by_user",
+            "confirmation_basis": "user_reported_completed_review_in_chat",
+            "timestamp_basis": "completion_confirmation_recorded_at; original_review_time_not_recorded"
+          }
         },
         {
           "case_suffix": 5,
@@ -2171,7 +2861,17 @@
             "거리 범위",
             "원하는 시설 종류"
           ],
-          "expected_action": "어느 스파를 기준으로 하는지와 원하는 범위를 확인한다."
+          "expected_action": "어느 스파를 기준으로 하는지와 원하는 범위를 확인한다.",
+          "review": {
+            "author": "Codex",
+            "status": "human_reviewed",
+            "human_reviewer": "user",
+            "human_reviewed_at": "2026-10-25T16:37:52.278153+09:00",
+            "evidence_validation": "exact_snapshot_match",
+            "semantic_validation": "human_review_confirmed_by_user",
+            "confirmation_basis": "user_reported_completed_review_in_chat",
+            "timestamp_basis": "completion_confirmation_recorded_at; original_review_time_not_recorded"
+          }
         }
       ]
     },
@@ -2218,7 +2918,17 @@
               "relevance": 0,
               "rationale": "다른 전망 공간이다."
             }
-          ]
+          ],
+          "review": {
+            "author": "Codex",
+            "status": "human_reviewed",
+            "human_reviewer": "user",
+            "human_reviewed_at": "2026-10-25T16:37:52.278153+09:00",
+            "evidence_validation": "exact_snapshot_match",
+            "semantic_validation": "human_review_confirmed_by_user",
+            "confirmation_basis": "user_reported_completed_review_in_chat",
+            "timestamp_basis": "completion_confirmation_recorded_at; original_review_time_not_recorded"
+          }
         },
         {
           "case_suffix": 2,
@@ -2240,7 +2950,17 @@
               "relevance": 0,
               "rationale": "질문의 교각 하부 전망대가 아니다."
             }
-          ]
+          ],
+          "review": {
+            "author": "Codex",
+            "status": "human_reviewed",
+            "human_reviewer": "user",
+            "human_reviewed_at": "2026-10-25T16:37:52.278153+09:00",
+            "evidence_validation": "exact_snapshot_match",
+            "semantic_validation": "human_review_confirmed_by_user",
+            "confirmation_basis": "user_reported_completed_review_in_chat",
+            "timestamp_basis": "completion_confirmation_recorded_at; original_review_time_not_recorded"
+          }
         },
         {
           "case_suffix": 3,
@@ -2262,7 +2982,17 @@
               "relevance": 3,
               "rationale": "특이한 교각 하부 전망대이다."
             }
-          ]
+          ],
+          "review": {
+            "author": "Codex",
+            "status": "human_reviewed",
+            "human_reviewer": "user",
+            "human_reviewed_at": "2026-10-25T16:37:52.278153+09:00",
+            "evidence_validation": "exact_snapshot_match",
+            "semantic_validation": "human_review_confirmed_by_user",
+            "confirmation_basis": "user_reported_completed_review_in_chat",
+            "timestamp_basis": "completion_confirmation_recorded_at; original_review_time_not_recorded"
+          }
         },
         {
           "case_suffix": 4,
@@ -2294,7 +3024,17 @@
               "user",
               "동대문디자인플라자는 관람했어."
             ]
-          ]
+          ],
+          "review": {
+            "author": "Codex",
+            "status": "human_reviewed",
+            "human_reviewer": "user",
+            "human_reviewed_at": "2026-10-25T16:37:52.278153+09:00",
+            "evidence_validation": "exact_snapshot_match",
+            "semantic_validation": "human_review_confirmed_by_user",
+            "confirmation_basis": "user_reported_completed_review_in_chat",
+            "timestamp_basis": "completion_confirmation_recorded_at; original_review_time_not_recorded"
+          }
         },
         {
           "case_suffix": 5,
@@ -2307,7 +3047,17 @@
           "missing_information": [
             "오늘 현재의 기상과 가시거리"
           ],
-          "expected_action": "전망대 소개로 오늘의 가시거리를 확정하지 않고 실시간 기상 확인이 필요하다고 답한다."
+          "expected_action": "전망대 소개로 오늘의 가시거리를 확정하지 않고 실시간 기상 확인이 필요하다고 답한다.",
+          "review": {
+            "author": "Codex",
+            "status": "human_reviewed",
+            "human_reviewer": "user",
+            "human_reviewed_at": "2026-10-25T16:37:52.278153+09:00",
+            "evidence_validation": "exact_snapshot_match",
+            "semantic_validation": "human_review_confirmed_by_user",
+            "confirmation_basis": "user_reported_completed_review_in_chat",
+            "timestamp_basis": "completion_confirmation_recorded_at; original_review_time_not_recorded"
+          }
         }
       ]
     },
@@ -2362,7 +3112,17 @@
               "relevance": 0,
               "rationale": "독립문은 다른 기념물이다."
             }
-          ]
+          ],
+          "review": {
+            "author": "Codex",
+            "status": "human_reviewed",
+            "human_reviewer": "user",
+            "human_reviewed_at": "2026-10-25T16:37:52.278153+09:00",
+            "evidence_validation": "exact_snapshot_match",
+            "semantic_validation": "human_review_confirmed_by_user",
+            "confirmation_basis": "user_reported_completed_review_in_chat",
+            "timestamp_basis": "completion_confirmation_recorded_at; original_review_time_not_recorded"
+          }
         },
         {
           "case_suffix": 2,
@@ -2384,7 +3144,17 @@
               "relevance": 1,
               "rationale": "자주독립 관련 기념물이지만 질문의 사건 현장은 아니다."
             }
-          ]
+          ],
+          "review": {
+            "author": "Codex",
+            "status": "human_reviewed",
+            "human_reviewer": "user",
+            "human_reviewed_at": "2026-10-25T16:37:52.278153+09:00",
+            "evidence_validation": "exact_snapshot_match",
+            "semantic_validation": "human_review_confirmed_by_user",
+            "confirmation_basis": "user_reported_completed_review_in_chat",
+            "timestamp_basis": "completion_confirmation_recorded_at; original_review_time_not_recorded"
+          }
         },
         {
           "case_suffix": 3,
@@ -2416,7 +3186,17 @@
               "relevance": 3,
               "rationale": "3·1운동 때 독립선언문을 검토하고 배부한 위치를 알리는 자주독립 관련 역사 현장이다."
             }
-          ]
+          ],
+          "review": {
+            "author": "Codex",
+            "status": "human_reviewed",
+            "human_reviewer": "user",
+            "human_reviewed_at": "2026-10-25T16:37:52.278153+09:00",
+            "evidence_validation": "exact_snapshot_match",
+            "semantic_validation": "human_review_confirmed_by_user",
+            "confirmation_basis": "user_reported_completed_review_in_chat",
+            "timestamp_basis": "completion_confirmation_recorded_at; original_review_time_not_recorded"
+          }
         },
         {
           "case_suffix": 4,
@@ -2448,7 +3228,17 @@
               "user",
               "중명전 관람을 마쳤어."
             ]
-          ]
+          ],
+          "review": {
+            "author": "Codex",
+            "status": "human_reviewed",
+            "human_reviewer": "user",
+            "human_reviewed_at": "2026-10-25T16:37:52.278153+09:00",
+            "evidence_validation": "exact_snapshot_match",
+            "semantic_validation": "human_review_confirmed_by_user",
+            "confirmation_basis": "user_reported_completed_review_in_chat",
+            "timestamp_basis": "completion_confirmation_recorded_at; original_review_time_not_recorded"
+          }
         },
         {
           "case_suffix": 5,
@@ -2459,7 +3249,17 @@
             "제외할 장소",
             "관심 시대"
           ],
-          "expected_action": "기준 장소와 관심 시대가 없어 먼저 확인한다."
+          "expected_action": "기준 장소와 관심 시대가 없어 먼저 확인한다.",
+          "review": {
+            "author": "Codex",
+            "status": "human_reviewed",
+            "human_reviewer": "user",
+            "human_reviewed_at": "2026-10-25T16:37:52.278153+09:00",
+            "evidence_validation": "exact_snapshot_match",
+            "semantic_validation": "human_review_confirmed_by_user",
+            "confirmation_basis": "user_reported_completed_review_in_chat",
+            "timestamp_basis": "completion_confirmation_recorded_at; original_review_time_not_recorded"
+          }
         }
       ]
     },
@@ -2512,7 +3312,17 @@
               "relevance": 0,
               "rationale": "이상의 별개 장소이다."
             }
-          ]
+          ],
+          "review": {
+            "author": "Codex",
+            "status": "human_reviewed",
+            "human_reviewer": "user",
+            "human_reviewed_at": "2026-10-25T16:37:52.278153+09:00",
+            "evidence_validation": "exact_snapshot_match",
+            "semantic_validation": "human_review_confirmed_by_user",
+            "confirmation_basis": "user_reported_completed_review_in_chat",
+            "timestamp_basis": "completion_confirmation_recorded_at; original_review_time_not_recorded"
+          }
         },
         {
           "case_suffix": 2,
@@ -2534,7 +3344,17 @@
               "relevance": 1,
               "rationale": "문학가 집터이지만 윤동주의 장소는 아니다."
             }
-          ]
+          ],
+          "review": {
+            "author": "Codex",
+            "status": "human_reviewed",
+            "human_reviewer": "user",
+            "human_reviewed_at": "2026-10-25T16:37:52.278153+09:00",
+            "evidence_validation": "exact_snapshot_match",
+            "semantic_validation": "human_review_confirmed_by_user",
+            "confirmation_basis": "user_reported_completed_review_in_chat",
+            "timestamp_basis": "completion_confirmation_recorded_at; original_review_time_not_recorded"
+          }
         },
         {
           "case_suffix": 3,
@@ -2579,7 +3399,17 @@
               "id": "writer_or_childrens_song_composer_home",
               "description": "작가 또는 동요 작곡가가 살았던 집이나 집터라는 근거가 있다."
             }
-          ]
+          ],
+          "review": {
+            "author": "Codex",
+            "status": "human_reviewed",
+            "human_reviewer": "user",
+            "human_reviewed_at": "2026-10-25T16:37:52.278153+09:00",
+            "evidence_validation": "exact_snapshot_match",
+            "semantic_validation": "human_review_confirmed_by_user",
+            "confirmation_basis": "user_reported_completed_review_in_chat",
+            "timestamp_basis": "completion_confirmation_recorded_at; original_review_time_not_recorded"
+          }
         },
         {
           "case_suffix": 4,
@@ -2611,7 +3441,17 @@
               "user",
               "윤동주 하숙집 터를 보고 왔어."
             ]
-          ]
+          ],
+          "review": {
+            "author": "Codex",
+            "status": "human_reviewed",
+            "human_reviewer": "user",
+            "human_reviewed_at": "2026-10-25T16:37:52.278153+09:00",
+            "evidence_validation": "exact_snapshot_match",
+            "semantic_validation": "human_review_confirmed_by_user",
+            "confirmation_basis": "user_reported_completed_review_in_chat",
+            "timestamp_basis": "completion_confirmation_recorded_at; original_review_time_not_recorded"
+          }
         },
         {
           "case_suffix": 5,
@@ -2624,7 +3464,17 @@
           "missing_information": [
             "내일 해설사 근무 일정"
           ],
-          "expected_action": "정적 가옥 소개로 내일 근무 일정을 확정하지 않는다."
+          "expected_action": "정적 가옥 소개로 내일 근무 일정을 확정하지 않는다.",
+          "review": {
+            "author": "Codex",
+            "status": "human_reviewed",
+            "human_reviewer": "user",
+            "human_reviewed_at": "2026-10-25T16:37:52.278153+09:00",
+            "evidence_validation": "exact_snapshot_match",
+            "semantic_validation": "human_review_confirmed_by_user",
+            "confirmation_basis": "user_reported_completed_review_in_chat",
+            "timestamp_basis": "completion_confirmation_recorded_at; original_review_time_not_recorded"
+          }
         }
       ]
     },
@@ -2672,7 +3522,17 @@
               "relevance": 0,
               "rationale": "다른 문화거리이다."
             }
-          ]
+          ],
+          "review": {
+            "author": "Codex",
+            "status": "human_reviewed",
+            "human_reviewer": "user",
+            "human_reviewed_at": "2026-10-25T16:37:52.278153+09:00",
+            "evidence_validation": "exact_snapshot_match",
+            "semantic_validation": "human_review_confirmed_by_user",
+            "confirmation_basis": "user_reported_completed_review_in_chat",
+            "timestamp_basis": "completion_confirmation_recorded_at; original_review_time_not_recorded"
+          }
         },
         {
           "case_suffix": 2,
@@ -2695,7 +3555,17 @@
               "rationale": "중구의 돌담길이다."
             }
           ],
-          "city": "마포"
+          "city": "마포",
+          "review": {
+            "author": "Codex",
+            "status": "human_reviewed",
+            "human_reviewer": "user",
+            "human_reviewed_at": "2026-10-25T16:37:52.278153+09:00",
+            "evidence_validation": "exact_snapshot_match",
+            "semantic_validation": "human_review_confirmed_by_user",
+            "confirmation_basis": "user_reported_completed_review_in_chat",
+            "timestamp_basis": "completion_confirmation_recorded_at; original_review_time_not_recorded"
+          }
         },
         {
           "case_suffix": 3,
@@ -2717,7 +3587,17 @@
               "relevance": 3,
               "rationale": "책을 주제로 조성한 문화거리이다."
             }
-          ]
+          ],
+          "review": {
+            "author": "Codex",
+            "status": "human_reviewed",
+            "human_reviewer": "user",
+            "human_reviewed_at": "2026-10-25T16:37:52.278153+09:00",
+            "evidence_validation": "exact_snapshot_match",
+            "semantic_validation": "human_review_confirmed_by_user",
+            "confirmation_basis": "user_reported_completed_review_in_chat",
+            "timestamp_basis": "completion_confirmation_recorded_at; original_review_time_not_recorded"
+          }
         },
         {
           "case_suffix": 4,
@@ -2749,7 +3629,17 @@
               "user",
               "서울로 7017은 걸어봤어."
             ]
-          ]
+          ],
+          "review": {
+            "author": "Codex",
+            "status": "human_reviewed",
+            "human_reviewer": "user",
+            "human_reviewed_at": "2026-10-25T16:37:52.278153+09:00",
+            "evidence_validation": "exact_snapshot_match",
+            "semantic_validation": "human_review_confirmed_by_user",
+            "confirmation_basis": "user_reported_completed_review_in_chat",
+            "timestamp_basis": "completion_confirmation_recorded_at; original_review_time_not_recorded"
+          }
         },
         {
           "case_suffix": 5,
@@ -2760,7 +3650,17 @@
             "현재 위치",
             "도보 경로 정보"
           ],
-          "expected_action": "현재 위치를 먼저 요청하고 직선거리만으로 도보 10분을 단정하지 않는다."
+          "expected_action": "현재 위치를 먼저 요청하고 직선거리만으로 도보 10분을 단정하지 않는다.",
+          "review": {
+            "author": "Codex",
+            "status": "human_reviewed",
+            "human_reviewer": "user",
+            "human_reviewed_at": "2026-10-25T16:37:52.278153+09:00",
+            "evidence_validation": "exact_snapshot_match",
+            "semantic_validation": "human_review_confirmed_by_user",
+            "confirmation_basis": "user_reported_completed_review_in_chat",
+            "timestamp_basis": "completion_confirmation_recorded_at; original_review_time_not_recorded"
+          }
         }
       ]
     },
@@ -2812,7 +3712,17 @@
               "relevance": 0,
               "rationale": "다른 식물원이다."
             }
-          ]
+          ],
+          "review": {
+            "author": "Codex",
+            "status": "human_reviewed",
+            "human_reviewer": "user",
+            "human_reviewed_at": "2026-10-25T16:37:52.278153+09:00",
+            "evidence_validation": "exact_snapshot_match",
+            "semantic_validation": "human_review_confirmed_by_user",
+            "confirmation_basis": "user_reported_completed_review_in_chat",
+            "timestamp_basis": "completion_confirmation_recorded_at; original_review_time_not_recorded"
+          }
         },
         {
           "case_suffix": 2,
@@ -2834,7 +3744,17 @@
               "relevance": 1,
               "rationale": "식물 공원이지만 박물관 후원과 염료식물 조건은 아니다."
             }
-          ]
+          ],
+          "review": {
+            "author": "Codex",
+            "status": "human_reviewed",
+            "human_reviewer": "user",
+            "human_reviewed_at": "2026-10-25T16:37:52.278153+09:00",
+            "evidence_validation": "exact_snapshot_match",
+            "semantic_validation": "human_review_confirmed_by_user",
+            "confirmation_basis": "user_reported_completed_review_in_chat",
+            "timestamp_basis": "completion_confirmation_recorded_at; original_review_time_not_recorded"
+          }
         },
         {
           "case_suffix": 3,
@@ -2887,7 +3807,17 @@
               "id": "plant_use_learning",
               "description": "식물의 쓰임(용도)을 배울 수 있다는 근거가 있다."
             }
-          ]
+          ],
+          "review": {
+            "author": "Codex",
+            "status": "human_reviewed",
+            "human_reviewer": "user",
+            "human_reviewed_at": "2026-10-25T16:37:52.278153+09:00",
+            "evidence_validation": "exact_snapshot_match",
+            "semantic_validation": "human_review_confirmed_by_user",
+            "confirmation_basis": "user_reported_completed_review_in_chat",
+            "timestamp_basis": "completion_confirmation_recorded_at; original_review_time_not_recorded"
+          }
         },
         {
           "case_suffix": 4,
@@ -2919,7 +3849,17 @@
               "user",
               "푸른수목원은 어제 다녀왔어."
             ]
-          ]
+          ],
+          "review": {
+            "author": "Codex",
+            "status": "human_reviewed",
+            "human_reviewer": "user",
+            "human_reviewed_at": "2026-10-25T16:37:52.278153+09:00",
+            "evidence_validation": "exact_snapshot_match",
+            "semantic_validation": "human_review_confirmed_by_user",
+            "confirmation_basis": "user_reported_completed_review_in_chat",
+            "timestamp_basis": "completion_confirmation_recorded_at; original_review_time_not_recorded"
+          }
         },
         {
           "case_suffix": 5,
@@ -2936,6 +3876,16 @@
             "field": "region",
             "value": "제주",
             "expected_matches": 0
+          },
+          "review": {
+            "author": "Codex",
+            "status": "human_reviewed",
+            "human_reviewer": "user",
+            "human_reviewed_at": "2026-10-25T16:37:52.278153+09:00",
+            "evidence_validation": "exact_snapshot_match",
+            "semantic_validation": "human_review_confirmed_by_user",
+            "confirmation_basis": "user_reported_completed_review_in_chat",
+            "timestamp_basis": "completion_confirmation_recorded_at; original_review_time_not_recorded"
           }
         }
       ]
@@ -2989,7 +3939,17 @@
               "relevance": 0,
               "rationale": "은평의 별개 한옥마을이다."
             }
-          ]
+          ],
+          "review": {
+            "author": "Codex",
+            "status": "human_reviewed",
+            "human_reviewer": "user",
+            "human_reviewed_at": "2026-10-25T16:37:52.278153+09:00",
+            "evidence_validation": "exact_snapshot_match",
+            "semantic_validation": "human_review_confirmed_by_user",
+            "confirmation_basis": "user_reported_completed_review_in_chat",
+            "timestamp_basis": "completion_confirmation_recorded_at; original_review_time_not_recorded"
+          }
         },
         {
           "case_suffix": 2,
@@ -3026,7 +3986,17 @@
               "id": "modern_hanok_bukhansan",
               "description": "북한산과 어우러진 현대식 한옥마을이며 주민이 거주한다."
             }
-          ]
+          ],
+          "review": {
+            "author": "Codex",
+            "status": "human_reviewed",
+            "human_reviewer": "user",
+            "human_reviewed_at": "2026-10-25T16:37:52.278153+09:00",
+            "evidence_validation": "exact_snapshot_match",
+            "semantic_validation": "human_review_confirmed_by_user",
+            "confirmation_basis": "user_reported_completed_review_in_chat",
+            "timestamp_basis": "completion_confirmation_recorded_at; original_review_time_not_recorded"
+          }
         },
         {
           "case_suffix": 3,
@@ -3053,7 +4023,17 @@
               "relevance": 3,
               "rationale": "이전·복원한 한옥 다섯 채가 모인 한옥마을로, 한옥이 모인 마을을 구경하려는 질문에 직접 부합한다."
             }
-          ]
+          ],
+          "review": {
+            "author": "Codex",
+            "status": "human_reviewed",
+            "human_reviewer": "user",
+            "human_reviewed_at": "2026-10-25T16:37:52.278153+09:00",
+            "evidence_validation": "exact_snapshot_match",
+            "semantic_validation": "human_review_confirmed_by_user",
+            "confirmation_basis": "user_reported_completed_review_in_chat",
+            "timestamp_basis": "completion_confirmation_recorded_at; original_review_time_not_recorded"
+          }
         },
         {
           "case_suffix": 4,
@@ -3085,7 +4065,17 @@
               "user",
               "북촌한옥마을은 다녀왔어."
             ]
-          ]
+          ],
+          "review": {
+            "author": "Codex",
+            "status": "human_reviewed",
+            "human_reviewer": "user",
+            "human_reviewed_at": "2026-10-25T16:37:52.278153+09:00",
+            "evidence_validation": "exact_snapshot_match",
+            "semantic_validation": "human_review_confirmed_by_user",
+            "confirmation_basis": "user_reported_completed_review_in_chat",
+            "timestamp_basis": "completion_confirmation_recorded_at; original_review_time_not_recorded"
+          }
         },
         {
           "case_suffix": 5,
@@ -3096,7 +4086,17 @@
             "기준 한옥마을",
             "거리 범위"
           ],
-          "expected_action": "기준 마을이 대화에 없으므로 어느 마을인지 먼저 확인한다."
+          "expected_action": "기준 마을이 대화에 없으므로 어느 마을인지 먼저 확인한다.",
+          "review": {
+            "author": "Codex",
+            "status": "human_reviewed",
+            "human_reviewer": "user",
+            "human_reviewed_at": "2026-10-25T16:37:52.278153+09:00",
+            "evidence_validation": "exact_snapshot_match",
+            "semantic_validation": "human_review_confirmed_by_user",
+            "confirmation_basis": "user_reported_completed_review_in_chat",
+            "timestamp_basis": "completion_confirmation_recorded_at; original_review_time_not_recorded"
+          }
         }
       ]
     }
@@ -3106,12 +4106,23 @@
     "grade_2": "필수 조건을 충족하는 근거가 있지만 직접성·시설 범위가 낮은 유용한 대안. 같은 시설의 상위 공간은 다른 인용 문서로 위치 관계와 기능을 확인할 때만 허용한다.",
     "grade_3": "질문의 핵심 의도와 모든 명시 필수 조건을 직접 충족하는 장소.",
     "unjudged": "미판정은 무관한 장소를 뜻하지 않는다. 검색 결과 pool을 사람 검수로 확장한다.",
-    "human_review": "이번 수정은 AI의 원문 대조이며 사람 검수 완료를 뜻하지 않는다."
+    "human_review": "사용자가 기존 100문항·273행의 검수 완료를 대화에서 확인했다. 검수자 표기는 user이며 시각은 완료 확인 기록 시각이다. 기존 점수와 근거는 유지한다."
   },
   "revision_review": {
-    "reviewer": "Claude",
-    "type": "ai_source_review",
-    "based_on_version": "1.2.0",
-    "human_review_completed": false
+    "reviewer": "user",
+    "type": "human_review_completion_confirmation",
+    "human_review_completed": true,
+    "human_reviewed_at": "2026-10-25T16:37:52.278153+09:00",
+    "timestamp_basis": "completion_confirmation_recorded_at; original_review_time_not_recorded",
+    "confirmation_basis": "user_reported_completed_review_in_chat",
+    "case_count": 100,
+    "judgment_count": 253,
+    "review_row_count": 273,
+    "previous_revision_review": {
+      "reviewer": "Claude",
+      "type": "ai_source_review",
+      "based_on_version": "1.2.0",
+      "human_review_completed": false
+    }
   }
 }

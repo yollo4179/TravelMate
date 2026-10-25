@@ -2,12 +2,12 @@
 
 서울 관광지 449건과 TourAPI 원본 449건의 스냅샷을 기준으로 만든 질문 100개입니다. 현재 버전의 작성 원본·산출물·검수 자료를 함께 관리합니다.
 
-**상태: 사람 검수 대기.** 개발 검색 API를 일부 실행했고, 완료된 공통 문항에 RAGAS ID 기반 검색 평가를 실행했습니다. 전체 문항의 성능 측정은 아직 완료되지 않았습니다.
+**상태: 기존 100문항·273행의 사람 검수 완료 (`human_reviewed`).** 사용자가 대화에서 검수 완료를 확인해 검수자 표기 `user`와 확인 기록 시각을 작성 원본·CSV·JSONL에 반영했습니다. `user`는 실명 추정이 아닌 사용자 식별 표기이며, 기록 시각은 원래 검수 작업 시각이 아닙니다. 개발 검색 API와 공통 문항의 RAGAS ID 평가는 일부 실행됐으며, 전체 성능 측정은 아직 완료되지 않았습니다.
 
 ## 먼저 사용할 파일
 
 - **LLM이 읽는 장소 평가 기준:** [LLM_JUDGE_RUBRIC.md](LLM_JUDGE_RUBRIC.md). [실행 방법](RAGAS_RUNNER.md#지금-필요한-평가-md-기준-llm-as-a-judge)의 `--mode judge`는 reference 없이 기존 0~3점 기준으로 판정합니다.
-- **검수할 리뷰:** [review_notes_filled_v1.3.0.csv](review_notes_filled_v1.3.0.csv)
+- **검수 완료 리뷰:** [review_notes_filled_v1.3.0.csv](review_notes_filled_v1.3.0.csv)
 - **읽기 쉬운 리뷰:** [review_notes_by_question.md](review_notes_by_question.md)
 - **평가용 정답:** [golden.jsonl](golden.jsonl)
 - **정답·점수 수정 원본:** [cases.source.json](cases.source.json)
@@ -93,7 +93,7 @@ python -m unittest discover -s Evaluation/v1.3.0/tests -v
 
 ## 남아 있는 한계
 
-**사람 검수는 완료되지 않았습니다.** 수정 이력에 AI 검토임을 기록하고 100개 모두 `pending_human_review`를 유지합니다. 사람이 확인했다면 실제 검수자·시각을 작성 원본에 기록합니다.
+**기존 판정의 사람 검수는 완료됐습니다.** 사용자의 완료 확인을 작성 원본에 기록해 재생성해도 `human_reviewed`가 유지됩니다. 판정 점수·근거·메모는 변경하지 않았습니다. 사람 검수 완료가 미판정 후보까지 정답을 확정했다는 뜻은 아닙니다.
 
 **부분 관련도 판정입니다.** 현재 질문–장소 판정은 253개, 판정한 장소는 72개입니다. 449건 전부에 대해 질문별 관련도를 판정한 것은 아닙니다. 남산골한옥마을을 보완했어도 다른 미판정 정답이 있을 수 있습니다. 키워드·dense·rerank의 상위 후보를 합쳐 추가 검수하고, `judged@K`와 미판정 처리 정책을 보고하세요. 미판정 후보를 자동 0점으로 두지 않습니다. Recall도 판정된 정답 집합을 기준으로 한 값임을 명시합니다.
 
@@ -151,11 +151,13 @@ JSONL에 `reference`를 직접 추가하지 말고 작성 원본을 수정한 �
 ## 작성 중인 리뷰 메모
 
 - [질문별 리뷰 읽기](review_notes_by_question.md): 100문항·273행, 후보별 들여쓰기와 원문 인용
-- [메모가 채워진 검수표](review_notes_filled_v1.3.0.csv): 기존 develop의 review.csv를 바이트 단위로 보존한 사본
+- [메모가 채워진 검수표](review_notes_filled_v1.3.0.csv): 기존 메모를 보존하고 사람 검수 완료 상태를 반영한 검수표
 - [평가 기준](evaluation_review_criteria.md): 검색 적합도와 생성 답변 평가를 구분한 기준
 - [검토 메타데이터](review_notes_metadata.json)
 
-`review.csv`는 이 버전의 작성 원본으로부터 재생성되는 검증 대상 파일입니다. 사용자가 검토할 메모는 `review_notes_filled_v1.3.0.csv`에서 이어서 작성하세요. `--build`는 메모 사본을 덮어쓰지 않습니다. 리뷰 반영은 `case_id + place_id`로 비교하고, 사람이 확정한 판정과 검수 이력을 작성 원본에 반영한 뒤 새 버전을 만드세요. AI 초안을 사람 검수 완료로 처리하지 않았습니다.
+`review.csv`는 이 버전의 작성 원본으로부터 재생성되는 검증 대상 파일입니다. 메모는 `review_notes_filled_v1.3.0.csv`에 보관하며 `--build`는 이 파일을 덮어쓰지 않습니다. 이번 상태 정정은 사용자의 검수 완료 확인에 근거하며, AI의 자동 판정을 사람 검수로 표시한 것이 아닙니다. 이후 판정 변경은 `case_id + place_id`로 작성 원본에 반영하세요.
+
+API 결과 파일에 부착된 장소 판정의 검수 상태도 동기화했습니다. 실제 검색 응답·순위·실행 시간·기존 평가 점수는 유지했습니다. 기존 `ragas_summary.json` 등의 `review_statuses`와 입력 해시는 평가 당시 기록이며 현재 검수 상태는 `manifest.json`, `validation.json`, `review_notes_metadata.json`에서 확인합니다.
 
 ## Development ranking comparison
 
