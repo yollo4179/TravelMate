@@ -44,9 +44,9 @@ v2 trace 상세 화면을 실행 증거로 함께 보관했습니다. 화면에�
 - [FastAPI endpoint span](../embedding-server/app/main.py)
 - [임베딩 추론 span](../embedding-server/routers/embed.py)
 - [리랭킹 추론 span](../embedding-server/routers/rerank.py)
-- [실행 선택과 완료 상태](../Evaluation/v1.3.0/development_run.json)
-- [v1 API 실행 결과](../Evaluation/v1.3.0/api_embedding/v1.jsonl)
-- [v2 API 실행 결과](../Evaluation/v1.3.0/api_reranking/v2.jsonl)
+- [실행 선택과 완료 상태](../Evaluation/datasets/v1.3.0/development_run.json)
+- [v1 API 실행 결과](../Evaluation/datasets/v1.3.0/api_embedding/v1.jsonl)
+- [v2 API 실행 결과](../Evaluation/datasets/v1.3.0/api_reranking/v2.jsonl)
 
 `embedding.http`와 `reranking.http`에는 네트워크 왕복뿐 아니라 서버 처리 대기와 요청/응답 직렬화가 포함됩니다. HTTP 시간과 FastAPI span의 차이는 순수 네트워크 시간이 아닙니다. DB span도 DB 서버 내부의 순수 실행만이 아니라 해당 계측 구간에서 수행한 클라이언트 작업을 포함할 수 있습니다.
 

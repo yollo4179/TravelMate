@@ -60,3 +60,6 @@ __pycache__/
 .env.*
 Evaluation/v1.3.0/.phoenix/
 Evaluation/v1.3.0/.phoenix-evaluation/
+
+Evaluation/datasets/v1.3.0/.phoenix/
+Evaluation/datasets/v1.3.0/.phoenix-evaluation/

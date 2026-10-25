@@ -1,0 +1,6 @@
+*.json text eol=lf
+*.jsonl text eol=lf
+*.md text eol=lf
+*.csv text eol=lf
+# Frozen database export; retain original bytes.
+source/snapshot.json -text whitespace=-blank-at-eol

@@ -1,0 +1,945 @@
+{
+  "migration_date": "2026-10-26",
+  "scope": "exact-byte preservation of archived versions and original v1.4.0 evaluation payloads; code and layout metadata are intentionally refactored",
+  "preserved_file_count": 147,
+  "files": [
+    {
+      "previous_path": "Evaluation/V1.4.0/common/by_track/behavior.jsonl",
+      "current_path": "Evaluation/datasets/v1.4.0/generated/by_track/behavior.jsonl",
+      "sha256": "6b36d6a707f989aa9873054f0ad39e5991502bce94bb6bd97e6bc32f1a33dc93"
+    },
+    {
+      "previous_path": "Evaluation/V1.4.0/common/by_track/memory.jsonl",
+      "current_path": "Evaluation/datasets/v1.4.0/generated/by_track/memory.jsonl",
+      "sha256": "9eae016368d82cb2416c7f8a29f4dce90342cfc8c5175dad282ccf08fc9c1853"
+    },
+    {
+      "previous_path": "Evaluation/V1.4.0/common/by_track/message.jsonl",
+      "current_path": "Evaluation/datasets/v1.4.0/generated/by_track/message.jsonl",
+      "sha256": "ea298b5b0d690c3dc8b8f6962e3f9c726039d75e8119c39ed1b602882c9dd609"
+    },
+    {
+      "previous_path": "Evaluation/V1.4.0/common/by_track/plan.jsonl",
+      "current_path": "Evaluation/datasets/v1.4.0/generated/by_track/plan.jsonl",
+      "sha256": "8d423c91ca652fc58a0aa3c3f1cfd576a955619e8f93728feffa0399741a7bfd"
+    },
+    {
+      "previous_path": "Evaluation/V1.4.0/common/by_track/search.jsonl",
+      "current_path": "Evaluation/datasets/v1.4.0/generated/by_track/search.jsonl",
+      "sha256": "05e98720b3a6ff6b6f3c2e1bbe4ca8c25fc6a20d38c40e969d0ef02a71715ea5"
+    },
+    {
+      "previous_path": "Evaluation/V1.4.0/common/by_track/state.jsonl",
+      "current_path": "Evaluation/datasets/v1.4.0/generated/by_track/state.jsonl",
+      "sha256": "21c7b21db6df2773afc556b1183b576e66f89ffa0396f97fc58138aa4a1f0af5"
+    },
+    {
+      "previous_path": "Evaluation/V1.4.0/common/by_track/tool_call.jsonl",
+      "current_path": "Evaluation/datasets/v1.4.0/generated/by_track/tool_call.jsonl",
+      "sha256": "ea298b5b0d690c3dc8b8f6962e3f9c726039d75e8119c39ed1b602882c9dd609"
+    },
+    {
+      "previous_path": "Evaluation/V1.4.0/common/by_type/CLARIFICATION.jsonl",
+      "current_path": "Evaluation/datasets/v1.4.0/generated/by_type/CLARIFICATION.jsonl",
+      "sha256": "2ba4864ce1addc91d48051f29bbb8dfcf8fd30f38fc0133ca72a6d56bf08dfb1"
+    },
+    {
+      "previous_path": "Evaluation/V1.4.0/common/by_type/PLACES.jsonl",
+      "current_path": "Evaluation/datasets/v1.4.0/generated/by_type/PLACES.jsonl",
+      "sha256": "05e98720b3a6ff6b6f3c2e1bbe4ca8c25fc6a20d38c40e969d0ef02a71715ea5"
+    },
+    {
+      "previous_path": "Evaluation/V1.4.0/common/by_type/PLAN.jsonl",
+      "current_path": "Evaluation/datasets/v1.4.0/generated/by_type/PLAN.jsonl",
+      "sha256": "d0ecca72e46704f05c6497f65a81a1667139cf3a8b42662fc0e8867d7364d5fc"
+    },
+    {
+      "previous_path": "Evaluation/V1.4.0/common/by_type/PLAN_DIFF.jsonl",
+      "current_path": "Evaluation/datasets/v1.4.0/generated/by_type/PLAN_DIFF.jsonl",
+      "sha256": "d2083ddc7131d4cec217e300d63336718212c240557852cfc68ee5a6d5ad2507"
+    },
+    {
+      "previous_path": "Evaluation/V1.4.0/common/by_type/TEXT.jsonl",
+      "current_path": "Evaluation/datasets/v1.4.0/generated/by_type/TEXT.jsonl",
+      "sha256": "4d9e0190c112c40fd7097e8d5c6c2ea632c4460ed5e12b1fbc586d7f5edc0bab"
+    },
+    {
+      "previous_path": "Evaluation/V1.4.0/common/cases.source.json",
+      "current_path": "Evaluation/datasets/v1.4.0/source/cases.source.json",
+      "sha256": "69a9f84a51d936fe24b312eda788ddce5e7d854a888b172f91ae672245c6ef66"
+    },
+    {
+      "previous_path": "Evaluation/V1.4.0/common/corpus.json",
+      "current_path": "Evaluation/datasets/v1.4.0/source/corpus.source.json",
+      "sha256": "c74e902620687cbe8b7ec61a24eb7932e95f8cf7a90762baef5e78ad0b134f9e"
+    },
+    {
+      "previous_path": "Evaluation/V1.4.0/common/development.jsonl",
+      "current_path": "Evaluation/datasets/v1.4.0/generated/development.jsonl",
+      "sha256": "22222ddba11595827dd8df48208f5307b167157b9380ef86f0dece3407203f85"
+    },
+    {
+      "previous_path": "Evaluation/V1.4.0/common/envelope.schema.json",
+      "current_path": "Evaluation/datasets/v1.4.0/generated/schemas/envelope.schema.json",
+      "sha256": "d6b5c315db4bc0ea46f0cd7b6e280280036411f831e23ee3975f2e2182adfa0a"
+    },
+    {
+      "previous_path": "Evaluation/V1.4.0/common/golden.jsonl",
+      "current_path": "Evaluation/datasets/v1.4.0/generated/golden.jsonl",
+      "sha256": "ea298b5b0d690c3dc8b8f6962e3f9c726039d75e8119c39ed1b602882c9dd609"
+    },
+    {
+      "previous_path": "Evaluation/V1.4.0/common/judge_config.json",
+      "current_path": "Evaluation/datasets/v1.4.0/source/judge_config.json",
+      "sha256": "18af21f72e6f150bc24d3406c2504f8bc75a4482b14d1d6cda511d185b1d237a"
+    },
+    {
+      "previous_path": "Evaluation/V1.4.0/common/persona/guide_v1.json",
+      "current_path": "Evaluation/datasets/v1.4.0/source/persona/guide_v1.json",
+      "sha256": "3b41ec5b4003ca479ff251227a8903ca67f167644dfda0950876aa00707d8621"
+    },
+    {
+      "previous_path": "Evaluation/V1.4.0/common/response_record.schema.json",
+      "current_path": "Evaluation/datasets/v1.4.0/generated/schemas/response_record.schema.json",
+      "sha256": "f53ce3b11cb36ad607f86a008ad451865a4b61e0ba9bcfa93d4464e8041f56b8"
+    },
+    {
+      "previous_path": "Evaluation/V1.4.0/common/snapshot.json",
+      "current_path": "Evaluation/datasets/v1.4.0/source/snapshot.json",
+      "sha256": "410a9c3c46004cb30644455fe9d5ddb01a52a04a700ffe04159605cf94661218"
+    },
+    {
+      "previous_path": "Evaluation/V1.4.0/common/source_goldenset_v1.3.0.jsonl",
+      "current_path": "Evaluation/datasets/v1.4.0/source/source_goldenset_v1.3.0.jsonl",
+      "sha256": "a78586859b6010dca40b5b68c3c98cbbec3834c863f620d0b3e919fb605eaac3"
+    },
+    {
+      "previous_path": "Evaluation/V1.4.0/common/source_review_notes.csv",
+      "current_path": "Evaluation/datasets/v1.4.0/source/review_notes.csv",
+      "sha256": "2f2f3ebc4287fb96ab3ad5977a81834ad966228327ca3829189926eac346f9c2"
+    },
+    {
+      "previous_path": "Evaluation/V1.4.0/common/test.jsonl",
+      "current_path": "Evaluation/datasets/v1.4.0/generated/test.jsonl",
+      "sha256": "5e1ec992c9c3e3107a99f743892e1b4819d0b24b4443be213c2973279fdf1682"
+    },
+    {
+      "previous_path": "Evaluation/V1.4.0/common/tool_arguments.schema.json",
+      "current_path": "Evaluation/datasets/v1.4.0/generated/schemas/tool_arguments.schema.json",
+      "sha256": "445d5324ec952e7bbac16a20e2098779bb0c9514aae72cdba3b30f1d68cc2499"
+    },
+    {
+      "previous_path": "Evaluation/V1.4.0/common/tool_contracts.json",
+      "current_path": "Evaluation/datasets/v1.4.0/generated/schemas/tool_contracts.json",
+      "sha256": "69574ebfc08a9e3bd53fb7e31af33abb8a2eb1c72edd482a637fae995d6a699e"
+    },
+    {
+      "previous_path": "Evaluation/V1.4.0/managerLLM/by_type/CLARIFICATION.jsonl",
+      "current_path": "Evaluation/datasets/v1.4.0/generated/by_group/managerLLM/by_type/CLARIFICATION.jsonl",
+      "sha256": "2ba4864ce1addc91d48051f29bbb8dfcf8fd30f38fc0133ca72a6d56bf08dfb1"
+    },
+    {
+      "previous_path": "Evaluation/V1.4.0/managerLLM/by_type/PLACES.jsonl",
+      "current_path": "Evaluation/datasets/v1.4.0/generated/by_group/managerLLM/by_type/PLACES.jsonl",
+      "sha256": "b283e1a2bfaf05fca68b5d539df32564f287efd4392dcf9070ad0088cc856151"
+    },
+    {
+      "previous_path": "Evaluation/V1.4.0/managerLLM/by_type/PLAN.jsonl",
+      "current_path": "Evaluation/datasets/v1.4.0/generated/by_group/managerLLM/by_type/PLAN.jsonl",
+      "sha256": "02b8acd4c054402a0461b53210bb388d3d17a024126641ec128d70027a7cf6b8"
+    },
+    {
+      "previous_path": "Evaluation/V1.4.0/managerLLM/by_type/PLAN_DIFF.jsonl",
+      "current_path": "Evaluation/datasets/v1.4.0/generated/by_group/managerLLM/by_type/PLAN_DIFF.jsonl",
+      "sha256": "d2083ddc7131d4cec217e300d63336718212c240557852cfc68ee5a6d5ad2507"
+    },
+    {
+      "previous_path": "Evaluation/V1.4.0/managerLLM/by_type/TEXT.jsonl",
+      "current_path": "Evaluation/datasets/v1.4.0/generated/by_group/managerLLM/by_type/TEXT.jsonl",
+      "sha256": "4d9e0190c112c40fd7097e8d5c6c2ea632c4460ed5e12b1fbc586d7f5edc0bab"
+    },
+    {
+      "previous_path": "Evaluation/V1.4.0/managerLLM/development.jsonl",
+      "current_path": "Evaluation/datasets/v1.4.0/generated/by_group/managerLLM/development.jsonl",
+      "sha256": "6a792b29633c299a56cf485256bf7837b3767066e124483f29105faf8e8406d8"
+    },
+    {
+      "previous_path": "Evaluation/V1.4.0/managerLLM/golden.jsonl",
+      "current_path": "Evaluation/datasets/v1.4.0/generated/by_group/managerLLM/golden.jsonl",
+      "sha256": "aa10b5dfc281054535d12b312c0570b553a92c0cbd6fa62917b92248bef5543b"
+    },
+    {
+      "previous_path": "Evaluation/V1.4.0/managerLLM/rubric.md",
+      "current_path": "Evaluation/datasets/v1.4.0/rubrics/behavior.md",
+      "sha256": "766cb078412ac9922efc7bacc37d8f60b37a33166b03474d017690d6e1b36ff3"
+    },
+    {
+      "previous_path": "Evaluation/V1.4.0/managerLLM/test.jsonl",
+      "current_path": "Evaluation/datasets/v1.4.0/generated/by_group/managerLLM/test.jsonl",
+      "sha256": "af6f361fbec158a3f04faca19431228f808133c7f2796a59d77453ec81cc0041"
+    },
+    {
+      "previous_path": "Evaluation/V1.4.0/plannerLLM/by_type/CLARIFICATION.jsonl",
+      "current_path": "Evaluation/datasets/v1.4.0/generated/by_group/plannerLLM/by_type/CLARIFICATION.jsonl",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "previous_path": "Evaluation/V1.4.0/plannerLLM/by_type/PLACES.jsonl",
+      "current_path": "Evaluation/datasets/v1.4.0/generated/by_group/plannerLLM/by_type/PLACES.jsonl",
+      "sha256": "f6823147f5bb9684ada27daf3fd2dfbf43aba2ddfb282c1fd33ad3f6b012912b"
+    },
+    {
+      "previous_path": "Evaluation/V1.4.0/plannerLLM/by_type/PLAN.jsonl",
+      "current_path": "Evaluation/datasets/v1.4.0/generated/by_group/plannerLLM/by_type/PLAN.jsonl",
+      "sha256": "fd46444dce04bc25c980c236216d954620428357ff4b9901d3376ba8aed4bcbd"
+    },
+    {
+      "previous_path": "Evaluation/V1.4.0/plannerLLM/by_type/PLAN_DIFF.jsonl",
+      "current_path": "Evaluation/datasets/v1.4.0/generated/by_group/plannerLLM/by_type/PLAN_DIFF.jsonl",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "previous_path": "Evaluation/V1.4.0/plannerLLM/by_type/TEXT.jsonl",
+      "current_path": "Evaluation/datasets/v1.4.0/generated/by_group/plannerLLM/by_type/TEXT.jsonl",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "previous_path": "Evaluation/V1.4.0/plannerLLM/development.jsonl",
+      "current_path": "Evaluation/datasets/v1.4.0/generated/by_group/plannerLLM/development.jsonl",
+      "sha256": "56647354cb0c805b144d5d1a05c2f3b1167e2e65803f974c7ef837e360530ee7"
+    },
+    {
+      "previous_path": "Evaluation/V1.4.0/plannerLLM/golden.jsonl",
+      "current_path": "Evaluation/datasets/v1.4.0/generated/by_group/plannerLLM/golden.jsonl",
+      "sha256": "923804a8a4d56ff6dbdba7d627781c38a2926eb224941ee561deff65a36a6166"
+    },
+    {
+      "previous_path": "Evaluation/V1.4.0/plannerLLM/rubric.md",
+      "current_path": "Evaluation/datasets/v1.4.0/rubrics/plan_quality.md",
+      "sha256": "b92bbb17285be0f1aef881644ead4f40b656107b8e48e74e431431094e0eba46"
+    },
+    {
+      "previous_path": "Evaluation/V1.4.0/plannerLLM/test.jsonl",
+      "current_path": "Evaluation/datasets/v1.4.0/generated/by_group/plannerLLM/test.jsonl",
+      "sha256": "ef604d821d49e629db9992dca0ef5befff9d092fa45ad57b5b7ef276aa508a2b"
+    },
+    {
+      "previous_path": "Evaluation/v1.1.0/.gitattributes",
+      "current_path": "Evaluation/datasets/v1.1.0/.gitattributes",
+      "sha256": "8fc8ae72e7c698ecf6f336b04fb706e38f709ae04906ed16a64aa529c1473188"
+    },
+    {
+      "previous_path": "Evaluation/v1.1.0/CHANGELOG.md",
+      "current_path": "Evaluation/datasets/v1.1.0/CHANGELOG.md",
+      "sha256": "e6255340af529dfb0116871860cab44935329c770ace906c23bd8671cf62807a"
+    },
+    {
+      "previous_path": "Evaluation/v1.1.0/README.md",
+      "current_path": "Evaluation/datasets/v1.1.0/README.md",
+      "sha256": "f2bef6e87a8e639b0ab0bd0b2b33472cb528266fcd3af7de90d373dec6b45092"
+    },
+    {
+      "previous_path": "Evaluation/v1.1.0/answer_behavior.jsonl",
+      "current_path": "Evaluation/datasets/v1.1.0/answer_behavior.jsonl",
+      "sha256": "81325016749a7d027e017d01e6c39b3db786d778a43b9447a2071d7b24c6aaec"
+    },
+    {
+      "previous_path": "Evaluation/v1.1.0/build_dataset.py",
+      "current_path": "Evaluation/datasets/v1.1.0/build_dataset.py",
+      "sha256": "9a42c3d1aa52ae521970f3219394a578eb525b4ca952da866ece34eceef1b4a7"
+    },
+    {
+      "previous_path": "Evaluation/v1.1.0/cases.source.json",
+      "current_path": "Evaluation/datasets/v1.1.0/cases.source.json",
+      "sha256": "1fd0d14077dc2b902200efd032c8ae77704bbba8be6acee7f52dcb40f34e4c2b"
+    },
+    {
+      "previous_path": "Evaluation/v1.1.0/changes.csv",
+      "current_path": "Evaluation/datasets/v1.1.0/changes.csv",
+      "sha256": "ac9e2d26d8f10c1d15312214df8d06731288e236473bcff66002ec5203a8d0b1"
+    },
+    {
+      "previous_path": "Evaluation/v1.1.0/context_search.jsonl",
+      "current_path": "Evaluation/datasets/v1.1.0/context_search.jsonl",
+      "sha256": "e128d9a6327a38c763591f01e7823f6bda183b5e9f897a5559f4a0fd4a200d56"
+    },
+    {
+      "previous_path": "Evaluation/v1.1.0/corpus.json",
+      "current_path": "Evaluation/datasets/v1.1.0/corpus.json",
+      "sha256": "c74e902620687cbe8b7ec61a24eb7932e95f8cf7a90762baef5e78ad0b134f9e"
+    },
+    {
+      "previous_path": "Evaluation/v1.1.0/development.jsonl",
+      "current_path": "Evaluation/datasets/v1.1.0/development.jsonl",
+      "sha256": "c17ec1d3f4da30412c61161dfdee366b76e4d3dbf1b72b41d095b46123815bfa"
+    },
+    {
+      "previous_path": "Evaluation/v1.1.0/golden.jsonl",
+      "current_path": "Evaluation/datasets/v1.1.0/golden.jsonl",
+      "sha256": "91ec65cf4979db173bef47b320fb897604bf4cc948b00cb4c08c0e1aed232d41"
+    },
+    {
+      "previous_path": "Evaluation/v1.1.0/manifest.json",
+      "current_path": "Evaluation/datasets/v1.1.0/manifest.json",
+      "sha256": "928208d08edbc7ef5dd97fa769d12fa196667b0711bad087700fbd71abcf0b78"
+    },
+    {
+      "previous_path": "Evaluation/v1.1.0/places.csv",
+      "current_path": "Evaluation/datasets/v1.1.0/places.csv",
+      "sha256": "9adf76b5f0d6f3ac01c3286ff059e0abd0e3806f8a863380a6778edd758c3c94"
+    },
+    {
+      "previous_path": "Evaluation/v1.1.0/review.csv",
+      "current_path": "Evaluation/datasets/v1.1.0/review.csv",
+      "sha256": "e51344dc869dfbd5956b33db90a24ae7251a2112682626f4d59d79143680f3fb"
+    },
+    {
+      "previous_path": "Evaluation/v1.1.0/run.sh",
+      "current_path": "Evaluation/datasets/v1.1.0/run.sh",
+      "sha256": "308e38bc38ee19d2d7844c89c5c4e1a34fb605c51675b798c230afed6905fb81"
+    },
+    {
+      "previous_path": "Evaluation/v1.1.0/search_api.jsonl",
+      "current_path": "Evaluation/datasets/v1.1.0/search_api.jsonl",
+      "sha256": "c8d7a45867b0c48f719ed87777868c4a0fca812aa9f9be8073d7d644eeaf9406"
+    },
+    {
+      "previous_path": "Evaluation/v1.1.0/snapshot.json",
+      "current_path": "Evaluation/datasets/v1.1.0/snapshot.json",
+      "sha256": "410a9c3c46004cb30644455fe9d5ddb01a52a04a700ffe04159605cf94661218"
+    },
+    {
+      "previous_path": "Evaluation/v1.1.0/test.jsonl",
+      "current_path": "Evaluation/datasets/v1.1.0/test.jsonl",
+      "sha256": "2ac4706ff1199a4b7cdb540847bf86ae5aa08106f783ba985b375cd1c8d815fa"
+    },
+    {
+      "previous_path": "Evaluation/v1.1.0/tests/test_dataset.py",
+      "current_path": "Evaluation/datasets/v1.1.0/tests/test_dataset.py",
+      "sha256": "ba9ba6dd6edfc1b4165e568808191967b64b6d44451b5a2acb65534172cb87a8"
+    },
+    {
+      "previous_path": "Evaluation/v1.1.0/validation.json",
+      "current_path": "Evaluation/datasets/v1.1.0/validation.json",
+      "sha256": "5b5cd5035eecf4177086834ad9d310d8570ba260ac1c1379a1da4c2c54118c9c"
+    },
+    {
+      "previous_path": "Evaluation/v1.1.0/verification/README.md",
+      "current_path": "Evaluation/datasets/v1.1.0/verification/README.md",
+      "sha256": "01c070819b2fcd43ca509550f6a0d5be845e2307e59ef3e4348a9885cc68e006"
+    },
+    {
+      "previous_path": "Evaluation/v1.1.0/verification/independent_audit.json",
+      "current_path": "Evaluation/datasets/v1.1.0/verification/independent_audit.json",
+      "sha256": "13e184a7d6f1ee3e9fbb1ef55fdcf1f8c520970ed9ea4309b7c68d1a3fd54186"
+    },
+    {
+      "previous_path": "Evaluation/v1.2.0/.gitattributes",
+      "current_path": "Evaluation/datasets/v1.2.0/.gitattributes",
+      "sha256": "8fc8ae72e7c698ecf6f336b04fb706e38f709ae04906ed16a64aa529c1473188"
+    },
+    {
+      "previous_path": "Evaluation/v1.2.0/CHANGELOG.md",
+      "current_path": "Evaluation/datasets/v1.2.0/CHANGELOG.md",
+      "sha256": "bcf38c43cc108a8a17dfb1d47595c9aa6396c40a46482dda34719ec046480404"
+    },
+    {
+      "previous_path": "Evaluation/v1.2.0/README.md",
+      "current_path": "Evaluation/datasets/v1.2.0/README.md",
+      "sha256": "be9d42858b995c3ca3c174969eecac5ddd25fda2675f11a01640d738df056e60"
+    },
+    {
+      "previous_path": "Evaluation/v1.2.0/answer_behavior.jsonl",
+      "current_path": "Evaluation/datasets/v1.2.0/answer_behavior.jsonl",
+      "sha256": "407caa4ca00254318fb640d2a0306bde95332d344154f389638166e84008be29"
+    },
+    {
+      "previous_path": "Evaluation/v1.2.0/build_dataset.py",
+      "current_path": "Evaluation/datasets/v1.2.0/build_dataset.py",
+      "sha256": "9a42c3d1aa52ae521970f3219394a578eb525b4ca952da866ece34eceef1b4a7"
+    },
+    {
+      "previous_path": "Evaluation/v1.2.0/cases.source.json",
+      "current_path": "Evaluation/datasets/v1.2.0/cases.source.json",
+      "sha256": "38aab415c753fa4f15511de264fa1a8fd3ca45da4c8a3e3431869e492e20fffa"
+    },
+    {
+      "previous_path": "Evaluation/v1.2.0/changes.csv",
+      "current_path": "Evaluation/datasets/v1.2.0/changes.csv",
+      "sha256": "ac9e2d26d8f10c1d15312214df8d06731288e236473bcff66002ec5203a8d0b1"
+    },
+    {
+      "previous_path": "Evaluation/v1.2.0/changes_1.2.0.csv",
+      "current_path": "Evaluation/datasets/v1.2.0/changes_1.2.0.csv",
+      "sha256": "718f926967eb589e271c0f3162b866e73d81b8cd9de5bcd1d61435b0aa2fda65"
+    },
+    {
+      "previous_path": "Evaluation/v1.2.0/context_search.jsonl",
+      "current_path": "Evaluation/datasets/v1.2.0/context_search.jsonl",
+      "sha256": "0bdb00cfb976268238a13256c426cf85fe21cbc10f1e3bc94a708213f6f49291"
+    },
+    {
+      "previous_path": "Evaluation/v1.2.0/corpus.json",
+      "current_path": "Evaluation/datasets/v1.2.0/corpus.json",
+      "sha256": "c74e902620687cbe8b7ec61a24eb7932e95f8cf7a90762baef5e78ad0b134f9e"
+    },
+    {
+      "previous_path": "Evaluation/v1.2.0/development.jsonl",
+      "current_path": "Evaluation/datasets/v1.2.0/development.jsonl",
+      "sha256": "74b323cab2ca518e72a6708b6c6ade4b703a07ca55678287707e72134ea4bfdf"
+    },
+    {
+      "previous_path": "Evaluation/v1.2.0/golden.jsonl",
+      "current_path": "Evaluation/datasets/v1.2.0/golden.jsonl",
+      "sha256": "b3e0d38d757df8781142926d7101ccb2c57165a493f6dd227b200b9f9cc2df78"
+    },
+    {
+      "previous_path": "Evaluation/v1.2.0/manifest.json",
+      "current_path": "Evaluation/datasets/v1.2.0/manifest.json",
+      "sha256": "f291067a30a243c638398faece59d660fea11df39feff3ba080e28914dd86f48"
+    },
+    {
+      "previous_path": "Evaluation/v1.2.0/places.csv",
+      "current_path": "Evaluation/datasets/v1.2.0/places.csv",
+      "sha256": "9adf76b5f0d6f3ac01c3286ff059e0abd0e3806f8a863380a6778edd758c3c94"
+    },
+    {
+      "previous_path": "Evaluation/v1.2.0/review.csv",
+      "current_path": "Evaluation/datasets/v1.2.0/review.csv",
+      "sha256": "0ce94bb09787d497b8897288994c5eb04c177407cb51d5ce828e5f1ec4c46d81"
+    },
+    {
+      "previous_path": "Evaluation/v1.2.0/run.sh",
+      "current_path": "Evaluation/datasets/v1.2.0/run.sh",
+      "sha256": "308e38bc38ee19d2d7844c89c5c4e1a34fb605c51675b798c230afed6905fb81"
+    },
+    {
+      "previous_path": "Evaluation/v1.2.0/search_api.jsonl",
+      "current_path": "Evaluation/datasets/v1.2.0/search_api.jsonl",
+      "sha256": "7aa081268049c2d7b230309591a1ca1ad132fcb6fcc864ff175d5953898e5399"
+    },
+    {
+      "previous_path": "Evaluation/v1.2.0/snapshot.json",
+      "current_path": "Evaluation/datasets/v1.2.0/snapshot.json",
+      "sha256": "410a9c3c46004cb30644455fe9d5ddb01a52a04a700ffe04159605cf94661218"
+    },
+    {
+      "previous_path": "Evaluation/v1.2.0/test.jsonl",
+      "current_path": "Evaluation/datasets/v1.2.0/test.jsonl",
+      "sha256": "e354f50da361f81fd2d68a8243943ac302a5ddac57422cb325c21bed75666d35"
+    },
+    {
+      "previous_path": "Evaluation/v1.2.0/tests/test_dataset.py",
+      "current_path": "Evaluation/datasets/v1.2.0/tests/test_dataset.py",
+      "sha256": "ba9ba6dd6edfc1b4165e568808191967b64b6d44451b5a2acb65534172cb87a8"
+    },
+    {
+      "previous_path": "Evaluation/v1.2.0/validation.json",
+      "current_path": "Evaluation/datasets/v1.2.0/validation.json",
+      "sha256": "dc8c33be875c05f541de2a65bf16d75b87eddfeb25d627f66a32ceb10e30bf49"
+    },
+    {
+      "previous_path": "Evaluation/v1.3.0/.gitattributes",
+      "current_path": "Evaluation/datasets/v1.3.0/.gitattributes",
+      "sha256": "4616d9e397ab3f9a0bb7fa3e8430556ddecbedfc6080e137385624cb2c9edce8"
+    },
+    {
+      "previous_path": "Evaluation/v1.3.0/CHANGELOG.md",
+      "current_path": "Evaluation/datasets/v1.3.0/CHANGELOG.md",
+      "sha256": "9bd58a29261727473b83cd8227cdd6310da2bd774a1aa1811b81c366e956e6f8"
+    },
+    {
+      "previous_path": "Evaluation/v1.3.0/LLM_JUDGE_RUBRIC.md",
+      "current_path": "Evaluation/datasets/v1.3.0/LLM_JUDGE_RUBRIC.md",
+      "sha256": "f1f97d6089c357d6accf5bd1ca973a345934fb3b4548cfcece444a330a07d5ff"
+    },
+    {
+      "previous_path": "Evaluation/v1.3.0/RAGAS_RUNNER.md",
+      "current_path": "Evaluation/datasets/v1.3.0/RAGAS_RUNNER.md",
+      "sha256": "234c1d4b038a69280b454ca54ad436919d5f4f0e4d8e4451da0d5c5748f71fc0"
+    },
+    {
+      "previous_path": "Evaluation/v1.3.0/README.md",
+      "current_path": "Evaluation/datasets/v1.3.0/README.md",
+      "sha256": "e931cb4a48c78c153da7b0adc300208d969332975f112554682cbfcc22c65a9b"
+    },
+    {
+      "previous_path": "Evaluation/v1.3.0/answer_behavior.jsonl",
+      "current_path": "Evaluation/datasets/v1.3.0/answer_behavior.jsonl",
+      "sha256": "f3a7fe9014be0287abbb5ff1c9ed4a09094ec222b54e164618aa76059ff6c255"
+    },
+    {
+      "previous_path": "Evaluation/v1.3.0/api_embedding/fastapi_embed_smoke.json",
+      "current_path": "Evaluation/datasets/v1.3.0/api_embedding/fastapi_embed_smoke.json",
+      "sha256": "5231313825f67204f16e694450a0b53ff8f6b9e4c7e48a7cfb11749c6da0f784"
+    },
+    {
+      "previous_path": "Evaluation/v1.3.0/api_embedding/v1.jsonl",
+      "current_path": "Evaluation/datasets/v1.3.0/api_embedding/v1.jsonl",
+      "sha256": "34fdbed2784de5a4cf539ff3504bf35f7725662942916ea56e7f7acce4b87c8f"
+    },
+    {
+      "previous_path": "Evaluation/v1.3.0/api_reranking/v2.jsonl",
+      "current_path": "Evaluation/datasets/v1.3.0/api_reranking/v2.jsonl",
+      "sha256": "9d3d0ffe7839a823ab15fd68ee34bd378aafb54e5e1bd9c5b49d22f42e842b03"
+    },
+    {
+      "previous_path": "Evaluation/v1.3.0/build_dataset.py",
+      "current_path": "Evaluation/datasets/v1.3.0/build_dataset.py",
+      "sha256": "75d283cfc6157aa9ee1382d611e6b9b6b2307295126a30346feb4fa6c9890ccb"
+    },
+    {
+      "previous_path": "Evaluation/v1.3.0/cases.source.json",
+      "current_path": "Evaluation/datasets/v1.3.0/cases.source.json",
+      "sha256": "ca7632955691d0b043b02b1fd5216767c747855ccbe314388f5ac22b83ebf72b"
+    },
+    {
+      "previous_path": "Evaluation/v1.3.0/changes_1.3.0.csv",
+      "current_path": "Evaluation/datasets/v1.3.0/changes_1.3.0.csv",
+      "sha256": "440f804b04f1172a9f35a0bd3c9172728394a32ec5f6e85d294e800c84ac67be"
+    },
+    {
+      "previous_path": "Evaluation/v1.3.0/context_search.jsonl",
+      "current_path": "Evaluation/datasets/v1.3.0/context_search.jsonl",
+      "sha256": "88596e52d7eb3507866ef182f09fb9b482fd4b7c6d5c45fbc27ec95974e7b196"
+    },
+    {
+      "previous_path": "Evaluation/v1.3.0/corpus.json",
+      "current_path": "Evaluation/datasets/v1.3.0/corpus.json",
+      "sha256": "c74e902620687cbe8b7ec61a24eb7932e95f8cf7a90762baef5e78ad0b134f9e"
+    },
+    {
+      "previous_path": "Evaluation/v1.3.0/development.jsonl",
+      "current_path": "Evaluation/datasets/v1.3.0/development.jsonl",
+      "sha256": "40a155755f18c87bba43388ec9ecabe7835f857ea75946bc8467164abc97c2cc"
+    },
+    {
+      "previous_path": "Evaluation/v1.3.0/development_run.json",
+      "current_path": "Evaluation/datasets/v1.3.0/development_run.json",
+      "sha256": "e1696c2644758bbfc380b0f6fa29264cd2344cb2d7fde1a9fcaa2989ae5fcd44"
+    },
+    {
+      "previous_path": "Evaluation/v1.3.0/evaluate_ranking.py",
+      "current_path": "Evaluation/datasets/v1.3.0/evaluate_ranking.py",
+      "sha256": "049b24162dc6e8e9c37bc63e49b7093c98142682c4397a35827c87d5e7865233"
+    },
+    {
+      "previous_path": "Evaluation/v1.3.0/evaluation_review_criteria.md",
+      "current_path": "Evaluation/datasets/v1.3.0/evaluation_review_criteria.md",
+      "sha256": "76b72cc0c88ed820ee59365f3e10db15bf42a7cdbef60b175a5a06f22c881dc7"
+    },
+    {
+      "previous_path": "Evaluation/v1.3.0/golden.jsonl",
+      "current_path": "Evaluation/datasets/v1.3.0/golden.jsonl",
+      "sha256": "a78586859b6010dca40b5b68c3c98cbbec3834c863f620d0b3e919fb605eaac3"
+    },
+    {
+      "previous_path": "Evaluation/v1.3.0/manifest.json",
+      "current_path": "Evaluation/datasets/v1.3.0/manifest.json",
+      "sha256": "622c68fecf49b9f52a357d9a6eb140f8b6b65889b361db9b805f8b80b05901d5"
+    },
+    {
+      "previous_path": "Evaluation/v1.3.0/places.csv",
+      "current_path": "Evaluation/datasets/v1.3.0/places.csv",
+      "sha256": "9adf76b5f0d6f3ac01c3286ff059e0abd0e3806f8a863380a6778edd758c3c94"
+    },
+    {
+      "previous_path": "Evaluation/v1.3.0/ragas_config.json",
+      "current_path": "Evaluation/datasets/v1.3.0/ragas_config.json",
+      "sha256": "b83a9dcf7633f689ff20683ce833f2c8e2bf3a104668177f1a897470149bd23d"
+    },
+    {
+      "previous_path": "Evaluation/v1.3.0/ragas_llm_precheck.json",
+      "current_path": "Evaluation/datasets/v1.3.0/ragas_llm_precheck.json",
+      "sha256": "423b9c3898ea4a5f2d644af7776749bd54d652afa4e689d85b0da785ab4700bc"
+    },
+    {
+      "previous_path": "Evaluation/v1.3.0/ragas_results.jsonl",
+      "current_path": "Evaluation/datasets/v1.3.0/ragas_results.jsonl",
+      "sha256": "c0c6745b715cae39d0c2e0b85163d3dd81f799b585510ef4d710b2522e0c2510"
+    },
+    {
+      "previous_path": "Evaluation/v1.3.0/ragas_summary.json",
+      "current_path": "Evaluation/datasets/v1.3.0/ragas_summary.json",
+      "sha256": "bbc79f756d618241c5da15b28c8443659c812cbf2d06f2ff4f84d38eac546ce4"
+    },
+    {
+      "previous_path": "Evaluation/v1.3.0/ragas_support/__init__.py",
+      "current_path": "Evaluation/datasets/v1.3.0/ragas_support/__init__.py",
+      "sha256": "ad973f9c71e96534c03cbe2662046d786f70c52c89a86970d421b32f6cd01c38"
+    },
+    {
+      "previous_path": "Evaluation/v1.3.0/ragas_support/backend.py",
+      "current_path": "Evaluation/datasets/v1.3.0/ragas_support/backend.py",
+      "sha256": "5e6a4783e3b5cbd6003b992d94b0922bf1670a370665a39bafa4f63c49736387"
+    },
+    {
+      "previous_path": "Evaluation/v1.3.0/ragas_support/inputs.py",
+      "current_path": "Evaluation/datasets/v1.3.0/ragas_support/inputs.py",
+      "sha256": "54714d76640d24cc2fb22a4fe5c58953fec664f033277c5c61281ad1058c5376"
+    },
+    {
+      "previous_path": "Evaluation/v1.3.0/ragas_support/judge.py",
+      "current_path": "Evaluation/datasets/v1.3.0/ragas_support/judge.py",
+      "sha256": "b23752734a840fcfcd1764b3b00b56dcef04fcfbe4d79b655d22b17c46655079"
+    },
+    {
+      "previous_path": "Evaluation/v1.3.0/ragas_support/judge_schema.py",
+      "current_path": "Evaluation/datasets/v1.3.0/ragas_support/judge_schema.py",
+      "sha256": "65dd81e18426d8bde51e951fcb92941e01eada27b17e199e50f9de0392ac4055"
+    },
+    {
+      "previous_path": "Evaluation/v1.3.0/ragas_support/langsmith_observability.py",
+      "current_path": "Evaluation/datasets/v1.3.0/ragas_support/langsmith_observability.py",
+      "sha256": "0b2a376048e41a43a0e2ec0ef2133686e5c39e292d5bc5a033c9975753541c20"
+    },
+    {
+      "previous_path": "Evaluation/v1.3.0/ragas_support/precheck.py",
+      "current_path": "Evaluation/datasets/v1.3.0/ragas_support/precheck.py",
+      "sha256": "99f34ee8c4e124c321eec32a50d2ea508cfaa82506ea622c2937a969b482e0a1"
+    },
+    {
+      "previous_path": "Evaluation/v1.3.0/ragas_support/reporting.py",
+      "current_path": "Evaluation/datasets/v1.3.0/ragas_support/reporting.py",
+      "sha256": "7e4bcc695e5ef29ef3a4b82b64f3edf331356dbdc1ae0c0efe002918cea8eca0"
+    },
+    {
+      "previous_path": "Evaluation/v1.3.0/ragas_support/settings.py",
+      "current_path": "Evaluation/datasets/v1.3.0/ragas_support/settings.py",
+      "sha256": "839a5169b7dadfd1f39f8743af691ef9c258e849f3edc4c9c19e86f0dad9f445"
+    },
+    {
+      "previous_path": "Evaluation/v1.3.0/ranking_at_10/results.jsonl",
+      "current_path": "Evaluation/datasets/v1.3.0/ranking_at_10/results.jsonl",
+      "sha256": "5ea1ea5abec16aa554d3529298ad45be8fadd0a85eed8f94d39bc6d3bb13a6b3"
+    },
+    {
+      "previous_path": "Evaluation/v1.3.0/ranking_at_10/run.log",
+      "current_path": "Evaluation/datasets/v1.3.0/ranking_at_10/run.log",
+      "sha256": "84507fbc31cbe1988f207e7bdd6a92c593506ec51d8bbf0da29bef38ecca939e"
+    },
+    {
+      "previous_path": "Evaluation/v1.3.0/ranking_at_10/summary.json",
+      "current_path": "Evaluation/datasets/v1.3.0/ranking_at_10/summary.json",
+      "sha256": "e5e323b374f02648cd28c84524a29f02be5eb3c707c9fbfb954e1bec9ecf803b"
+    },
+    {
+      "previous_path": "Evaluation/v1.3.0/ranking_at_5/results.jsonl",
+      "current_path": "Evaluation/datasets/v1.3.0/ranking_at_5/results.jsonl",
+      "sha256": "e3a28645e5acfac32cdaa844af433da2c6f1e4bd2f4b6fe915f3423ca965b553"
+    },
+    {
+      "previous_path": "Evaluation/v1.3.0/ranking_at_5/run.log",
+      "current_path": "Evaluation/datasets/v1.3.0/ranking_at_5/run.log",
+      "sha256": "60890c30a8c79c26d9a3ee8a2925e9a7a92042772ca0809a783d7c5cfa9d16f8"
+    },
+    {
+      "previous_path": "Evaluation/v1.3.0/ranking_at_5/summary.json",
+      "current_path": "Evaluation/datasets/v1.3.0/ranking_at_5/summary.json",
+      "sha256": "380d9b647d2a7946d538b8a22f00b8b7bd6188b8cdbd3ca9f70b74b664efaaaf"
+    },
+    {
+      "previous_path": "Evaluation/v1.3.0/ranking_results.jsonl",
+      "current_path": "Evaluation/datasets/v1.3.0/ranking_results.jsonl",
+      "sha256": "5ea1ea5abec16aa554d3529298ad45be8fadd0a85eed8f94d39bc6d3bb13a6b3"
+    },
+    {
+      "previous_path": "Evaluation/v1.3.0/ranking_summary.json",
+      "current_path": "Evaluation/datasets/v1.3.0/ranking_summary.json",
+      "sha256": "8b3223e9b6d3ce218b32efaf7ca79541c6539115099452317ea51a09f5d803fd"
+    },
+    {
+      "previous_path": "Evaluation/v1.3.0/requirements-evaluation.txt",
+      "current_path": "Evaluation/datasets/v1.3.0/requirements-evaluation.txt",
+      "sha256": "66cedce54a6831d3c663173a8cbdf3ccea8547d29d4121be24f749fce751a6b5"
+    },
+    {
+      "previous_path": "Evaluation/v1.3.0/requirements-langsmith-observability.txt",
+      "current_path": "Evaluation/datasets/v1.3.0/requirements-langsmith-observability.txt",
+      "sha256": "173c196889e649d08e135742ac54b50392b6a3c7e34f62593bc8b54459dba0b1"
+    },
+    {
+      "previous_path": "Evaluation/v1.3.0/review.csv",
+      "current_path": "Evaluation/datasets/v1.3.0/review.csv",
+      "sha256": "97ed1ed8c39711867c9848269360e6ef4afaf1c3e6144933c2e6e82170c37d3f"
+    },
+    {
+      "previous_path": "Evaluation/v1.3.0/review_notes_by_question.md",
+      "current_path": "Evaluation/datasets/v1.3.0/review_notes_by_question.md",
+      "sha256": "5d4657337d1060bc7fccc3af25563f21ab2e4acdfc5a0875779259b285c804a4"
+    },
+    {
+      "previous_path": "Evaluation/v1.3.0/review_notes_filled_v1.3.0.csv",
+      "current_path": "Evaluation/datasets/v1.3.0/review_notes_filled_v1.3.0.csv",
+      "sha256": "2f2f3ebc4287fb96ab3ad5977a81834ad966228327ca3829189926eac346f9c2"
+    },
+    {
+      "previous_path": "Evaluation/v1.3.0/review_notes_metadata.json",
+      "current_path": "Evaluation/datasets/v1.3.0/review_notes_metadata.json",
+      "sha256": "d53b8a0f0aa39b5215d76c81acc27be553a4d339687c8b5014496b6cd77596b6"
+    },
+    {
+      "previous_path": "Evaluation/v1.3.0/run.sh",
+      "current_path": "Evaluation/datasets/v1.3.0/run.sh",
+      "sha256": "09e081d2d967a68acd77a1ef52e879b6d70d37cd28642c82dc2d19773ee296db"
+    },
+    {
+      "previous_path": "Evaluation/v1.3.0/run_development.py",
+      "current_path": "Evaluation/datasets/v1.3.0/run_development.py",
+      "sha256": "3117f4f819cc33705a23731599b9b363c0fdd526851a329b1f8f2acf1245da3c"
+    },
+    {
+      "previous_path": "Evaluation/v1.3.0/run_ragas_evaluation.py",
+      "current_path": "Evaluation/datasets/v1.3.0/run_ragas_evaluation.py",
+      "sha256": "5a28fae224a4bd8efb0b13f673c097536ea6689c0c0b316525b9c17564d24d2b"
+    },
+    {
+      "previous_path": "Evaluation/v1.3.0/search_api.jsonl",
+      "current_path": "Evaluation/datasets/v1.3.0/search_api.jsonl",
+      "sha256": "be2a553a935629f0797b7dff14d0431ca3184087d74af9ac670319f16112c8c4"
+    },
+    {
+      "previous_path": "Evaluation/v1.3.0/snapshot.json",
+      "current_path": "Evaluation/datasets/v1.3.0/snapshot.json",
+      "sha256": "410a9c3c46004cb30644455fe9d5ddb01a52a04a700ffe04159605cf94661218"
+    },
+    {
+      "previous_path": "Evaluation/v1.3.0/test.jsonl",
+      "current_path": "Evaluation/datasets/v1.3.0/test.jsonl",
+      "sha256": "832b59d0fb48964896b79f551eff73a740dd75dbf0458dc40a05adb5a59460ca"
+    },
+    {
+      "previous_path": "Evaluation/v1.3.0/tests/test_dataset.py",
+      "current_path": "Evaluation/datasets/v1.3.0/tests/test_dataset.py",
+      "sha256": "13fe1ceadb5112a21629b4070b3ec41cdd15080d396c0468b3f1e75d3f82bb44"
+    },
+    {
+      "previous_path": "Evaluation/v1.3.0/tests/test_langsmith_observability.py",
+      "current_path": "Evaluation/datasets/v1.3.0/tests/test_langsmith_observability.py",
+      "sha256": "fdf521e0ebc9c239e08cd1b119fbafac1458689bceb69869a9e2fdd30626a2d1"
+    },
+    {
+      "previous_path": "Evaluation/v1.3.0/tests/test_md_judge.py",
+      "current_path": "Evaluation/datasets/v1.3.0/tests/test_md_judge.py",
+      "sha256": "d6028cd20666efde2bc800cb688b2798c02c6682789262983fe4a54e9b5e45d5"
+    },
+    {
+      "previous_path": "Evaluation/v1.3.0/tests/test_ragas_runner.py",
+      "current_path": "Evaluation/datasets/v1.3.0/tests/test_ragas_runner.py",
+      "sha256": "9b5122fee0268836e159c3259edee13a3250e0fc08c37b98fca7f2f293a751ab"
+    },
+    {
+      "previous_path": "Evaluation/v1.3.0/tests/test_ranking_metrics.py",
+      "current_path": "Evaluation/datasets/v1.3.0/tests/test_ranking_metrics.py",
+      "sha256": "19429213799697aa1f27cac04082e3249f884b9192d387d448646dc5c009ae8d"
+    },
+    {
+      "previous_path": "Evaluation/v1.3.0/validation.json",
+      "current_path": "Evaluation/datasets/v1.3.0/validation.json",
+      "sha256": "5941ef18f989a339d78a6fdf957cdfa9525a884fad764dd2b46166b633e4fb1c"
+    }
+  ],
+  "previous_input_hash_examples": {
+    "PLR-TM-palaces-01": "13f07e1370f08c3962a159bbf18ff3ef60b7a5b2d03f1d550a34c96f70f9598b",
+    "PLR-TM-palaces-02": "d23316c30213ad023be08e0d080131f0345c31c14dd68c0f7f6995f4047a0919",
+    "PLR-TM-palaces-03": "42a6a1b0fb5c40e8be6c37f1cf5e685c982b4d927151646eb6b2467478d8246d",
+    "PLR-TM-palaces-04": "249b37f984a47963c19fbe27e48434e11c54c46b761cc98574217603bd3f79c0",
+    "PLR-TM-churches-01": "bd8dc744395e8d9db536ba86d93a9f029882cde71cf17085f2c614fedf195176",
+    "PLR-TM-churches-02": "8adad61f3ce2a61b2ffbd0a570c846931d955fa5b0859aea4ecb8af6e530772d",
+    "PLR-TM-churches-03": "a5d3c9e49f26742e8e557555730981d01c9868e9c78219da83f1d563f504d83b",
+    "PLR-TM-churches-04": "e70836badd1504b65d25c9a029b3a377c54ff349f731926e6ff78464ff7cdd3f",
+    "PLR-TM-traditional_experiences-01": "9320cbb2b62f5ebf270582e8ffa7405cc677b1f8c56498a6e3e0423a02b9ca0c",
+    "PLR-TM-traditional_experiences-02": "4386f3c82a0a8b11bb154faeee6768245e763aaeb3c39886948ce8ec19721c98",
+    "PLR-TM-traditional_experiences-03": "3a2928c64fd96d33a3e6a4dc3fba1442c54a29e6098b22a7d6eb0e85181b0f7d",
+    "PLR-TM-traditional_experiences-04": "199587e9aa0ba5a8c89354b1d851ef4bbd8be43c5d0c0d31d9dcff6701805999",
+    "PLR-TM-ancient_history-01": "f26ae73babe943fb10180385df2ec3fe185c3be9c26f8a0b88e8afa2812fab3f",
+    "PLR-TM-ancient_history-02": "e0a74452b8a875590a98f6a1f0da5fdebc8fa6b7d5d5bb4d913797e2bd67f638",
+    "PLR-TM-ancient_history-03": "42520350974dcfe3813769a27729c93f1b4a10f0180c1b6b72eb29c2d2db965a",
+    "PLR-TM-ancient_history-04": "169011eac2410c1bb7cf0715979f40ce3029a406b942c31cc1ac00a22479e3f9",
+    "PLR-TM-aquariums-01": "8a568573835b31563ce2f8972c5e9b1d0311618a75b953ff2537d94c86931549",
+    "PLR-TM-aquariums-02": "644689877c681ce57b2344dca492fe628645c6af75e2c69af6142b25ec3b9cbd",
+    "PLR-TM-aquariums-03": "8a51541013c00e4c84d97f916c3229f7edc9f4c03c02a45a5450dd351e193a9b",
+    "PLR-TM-aquariums-04": "84f4e374e00be847bc5277537a5bd4516b5beb6891ceb2b412636e647de3b0ca",
+    "PLR-TM-family_parks-01": "60b0ac8177792ccb974a7ce8e4a8939d914ac608b26ce0c9435ebfdfbd510a22",
+    "PLR-TM-family_parks-02": "49a913a1857935f47438344011dcee07c7f6d107daa10efb456f696b5fe79d39",
+    "PLR-TM-family_parks-03": "be59346c9f9dd691966448c9ff516dcbfdfc7fc5632b7c636ed11bcd43e208f4",
+    "PLR-TM-family_parks-04": "88a500f748e36555ecd834f1aaae6d133d6a68db34d17bdc763c15717cd9d417",
+    "PLR-TM-wetlands-01": "08e2b768845efc655f6596d035e0096fbb464bdc0b23d04337efbfe92e58b8b4",
+    "PLR-TM-wetlands-02": "e025c067ff9e154f239b067c7e2034bf8f4dbeb38ed72036e649b85a9d6cf8cb",
+    "PLR-TM-wetlands-03": "483a654c0b48b0fd504bfa2ef657b84b9438e0affb94103f9c72bfee2b2152aa",
+    "PLR-TM-wetlands-04": "0dad8ded758e5f5593fdd14b4fbf05b3ff425281bf3538f768ec0c763737c54e",
+    "PLR-TM-mountains-01": "7ce524d2592ea8d75896703ffb77f1a2a5a49811af524e7700c9810226d5ae31",
+    "PLR-TM-mountains-02": "3d456b1c8ca5f19fd70af5e4f922a01ed77fc214622949f9469f32ef8ed44d40",
+    "PLR-TM-mountains-03": "53b69026a01191b45fccb3185c3101e9691deb6b0c7e40a56e3f8c41adde961a",
+    "PLR-TM-mountains-04": "75e0711f87c10f827732f67516e9d4be9c21e192d206bc4cc36d5de786e32c0d",
+    "PLR-TM-railway-01": "2f56b25f37c026a4e3fdd19d718d01653bfd90a93248d1f70373b3322579a592",
+    "PLR-TM-railway-02": "73ffebbe7c9cd19036ecb6f4615d4e6e483eeba9bff531fff7b9109b54dd0766",
+    "PLR-TM-railway-03": "8e986e46a24be39f64fbdbd4349c161d31430638ca16005928d61a50e74de201",
+    "PLR-TM-railway-04": "cce77c4f12570a832a347ae1eb182b936fb78c7d7ef6628689c8e4867f55269f",
+    "PLR-TM-crafts-01": "244068daf9939d37069091dcea80e43cd4e4fa0860b5be232471d8ae3cfae77c",
+    "PLR-TM-crafts-02": "2769344e387d7eeef5fec7e14c22e4bf329b93b45f71104a50fd40f705bf8988",
+    "PLR-TM-crafts-03": "994cee542fa6585641b144f687ec6ce2c550a82dc9f8a067c361c4ae58f04be4",
+    "PLR-TM-crafts-04": "f0202f557b06521359e8d90a2147a1a148670bf97d93c8311131e4efba9677af",
+    "PLR-TM-food_streets-01": "d4e9811f791a220cafbcfea4fa954a8d7e131a1d2328c692bdc0f8247108d8fa",
+    "PLR-TM-food_streets-02": "76059dce881dcf28d04d58c61c0875c77096325034f675ca4eeaaddb55cdc3c8",
+    "PLR-TM-food_streets-03": "97e7b50afc05f711d89c0d9b9db1d147310021fdf6b60ee75a4d8d9dfbfd3b29",
+    "PLR-TM-food_streets-04": "583083f08801f1e16ce4df6be9d19d1abcc943010479c537020d5edf99934bb2",
+    "PLR-TM-future_technology-01": "9fd40d426dc426b479639b90a22807b57b7a41ffb6ac56000d35041cf468137b",
+    "PLR-TM-future_technology-02": "33d46e94acae5bac14f26bf65a2494c1b9b5286d7d815722c45ad941242302df",
+    "PLR-TM-future_technology-03": "7c5db4efab487aadee6810db1f17a9a858fea8b2a95cc39dfc6e5feb7dd0d599",
+    "PLR-TM-future_technology-04": "dfbf6bc7292108ab552eaedbd7d15e7dacca2cf6f45c2027041667856139f618",
+    "PLR-TM-safety_education-01": "8238ac18f0843267fc81f2d76735b7964443683470cd2b3cf1e761e7c6014931",
+    "PLR-TM-safety_education-02": "a94e70aa6a766652f5fb017faa5b59fe59e5d30687e7c3ccae62f347e19ec199",
+    "PLR-TM-safety_education-03": "2252e87ebb55ebc2a0c867d173091ab4fc1113299923185ca2cc6d400bdc16ec",
+    "PLR-TM-safety_education-04": "cc3dda125454d062de5baad1e82ea43acc0f09a3363238bec9bd464928992ecb",
+    "PLR-TM-water_relaxation-01": "f534ce34dd5f87c631ee965bff26cbf158479ca9ba6e19da9ef5e5ea3fea7e14",
+    "PLR-TM-water_relaxation-02": "38be15d105c04c8c4d675d972832a9615202b7fbeb0a3407c5beabeb0183a21e",
+    "PLR-TM-water_relaxation-03": "7f03e6b9df3e54a2aa7d408146735fc21b5a22186ea26639a5520111e7daf95a",
+    "PLR-TM-water_relaxation-04": "922aa2beb6ac0895c30d16804f53c7aa0e3a400dda437433f7227b47ca0c6b97",
+    "PLR-TM-architecture-01": "d646825e5fd2116c74296988c8898726011eb8d820253956ac204da22cb544d5",
+    "PLR-TM-architecture-02": "108fcb134c424f5bd6c3ce6f9ce9cc540ad1786df8da5449bd024419805a652d",
+    "PLR-TM-architecture-03": "97e990d60f25e57eea5773aa058dd11fd577e9c298a83247c63014321f5892b2",
+    "PLR-TM-architecture-04": "5e45d065d23e3e124ef3431bdf352f5e0609c090f305d04d0c1170434ff5d6f1",
+    "PLR-TM-modern_history-01": "6417de5b1c8f46c2f9cfee852fd4832cba8e837d9dd1c5038d99c4db3f6a563e",
+    "PLR-TM-modern_history-02": "660b881825f762a9e2ae2f2844f6a007b78e382ff2d97c2f2a1266b257e8090a",
+    "PLR-TM-modern_history-03": "dd7303fb7bd5bad6e7ed3073c477b6c113d28964f99ac48eb28bacd2083b8c45",
+    "PLR-TM-modern_history-04": "54710b087bd4397f598439967d67f182adf32db2b1e53ef2e68634132845b736",
+    "PLR-TM-literary_homes-01": "8dc5a332fee5b690a1fd7bd5c6d6e8f4e4a91e20b7898c7b772dd2a7c20c383b",
+    "PLR-TM-literary_homes-02": "1ba72bf4516cecbbd5935cfd09a5da8177b24775557ed172643de1bc86cf6ef7",
+    "PLR-TM-literary_homes-03": "11b847a12e66b77440598c659fece6a13a081c9c195401bf056091fb995c18e2",
+    "PLR-TM-literary_homes-04": "096a508265894c1c752fe770de062dba50f67583057962a3dea9a5954e4347c7",
+    "PLR-TM-urban_walks-01": "fbf88a99064c4e561490d92a059a3eb12bd5cb5c1e59a32457031eece0166b4f",
+    "PLR-TM-urban_walks-02": "da33096da4dbc450df58a8eaf14991608c11d200fb2c97b536df19e83d0e6e5b",
+    "PLR-TM-urban_walks-03": "d4e86437065ae243c09d27140dc25558d107d7fcc18535bb77d81dc57c560263",
+    "PLR-TM-urban_walks-04": "c3c2c4827ab1007b1bc5011cf4fd098f17d3627677b61864616d5f77c85076d7",
+    "PLR-TM-gardens-01": "13a09205a7000418b51d7b9f0ded9cfd6351714a3bbd0af946f02fd6dc8d7f1c",
+    "PLR-TM-gardens-02": "6399b91214d744cbdf487a02b31dbb2d898a5972d3a9594073bc3393368bc75d",
+    "PLR-TM-gardens-03": "884b6e5f888a2da6a8c3ec367bf599d89906a3cda7dcdfe84f7f3fe88787b2da",
+    "PLR-TM-gardens-04": "ad907b45de631ec8546c85fe5846b51947b5d54d8c6823e9dc49bf937a28aca0",
+    "PLR-TM-hanok_neighborhoods-01": "67ec1f9cbc8d93676ecf481cb5e8a41bab9cf8dcc288a0b986ed10bea290a72d",
+    "PLR-TM-hanok_neighborhoods-02": "8400379eddd1c3bc5456e6b26d83970eee2202de50b6459609680b1e85613190",
+    "PLR-TM-hanok_neighborhoods-03": "9221e23ea8cb7d7fa7b403a561521ae2dc288f1700356d2351d41a6319b15e12",
+    "PLR-TM-hanok_neighborhoods-04": "b2731190b089f941e055a7e2741ad3d50cc8736c4037504286a69ef7d129f141",
+    "PLR-PLAN-palaces": "3eb3a30fe72df6330c9eaec470bf5ac8856906e5c9be593b81e2ad0e4aeca546",
+    "PLR-PLAN-churches": "4e8bdd132853585b681c6ed5d5e48ebb670c98d692476d3b2b2772692ef5bb74",
+    "PLR-PLAN-traditional_experiences": "f244f4df0581f5cb2d3ebb6b6b582138abc618e2ef134af6ea425ccc32136053",
+    "PLR-PLAN-ancient_history": "b5978ee566f44776f3d66350e086d902d9885b4c9ffd9d755a52d14e255b79b8",
+    "PLR-PLAN-aquariums": "89270cd6fc641de039ec345d344143a2c1892d834ccb5c96a0ddcd21b1f08101",
+    "PLR-PLAN-family_parks": "6ef532502139d716948472dd54e83364471e998ad77b8e0df0691311d0933823",
+    "PLR-PLAN-wetlands": "15e3c6186a96bc29309b206db16c40d6409e4c03a730ded6b6120531b9327dcd",
+    "PLR-PLAN-mountains": "07b0dcc0121fc1c495771cc840c1662ccc32c0224a505465cc74156fa558ae5c",
+    "PLR-PLAN-railway": "57a433f36d96212d9e7bf6d9e4462ce22753d3529737462fd9835d8cc1eca03d",
+    "PLR-PLAN-crafts": "3a54cae4fd84fd11335538e9da18eda9dcfe41ecac54df6af21f4bbe6f195cf7",
+    "PLR-PLAN-food_streets": "e51d207f7bae90b436f87d5ec558c0309bd8349607c44bf2f146d1fcc1df593c",
+    "PLR-PLAN-future_technology": "7dcaec208485f911023856d535f60961cddcd739916b6939878311acfc64b76d",
+    "PLR-PLAN-safety_education": "741ff2dc67e85dc1c6a197c81251b92d9be63f972d39548853576bba66939fe9",
+    "PLR-PLAN-water_relaxation": "5f3424114ca88ef62e6795d2b5e09b45984027c9bba6a734056dfb677ff29b31",
+    "PLR-PLAN-architecture": "caf31bde492ccb3eefc1b49eda5beae87010584edb7ee50601d191b386b9625f",
+    "PLR-PLAN-modern_history": "3e1c143f97e8bf2fbd99026b2709ca13d983aa926af1ba837490a776b07b4e93",
+    "PLR-PLAN-literary_homes": "c735b983b517fa76528d8bb1c174c54b60da05e31946f8494bd4567c00241cad",
+    "PLR-PLAN-urban_walks": "89e88e6f03460272befa62da2c2dc728b34d1867e8730f686cad2095e9566df8",
+    "PLR-PLAN-gardens": "42b8f080750e60e16404de228e864fa3b652d016aa0509cfda3baa2671666690",
+    "PLR-PLAN-hanok_neighborhoods": "a83000e2d749e0d16b9738ee94018397208bef9bbb04490080a4834b10c7eeb2",
+    "MGR-TM-palaces-05": "6385193b5684047e24690dc3e403799b8d443e7ee6a4afeda11708071083660e",
+    "MGR-TM-churches-05": "c1ecefd3bbb3bfeff16da4d8db895956a1b5313d2629b55d6040a5896b7e9556",
+    "MGR-TM-traditional_experiences-05": "5adce63cf7055486dcd0ff519834608a8b86c52ef6c9f9f21069e839114cf807",
+    "MGR-TM-ancient_history-05": "8cd8050b0dd6ee46289d4484ba364464baccbac864c6db915b19e9b3628d7ef6",
+    "MGR-TM-aquariums-05": "bb32afa0dcc4713b8a86038c65597ec60efe0adb51636ec8006c685b20f1b67a",
+    "MGR-TM-family_parks-05": "c051eb3f41d7e591bf9ad2d1dbf27760cd9f7b77d331482baf72721d471a201c",
+    "MGR-TM-wetlands-05": "6c963fc0862f422be9a641d345ddc3f0f44ce15c33c9bade78ce909a2b0001d0",
+    "MGR-TM-mountains-05": "7cbf315ebf98db8c8c7157dcee08aa40ecd1083fe2ae8b70b5eeac1c36fe5eba",
+    "MGR-TM-railway-05": "145f21e72da220cb551e9d830e3d6abdd3601a0e05a648e94909dba35bd57348",
+    "MGR-TM-crafts-05": "2599954467c71bd5da11af4ac4e0a4b4559e69f377bd11381f54826db44861eb",
+    "MGR-TM-food_streets-05": "a77375d6c2fb32b00f855b5016e006d968d4a78b1666c71f13e225445ca45b9c",
+    "MGR-TM-future_technology-05": "e1cadbfe28ff64df6a4f6ee13a619884ef3d94ea87e8ff8ae4c15947c3e87b1f",
+    "MGR-TM-safety_education-05": "994ffec23836d77b50e28c094ff9f162a3b43f4c4e1a9436d51b50f6e6c5773e",
+    "MGR-TM-water_relaxation-05": "a0db127243463f7b8006ebbbe7e9e578ee874493bb680fc17006b75af04039d9",
+    "MGR-TM-architecture-05": "5986342abc0a438965f582a7ea7a9686c2b5d390107f0e716baeee51e9df8e52",
+    "MGR-TM-modern_history-05": "440cae4e2316b3f593abe7236b85f36ab597656ceabb0250bc038c52c9a51f5d",
+    "MGR-TM-literary_homes-05": "66bce486845f024fdb7dc656e5dc0b2c69dcd64e5b51630506bbf7784b83247a",
+    "MGR-TM-urban_walks-05": "8c5be3eaeca0a6a17633347ed77db4d89282610301c1ffa8ed0563d5610bb3c4",
+    "MGR-TM-gardens-05": "874dd1988f9c4d3f9b09ddaddee74cc210964174ca793346d10744863dd218a9",
+    "MGR-TM-hanok_neighborhoods-05": "b4ce3430bb08456f044e72f9f0480caf580b80f9e2a003ccad04686dee7901a3",
+    "MGR-SOCIAL-palaces": "b1ceb7d71e32874533e734fa4bd68fe38d90aa4e55ee0a20710bdb7696238f12",
+    "MGR-EDIT-palaces": "0ac668b36dd7fbcf60e77cef658f791c122ceb09b524d87a624fe3430e151fc6",
+    "MGR-TOOLS-palaces": "1506bed5e7ff5c7ce71f7589c94b8943bf5dbc51dfa5ea539d3b74daef226504",
+    "MGR-MEMORY-palaces": "7963cfb844007b0ad84d7bb9fa3da2d07c7642181aa82824cf0fe794bc81630b",
+    "MGR-SOCIAL-churches": "9975a6aea3bebff99d50e5d5dabd8e61ab60a8e67b5d6bc99a84447bc91fa94f",
+    "MGR-EDIT-churches": "84782dff0e4fc3b55a0e073644c6127a8ed37761fdb8954b58690386aca8a336",
+    "MGR-TOOLS-churches": "d7b678ac6736a0a3a00fbf84b0402b76805c8ddbad9695c787ba03088302e5d2",
+    "MGR-MEMORY-churches": "de34f055971c2851ed06fe08ef4d317c581d52a1b4e2d2e85a8c1cf83dc792a8",
+    "MGR-SOCIAL-traditional_experiences": "6246c3430b629648d42d57b8375491b1503d0536a3650e01f8681b82c614a8f8",
+    "MGR-EDIT-traditional_experiences": "12020911e1483b2ad642290c3518b88ca0bff6b64a27312d6867246248ae100f",
+    "MGR-TOOLS-traditional_experiences": "8340f1e2aacb0bc851782e8efd8730df8bc8c743d281e481606487a97360df13",
+    "MGR-MEMORY-traditional_experiences": "e1053842ceab1f8e2ad83f1513dd53850effbaba0178e27fe0d342253496c19f",
+    "MGR-SOCIAL-ancient_history": "4b5ad4e4f95c0f4cb5b1a2325e5a3c5bf1123cf420d2d3e26a4f520adc5c6800",
+    "MGR-EDIT-ancient_history": "165c9a5f378ac6295a363c4565430f12e7e346e24189bf40a89c932a6117c7e6",
+    "MGR-TOOLS-ancient_history": "f40e663fabc9bd33bc0579cfbe4d92af6171f20aed8c4e761864b4b58a95bb00",
+    "MGR-MEMORY-ancient_history": "1558db5a2ed1d5cf85f4a713ce07612268924224059cd5cd3924a57b54c843dd",
+    "MGR-SOCIAL-aquariums": "f9998956c99bbc14b00259ba69abe4c694e403fa91c4b51a55d7cc1c897abba3",
+    "MGR-EDIT-aquariums": "c092b9ec3aca770098006b1035ac8643b6ddbf990f5665bdd347e8531fb89efd",
+    "MGR-TOOLS-aquariums": "9a16d130fe7db38ef52b3151eef9da7a5644bd869e4b0ddba30b2ecf9474508c",
+    "MGR-MEMORY-aquariums": "aadfdee296843e79727c1902bfafb9460bc9439715b98096c7bc5fee2cb52156",
+    "MGR-SOCIAL-family_parks": "e0be4af787173116cada3ecac981788f6db00416015a5297ab82065981fba76a",
+    "MGR-EDIT-family_parks": "387b24a0f0915947225150e05f14cb67b10745e7acd1bbd06e40a4cd3491e25b",
+    "MGR-TOOLS-family_parks": "ae0bb98788688849fd60e1c921cfe36d4a1e07b592b0b75345e9e928930c8c7b",
+    "MGR-MEMORY-family_parks": "155e7d54fbebc6b2966167fb29fd52243eb71be79876a9f9a1b94d983527e9e8",
+    "MGR-SOCIAL-wetlands": "4a452871901e7cc030131806311938bb89fffae98a2d47ffc9485a7e24aa52e0",
+    "MGR-EDIT-wetlands": "ac2ef4369fd80c195c209873eb1c51d023c3a169bd28cff5eddd743feb9c4967",
+    "MGR-TOOLS-wetlands": "80250381f80ba5da8a281e5af810f76bb81653d7df98f512ab30b37f627fe506",
+    "MGR-MEMORY-wetlands": "47f5e9d43e904913e22051c14f79b7ab693fdecd69e575c8110e7c09db4d7a80",
+    "MGR-SOCIAL-mountains": "f02e0f1d3b6fb461bcdd0fca6f9e62b5015af65c14dc26eba1c5caa323f17850",
+    "MGR-EDIT-mountains": "9c34575e990b0630d80d623607110fd7ad0c725b3766b48e9ffee6f023cad992",
+    "MGR-TOOLS-mountains": "3e6b2df8f6ea4af97fcb4cbbba6a8fe76a99d924ea7e0bceefac84325d52a547",
+    "MGR-MEMORY-mountains": "03d591ba64cbe6a72b84b9cf4d2b2a467919b59679dbc05ed0ae2fd440d83621",
+    "MGR-SOCIAL-railway": "8133ee6d0535e5268479b76f5b0559f67adb9c34336cbb7190525ad96162ebb3",
+    "MGR-EDIT-railway": "1654b08211c99356619dfbe3168682afb0cd0b99eead17810a0ea193779f00fc",
+    "MGR-TOOLS-railway": "9281fd73d6256a493ca19f355276743cfcc30e25ef395a59b9c8b29be973ab1b",
+    "MGR-MEMORY-railway": "672bf2778c3ca4cb4eaf9aec4c4a1afd36b01a17771cc8dbedfa2e631a7e4b4f",
+    "MGR-SOCIAL-crafts": "406e4675463c855eca386eac4615912135ac4acc4c0714a6045dcd686511b088",
+    "MGR-EDIT-crafts": "b6804c34690235a7f7174b77f2b2b3d77541acc7c5f5ae7ce701cfeab573ee33",
+    "MGR-TOOLS-crafts": "deb9714e118b22ac61804470b33230bfe99314797bf8f0ba99f36a2aaa3aa3a5",
+    "MGR-MEMORY-crafts": "1d5806ed841a15171e64d593b37b323ae9371397789b93f25af3536fdc4c9763",
+    "MGR-SOCIAL-food_streets": "7f07f93616bd1c7db29fb6daca6c2a9fcef25d02c0dc83dc93f62f34e6379f27",
+    "MGR-EDIT-food_streets": "724dfd57073036b1a748c136c0161849f8fd7c6ccb45d945236c903da2532a7e",
+    "MGR-TOOLS-food_streets": "593c64b09c5cb2037ef7581b690dd5069beb09078e43eadea6aeaf1859813566",
+    "MGR-MEMORY-food_streets": "7c21665f199a7e05c78cf9c79b73f625597a67a606362b15128579829eb99b31",
+    "MGR-SOCIAL-future_technology": "e137ab82946cd7e7936c395d85131e600e74c66ef47682149a28338fe9932919",
+    "MGR-EDIT-future_technology": "1641979571cc67db535911edfefc3b8522e244b026218508c3e57b163aeb851e",
+    "MGR-TOOLS-future_technology": "c7ff36938bdf5e0f1e9ba18eaa93e5b68fae1e08fd282a099e38c91c108c55e5",
+    "MGR-MEMORY-future_technology": "dea93b67240695c6d9b34d4bcbe9509a080c8b6d61dd6fe74ef5b6e1c956214e",
+    "MGR-SOCIAL-safety_education": "4f21a4cdca20643f2f30d178f6741638b2c13972ce515f454dfd4bc9d6bae632",
+    "MGR-EDIT-safety_education": "31e5e53ed9e44831140b5f2b0c74e0f83a7ba93dbd2b50bb2e6cfe73f21c5595",
+    "MGR-TOOLS-safety_education": "af332c476ee9036b3ec0e0a9a4a0bdfcdac5fcc65da5274871e321c457f49d32",
+    "MGR-MEMORY-safety_education": "a7531c25bf29b780f886eda6493338f4de5e32e0ee22c43d350f680cc07acd79",
+    "MGR-SOCIAL-water_relaxation": "66905d40e065ab037232d9205f544aceb7ca40670775f875f5db484e848748d8",
+    "MGR-EDIT-water_relaxation": "171aae9075474d804420e97f473d1583cc2cc72d8a560cc3ec5f6b5f76057468",
+    "MGR-TOOLS-water_relaxation": "d2b7b25e15f404963db7f3772d2ab589047cb6d1a2251de21879062b5cce24d3",
+    "MGR-MEMORY-water_relaxation": "c4be005bb29072b42b8d45b9c6d4de80ea266024d2dc7f1c60ab29f798b77096",
+    "MGR-SOCIAL-architecture": "f60e8860fa104474e9df77a37c9a5acc27402ce460685f2c3b0f039e071bc495",
+    "MGR-EDIT-architecture": "6cbdbd54c1dd1888b3063c8293f34e0f7aa2ca4ff0487e141a227bc792407432",
+    "MGR-TOOLS-architecture": "2308ed3d62dde0db864380be2c2cf99d0cf38e9309c8d9e1a4dedbe68f481bcc",
+    "MGR-MEMORY-architecture": "d3456b650a21f69950dd56c9bb3833f14a2e3887391eb5b7ccd67dd9358d1f4b",
+    "MGR-SOCIAL-modern_history": "9ec07610dab5c02c425a88d8c474a8d4b4f2c2d27268b416fb00d68fbb8ef0f6",
+    "MGR-EDIT-modern_history": "e6cced831736878c553a945fd54550eade9a77f07301c484d17d97ad15659d67",
+    "MGR-TOOLS-modern_history": "ec2103a968fc3edeaa464185042a5ea3060ea89f7350ef9e2501202fd03095d6",
+    "MGR-MEMORY-modern_history": "c216ed3be66dfe62bf77321f91444be6d247c51ab2e2c14be0ad2787aebaaa9e",
+    "MGR-SOCIAL-literary_homes": "2212f25c67845fb52d2b7813dbd0155a3a92f74b021de97905942c8c670a2770",
+    "MGR-EDIT-literary_homes": "bec00d27c49cca00c6853682b94f07ac1e22459219f28078e5c7659e4cc25635",
+    "MGR-TOOLS-literary_homes": "05072a889077d98828a206075e53f7af54aa35287a34a4f9f7730a932d9d025a",
+    "MGR-MEMORY-literary_homes": "4fdb79ce3c3fefe691187a48b103024baa36708a7c9e074e58ed9be83bb07f94",
+    "MGR-SOCIAL-urban_walks": "f4dcb0c5121fd9b64c836f7c1579ff105c50928948c8211a67b421a97ef78301",
+    "MGR-EDIT-urban_walks": "7ae9a6956fffb4be71914c848704e05c9b50018cbef591c0b960340bd3da9574",
+    "MGR-TOOLS-urban_walks": "fd4823a40bb058ce75bf589151e7514aac6094919a612aab77e90cf33ca2077a",
+    "MGR-MEMORY-urban_walks": "2a201b891bdf9bfe39eacb142fc436050795ed3ff95005aa868ba2679ac8074f",
+    "MGR-SOCIAL-gardens": "e3e59ebb986d046d2b6ea1854844a77847014f994ea76229c107e089d22e1073",
+    "MGR-EDIT-gardens": "359739e58f52e2b5fe712477e77d44693b786a2051d1189291699e41c907748b",
+    "MGR-TOOLS-gardens": "cc22170b2beb8ed1db903751e8574780b299477f0ee0e3007f444d99a68c6515",
+    "MGR-MEMORY-gardens": "0cd82e5bdfc809d8723e64594e0530ea303b7dd9289444e6bdc6aa663a6a15e4",
+    "MGR-SOCIAL-hanok_neighborhoods": "84dda5699652db0a02bb7491bc8874ab9fb30fe11eda79a263a4ff8687fb1f73",
+    "MGR-EDIT-hanok_neighborhoods": "46badc279a891964dfeb4baaa65c8fa7a08478410f4e760154d5842bdc172f59",
+    "MGR-TOOLS-hanok_neighborhoods": "d46af15046b900a4a6d7e78d3f6d9fac7eb6c2dc2f21c2019b847669239e1b85",
+    "MGR-MEMORY-hanok_neighborhoods": "3c39fa4d5d584a7f3c316ee57bc40841bb722a9cdcb7bab01bb66f28ca53d5c5"
+  },
+  "previous_input_hash_source_git_sha": "527d51651c3b800fe0583abdbbad8dba3da310bd"
+}

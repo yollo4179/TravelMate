@@ -1,0 +1,4 @@
+-r base.txt
+ragas==0.4.3
+# Compatibility pin required by the archived Ragas 0.4.3 evaluator.
+langchain-community==0.3.31
