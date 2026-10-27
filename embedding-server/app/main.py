@@ -9,6 +9,7 @@ from opentelemetry.trace.propagation.tracecontext import TraceContextTextMapProp
 
 from app.observability import configure_tracing, tracer
 from app.kafka_runtime import KafkaRuntime
+from app.enrichment.repository import ensure_schema as ensure_enrichment_schema
 from routers import embed, rerank
 
 
@@ -27,6 +28,8 @@ async def lifespan(application: FastAPI) -> AsyncIterator[None]:
         else None
     )
     application.state.kafka_runtime = None
+    if application.state.database_pool is not None:
+        await ensure_enrichment_schema(application.state.database_pool)
     if application.state.database_pool is not None and os.environ.get("KAFKA_BOOTSTRAP_SERVERS"):
         kafka_runtime = KafkaRuntime(application.state.database_pool)
         await kafka_runtime.start()

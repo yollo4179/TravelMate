@@ -28,6 +28,7 @@ class BootstrapTests(unittest.TestCase):
     def test_standard_ca_and_jwt_without_host_configuration(self):
         bootstrap.prepare(self.state)
         self.assertIn('BEGIN CERTIFICATE', (self.state / 'ca-bundle.pem').read_text())
+
         secret = (self.state / 'runtime.env').read_text()
         self.assertTrue(secret.startswith('JWT_SECRET='))
         self.assertGreater(len(secret), 70)
@@ -36,6 +37,19 @@ class BootstrapTests(unittest.TestCase):
         self.assertEqual(json.loads((self.state / 'proxy.compose.yml').read_text()), {'services': {}})
         bootstrap.prepare(self.state)
         self.assertEqual((self.state / 'runtime.env').read_text(), secret)
+
+    def test_perplexity_credentials_and_selector_follow_source_env_without_stale_values(self):
+        (self.state / 'source.env').write_text('PERPLEXITY_API_KEY="test-only-pplx"\nPERPLEXITY_AGENT_PRESET=sonar-pro\n')
+        bootstrap.prepare(self.state)
+        runtime = (self.state / 'runtime.env').read_text()
+        self.assertIn('PERPLEXITY_API_KEY=test-only-pplx\n', runtime)
+        self.assertIn('PERPLEXITY_AGENT_PRESET=sonar-pro\n', runtime)
+        (self.state / 'source.env').write_text('PERPLEXITY_AGENT_MODEL=provider/model\n')
+        bootstrap.prepare(self.state)
+        runtime = (self.state / 'runtime.env').read_text()
+        self.assertNotIn('PERPLEXITY_API_KEY=', runtime)
+        self.assertNotIn('PERPLEXITY_AGENT_PRESET=', runtime)
+        self.assertIn('PERPLEXITY_AGENT_MODEL=provider/model\n', runtime)
 
     def test_custom_ca_is_preserved(self):
         os.environ['STACK_CUSTOM_CA'] = '1'

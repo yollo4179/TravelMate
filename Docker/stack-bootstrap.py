@@ -39,6 +39,9 @@ def prepare(state: Path) -> None:
                 "RERANK_BATCH_SIZE",
                 "RERANK_DIAGNOSTICS_ENABLED",
                 "RERANK_EXECUTION_STRATEGY",
+                "PERPLEXITY_API_KEY",
+                "PERPLEXITY_AGENT_PRESET",
+                "PERPLEXITY_AGENT_MODEL",
             }
         }
         api_key = source_values.get("LANGSMITH_API_KEY") or source_values.get("LANGCHAIN_API_KEY")
@@ -58,6 +61,15 @@ def prepare(state: Path) -> None:
         ):
             if source_values.get(key):
                 runtime_values[key] = source_values[key]
+        for key in ("PERPLEXITY_API_KEY", "PERPLEXITY_AGENT_PRESET", "PERPLEXITY_AGENT_MODEL"):
+            # Removing a credential/selector from .env must also remove its stale forwarded value.
+            if key in source_values:
+                value = source_values[key].strip()
+                if len(value) >= 2 and value[0] == value[-1] and value[0] in ("'", '"'):
+                    value = value[1:-1]
+                runtime_values[key] = value
+            else:
+                runtime_values.pop(key, None)
         runtime.write_text(
             "".join(f"{key}={value}\n" for key, value in runtime_values.items()),
             encoding="utf-8",

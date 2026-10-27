@@ -4,6 +4,7 @@
 
 | 문서 | 확인할 내용 |
 |---|---|
+| [기존 장소 웹 근거 보강](specifications/place-review-enrichment.md) | Agent API 수집·출처/인용 검사·기존 ID 보존·재색인·실행 명령 |
 | [전체 구조도](architecture/personal-tour-guide.md) | 서버·앱·DB 역할, 기억 저장/조회, 툴 호출, 롤백, 사진 앨범의 연결 |
 | [상세 명세서](specifications/personal-tour-guide.md) | 요구사항, 현재 구현과 차이, 논리 데이터 모델, API·툴 계약, 상태와 예외 |
 | [별도 DB·Kafka 추천 구조도](architecture/fastapi-place-recommendation.md) | 두 DB 소유권, 원본 인덱싱, Kafka 추천 요청·완료·결과 저장 |

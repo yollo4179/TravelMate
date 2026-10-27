@@ -71,6 +71,9 @@ services:
       RERANK_DIAGNOSTICS_ENABLED: ${RERANK_DIAGNOSTICS_ENABLED:-false}
       RERANK_EXECUTION_STRATEGY: ${RERANK_EXECUTION_STRATEGY:-}
       EMBEDDING_MODEL: BAAI/bge-m3
+      PERPLEXITY_API_KEY: ${PERPLEXITY_API_KEY:-}
+      PERPLEXITY_AGENT_PRESET: ${PERPLEXITY_AGENT_PRESET:-}
+      PERPLEXITY_AGENT_MODEL: ${PERPLEXITY_AGENT_MODEL:-}
       EMBEDDING_REVISION: 5617a9f61b028005a4858fdac845db406aefb181
       EMBEDDING_WEIGHTS_SHA256: b5e0ce3470abf5ef3831aa1bd5553b486803e83251590ab7ff35a117cf6aad38
       LANGSMITH_API_KEY: ${LANGSMITH_API_KEY:-}
@@ -86,6 +89,7 @@ services:
       REQUESTS_CA_BUNDLE: /run/travelmate/ca-bundle.pem
     volumes:
       - stack_models:/models
+      - stack_enrichment:/enrichment-data
       - ${STACK_STATE_DIR}/ca-bundle.pem:/run/travelmate/ca-bundle.pem:ro
     depends_on:
       searchdb:
@@ -150,6 +154,7 @@ services:
 volumes:
   stack_redis:
   stack_models:
+  stack_enrichment:
   stack_search_pgdata:
 
 secrets:

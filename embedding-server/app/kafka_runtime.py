@@ -16,6 +16,9 @@ from opentelemetry.trace.propagation.tracecontext import TraceContextTextMapProp
 from app.embedder import embedder
 from app.observability import tracer
 from app.reranker import reranker
+from app.enrichment.contracts import ExistingPlace
+from app.enrichment.evidence import search_description
+from app.enrichment.repository import latest_snapshot
 
 LOGGER = logging.getLogger(__name__)
 RETRIEVE_TOP_K = 30
@@ -139,6 +142,7 @@ class KafkaRuntime:
                             latest_seen_version = EXCLUDED.latest_seen_version,
                             source_version = EXCLUDED.source_version,
                             name = '[deleted]', description = NULL, embedding = NULL,
+                            search_description = NULL, enrichment_snapshot_id = NULL,
                             document_status = 'DELETED', indexed_at = now()
                         WHERE place_embeddings.latest_seen_version <= EXCLUDED.latest_seen_version
                         """,
@@ -233,7 +237,10 @@ class KafkaRuntime:
             await self._finish_place_job(job["job_id"], "SUPERSEDED", None)
             return
 
-        embedding_text = f"{source['name']}. {source.get('description') or ''}".strip()
+        place = ExistingPlace.from_mapping({**source, "place_id": job["place_id"]})
+        enrichment = await latest_snapshot(self.database_pool, place)
+        augmented_description = search_description(place, enrichment["document"]) if enrichment else None
+        embedding_text = f"{source['name']}. {augmented_description if enrichment else source.get('description') or ''}".strip()
         with tracer().start_as_current_span("embedding.model_inference") as span:
             span.set_attribute("embedding.device", embedder.device)
             span.set_attribute("embedding.text_count", 1)
@@ -248,8 +255,13 @@ class KafkaRuntime:
                         city = $6, category = $7, source_category = $8, latitude = $9,
                         longitude = $10, tour_content_id = $11, image_url = $12,
                         homepage_url = $13, embedding = $14::vector,
-                        document_status = 'READY', indexed_at = now()
+                        document_status = 'READY', indexed_at = now(),
+                        search_description = $15, enrichment_snapshot_id = $16
                     WHERE place_id = $1 AND latest_seen_version = $2
+                      AND (SELECT snapshot_id FROM place_enrichment_snapshots
+                           WHERE place_id = $1 AND source_fingerprint = $17
+                           ORDER BY collected_at DESC, snapshot_id DESC LIMIT 1)
+                          IS NOT DISTINCT FROM $16::uuid
                     """,
                     job["place_id"],
                     job["source_version"],
@@ -265,6 +277,9 @@ class KafkaRuntime:
                     source.get("image_url"),
                     source.get("homepage_url"),
                     vector_text,
+                    augmented_description,
+                    enrichment["snapshot_id"] if enrichment else None,
+                    place.source_fingerprint,
                 )
                 status = "SUCCEEDED" if updated == "UPDATE 1" else "SUPERSEDED"
                 await connection.execute(
@@ -449,7 +464,9 @@ class KafkaRuntime:
         parameters.extend([vector, RETRIEVE_TOP_K])
         vector_parameter, limit_parameter = len(parameters) - 1, len(parameters)
         query = f"""
-            SELECT place_id, source_version, latest_seen_version, name, description,
+            SELECT place_id, source_version, latest_seen_version, name,
+                   COALESCE(search_description, description) AS description,
+                   enrichment_snapshot_id,
                    region, city, category, source_category, latitude, longitude,
                    tour_content_id, image_url, homepage_url,
                    1 - (embedding <=> $1::vector) AS semantic_score
@@ -494,6 +511,7 @@ class KafkaRuntime:
             "source_version": candidate["source_version"],
             "latest_seen_version": candidate["latest_seen_version"],
             "index_config_version": "bge-m3-v1",
+            "enrichment_snapshot_id": str(candidate["enrichment_snapshot_id"]) if candidate.get("enrichment_snapshot_id") else None,
         }
 
     async def _save_recommendation_result(self, request: Any, result: dict[str, Any]) -> None:
