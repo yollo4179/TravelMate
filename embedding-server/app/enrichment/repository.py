@@ -13,6 +13,8 @@ from .evidence import normalize_response, searchable_claims
 
 async def ensure_schema(pool: Any) -> None:
     await pool.execute(Path(__file__).with_name("schema.sql").read_text(encoding="utf-8"))
+    from app.contextual.repository import ensure_schema as ensure_contextual_schema
+    await ensure_contextual_schema(pool)
 
 
 async def existing_places(pool: Any, identifiers: list[int] | None) -> list[ExistingPlace]:
@@ -81,4 +83,5 @@ async def latest_snapshot(pool: Any, place: ExistingPlace) -> dict[str, Any] | N
     if row is None:
         return None
     record = json.loads(row["record"]) if isinstance(row["record"], str) else row["record"]
-    return {"snapshot_id": row["snapshot_id"], "document": record["document"]}
+    return {"snapshot_id": row["snapshot_id"], "document": record["document"],
+            "actual_model": record.get("actual_model"), "prompt_version": record.get("prompt_version")}

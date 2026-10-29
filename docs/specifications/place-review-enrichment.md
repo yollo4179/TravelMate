@@ -1,5 +1,11 @@
 # 기존 장소의 웹 근거 보강
 
+> 청크 확장 이후 검색 반영은 [공통 청크 명세](contextual-retrieval.md)를 우선한다.
+> 아래의 장소별 긴 search_description은 보강 표시/호환용으로 보존한다. 신규 작업자는 TourAPI·웹 근거를
+> 원문/문맥으로 분리하고 장소별 최대 20개 subject 청크를 색인하며, 선택된 근거를 기존 리랭커에 전달한다.
+> Agent의 원문 수집과 문맥 생성은 별도 단계다. 기존 collect는 모델을 명시하며 새 contextual generate는
+> 기본 sonar-pro를 제공한다. 실제 자료는 `/enrichment-data/LocationReview/<place_id>_<장소명>/`에 저장한다.
+
 기존 TourAPI 장소 ID·이름·좌표·지역·기본 설명을 유지한다. 신규 장소 발견은 하지 않는다.
 Perplexity Agent API로 기존 장소의 추가 정보와 출처를 수집하고, FastAPI가 자기 검색 DB에
 보강 스냅샷과 재색인 작업을 저장한다. Spring 원본은 수정하지 않는다.
@@ -61,7 +67,7 @@ docker exec travelmate-embedding python -m app.enrichment.cli collect --from-sea
 각 출력의 record 경로를 사용해 검색 반영을 별도로 실행한다. 아래 경로는 형식 예시다.
 
 ```bash
-docker exec travelmate-embedding python -m app.enrichment.cli apply --record /enrichment-data/requests/REQUEST_HASH/SNAPSHOT_ID/record.json
+docker exec travelmate-embedding python -m app.enrichment.cli apply --record /enrichment-data/LocationReview/394_장소명/requests/REQUEST_HASH/SNAPSHOT_ID/record.json
 ```
 
 REINDEX_QUEUED는 벡터 갱신 완료가 아니라 재색인 작업 등록을 뜻한다.

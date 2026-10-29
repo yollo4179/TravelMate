@@ -1,5 +1,9 @@
 # 별도 DB·Kafka 요청/완료 기반 FastAPI 추천 구조
 
+> 청크 검색 확장: [청크 구조도](contextual-retrieval.md)의 원문·문맥·장소별 최대 20개 활성 청크를 추가한다.
+> DB 소유권과 Kafka 경계는 유지하며, 후보 장소의 최고 근거 청크 하나를 기존 리랭커에 전달한다.
+> 청크 수에 따른 점수 합산은 하지 않는다. 무청크 기존 행은 점진 이행 동안 기존 벡터를 사용한다.
+
 [문서 목록](../README.md) · [이벤트·DB 명세](../specifications/fastapi-place-recommendation.md) · [투어 가이드 전체 구조](personal-tour-guide.md)
 
 갱신일: 2026-10-25, 한국 시간. 코드 확인 기준: `f9f09db`, 이전 설계: `7921ecb`. **사용자 지시에 따라 FastAPI 전용 DB와 Kafka 추천 요청·완료 흐름으로 갱신한 구현 계약입니다. 로컬 Codex의 진행 중인 구현을 확인한 결과나 서버 적용 완료 기록은 아닙니다.**

@@ -1,0 +1,161 @@
+# 공통 장소 청크·문맥 생성·검색 DB 명세
+
+[계획서](../plans/contextual-retrieval.md) · [구조도](../architecture/contextual-retrieval.md) · [기존 웹 수집](place-review-enrichment.md)
+
+## 공통 계약
+
+`source_type`: `tourapi | blog_post | review | web_excerpt`.
+웹 검색 도구가 확보한 snippet은 원래 글이 블로그여도 전체 리뷰 본문으로 가장하지 않고 `web_excerpt`로 보존한다.
+사용자가 제공한 실제 블로그/리뷰 본문은 해당 유형과 실제 `capture_scope`로 넣는다.
+TourAPI는 현재 Kafka가 전달한 description 필드를 보존하며, 공급자의 원본 전체 JSON을 조회했다고 주장하지 않는다.
+
+```json
+{
+  "chunk_id": "UUIDv5",
+  "source_id": "UUIDv5",
+  "source_version": "SHA-256(title + preserved text)",
+  "source_type": "review",
+  "title": "방문 후기",
+  "chunk_text": "평일에는 벤치에서 다리가 보였다. 주말에는 혼잡했다.",
+  "context_text": "공원 방문기에서 평일 조망과 주말 혼잡을 비교하는 부분이다.",
+  "source_span": {"start": 0, "end": 33, "unit": "unicode_codepoint"},
+  "place_refs": [{"place_id": 394, "role": "subject"}, {"place_id": 395, "role": "view_target"}],
+  "entities": [{"name": "대상 공원", "place_id": 394, "role": "subject"}],
+  "hypothetical_questions": [],
+  "generation": {"provider": "perplexity", "model": "실제 응답 model", "response_id": "응답 ID", "prompt_version": "contextual-source-spans-v1"}
+}
+```
+
+위 JSON은 구조 예시이며 실제 offset은 코드가 보존 원문으로 계산한다. 임베딩 문자열은
+`context_text + "\n\n" + chunk_text`. 제목·JSON 문법·질문·URL을 무조건 임베딩 본문에 추가하지 않는다.
+UUIDv5는 모든 출처에서 같은 namespace와 source/version/span/splitter 키를 사용한다.
+동일 원문 재수집은 ID를 재사용하고, 내용/제목/경계 변경은 새 ID가 된다. 문맥만 바뀌면 chunk_id를 유지하고
+context_version을 갱신한다. 이전 문맥도 남긴다. 수집 타임스탬프는 내용 버전에 넣지 않는다.
+source_id는 출처 유형·URL 또는 TourAPI 콘텐츠 ID·필드명으로 결정한다. 출처 없는 생성 요약을 원문으로 받지 않는다.
+
+## 생성 파이프라인
+
+로컬 splitter가 보존 문서의 최대 800자 구간을 정한다. Agent에는 전체 원문과 각 구간을 함께 제공한다.
+Agent는 원문을 다시 쓰지 않고 구간별 짧은 문맥·장소 역할·엔티티·선택적 질문을 생성한다.
+반환된 모든 source_id와 offset은 요청 목록에 정확히 한 번 있어야 한다.
+없는 장소 ID와 엔티티 역할 불일치는 적용을 거부한다. 대상 장소를 알 수 없는 구간은 빈 place_refs로 응답하게 하며,
+응답 원본에는 남기고 색인에서는 제외한다. 모델의 역할·문맥 의미 판정은 자동적인 사실 검증이나 사람 검수를 대신하지 않는다.
+
+공식 SDK의 `/v1/responses`, `response_format.json_schema`, `preset`/`provider/model` 규격을 사용한다.
+기본 `sonar-pro`는 원문 문맥 작성용이며 Sora 같은 영상 모델을 사용하지 않는다.
+새 생성 명령은 이미 확보한 텍스트만 사용하므로 tools=[]이고, 웹 수집은 기존 enrichment CLI의 web_search/fetch_url을 사용한다.
+기존 record의 동일 URL에 여러 도구 발췌문이 있으면 가장 긴 발췌문을 생성 입력으로 쓰고 나머지는
+source metadata의 provider_excerpts에 전부 보존한다. 전체 페이지나 서로 다른 작성 시점의 완전한 원문 버전을 확보했다고 간주하지 않는다.
+`--execute` 없이 실제 API 요청을 하지 않는다. 명시적 refresh 외에는 동일 요청 캐시를 재사용한다.
+429·인증 오류를 자동 재시도하지 않으며 API 키는 아카이브/로그에 기록하지 않는다.
+
+## 입력과 실행
+
+입력 파일의 `places`는 **기존 검색 DB에서 가져온 필드 전체**와 같아야 한다. 기본정보가 바뀐 뒤에는 다시 수집한다.
+
+```json
+{
+  "places": [{"place_id": 394, "name": "테스트 공원", "description": "공식 장소 설명"}],
+  "sources": [{"source_type": "review", "title": "방문 후기", "text": "평일에는 조용했다. 주말에는 혼잡했다.",
+    "metadata": {"source_url": "https://example.org/review/1", "capture_scope": "excerpt", "published_at": null, "visited_at": null}}]
+}
+```
+
+```bash
+cd embedding-server
+# 미리보기만: 키가 없어도 원문과 요청을 보존한다.
+python -m app.contextual.cli generate --input /path/to/sources.json --output ../LocationReview
+# 실제 문맥 생성: API 키는 환경 또는 --env-file로만 공급한다.
+python -m app.contextual.cli --env-file ../.env generate --input /path/to/sources.json --output ../LocationReview --execute
+# 기존 Agent 수집 record에서 TourAPI 설명과 반환된 원문 조각을 가져올 수도 있다.
+python -m app.contextual.cli generate --from-record /path/to/record.json --output ../LocationReview --execute
+# 새 명령이 출력한 record 경로를 사용한다. DATABASE_URL은 FastAPI 검색 DB이다.
+python -m app.contextual.cli apply --record /path/to/LocationReview/394_테스트공원/requests/HASH/RUN/record.json
+```
+
+`--preset` 또는 `--model`로 교체할 수 있다. 둘을 같이 지정하지 않는다.
+최초 생성 모델·계정 지원·비용은 실제 계정으로 작은 표본을 실행해 확인한다.
+`apply`는 스키마/보존 응답/원문/offset/장소 기본정보를 재검증한다. 여러 장소 적용은 ID 순으로 잠그고 원자 저장한다.
+같은 번들 재적용은 `ALREADY_APPLIED`; 새 번들은 `REINDEX_QUEUED`. 후자는 검색 반영 완료를 의미하지 않는다.
+기존 장소별 imported bundle은 최신 적용본으로 교체되며 이전 원문/청크/문맥은 삭제하지 않는다.
+누적할 자료는 새 입력 번들에 기존 유지 자료도 함께 넣는다. 언급 장소는 그 번들의 청크로 활성화하지 않는다.
+
+## DB 변경과 기존 데이터 이행
+
+실제 SQL은 [03-contextual-chunks.sql](../../Docker/search-init/03-contextual-chunks.sql)이다.
+runtime `ensure_schema`도 같은 SQL을 멱등 적용한다. FastAPI 전용 DB에만 실행한다.
+
+| 테이블/필드 | 목적 |
+|---|---|
+| retrieval_source_versions | source_id + source_version PK, 보존 문서·출처·날짜·capture_scope |
+| retrieval_chunks | 전역 chunk_id PK, 원문 offset·원문 청크·source FK |
+| retrieval_chunk_contexts | chunk_id + context_version PK, 문맥·장소 역할·질문·생성 모델·BGE-M3 벡터 |
+| retrieval_chunk_bundles | 기존 장소별 불변 입력 manifest, 기본정보 지문·적용 순서 |
+| place_active_chunks | 장소별 1..20 slot, chunk/context FK, subject 역할 강제 trigger |
+| place_embeddings.chunk_generation | 추론 중 새 번들 적용을 감지하는 optimistic version |
+
+활성 slot PK와 범위 CHECK가 동시 쓰기에도 20개를 보장한다. 같은 청크의 한 장소 내 중복 활성화는 UNIQUE로 막는다.
+모든 원문을 저장한 다음 출처 round-robin·동일 텍스트 중복 제거로 활성 집합을 고른다.
+초과 자료는 DB/파일에 남는다. 임베딩은 활성 청크에만 계산하고, 조건을 지우거나 20개를 억지로 만들지 않는다.
+문맥/원문/번들은 보존하며 이전 활성 링크만 원자 교체한다.
+
+배포 시 DB 백업 → 새 코드/스키마 → 작은 장소 집합 재색인 → 전체 배치 순으로 적용한다.
+기존 READY 행은 청크가 생기기 전 기존 벡터를 사용한다. 다음 SQL은 **검색 DB에서**
+기존 장소 재색인 작업을 등록하는 운영 예시다. 먼저 WHERE에 place_id 범위를 넣어 표본으로 실행한다.
+
+```sql
+INSERT INTO place_index_jobs(job_id,event_id,place_id,source_version,payload)
+SELECT gen_random_uuid(), event_id, place_id, source_version,
+       jsonb_build_object('event_id',event_id,'event_type','PLACE_UPSERTED',
+           'place_id',place_id,'source_version',source_version,'source',source)
+FROM (
+  SELECT p.place_id,p.source_version,gen_random_uuid() AS event_id,
+    jsonb_build_object('place_id',p.place_id,'name',p.name,'description',p.description,
+      'region',p.region,'city',p.city,'category',p.category,'source_category',p.source_category,
+      'latitude',p.latitude,'longitude',p.longitude,'tour_content_id',p.tour_content_id,
+      'image_url',p.image_url,'homepage_url',p.homepage_url) AS source
+  FROM place_embeddings p
+  WHERE p.document_status='READY' AND p.source_version=p.latest_seen_version
+    AND NOT EXISTS (SELECT 1 FROM place_index_jobs j WHERE j.place_id=p.place_id AND j.status IN ('PENDING','RUNNING'))
+) pending;
+```
+
+원본 버전/보강 스냅샷/청크 세대가 추론 중 바뀌면 작업은 SUPERSEDED이고 활성 링크를 건드리지 않는다.
+삭제된 장소·아직 원본 인덱싱이 끝나지 않은 장소는 검색에서 제외한다. 이전 원문은 감사용으로 보존한다.
+
+## 조회·리랭킹·추적
+
+각 장소의 subject 활성 청크 중 쿼리와 가장 가까운 원문 근거 하나를 선택한다.
+장소 점수는 그 청크의 cosine score이며 청크 수나 리뷰 수로 합산하지 않는다. 기존 장소 Top-K와 반환 limit은 유지한다.
+리랭커에는 선택된 짧은 문맥+원문을 전달한다. BGE-M3 및 기존 BGE reranker의 모델·실행 전략·정밀도는 변경하지 않는다.
+Kafka 결과 각 장소의 `evidence_chunks`에 chunk_id·원문·문맥·source_span·버전·역할·생성 모델·출처 metadata가 추가된다.
+원시 벡터는 반환하지 않는다. Spring은 원본 완료 JSON을 보존하며, 앱용 DTO에 출처 카드가 추가된 것은 아니다.
+BM25 결합과 가상 질문 벡터 색인은 이번 변경에 포함하지 않는다.
+
+```text
+LocationReview/<place_id>_<안전한 장소명>/
+  requests/<request_hash>/<run_uuid>/
+    sources.json / request.json / raw_response.json / record.json
+  references/<hash>-<run>.json      # 다중 장소 원문 공유 시 다른 장소의 추적 포인터
+  index-inputs/<manifest_hash>.json # TourAPI·기존 보강을 포함한 모든 후보 청크와 원문
+```
+
+기존 웹 수집 record도 `/enrichment-data/LocationReview/<place_id>_<장소명>/requests/` 아래에 보존한다.
+Docker 작업자의 LOCATION_REVIEW_DIR는 `/enrichment-data/LocationReview`, 로컬 기본은 `LocationReview`이다.
+위치 이름에서 경로 구분자를 제거하며 실제 원문 아카이브는 Git에 자동 커밋하지 않는다.
+읽을 수 없는 원문/변조된 응답/보존 실패는 조용히 무시하지 않고 실패한다.
+
+## 검증 실행
+
+```bash
+python -m unittest discover -s embedding-server/tests -v
+python -m unittest discover -s Docker/tests -v
+```
+
+DB 테스트는 `ENRICHMENT_TEST_DATABASE_URL`에 별도 테스트 PostgreSQL DSN을 지정해야 한다.
+각 테스트는 고유 스키마만 만들고 제거한다. 운영 DB를 지정하지 않는다.
+`CONTEXTUAL_MODEL_TEST_URL`에 실행 중인 기존 임베딩 서버의 base URL을 지정하면
+실제 BGE-M3 임베딩 → 청크 조회 → 기존 reranker 의미 순서도 검증한다.
+두 변수가 없을 때 해당 통합 테스트는 skip이며 통과로 간주하지 않는다.
+구현 검증에서는 별도 테스트 DB와 기존 모델 서버로 검색 테스트 31개, Docker 테스트 11개가 통과했다.
+실제 Perplexity 인증·모델 가용성·과금·생성 문맥 품질은 API 키 부재로 검증하지 않았다.

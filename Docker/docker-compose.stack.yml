@@ -80,6 +80,7 @@ services:
       LANGSMITH_PROJECT: ${LANGSMITH_PROJECT:-travelmate-search-observability}
       LANGSMITH_ENDPOINT: ${LANGSMITH_ENDPOINT:-https://api.smith.langchain.com}
       HF_HOME: /models
+      LOCATION_REVIEW_DIR: /enrichment-data/LocationReview
       HF_HUB_DISABLE_XET: "1"
       HTTP_PROXY: ${HTTP_PROXY:-}
       HTTPS_PROXY: ${HTTPS_PROXY:-}

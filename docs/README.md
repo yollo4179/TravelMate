@@ -4,6 +4,9 @@
 
 | 문서 | 확인할 내용 |
 |---|---|
+| [청크 검색 구현 계획](plans/contextual-retrieval.md) | 장소당 활성 20개·원문 보존·단계별 이행과 검증 범위 |
+| [공통 청크 명세](specifications/contextual-retrieval.md) | Perplexity 문맥 생성·전역 ID·인용 위치·FastAPI DB 변경·실행 명령 |
+| [청크 검색 구조도](architecture/contextual-retrieval.md) | TourAPI/블로그/리뷰 → 문맥+원문 임베딩 → 장소별 대표 근거 → 기존 리랭커 |
 | [기존 장소 웹 근거 보강](specifications/place-review-enrichment.md) | Agent API 수집·출처/인용 검사·기존 ID 보존·재색인·실행 명령 |
 | [전체 구조도](architecture/personal-tour-guide.md) | 서버·앱·DB 역할, 기억 저장/조회, 툴 호출, 롤백, 사진 앨범의 연결 |
 | [상세 명세서](specifications/personal-tour-guide.md) | 요구사항, 현재 구현과 차이, 논리 데이터 모델, API·툴 계약, 상태와 예외 |
@@ -14,6 +17,7 @@
 ## 사용자가 지정한 요구사항
 
 - 기존 TravelMate 문서와 구현을 기본으로 확장합니다.
+- 장소당 활성 검색 청크는 모든 출처를 합쳐 최대 20개이며 원문·탈락 청크는 별도 보존합니다. 원문과 짧은 문맥을 분리하고 함께 임베딩하며, 장소별 대상/조망/언급 역할과 출처·버전·인용 위치·생성 모델을 추적합니다. 구체적인 구현·운영 범위는 위 청크 명세를 따릅니다.
 - 의미 기반 검색 → Top-K → 1개 또는 여러 장소의 자동 생성·배정 흐름을 지원합니다.
 - 리뷰 답변·일기·대화의 의미를 분석합니다. 명시적으로 말한 취향은 자동 저장하고, 추론한 취향은 사용자 확인 후 장기 기억에 반영합니다.
 - 나만의 투어 가이드 여자친구와 텍스트·STT·TTS로 여행을 관리합니다.

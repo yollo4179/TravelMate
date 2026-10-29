@@ -1,5 +1,9 @@
 # 별도 DB·Kafka 추천 요청/완료 이벤트 명세
 
+> 추가 구현 계약: [공통 청크·DB 명세](contextual-retrieval.md). FastAPI DB에 원문 버전·청크·문맥 버전·
+> 장소별 활성 슬롯·번들 manifest를 추가한다. Kafka 결과 장소 항목의 `evidence_chunks`는 선택된 원문·
+> 짧은 문맥·출처·원문 버전·인용 위치·생성 모델을 포함한다. 기존 필드와 Spring 원본 소유권은 유지한다.
+
 [추천 구조도](../architecture/fastapi-place-recommendation.md) · [문서 목록](../README.md) · [투어 가이드 명세](personal-tour-guide.md)
 
 갱신일: 2026-10-25, 한국 시간. 코드 확인 기준: `f9f09db`, 이전 문서: `7921ecb`. **별도 FastAPI DB와 Kafka 추천 요청·완료 전달, 완료 이벤트에 추천 장소 상세까지 포함하는 것은 사용자 확정 사항입니다. 원시 임베딩 벡터를 완료 결과로 보내는 계약이 아닙니다. 아래 내용은 로컬 Codex 구현과 맞출 문서 계약이며, 이번 갱신으로 실행 코드를 변경하지 않습니다.**

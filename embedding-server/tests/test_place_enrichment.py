@@ -216,7 +216,7 @@ class DatabaseTests(unittest.IsolatedAsyncioTestCase):
         embedded = []
         def embed(texts: list[str]) -> list[list[float]]:
             embedded.extend(texts)
-            return [[1.0] + [0.0] * 1023]
+            return [([1.0, 0.0] if QUOTE in text else [0.0, 1.0]) + [0.0] * 1022 for text in texts]
         fake_embedder = SimpleNamespace(device='unit-test', embed=embed)
         with patch.dict(sys.modules, {'app.embedder': SimpleNamespace(embedder=fake_embedder), 'app.reranker': SimpleNamespace(reranker=SimpleNamespace())}):
             runtime_module = importlib.import_module('app.kafka_runtime')
@@ -228,7 +228,7 @@ class DatabaseTests(unittest.IsolatedAsyncioTestCase):
         row = await self.pool.fetchrow('SELECT * FROM place_embeddings WHERE place_id=$1', PLACE.place_id)
         self.assertEqual(row['description'], PLACE.description)
         self.assertIn(QUOTE, row['search_description'])
-        self.assertIn(QUOTE, embedded[0])
+        self.assertTrue(any(QUOTE in text for text in embedded))
         self.assertIsNotNone(row['enrichment_snapshot_id'])
         self.assertEqual(await self.pool.fetchval('SELECT status FROM place_index_jobs LIMIT 1'), 'SUCCEEDED')
         candidates = await runtime._retrieve_candidates({'filters': {}}, '[' + ','.join(['1'] + ['0'] * 1023) + ']')
@@ -260,7 +260,7 @@ class DatabaseTests(unittest.IsolatedAsyncioTestCase):
         self.assertIsNone(await self.pool.fetchval('SELECT enrichment_snapshot_id FROM place_embeddings WHERE place_id=$1', PLACE.place_id))
         self.assertEqual(await self.pool.fetchval("SELECT count(*) FROM place_index_jobs WHERE status='PENDING'"), 1)
 
-    async def test_plain_place_index_keeps_original_description_and_embedding_input(self) -> None:
+    async def test_plain_place_index_keeps_original_and_adds_contextual_tourapi_chunk(self) -> None:
         event_id = uuid.uuid4()
         job_id = uuid.uuid4()
         payload = {'event_id': str(event_id), 'event_type': 'PLACE_UPSERTED', 'place_id': PLACE.place_id, 'source_version': 1, 'source': PLACE.to_dict()}
@@ -268,7 +268,7 @@ class DatabaseTests(unittest.IsolatedAsyncioTestCase):
         inputs = []
         def embed(texts: list[str]) -> list[list[float]]:
             inputs.extend(texts)
-            return [[1.0] + [0.0] * 1023]
+            return [[1.0] + [0.0] * 1023 for text in texts]
         fake_embedder = SimpleNamespace(device='unit-test', embed=embed)
         with patch.dict(sys.modules, {'app.embedder': SimpleNamespace(embedder=fake_embedder), 'app.reranker': SimpleNamespace(reranker=SimpleNamespace())}):
             runtime_module = importlib.import_module('app.kafka_runtime')
@@ -277,7 +277,8 @@ class DatabaseTests(unittest.IsolatedAsyncioTestCase):
         job = await self.pool.fetchrow('SELECT * FROM place_index_jobs WHERE job_id=$1', job_id)
         with patch.object(runtime_module, 'embedder', fake_embedder):
             await runtime._index_place_job(job)
-        self.assertEqual(inputs, [f'{PLACE.name}. {PLACE.description}'])
+        self.assertEqual(inputs, [f'{PLACE.name}. TourAPI 장소 설명의 일부이다.\n\n{PLACE.description}'])
+        self.assertEqual(await self.pool.fetchval('SELECT count(*) FROM place_active_chunks'), 1)
         self.assertIsNone(await self.pool.fetchval('SELECT search_description FROM place_embeddings WHERE place_id=$1', PLACE.place_id))
 
 

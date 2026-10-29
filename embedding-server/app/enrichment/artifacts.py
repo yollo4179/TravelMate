@@ -12,6 +12,7 @@ import httpx
 from .agent import AgentClient, AgentSettings, PROMPT_VERSION, request_payload
 from .contracts import CollectionStatus, ExistingPlace, fingerprint
 from .evidence import normalize_response, searchable_claims
+from app.contextual.contracts import archive_directory
 
 
 def write_json(path: Path, document: Any) -> None:
@@ -31,7 +32,7 @@ async def collect_place(
 ) -> Path:
     payload = request_payload(place, settings)
     request_hash = fingerprint({"source": place.to_dict(), "prompt_version": PROMPT_VERSION, "payload": payload})
-    cache = output_root / "requests" / request_hash
+    cache = output_root / "LocationReview" / archive_directory(place) / "requests" / request_hash
     pointer = cache / "latest.json"
     if client is not None and not refresh and pointer.exists():
         previous = cache / json.loads(pointer.read_text(encoding="utf-8"))["record_path"]

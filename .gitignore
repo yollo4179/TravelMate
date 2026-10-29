@@ -67,3 +67,5 @@ Evaluation/datasets/v1.3.0/.phoenix-evaluation/
 # Local web-evidence archives are runtime data, not golden dataset sources.
 /enrichment-data/
 /embedding-server/enrichment-data/
+/LocationReview/*/
+/embedding-server/LocationReview/*/

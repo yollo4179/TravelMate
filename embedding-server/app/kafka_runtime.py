@@ -2,6 +2,7 @@ import asyncio
 import json
 import logging
 import os
+from pathlib import Path
 import time
 import uuid
 from collections.abc import Awaitable, Callable
@@ -19,6 +20,9 @@ from app.reranker import reranker
 from app.enrichment.contracts import ExistingPlace
 from app.enrichment.evidence import search_description
 from app.enrichment.repository import latest_snapshot
+from app.contextual.pipeline import tourapi_chunks, legacy_evidence_chunks, select_active
+from app.contextual.repository import desired_chunks, activate_chunks, preserve_chunks
+from app.contextual.artifacts import archive_index_input
 
 LOGGER = logging.getLogger(__name__)
 RETRIEVE_TOP_K = 30
@@ -239,12 +243,19 @@ class KafkaRuntime:
 
         place = ExistingPlace.from_mapping({**source, "place_id": job["place_id"]})
         enrichment = await latest_snapshot(self.database_pool, place)
+        chunk_generation, imported_chunks = await desired_chunks(self.database_pool, place)
+        all_chunks = imported_chunks + tourapi_chunks(place) + legacy_evidence_chunks(place, enrichment)
+        active_chunks = select_active(place.place_id, all_chunks)
+        archive_root = Path(os.environ.get("LOCATION_REVIEW_DIR", "LocationReview"))
+        await to_thread.run_sync(lambda: archive_index_input(archive_root, place, all_chunks))
         augmented_description = search_description(place, enrichment["document"]) if enrichment else None
-        embedding_text = f"{source['name']}. {augmented_description if enrichment else source.get('description') or ''}".strip()
         with tracer().start_as_current_span("embedding.model_inference") as span:
             span.set_attribute("embedding.device", embedder.device)
-            span.set_attribute("embedding.text_count", 1)
-            vector = (await to_thread.run_sync(lambda: embedder.embed([embedding_text])))[0]
+            texts = [chunk.embedding_text for chunk in active_chunks] or [f"{place.name}. {place.description or ''}".strip()]
+            span.set_attribute("embedding.text_count", len(texts))
+            vectors = await to_thread.run_sync(lambda: embedder.embed(texts))
+            vector = vectors[0]
+            chunk_vectors = vectors if active_chunks else []
         vector_text = "[" + ",".join(map(str, vector)) + "]"
         async with self.database_pool.acquire() as connection:
             async with connection.transaction():
@@ -256,8 +267,9 @@ class KafkaRuntime:
                         longitude = $10, tour_content_id = $11, image_url = $12,
                         homepage_url = $13, embedding = $14::vector,
                         document_status = 'READY', indexed_at = now(),
-                        search_description = $15, enrichment_snapshot_id = $16
-                    WHERE place_id = $1 AND latest_seen_version = $2
+                        search_description = $15, enrichment_snapshot_id = $16,
+                        index_config_version = 'bge-m3-contextual-v1'
+                    WHERE place_id = $1 AND latest_seen_version = $2 AND chunk_generation = $18
                       AND (SELECT snapshot_id FROM place_enrichment_snapshots
                            WHERE place_id = $1 AND source_fingerprint = $17
                            ORDER BY collected_at DESC, snapshot_id DESC LIMIT 1)
@@ -280,8 +292,12 @@ class KafkaRuntime:
                     augmented_description,
                     enrichment["snapshot_id"] if enrichment else None,
                     place.source_fingerprint,
+                    chunk_generation,
                 )
                 status = "SUCCEEDED" if updated == "UPDATE 1" else "SUPERSEDED"
+                if status == "SUCCEEDED":
+                    await preserve_chunks(connection, all_chunks)
+                    await activate_chunks(connection, place.place_id, active_chunks, chunk_vectors)
                 await connection.execute(
                     "UPDATE place_index_jobs SET status = $2, updated_at = now() WHERE job_id = $1",
                     job["job_id"],
@@ -429,8 +445,9 @@ class KafkaRuntime:
         filters = payload.get("filters", {})
         conditions = [
             "document_status = 'READY'",
-            "embedding IS NOT NULL",
-            "1 - (embedding <=> $1::vector) >= 0",
+            "source_version = latest_seen_version",
+            "retrieval_embedding IS NOT NULL",
+            "1 - (retrieval_embedding <=> $1::vector) >= 0",
         ]
         parameters: list[Any] = [vector]
         for column, value in (
@@ -465,14 +482,34 @@ class KafkaRuntime:
         vector_parameter, limit_parameter = len(parameters) - 1, len(parameters)
         query = f"""
             SELECT place_id, source_version, latest_seen_version, name,
-                   COALESCE(search_description, description) AS description,
+                   CASE WHEN evidence IS NOT NULL THEN
+                       (evidence->>'context_text') || E'\n\n' || (evidence->>'chunk_text')
+                       ELSE COALESCE(search_description, description) END AS description,
                    enrichment_snapshot_id,
+                   index_config_version,
+                   evidence,
                    region, city, category, source_category, latitude, longitude,
                    tour_content_id, image_url, homepage_url,
-                   1 - (embedding <=> $1::vector) AS semantic_score
-            FROM place_embeddings
+                   1 - (retrieval_embedding <=> $1::vector) AS semantic_score
+            FROM (
+                SELECT p.*, matched.chunk_id, matched.context_version,
+                       matched.evidence,
+                       COALESCE(matched.chunk_embedding, p.embedding) AS retrieval_embedding
+                FROM place_embeddings p
+                LEFT JOIN LATERAL (
+                    SELECT a.chunk_id, a.context_version, c.embedding AS chunk_embedding,
+                           c.document || jsonb_build_object('context_version', a.context_version,
+                               'metadata', s.document->'metadata') AS evidence
+                    FROM place_active_chunks a
+                    JOIN retrieval_chunk_contexts c USING(chunk_id, context_version)
+                    JOIN retrieval_chunks r USING(chunk_id)
+                    JOIN retrieval_source_versions s USING(source_id, source_version)
+                    WHERE a.place_id = p.place_id AND a.role = 'subject' AND c.embedding IS NOT NULL
+                    ORDER BY c.embedding <=> $1::vector, a.slot LIMIT 1
+                ) matched ON true
+            ) indexed_places
             WHERE {' AND '.join(conditions)}
-            ORDER BY embedding <=> ${vector_parameter}::vector
+            ORDER BY retrieval_embedding <=> ${vector_parameter}::vector, place_id
             LIMIT ${limit_parameter}
         """
         retrieval_started_at = time.perf_counter()
@@ -510,8 +547,9 @@ class KafkaRuntime:
             "rerank_score": rerank_score,
             "source_version": candidate["source_version"],
             "latest_seen_version": candidate["latest_seen_version"],
-            "index_config_version": "bge-m3-v1",
+            "index_config_version": candidate.get("index_config_version", "bge-m3-v1"),
             "enrichment_snapshot_id": str(candidate["enrichment_snapshot_id"]) if candidate.get("enrichment_snapshot_id") else None,
+            "evidence_chunks": [json.loads(candidate["evidence"]) if isinstance(candidate["evidence"], str) else candidate["evidence"]] if candidate.get("evidence") else [],
         }
 
     async def _save_recommendation_result(self, request: Any, result: dict[str, Any]) -> None:
