@@ -9,8 +9,11 @@ flowchart TD
     Accounts[확보한 블로그·리뷰 본문] --> Raw
     Raw --> Sources[공통 SourceDocument와 내용 버전]
     Sources --> Split[원문 offset 기반 분할]
-    Split --> Agent[Perplexity Agent sonar-pro<br/>문맥·장소 역할·선택적 질문]
+    Split --> Agent[Perplexity Agent<br/>버전별 문맥·장소 역할 생성]
+    Version[v1 보존 / v2 기본] --> Agent
+    Baseline[기존 record 비교 실행<br/>원문·분할·모델 설정 고정] --> Agent
     Agent --> Validate[원문 ID·offset·장소 ID·역할 검증]
+    Validate --> Unattributed[귀속 불명확: 두 배열 비움<br/>응답 보존·색인 제외]
     Validate --> Bundle[불변 번들 저장과 재색인 등록]
     Bundle --> Worker
     Worker --> Archive[LocationReview/place_id_장소명<br/>원문·응답·후보 청크 보존]
@@ -44,3 +47,6 @@ erDiagram
 DB 트랜잭션은 네트워크 호출·모델 추론 동안 잡지 않는다. 활성 집합은 추론 뒤 최신 세대를 확인하고 원자 교체한다.
 Spring DB와 FastAPI DB 사이 JOIN/FK는 없다. 새 FK는 FastAPI 검색 DB 내부에만 존재한다.
 기존 무청크 장소는 호환 벡터로 조회할 수 있으므로 단계별 재색인이 가능하다.
+v2에서도 같은 문서의 다른 구간은 장소 식별이나 필요한 배경에 활용한다. 청크 밖 정보 전체를 금지하지 않는다.
+baseline 비교는 모델/프리셋 선택까지 고정하지만 공급자가 반환한 실제 모델도 별도로 비교해 기록한다.
+검증기의 형식/역할 일치 확인만으로 장소 귀속·문맥의 의미 정확성이나 실제 품질 향상을 보증하지 않는다.

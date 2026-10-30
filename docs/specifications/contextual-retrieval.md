@@ -22,7 +22,7 @@ TourAPI는 현재 Kafka가 전달한 description 필드를 보존하며, 공급�
   "place_refs": [{"place_id": 394, "role": "subject"}, {"place_id": 395, "role": "view_target"}],
   "entities": [{"name": "대상 공원", "place_id": 394, "role": "subject"}],
   "hypothetical_questions": [],
-  "generation": {"provider": "perplexity", "model": "실제 응답 model", "response_id": "응답 ID", "prompt_version": "contextual-source-spans-v1"}
+  "generation": {"provider": "perplexity", "model": "실제 응답 model", "response_id": "응답 ID", "prompt_version": "contextual-source-spans-v2"}
 }
 ```
 
@@ -35,11 +35,32 @@ source_id는 출처 유형·URL 또는 TourAPI 콘텐츠 ID·필드명으로 결
 
 ## 생성 파이프라인
 
+프롬프트는 파일명 앞의 버전으로 구분한다. 실행 코드는 프롬프트 레지스트리에서 버전을 선택한다.
+
+| 파일 | 버전·역할 |
+|---|---|
+| [v1_contextual_prompt.py](../../embedding-server/app/contextual/prompts/v1_contextual_prompt.py) | `contextual-source-spans-v1`: 기존 지시문 그대로 보존 |
+| [v2_contextual_prompt.py](../../embedding-server/app/contextual/prompts/v2_contextual_prompt.py) | `contextual-source-spans-v2`: 새 생성의 기본값, 구간 중심 문맥·시설별 귀속·방문 조건 보존 |
+
+v2는 보통 1~2문장을 권장하지만 필요한 구분·부정·조건을 생략하도록 강제하지 않는다. 600자 상한은 유지한다.
+**동일 문서의 청크 밖 배경도 장소 식별·지시 대상·배경 이해에 필요하면 허용한다.**
+현재 구간의 주제를 앞뒤 구간의 주차·시설·역사 설명으로 대체하거나 다른 출처의 관찰을 가져오지 않는다.
+시설별 상태, 관찰/의견/전언/개선 제안, 게시일/방문일을 구분하며 낡음과 더러움을 동일시하지 않는다.
+귀속이 명확한 구간만 subject를 지정한다. 불명확한 구간은 `place_refs=[]`와 `entities=[]`를 **함께** 반환해야 한다.
+v2 검증기는 둘 중 entities만 남긴 응답과 비어 있지 않은 `hypothetical_questions`를 거부한다.
+예상 질문은 v2에서 생성하지 않으며, 이 형식 검사가 장소 귀속의 의미 정확성을 보증하는 것은 아니다.
+
+기존 실행 기록은 그 기록의 `prompt_version`으로 요청·응답·해시를 재검증한다. 새 기본값이 v2여도 v1 기록과 캐시는 유지된다.
+프롬프트나 검증 규칙을 변경할 때 기존 버전 파일을 덮어쓰지 않고 새 버전을 등록한다.
+
 로컬 splitter가 보존 문서의 최대 800자 구간을 정한다. Agent에는 전체 원문과 각 구간을 함께 제공한다.
-Agent는 원문을 다시 쓰지 않고 구간별 짧은 문맥·장소 역할·엔티티·선택적 질문을 생성한다.
+Agent는 원문을 다시 쓰지 않고 구간별 짧은 문맥·장소 역할·엔티티를 생성한다. v1의 기존 선택적 질문은 보존한다.
 반환된 모든 source_id와 offset은 요청 목록에 정확히 한 번 있어야 한다.
-없는 장소 ID와 엔티티 역할 불일치는 적용을 거부한다. 대상 장소를 알 수 없는 구간은 빈 place_refs로 응답하게 하며,
+없는 장소 ID와 엔티티 역할 불일치는 적용을 거부한다. v2에서 대상 장소를 알 수 없는 구간은 두 배열을 비우게 하며,
 응답 원본에는 남기고 색인에서는 제외한다. 모델의 역할·문맥 의미 판정은 자동적인 사실 검증이나 사람 검수를 대신하지 않는다.
+
+800자는 현재 분할 설정이며 보편적인 최적 토큰 수를 뜻하지 않는다. 한글 글자 수와 토큰 수는 고정 비율이 아니다.
+길이 조정은 실제 임베딩·리랭커 토크나이저로 쿼리/문맥/원문 입력과 잘림을 측정한 뒤 별도 실험한다.
 
 공식 SDK의 `/v1/responses`, `response_format.json_schema`, `preset`/`provider/model` 규격을 사용한다.
 기본 `sonar-pro`는 원문 문맥 작성용이며 Sora 같은 영상 모델을 사용하지 않는다.
@@ -79,6 +100,27 @@ python -m app.contextual.cli apply --record /path/to/LocationReview/394_테스�
 같은 번들 재적용은 `ALREADY_APPLIED`; 새 번들은 `REINDEX_QUEUED`. 후자는 검색 반영 완료를 의미하지 않는다.
 기존 장소별 imported bundle은 최신 적용본으로 교체되며 이전 원문/청크/문맥은 삭제하지 않는다.
 누적할 자료는 새 입력 번들에 기존 유지 자료도 함께 넣는다. 언급 장소는 그 번들의 청크로 활성화하지 않는다.
+
+## 같은 입력으로 프롬프트 비교
+
+`--prompt-version contextual-source-spans-v1` 또는 `contextual-source-spans-v2`로 지정한다.
+기존 **문맥 생성** 실행의 `record.json`을 `--baseline-record`에 주면 보존된 원문·분할·요청 스키마·모델/프리셋을 재사용한다.
+웹 수집 record를 가져오는 `--from-record`와 구분한다. baseline 실행은 환경의 모델/프리셋 값을 사용하지 않으며,
+`--model`/`--preset`을 함께 지정하면 거부한다. 요청은 instructions를 제외하고 기존 요청과 같아야 한다.
+
+```bash
+# embedding-server에서 실행. 유료 호출 없이 v2 요청과 비교 조건을 확인한다.
+python -m app.contextual.cli generate --baseline-record /path/to/v1/record.json --prompt-version contextual-source-spans-v2 --output ../LocationReview
+# 동일 명령에 --execute를 붙이면 저장 원문으로 새 문맥을 생성한다. 새 웹 검색은 하지 않는다.
+```
+
+`record.json` 옆의 `comparisons/<baseline_hash>.json`에 기준 실행, 입력/설정 일치, 실제 응답 모델 일치를 기록한다.
+미리보기나 응답 모델이 없는 경우 `actual_model_match`는 null이다. 동일 프리셋이어도 공급자의 실제 모델이 다르면 false이며,
+이를 프롬프트만 바꾼 품질 비교로 해석하지 않는다. `semantic_quality_evaluated=false`는 문맥 품질을 자동 채점하지 않았다는 뜻이다.
+모델이 같아도 추론의 비결정성은 남는다. 두 실행의 원문 귀속·주제·조건 보존을 대조해야 개선 여부를 판단할 수 있다.
+요청 버전별 캐시를 재사용하며, 원본/응답은 덮어쓰지 않는다. 비교 기록 생성은 DB 적용이나 자동 재시도를 수행하지 않는다.
+이 옵션은 저장소의 표준 원문·요청·응답·record 아카이브를 대상으로 한다. 별도 로컬 배치 스크립트의 형식은 입력 확인이 필요하다.
+외부 `semantic-review.json`의 임의 판정은 아직 자동 반영하지 않는다. 그 파일의 표시만으로 기존 subject 청크가 제외되지는 않는다.
 
 ## DB 변경과 기존 데이터 이행
 
@@ -159,3 +201,7 @@ DB 테스트는 `ENRICHMENT_TEST_DATABASE_URL`에 별도 테스트 PostgreSQL DS
 두 변수가 없을 때 해당 통합 테스트는 skip이며 통과로 간주하지 않는다.
 구현 검증에서는 별도 테스트 DB와 기존 모델 서버로 검색 테스트 31개, Docker 테스트 11개가 통과했다.
 실제 Perplexity 인증·모델 가용성·과금·생성 문맥 품질은 API 키 부재로 검증하지 않았다.
+
+2026-10-30 프롬프트 버전 변경 검증에서는 contextual 테스트 13개가 통과했고 DB/실제 모델 테스트 5개는 환경 미설정으로 skip했다.
+v1 아카이브 재검증, 버전별 캐시, 귀속 불명확 응답 보존, 비교 요청 고정과 실제 모델 불일치를 모의 HTTP로 확인했다.
+유료 API 재실행·실제 문맥 개선 평가·DB 적용은 수행하지 않았다.

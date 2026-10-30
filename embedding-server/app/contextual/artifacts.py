@@ -67,10 +67,17 @@ class SourceBundle:
         return cls.from_mapping({"places": [place.to_dict()], "sources": [source.to_dict() for source in sources.values()]})
 
 
-async def collect_bundle(bundle: SourceBundle, settings: AgentSettings, root: Path,
-                         http: httpx.AsyncClient | None, *, refresh: bool = False) -> Path:
-    payload = request_payload(bundle.places, bundle.sources, settings)
-    request_hash = fingerprint({"payload": payload, "prompt_version": PROMPT_VERSION})
+async def collect_bundle(
+    bundle: SourceBundle,
+    settings: AgentSettings,
+    root: Path,
+    http: httpx.AsyncClient | None,
+    *,
+    refresh: bool = False,
+    prompt_version: str = PROMPT_VERSION,
+) -> Path:
+    payload = request_payload(bundle.places, bundle.sources, settings, prompt_version=prompt_version)
+    request_hash = fingerprint({"payload": payload, "prompt_version": prompt_version})
     directory = root / archive_directory(bundle.places[0]) / "requests" / request_hash
     pointer = directory / "latest.json"
     if http is not None and pointer.exists() and not refresh:
@@ -84,13 +91,13 @@ async def collect_bundle(bundle: SourceBundle, settings: AgentSettings, root: Pa
     run = directory / str(uuid.uuid4())
     write_json(run / "sources.json", bundle.to_dict())
     write_json(run / "request.json", payload)
-    record = {"schema_version": 1, "request_hash": request_hash, "prompt_version": PROMPT_VERSION,
+    record = {"schema_version": 1, "request_hash": request_hash, "prompt_version": prompt_version,
               "created_at": datetime.now(UTC).isoformat(), "status": CollectionStatus.PLANNED.value}
     if http is not None:
         try:
             raw = await generate(http, settings, payload)
             write_json(run / "raw_response.json", raw)
-            chunks = parse_chunks(raw, bundle.places, bundle.sources)
+            chunks = parse_chunks(raw, bundle.places, bundle.sources, prompt_version=prompt_version)
             record.update(status=CollectionStatus.COLLECTED.value, chunks=[chunk.to_dict() for chunk in chunks],
                           actual_model=raw.get("model"), usage=raw.get("usage"))
         except Exception as exception:
@@ -112,13 +119,14 @@ def load_record(path: Path) -> tuple[SourceBundle, list[SearchChunk], dict[str, 
     record = json.loads(path.read_text(encoding="utf-8"))
     if record["status"] != CollectionStatus.COLLECTED:
         raise ValueError("Only completed contextual records may be applied")
+    prompt_version = record["prompt_version"]
     bundle = SourceBundle.from_mapping(json.loads(path.with_name("sources.json").read_text(encoding="utf-8")))
     raw = json.loads(path.with_name("raw_response.json").read_text(encoding="utf-8"))
-    chunks = parse_chunks(raw, bundle.places, bundle.sources)
+    chunks = parse_chunks(raw, bundle.places, bundle.sources, prompt_version=prompt_version)
     payload = json.loads(path.with_name("request.json").read_text(encoding="utf-8"))
     selector = {"preset": payload["preset"]} if "preset" in payload else {"model": payload["model"]}
-    expected = request_payload(bundle.places, bundle.sources, AgentSettings(**selector))
-    if payload != expected or fingerprint({"payload": payload, "prompt_version": PROMPT_VERSION}) != record["request_hash"]:
+    expected = request_payload(bundle.places, bundle.sources, AgentSettings(**selector), prompt_version=prompt_version)
+    if payload != expected or fingerprint({"payload": payload, "prompt_version": prompt_version}) != record["request_hash"]:
         raise ValueError("Contextual request or source archive changed")
     if [chunk.to_dict() for chunk in chunks] != record["chunks"]:
         raise ValueError("Contextual record differs from preserved response")

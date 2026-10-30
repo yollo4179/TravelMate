@@ -22,6 +22,8 @@ from app.contextual.agent import parse_chunks, request_payload
 from app.contextual.artifacts import SourceBundle, collect_bundle, load_record
 from app.contextual.contracts import SearchChunk, archive_directory
 from app.contextual.pipeline import normalize_source, select_active, split_source, tourapi_chunks
+from app.contextual.prompts import PromptVersion
+from app.contextual.replay import GenerationBaseline
 from app.contextual.repository import apply_bundle, desired_chunks
 from app.enrichment.agent import AgentSettings
 from app.enrichment.contracts import ExistingPlace
@@ -49,7 +51,7 @@ def response_for(value: SourceBundle, context: str = '공원 방문기에서 평
                'place_refs': [{'place_id': PLACE.place_id, 'role': 'subject'},
                               {'place_id': MENTIONED.place_id, 'role': 'view_target'}],
                'entities': [{'name': PLACE.name, 'place_id': PLACE.place_id, 'role': 'subject'}],
-               'hypothetical_questions': ['주말 혼잡에 관한 방문 경험이 있는가?']}
+               'hypothetical_questions': []}
               for item in value.sources for start, end in split_source(item)]
     return {'id': 'mock-context', 'model': 'mock-sonar', 'status': 'completed', 'output': [
         {'type': 'message', 'content': [{'type': 'output_text', 'text': json.dumps({'chunks': chunks}, ensure_ascii=False)}]}]}
@@ -172,6 +174,99 @@ class ContextualTests(unittest.IsolatedAsyncioTestCase):
                 path = await collect_bundle(bundle(), SETTINGS, Path(directory), http)
                 self.assertEqual(json.loads(path.read_text())['http_status'], 429)
                 self.assertEqual(len(calls), 1)
+
+    async def test_prompt_versions_preserve_archives_and_have_separate_caches(self) -> None:
+        value = bundle()
+        calls: list[httpx.Request] = []
+
+        def handler(request: httpx.Request) -> httpx.Response:
+            calls.append(request)
+            return httpx.Response(200, json=response_for(value))
+
+        async with httpx.AsyncClient(transport=httpx.MockTransport(handler)) as http:
+            with tempfile.TemporaryDirectory() as directory:
+                root = Path(directory)
+                archived = await collect_bundle(value, SETTINGS, root, http, prompt_version=PromptVersion.V1)
+                original_bytes = archived.read_bytes()
+                candidate = await collect_bundle(value, SETTINGS, root, http, prompt_version=PromptVersion.V2)
+                self.assertNotEqual(archived, candidate)
+                for version, expected in ((PromptVersion.V1, archived), (PromptVersion.V2, candidate)):
+                    self.assertEqual(await collect_bundle(value, SETTINGS, root, http, prompt_version=version), expected)
+                    self.assertEqual(load_record(expected)[1][0].generation['prompt_version'], version)
+                self.assertEqual(len(calls), 2)
+                self.assertEqual(archived.read_bytes(), original_bytes)
+                altered = json.loads(archived.read_text())
+                altered['prompt_version'] = PromptVersion.V2
+                archived.write_text(json.dumps(altered))
+                with self.assertRaisesRegex(ValueError, 'changed'):
+                    load_record(archived)
+
+    async def test_unattributed_v2_span_is_preserved_but_not_indexed(self) -> None:
+        value = bundle()
+        raw = response_for(value)
+        document = json.loads(raw['output'][0]['content'][0]['text'])
+        document['chunks'][0]['place_refs'] = []
+        document['chunks'][0]['entities'] = []
+        raw['output'][0]['content'][0]['text'] = json.dumps(document)
+        async with httpx.AsyncClient(transport=httpx.MockTransport(lambda request: httpx.Response(200, json=raw))) as http:
+            with tempfile.TemporaryDirectory() as directory:
+                record = await collect_bundle(value, SETTINGS, Path(directory), http)
+                preserved, indexed, _ = load_record(record)
+                self.assertEqual(indexed, [])
+                self.assertEqual(preserved.to_dict(), value.to_dict())
+                self.assertEqual(json.loads(record.with_name('raw_response.json').read_text()), raw)
+
+    def test_v2_rejects_unattributed_entities_and_questions_while_v1_remains_readable(self) -> None:
+        value = bundle()
+        raw = response_for(value)
+        document = json.loads(raw['output'][0]['content'][0]['text'])
+        document['chunks'][0]['place_refs'] = []
+        raw['output'][0]['content'][0]['text'] = json.dumps(document)
+        with self.assertRaisesRegex(ValueError, 'both place_refs and entities'):
+            parse_chunks(raw, value.places, value.sources)
+        self.assertEqual(parse_chunks(raw, value.places, value.sources, prompt_version=PromptVersion.V1), [])
+        raw = response_for(value)
+        document = json.loads(raw['output'][0]['content'][0]['text'])
+        document['chunks'][0]['hypothetical_questions'] = ['주말 혼잡에 관한 방문 경험이 있는가?']
+        raw['output'][0]['content'][0]['text'] = json.dumps(document)
+        with self.assertRaisesRegex(ValueError, 'Query expansion'):
+            parse_chunks(raw, value.places, value.sources)
+        self.assertEqual(len(parse_chunks(raw, value.places, value.sources, prompt_version=PromptVersion.V1)), 1)
+
+    async def test_replay_locks_inputs_and_settings_and_detects_provider_model_changes(self) -> None:
+        value = bundle()
+        responses = [response_for(value), response_for(value)]
+        responses[1]['model'] = 'different-provider-model'
+        async with httpx.AsyncClient(transport=httpx.MockTransport(lambda request: httpx.Response(200, json=responses.pop(0)))) as http:
+            with tempfile.TemporaryDirectory() as directory:
+                root = Path(directory)
+                archived = await collect_bundle(value, SETTINGS, root, http, prompt_version=PromptVersion.V1)
+                baseline = GenerationBaseline.load(archived)
+                settings = baseline.settings('test-only', 60)
+                payload = request_payload(value.places, value.sources, settings)
+                baseline.verify_request(payload)
+                for key, replacement in (('model', 'other-model'), ('input', '{}'), ('response_format', {})):
+                    altered = copy.deepcopy(payload)
+                    altered[key] = replacement
+                    with self.assertRaisesRegex(ValueError, 'instructions only'):
+                        baseline.verify_request(altered)
+                planned = await collect_bundle(value, settings, root, None)
+                preview = json.loads(baseline.write_report(planned).read_text())
+                self.assertIsNone(preview['actual_model_match'])
+                candidate = await collect_bundle(value, settings, root, http)
+                report = json.loads(baseline.write_report(candidate).read_text())
+                self.assertTrue(report['input_and_settings_match'])
+                self.assertFalse(report['actual_model_match'])
+                self.assertFalse(report['semantic_quality_evaluated'])
+
+    async def test_unknown_prompt_is_rejected_before_http(self) -> None:
+        def unexpected(request: httpx.Request) -> httpx.Response:
+            raise AssertionError('Unsupported versions must not call the provider')
+
+        async with httpx.AsyncClient(transport=httpx.MockTransport(unexpected)) as http:
+            with tempfile.TemporaryDirectory() as directory:
+                with self.assertRaisesRegex(ValueError, 'Unsupported contextual prompt'):
+                    await collect_bundle(bundle(), SETTINGS, Path(directory), http, prompt_version='unregistered-version')
 
 
 @unittest.skipUnless(os.environ.get('ENRICHMENT_TEST_DATABASE_URL'), 'Requires isolated PostgreSQL test database')

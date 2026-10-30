@@ -14,6 +14,7 @@
 | 대상/전망/단순 언급 구분 | `subject`, `view_target`, `mentioned`; DB trigger도 subject만 활성화 허용 |
 | 생성 모델·프롬프트·출처·인용 위치 | context revision JSON, source version JSON, 원문 Unicode offset |
 | Perplexity 문맥 생성 | 별도 offline CLI, 기본 Agent `sonar-pro`, 모델/프리셋 교체 가능 |
+| 프롬프트 버전과 비교 | `prompts/v1_*.py`, `v2_*.py`; 기존 기록은 기록된 버전으로 검증, `--baseline-record`로 입력/설정 고정 |
 | 기존 검색 경로 연결 | Kafka 인덱싱 → 청크별 벡터 → 장소별 최고 근거 1개 → 기존 리랭커 |
 | 추적 파일 | `LocationReview/<place_id>_<장소명>/` |
 | 검색 DB 변경 | `Docker/search-init/03-contextual-chunks.sql`, runtime 멱등 적용 |
@@ -34,6 +35,9 @@
 조건이나 상충된 원문을 한 문장으로 합치지 않는다. 이 선택기는 원문 조건의 의미적 중요도를 자동 판정하는 모델은 아니다.
 20개보다 많은 근거에서 모든 조건을 보장하는 최적 선택, BM25/RRF, 가상 질문 별도 벡터는 후속 평가 대상이다.
 현재 질문 예시는 저장만 하며 원문 대신 추천 근거로 사용하지 않는다.
+새 기본 프롬프트 v2는 예상 질문을 생성하지 않는다. 같은 문서에서 필요한 배경은 허용하되 현재 구간의 주제를 유지하고,
+귀속이 불명확하면 place_refs와 entities를 모두 비워 원본 응답에만 보존한다. v1 원문·기록·기존 질문은 그대로 읽는다.
+별도 semantic-review 파일의 표시를 적용하는 기능이나 복수 청크 리랭킹은 이번 프롬프트 버전 변경에 포함하지 않는다.
 
 ## 검증과 출시 판정
 
