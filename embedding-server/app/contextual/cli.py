@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import argparse
 import asyncio
+from contextlib import nullcontext
 import json
 import os
 from pathlib import Path
@@ -48,12 +49,13 @@ async def run(args: argparse.Namespace) -> int:
         settings = AgentSettings(preset=preset, model=model, api_key=os.environ.get("PERPLEXITY_API_KEY", ""), timeout_seconds=args.timeout)
     if args.execute and not settings.api_key.strip():
         raise ValueError("Configure PERPLEXITY_API_KEY securely before --execute")
-    async with httpx.AsyncClient() as http:
+    client_context = httpx.AsyncClient() if args.execute else nullcontext(None)
+    async with client_context as http:
         path = await collect_bundle(
             bundle,
             settings,
             args.output,
-            http if args.execute else None,
+            http,
             refresh=args.refresh,
             prompt_version=args.prompt_version,
             prepared_request=prepared_request,

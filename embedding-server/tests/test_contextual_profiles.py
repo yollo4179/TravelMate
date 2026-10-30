@@ -210,12 +210,16 @@ class ContextualProfileTests(unittest.IsolatedAsyncioTestCase):
                                       execute=False, refresh=False, output=root / 'new')
             stdout = io.StringIO()
             with (
-                patch.dict('os.environ', {'PERPLEXITY_AGENT_MODEL': 'unwanted-model'}, clear=True),
-                patch('httpx.AsyncClient.send', side_effect=AssertionError('Dry run must not send HTTP')) as send,
+                patch.dict('os.environ', {
+                    'PERPLEXITY_AGENT_MODEL': 'unwanted-model',
+                    'SSL_CERT_FILE': str(root / 'missing-ca.pem'),
+                }, clear=True),
+                patch('app.contextual.cli.httpx.AsyncClient',
+                      side_effect=AssertionError('Dry run must not create an HTTP client')) as client,
                 redirect_stdout(stdout),
             ):
                 self.assertEqual(await run(args), 0)
-            send.assert_not_called()
+            client.assert_not_called()
             summary = json.loads(stdout.getvalue())
             result = Path(summary['record'])
             self.assertEqual(summary['status'], 'PLANNED')
