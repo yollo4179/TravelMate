@@ -12,3 +12,10 @@
 프롬프트: [v1 기준 버전](../embedding-server/app/contextual/prompts/v1_contextual_prompt.py) ·
 [v2 기본 버전](../embedding-server/app/contextual/prompts/v2_contextual_prompt.py).
 같은 입력으로 비교할 때는 [명세의 baseline 실행](../docs/specifications/contextual-retrieval.md#같은-입력으로-프롬프트-비교)을 사용한다.
+
+로컬 Sonar 실행 9개는 [v1_local_2d365e87c12314cb 프로필](../embedding-server/app/contextual/profiles/v1_local_2d365e87c12314cb.json)로 등록했다.
+`--baseline-record`와 `--baseline-profile v1_local_2d365e87c12314cb`를 함께 지정하면
+기존 원문·effort·출력 한도·응답 스키마를 그대로 두고 v2 지시문만 비교할 수 있다.
+표준 v1 검증을 완화하거나 원본 기록을 다시 쓰지 않는다. 기본은 과금 없는 미리보기이며
+실제 호출은 `--execute`를 붙일 때만 수행한다. 새 결과는 프로필/프롬프트별 요청 경로에 보존한다.
+[실행 방법과 비교 조건](../docs/specifications/contextual-retrieval.md#로컬-sonar-실행-9개를-재사용하는-비교)

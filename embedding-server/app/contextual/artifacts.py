@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from collections import defaultdict
+from copy import deepcopy
 from datetime import UTC, datetime
 import json
 from pathlib import Path
@@ -18,6 +19,7 @@ from .agent import PROMPT_VERSION, generate, parse_chunks, request_payload
 from .contracts import SearchChunk, SourceDocument, archive_directory
 from .pipeline import normalize_source
 from .pipeline import tourapi_chunks
+from .profiles import resolve_execution_profile
 
 
 @dataclass(frozen=True)
@@ -75,9 +77,13 @@ async def collect_bundle(
     *,
     refresh: bool = False,
     prompt_version: str = PROMPT_VERSION,
+    prepared_request: dict[str, Any] | None = None,
+    request_profile_id: str | None = None,
 ) -> Path:
-    payload = request_payload(bundle.places, bundle.sources, settings, prompt_version=prompt_version)
-    request_hash = fingerprint({"payload": payload, "prompt_version": prompt_version})
+    canonical = request_payload(bundle.places, bundle.sources, settings, prompt_version=prompt_version)
+    payload = deepcopy(prepared_request) if prepared_request is not None else canonical
+    validate_request(payload, canonical, prompt_version, request_profile_id)
+    request_hash = request_fingerprint(payload, prompt_version, request_profile_id)
     directory = root / archive_directory(bundle.places[0]) / "requests" / request_hash
     pointer = directory / "latest.json"
     if http is not None and pointer.exists() and not refresh:
@@ -93,11 +99,20 @@ async def collect_bundle(
     write_json(run / "request.json", payload)
     record = {"schema_version": 1, "request_hash": request_hash, "prompt_version": prompt_version,
               "created_at": datetime.now(UTC).isoformat(), "status": CollectionStatus.PLANNED.value}
+    if request_profile_id:
+        record["request_profile_id"] = request_profile_id
     if http is not None:
         try:
             raw = await generate(http, settings, payload)
             write_json(run / "raw_response.json", raw)
-            chunks = parse_chunks(raw, bundle.places, bundle.sources, prompt_version=prompt_version)
+            chunks = parse_chunks(
+                raw,
+                bundle.places,
+                bundle.sources,
+                prompt_version=prompt_version,
+                response_schema=payload["response_format"]["json_schema"]["schema"],
+                request_profile_id=request_profile_id,
+            )
             record.update(status=CollectionStatus.COLLECTED.value, chunks=[chunk.to_dict() for chunk in chunks],
                           actual_model=raw.get("model"), usage=raw.get("usage"))
         except Exception as exception:
@@ -115,19 +130,61 @@ async def collect_bundle(
     return run / "record.json"
 
 
-def load_record(path: Path) -> tuple[SourceBundle, list[SearchChunk], dict[str, Any]]:
+def request_fingerprint(payload: dict[str, Any], prompt_version: str, profile_id: str | None = None) -> str:
+    identity = {"payload": payload, "prompt_version": prompt_version}
+    if profile_id:
+        identity["request_profile_id"] = profile_id
+    return fingerprint(identity)
+
+
+def validate_request(
+    payload: dict[str, Any],
+    canonical: dict[str, Any],
+    prompt_version: str,
+    profile_id: str | None,
+) -> None:
+    if profile_id:
+        resolve_execution_profile(profile_id).validate_request(payload, canonical, prompt_version)
+        return
+    if payload != canonical:
+        raise ValueError("Contextual request or source archive changed")
+
+
+def load_record(
+    path: Path,
+    *,
+    baseline_profile: str | None = None,
+) -> tuple[SourceBundle, list[SearchChunk], dict[str, Any]]:
     record = json.loads(path.read_text(encoding="utf-8"))
     if record["status"] != CollectionStatus.COLLECTED:
         raise ValueError("Only completed contextual records may be applied")
     prompt_version = record["prompt_version"]
+    recorded_profile = record.get("request_profile_id")
+    if baseline_profile is not None:
+        profile = resolve_execution_profile(baseline_profile)
+        if recorded_profile is not None and recorded_profile != baseline_profile:
+            raise ValueError("Baseline profile differs from recorded profile")
+        if recorded_profile is None and prompt_version != profile.original_prompt_version:
+            raise ValueError("Unregistered archives require the original local prompt version")
     bundle = SourceBundle.from_mapping(json.loads(path.with_name("sources.json").read_text(encoding="utf-8")))
     raw = json.loads(path.with_name("raw_response.json").read_text(encoding="utf-8"))
-    chunks = parse_chunks(raw, bundle.places, bundle.sources, prompt_version=prompt_version)
     payload = json.loads(path.with_name("request.json").read_text(encoding="utf-8"))
     selector = {"preset": payload["preset"]} if "preset" in payload else {"model": payload["model"]}
     expected = request_payload(bundle.places, bundle.sources, AgentSettings(**selector), prompt_version=prompt_version)
-    if payload != expected or fingerprint({"payload": payload, "prompt_version": prompt_version}) != record["request_hash"]:
+    validate_request(payload, expected, prompt_version, recorded_profile or baseline_profile)
+    # Legacy request hashes remain unchanged; only new profiled records bind the profile ID.
+    if request_fingerprint(payload, prompt_version, recorded_profile) != record["request_hash"]:
         raise ValueError("Contextual request or source archive changed")
+    if "actual_model" in record and record["actual_model"] != raw.get("model"):
+        raise ValueError("Recorded model differs from preserved response")
+    chunks = parse_chunks(
+        raw,
+        bundle.places,
+        bundle.sources,
+        prompt_version=prompt_version,
+        response_schema=payload["response_format"]["json_schema"]["schema"],
+        request_profile_id=recorded_profile,
+    )
     if [chunk.to_dict() for chunk in chunks] != record["chunks"]:
         raise ValueError("Contextual record differs from preserved response")
     return bundle, chunks, record

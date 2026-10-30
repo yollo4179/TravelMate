@@ -119,8 +119,53 @@ python -m app.contextual.cli generate --baseline-record /path/to/v1/record.json 
 이를 프롬프트만 바꾼 품질 비교로 해석하지 않는다. `semantic_quality_evaluated=false`는 문맥 품질을 자동 채점하지 않았다는 뜻이다.
 모델이 같아도 추론의 비결정성은 남는다. 두 실행의 원문 귀속·주제·조건 보존을 대조해야 개선 여부를 판단할 수 있다.
 요청 버전별 캐시를 재사용하며, 원본/응답은 덮어쓰지 않는다. 비교 기록 생성은 DB 적용이나 자동 재시도를 수행하지 않는다.
-이 옵션은 저장소의 표준 원문·요청·응답·record 아카이브를 대상으로 한다. 별도 로컬 배치 스크립트의 형식은 입력 확인이 필요하다.
+표준 v1 검증은 엄격하게 유지한다. 별도 로컬 배치의 요청은 자동으로 표준 v1로 인정하지 않으며 아래의 명시적 프로필을 사용한다.
 외부 `semantic-review.json`의 임의 판정은 아직 자동 반영하지 않는다. 그 파일의 표시만으로 기존 subject 청크가 제외되지는 않는다.
+
+### 로컬 Sonar 실행 9개를 재사용하는 비교
+
+2026-10-30에 보존된 9개 실행은 추가 지시문과 요청 설정이 모두 같다.
+[v1_local_2d365e87c12314cb.json](../../embedding-server/app/contextual/profiles/v1_local_2d365e87c12314cb.json)에
+당시 **input을 제외한 요청 전체**를 등록했다. 설정 지문은
+`2d365e87c12314cb64278e024c8d794438d6f0f65a136ed06794c3c11a34186f`이다.
+
+| 비교 항목 | A: 보존된 로컬 실행 | B: 새 문맥 생성 |
+|---|---|---|
+| 지시문 | 표준 v1 + 당시 로컬 추가 지시문 | 등록된 v2 지시문 |
+| 모델 | `perplexity/sonar` | 동일 |
+| effort / 출력 한도 | `fast` / `8192` | 동일 |
+| 원문·분할 | 저장된 `input` 문자열 | 공백·이스케이프까지 그대로 복사 |
+| 스키마 | 당시 `response_format` | 그대로 복사 |
+| 도구 / 비동기 응답 옵션 | `tools=[]` / `background=false` | 동일 |
+
+이는 **로컬 v1 프로필 → v2 비교**다. 표준 v1의 결과라고 표시하지 않는다.
+스키마는 빈 `place_refs`·`entities`를 허용하며, 엔티티 이름은 청담도로공원, 최대 1개,
+예상 질문은 0개로 제한되어 있다. 따라서 이번 비교에는 스키마 수정이 필요하지 않다.
+이 장소에 맞춰진 프로필을 다른 장소의 일반 생성 기본값으로 사용하지 않는다.
+
+```bash
+# embedding-server에서 실행. 압축을 푼 원본의 record.json 경로를 지정한다.
+# 이 명령은 키 없이도 실행되는 미리보기이며 과금 호출이 없다.
+python -m app.contextual.cli generate --baseline-record "/path/to/original/record.json" --baseline-profile v1_local_2d365e87c12314cb --prompt-version contextual-source-spans-v2 --output ../LocationReview
+```
+
+원본 실행마다 위 명령을 적용한다. 실제 생성을 원할 때만 `--execute`를 추가하고 환경변수 또는
+`python -m app.contextual.cli --env-file ../.env generate ...`로 키를 공급한다.
+기존 A 실행 9개는 다시 호출하지 않는다. 이 프로필은 웹 검색을 하지 않고 보존 원문으로 문맥만 생성한다.
+
+검증 순서는 등록 프로필·요청 해시 → 원문/장소/분할과 input 대조 → 저장 스키마와 응답 검증 → 저장 청크 대조다.
+기존 `record.prompt_version`·요청 해시·4개 원본 파일을 고쳐 통과시키지 않는다.
+프로필을 생략하거나 등록 설정과 다른 로컬 요청은 거부한다. 임의 JSON 파일을 프로필로 받아 검증을 우회하지 않는다.
+
+새 B 기록은 `prompt_version=contextual-source-spans-v2`와 `request_profile_id`를 함께 보존한다.
+새 요청 해시와 청크 `generation`에도 프로필을 연결해 표준 v2 기록·캐시와 구분한다.
+새 기록은 일반 `load_record`/`apply` 경로에서 같은 프로필로 재검증할 수 있다. 비교 명령 자체는 DB를 변경하지 않는다.
+비교 보고서에는 `unchanged_request_fields`, `instructions_changed`, 양쪽 프로필 및 실제 응답 모델을 기록한다.
+캐시를 재사용하면 같은 비교 보고서도 재사용하며, 다른 내용으로 덮어쓰지 않는다.
+
+9개 요청·응답, 원문 구간 22개, 장소에 연결된 청크 15개와 manifest의 원본 파일 해시 36개를 확인했다.
+지시문만 바뀐 v2 요청 9개를 미리보기로 생성했다. 유료 API 호출·DB 반영·실제 문맥/검색 품질 평가는 하지 않았다.
+7개 빈 귀속 구간과 기존 문제 청크의 품질 판정은 이 구조 검증으로 확정되지 않는다.
 
 ## DB 변경과 기존 데이터 이행
 
@@ -205,3 +250,8 @@ DB 테스트는 `ENRICHMENT_TEST_DATABASE_URL`에 별도 테스트 PostgreSQL DS
 2026-10-30 프롬프트 버전 변경 검증에서는 contextual 테스트 13개가 통과했고 DB/실제 모델 테스트 5개는 환경 미설정으로 skip했다.
 v1 아카이브 재검증, 버전별 캐시, 귀속 불명확 응답 보존, 비교 요청 고정과 실제 모델 불일치를 모의 HTTP로 확인했다.
 유료 API 재실행·실제 문맥 개선 평가·DB 적용은 수행하지 않았다.
+
+같은 날 로컬 프로필 호환을 추가한 뒤에는 `test_contextual*.py` 21개가 통과했고 통합 테스트 5개는 skip했다.
+추가 8개는 명시적 프로필 선택, 설정/해시 변조 거부, 원문 문자열 보존, 저장 스키마 강제,
+빈 귀속 보존, 실제 모델 불일치 표시, 캐시/비교 기록 재사용, 키 없는 CLI 미리보기를 확인한다.
+실제 첨부 기록 9개에 대해서도 CLI 미리보기를 수행하고 실행 전후 36개 원본 파일 해시가 같은지 확인했다.

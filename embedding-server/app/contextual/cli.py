@@ -13,9 +13,10 @@ from app.enrichment.agent import AgentSettings
 from app.enrichment.contracts import CollectionStatus
 from app.enrichment.cli import database_pool
 from app.enrichment.repository import ensure_schema as ensure_enrichment_schema
-from .agent import DEFAULT_PRESET, PROMPT_VERSION, request_payload
+from .agent import DEFAULT_PRESET, PROMPT_VERSION
 from .artifacts import SourceBundle, collect_bundle
 from .prompts import PromptVersion
+from .profiles import ExecutionProfileId
 from .replay import GenerationBaseline
 from .repository import apply_bundle
 
@@ -26,18 +27,17 @@ async def run(args: argparse.Namespace) -> int:
             await ensure_enrichment_schema(pool)
             print(await apply_bundle(pool, args.record))
         return 0
-    baseline = GenerationBaseline.load(args.baseline_record) if args.baseline_record else None
+    if args.baseline_profile and not args.baseline_record:
+        raise ValueError("--baseline-profile requires --baseline-record")
+    baseline = (GenerationBaseline.load(args.baseline_record, profile_id=args.baseline_profile)
+                if args.baseline_record else None)
+    prepared_request = None
     if baseline is not None:
         if args.preset or args.model:
             raise ValueError("Baseline comparisons reuse the recorded model selection; omit --preset and --model")
         bundle = baseline.bundle
         settings = baseline.settings(os.environ.get("PERPLEXITY_API_KEY", ""), args.timeout)
-        baseline.verify_request(request_payload(
-            bundle.places,
-            bundle.sources,
-            settings,
-            prompt_version=args.prompt_version,
-        ))
+        prepared_request = baseline.candidate_request(args.prompt_version)
     else:
         bundle = (SourceBundle.from_enrichment_record(args.from_record) if args.from_record else
                   SourceBundle.from_mapping(json.loads(args.input.read_text(encoding="utf-8"))))
@@ -56,9 +56,13 @@ async def run(args: argparse.Namespace) -> int:
             http if args.execute else None,
             refresh=args.refresh,
             prompt_version=args.prompt_version,
+            prepared_request=prepared_request,
+            request_profile_id=baseline.request_profile_id if baseline else None,
         )
     record = json.loads(path.read_text())
     summary = {"status": record["status"], "record": str(path), "prompt_version": record["prompt_version"]}
+    if record.get("request_profile_id"):
+        summary["request_profile_id"] = record["request_profile_id"]
     if baseline is not None:
         summary["comparison"] = str(baseline.write_report(path))
     print(json.dumps(summary, ensure_ascii=False))
@@ -74,6 +78,8 @@ def main() -> None:
     inputs.add_argument("--input", type=Path)
     inputs.add_argument("--from-record", type=Path)
     inputs.add_argument("--baseline-record", type=Path, help="Replay a validated contextual record, changing only the prompt")
+    collection.add_argument("--baseline-profile", choices=[profile.value for profile in ExecutionProfileId],
+                            help="Explicitly recognize a registered local baseline without rewriting its archive")
     collection.add_argument("--output", type=Path, default=Path("LocationReview"))
     selector = collection.add_mutually_exclusive_group()
     selector.add_argument("--preset")

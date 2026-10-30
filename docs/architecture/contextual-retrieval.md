@@ -12,6 +12,7 @@ flowchart TD
     Split --> Agent[Perplexity Agent<br/>버전별 문맥·장소 역할 생성]
     Version[v1 보존 / v2 기본] --> Agent
     Baseline[기존 record 비교 실행<br/>원문·분할·모델 설정 고정] --> Agent
+    Local[명시적 v1_local 프로필<br/>추가 지시문·effort·출력 한도·스키마 검증] --> Baseline
     Agent --> Validate[원문 ID·offset·장소 ID·역할 검증]
     Validate --> Unattributed[귀속 불명확: 두 배열 비움<br/>응답 보존·색인 제외]
     Validate --> Bundle[불변 번들 저장과 재색인 등록]
@@ -49,4 +50,6 @@ Spring DB와 FastAPI DB 사이 JOIN/FK는 없다. 새 FK는 FastAPI 검색 DB �
 기존 무청크 장소는 호환 벡터로 조회할 수 있으므로 단계별 재색인이 가능하다.
 v2에서도 같은 문서의 다른 구간은 장소 식별이나 필요한 배경에 활용한다. 청크 밖 정보 전체를 금지하지 않는다.
 baseline 비교는 모델/프리셋 선택까지 고정하지만 공급자가 반환한 실제 모델도 별도로 비교해 기록한다.
+로컬 프로필 비교는 보존 요청을 복사해 instructions만 교체한다. 표준 v1 검증은 유지하고, 기존 원본 파일은 수정하지 않는다.
+새 기록의 프로필 ID는 요청 해시·청크 generation·비교 보고서에 연결되며, 기본 실행은 네트워크 호출 없는 미리보기다.
 검증기의 형식/역할 일치 확인만으로 장소 귀속·문맥의 의미 정확성이나 실제 품질 향상을 보증하지 않는다.

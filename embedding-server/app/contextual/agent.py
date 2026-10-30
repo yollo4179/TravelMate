@@ -60,6 +60,8 @@ def parse_chunks(
     sources: list[SourceDocument],
     *,
     prompt_version: str = PROMPT_VERSION,
+    response_schema: dict[str, Any] | None = None,
+    request_profile_id: str | None = None,
 ) -> list[SearchChunk]:
     prompt = resolve_prompt(prompt_version)
     if raw.get("status") != "completed":
@@ -68,6 +70,8 @@ def parse_chunks(
                    for part in item.get("content", []) if part.get("type") == "output_text")
     document = json.loads(text)
     Draft202012Validator(SCHEMA).validate(document)
+    if response_schema is not None:
+        Draft202012Validator(response_schema).validate(document)
     expected = {(source.source_id, start, end) for source in sources for start, end in split_source(source)}
     actual = [(chunk["source_id"], chunk["start"], chunk["end"]) for chunk in document["chunks"]]
     if len(actual) != len(set(actual)) or set(actual) != expected:
@@ -90,7 +94,8 @@ def parse_chunks(
         chunks.append(SearchChunk(by_id[chunk["source_id"]], chunk["start"], chunk["end"],
                                   chunk["context_text"], chunk["place_refs"],
                                   {"provider": "perplexity", "model": raw.get("model"),
-                                   "response_id": raw.get("id"), "prompt_version": prompt.version.value},
+                                   "response_id": raw.get("id"), "prompt_version": prompt.version.value,
+                                   **({"request_profile_id": request_profile_id} if request_profile_id else {})},
                                   chunk["entities"], chunk["hypothetical_questions"]))
     return chunks
 
