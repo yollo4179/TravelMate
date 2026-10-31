@@ -1,6 +1,6 @@
 # 공통 장소 청크·문맥 생성·검색 DB 명세
 
-문서 버전: 5 · 갱신: 2026-10-31
+문서 버전: 6 · 갱신: 2026-11-01
 
 [계획서](../plans/contextual-retrieval.md) · [구조도](../architecture/contextual-retrieval.md) · [기존 웹 수집](place-review-enrichment.md)
 
@@ -45,6 +45,7 @@ source_id는 출처 유형·URL 또는 TourAPI 콘텐츠 ID·필드명으로 결
 | [v2_contextual_prompt.py](../../embedding-server/app/contextual/prompts/v2_contextual_prompt.py) | `contextual-source-spans-v2`: 새 생성의 기본값, 구간 중심 문맥·시설별 귀속·방문 조건 보존 |
 | [v3_contextual_prompt.py](../../embedding-server/app/contextual/prompts/v3_contextual_prompt.py) | `contextual-source-spans-v3`: 명시적으로 선택하는 후속 지시문. 단순 언급·조망 대상과 불명확한 귀속을 구분하며 이번 v1·v2 비교에는 사용하지 않음 |
 | [v4_contextual_prompt.py](../../embedding-server/app/contextual/prompts/v4_contextual_prompt.py) | `contextual-source-spans-v4`: 구간 주제 우선·인접 관찰 차용 금지·장소/시설 귀속을 강화한 실험 지시문. 기본값은 계속 v2 |
+| [v5_contextual_prompt.py](../../embedding-server/app/contextual/prompts/v5_contextual_prompt.py) | `contextual-source-spans-v5`: 코드가 추출한 `span.chunk_text`를 직접 읽는 선택 지시문. 명시적 청크 입력 필수이며 실제 생성 품질은 미검증 |
 
 v2는 보통 1~2문장을 권장하지만 필요한 구분·부정·조건을 생략하도록 강제하지 않는다. 600자 상한은 유지한다.
 **동일 문서의 청크 밖 배경도 장소 식별·지시 대상·배경 이해에 필요하면 허용한다.**
@@ -68,6 +69,41 @@ v4의 mentioned·view_target·빈 귀속 처리도 기존 검증 버전 v2를 �
 `GenerationBaseline.write_report(..., output_directory=...)`로 비교 보고서 저장 위치를 별도 지정할 수 있다.
 지정하지 않으면 기존 응답 폴더 아래 `comparisons/`를 사용한다. 요청·원본·해시·검증 내용은 바뀌지 않는다.
 Windows에서 원본 아카이브 아래의 깊은 경로가 파일 길이 제한을 넘으면 짧은 별도 위치를 사용한다.
+
+### 명시적 청크 입력과 후속 분할 준비
+
+입력 계약은 프롬프트·응답 스키마·검증 버전과 따로 구분한다.
+
+| `input_version` | 전달 형태 | 기본 여부 |
+|---|---|---|
+| `source-offsets-v1` | 문서 전체와 `source_id/start/end` | 기존 기본값, 과거 기록의 필드 생략도 이 버전 |
+| `source-explicit-chunks-v2` | 위 정보와 코드가 계산한 각 `span.chunk_text` | 명시적으로 선택 |
+
+청크 문자열은 보존 원문의 `source.text[start:end]`이며 정규화·공백 제거·모델 재작성 없이 전달한다.
+오프셋은 계속 Unicode 코드포인트 기준이며 emoji·CRLF·결합 문자도 그대로 유지한다.
+응답에 청크 원문을 다시 쓰게 하지 않고, 기존 응답 스키마·역할 검증·분할·청크 ID 계약을 유지한다.
+새 입력의 기록·캐시·무료 재검증에는 `input_version`을 보존한다. 기존 기록의 요청·해시는 바꾸지 않는다.
+
+비교는 다음처럼 나눈다. 한 번에 v4 위치 기반 입력→v5 명시적 입력으로 바꾸면 입력과 지시문이 함께 바뀐 비교다.
+
+1. **입력 형식만 비교:** 저장 v4 위치 입력→v4 명시적 입력. 지시문·모델·effort·한도·스키마·원문·분할을 고정한다.
+   `InputFormatComparison`은 청크 원문 추가만 허용하고 `comparison_kind=input-format-only`로 기록한다.
+   v4의 위치를 찾아 읽는 지시 자체는 이 단계에 남으므로, 명시적 원문을 우선 읽는 v5의 효과까지 검증한 것은 아니다.
+2. **명시적 입력에서 지시문만 비교:** 보존된 v4 명시적 입력 응답이 생긴 뒤 같은 입력을 v5에 사용한다.
+   기존 `GenerationBaseline`의 지시문 외 필드 동일 검증을 그대로 적용한다. v5에는 명시적 입력을 필수로 요구한다.
+3. **분할 비교:** 입력·선택 지시문을 고정한 별도 실험 C로 진행한다. 이전 청크의 문맥·장소 역할을 새 구간에 복사하지 않는다.
+
+입력 형식 비교의 대조군은 현재 응답 검증 버전이어야 한다. 과거 검증 버전 기록은 먼저 무료 재검증하고 비교한다.
+`--baseline-record`에 `--input-version source-explicit-chunks-v2`를 주면 입력 비교로 분리한다.
+`--comparison-output`으로 두 비교 방식 모두 짧은 보고서 폴더를 지정할 수 있다.
+실행 명령과 유료 호출 여부는 [평가 트랙 안내](../../Evaluation/tracks/contextual/README.md#명시적-원문-입력과-분할-후보-준비)에 적었다.
+
+`span_inputs.py`는 저장 v4 요청의 명시적 원문 입력과 구조 기반 분할 **후보**를 API·DB 호출 없이 별도 폴더에 준비한다.
+후보는 기존 청크 내부의 문단·생략 구분선·제목·문장 구분을 사용하고, 원문 offset·부모 구간·별도 후보 분할 버전을 보존한다.
+여러 장소를 의미적으로 판별한 운영 분할기가 아니며 모든 후보의 `indexable=false`다.
+기존 부모 경계에서 잘린 문장을 복원하지 않고, 매우 짧은 후보·주어 생략·장소당 활성 20개 상한의 누락도 해결하지 않는다.
+실제 9개 기록의 입력 22구간 보존·후보 136개·원본 36개 파일 해시를 확인했으며 생성·색인·검색 품질은 새로 측정하지 않았다.
+[준비·검증 기록](../../Evaluation/runs/contextual/span-inputs-v1/20261101-01/REPORT.md)에 범위를 구분했다.
 
 ### 역할에 따른 자동 보존·검색 제외
 

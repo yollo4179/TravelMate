@@ -1,0 +1,12 @@
+{
+  "pairs": 9,
+  "original_spans": 22,
+  "explicit_spans": 22,
+  "structural_candidates": 136,
+  "original_files_verified_unchanged": 36,
+  "input_only_verified": true,
+  "split_candidates_recomputed": true,
+  "api_calls": 0,
+  "database_writes": 0,
+  "semantic_quality_evaluated": false
+}

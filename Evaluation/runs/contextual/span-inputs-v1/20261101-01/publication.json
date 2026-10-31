@@ -1,0 +1,50 @@
+{
+  "implementation_base": "20f6c08cd7576fdcc2663891875eb17f51e94be8",
+  "local_access": "실행 PC C:/ssafy/Travelmate/Evaluation/runs/contextual/span-inputs-v1/20261101-01",
+  "published_scope": "집계·보고서·해시만 게시한다. 원문·요청·후보 원문은 로컬 보존한다.",
+  "prepared_file_sha256": {
+    "batch-plan.json": "c0ea3efc4b28a09a92be40d1fe2fed7302a5693b2f910aca0473f7ba12fcd5e7",
+    "P01/plan.json": "77d0353ab10ee21d8b5d8d4c59c8ff80bc0cb41acd4e08c83e40d9a6554487aa",
+    "P01/request.explicit.json": "f1366b588ed35df8fc5bd2d9fb9eb8acea797f2a23030a4df9bc1a558981c8b1",
+    "P01/split-candidates.json": "02bb35373a8f6af0836cbdac1e5e71add423c44549ea1c2b7e88f34226b73daf",
+    "P02/plan.json": "339ba8a2944b91d28a6977ed3ed8c6de4ca418f1b940daf55738751460d7849a",
+    "P02/request.explicit.json": "5fd91dd15ae2e49f7b6c8b479448f1b2317e7433055590a5f5920dc0c1a392d5",
+    "P02/split-candidates.json": "a792c228084008bb00fa57c3ca9af581aa36731c231d6a4f564577bd0ccd6178",
+    "P03/plan.json": "7a20110867313b7cd04ae8b512c1ad834a79dc70a0a0c1b276edce31cf0c8e16",
+    "P03/request.explicit.json": "41d40e9ef9d52c62221877f7a3e0efee26a0c7099012d3a4159b24cbed0c2c75",
+    "P03/split-candidates.json": "150810fb34d3363c50a74998cc72674cde0650c0227cecc62769e2c487453cfd",
+    "P04/plan.json": "7fafc252fe209367a8739a7d6eabe6b67ff3d328af26db7dd3a21cd7f600fbca",
+    "P04/request.explicit.json": "e0748bb0e8d4d7bbc91b393fd9bd178ea8e9b0d6d0596806b012bfae50cbe530",
+    "P04/split-candidates.json": "27ecdcfcfcc18601a72177c6cadd7c36611397f839822a18aa139ab0112e0e79",
+    "P05/plan.json": "2c1678860eccd75f2e6c80efa4886415b5e6fcc3a6dafe98ef948e5728bdf69d",
+    "P05/request.explicit.json": "453a9980e60f3ddcea2c58ccbe80be1b8b18721e3d9e367bd5f47c1de0467de3",
+    "P05/split-candidates.json": "30e37d601e06342309da6ee70bac54f495c4f7b29a64e0ac4751a9645feaea98",
+    "P06/plan.json": "ca733e02cc3231253af5ec1e4e8cf8667c89798358dbcca02ed4ae5c34e6d672",
+    "P06/request.explicit.json": "96e2b434c51ad5d8196502e76223f84fd78c2b40805a653a73eb9db6c433c620",
+    "P06/split-candidates.json": "1ed0293f9f5aa1bd10939c47150a25cf77928dc003378dc748483916b69d9692",
+    "P07/plan.json": "b0049188f78432d571b9bff170b135266ddb5d6f51fd1bc61cf7af108cd4dd0b",
+    "P07/request.explicit.json": "c0206acefabec97f42f1c23aaab73c66a8f9dac3a73e37be25da80bf1d58c88b",
+    "P07/split-candidates.json": "b3dc0864b065a3fac26ec7947b60a62baa575131e80e06e2da3507038b508399",
+    "P08/plan.json": "b3459027a852398a02e896d55e67b28d45a9a0f892f34f031cd6d7bd0185c33d",
+    "P08/request.explicit.json": "3b9b14d159b0e5ce1f43c3ad1a3dd643c09084c03cbf0ba7a3d32b5086318c91",
+    "P08/split-candidates.json": "284ab30be1bfc755f5bada0d360dcbedac95f39b3220af99531b3f1a268f429c",
+    "P09/plan.json": "a85b71aacda37fe9ed67fe974b954702a3845b4c3cbe60ba0d1196c67db6c30d",
+    "P09/request.explicit.json": "75729af85d7cf73ac1bd860d1f19c3af369e4cf2886e6cef335b0dde8c9e1ffc",
+    "P09/split-candidates.json": "1a8c30706bb9f65121ff6c4ba357d4baac7a8462e15c7f23ee015cf467127e87"
+  },
+  "implementation_file_sha256": {
+    "embedding-server/app/contextual/agent.py": "3d31efe5b51692647e8a4d060f6b2f13b43949285e1999fa148c17a652a5beac",
+    "embedding-server/app/contextual/artifacts.py": "3daf72ece503153b3fce01f312e4db389d09774cec1fba3ce39c2a5c550d7a6d",
+    "embedding-server/app/contextual/cli.py": "713e7411a15e9d493208b8901018d3ca82b5ed2b8fde57e4281ade975eee9b1a",
+    "embedding-server/app/contextual/input_format.py": "b26da320ebeb9858fcd044d4ff1f3b05a78f9057180ceb7fd20380ed5a749c07",
+    "embedding-server/app/contextual/input_replay.py": "bc57d8bb7fa845eb0c407eea3ac4477f75c73d6eac55cc4569dc1102d48b7260",
+    "embedding-server/app/contextual/replay.py": "1b3709e3ceb1ecc87197a6f43c5c6d58c3c7fd9963a75875fc0748b879c1b0e7",
+    "embedding-server/app/contextual/prompts/__init__.py": "4409ac9f230041cbde2c246eff40162195ba0e4eeedd35a7b63815943988a508",
+    "embedding-server/app/contextual/prompts/v5_contextual_prompt.py": "bfa364d3166eecf43af78056f8b723650ef1d4d58a75969eea87b150d2b05ffe",
+    "Evaluation/tracks/contextual/span_inputs.py": "0db9630143dc731a4154b2d5e72735fd25e31130bf1e8c91a9ce688e00f5d7ad"
+  },
+  "published_file_sha256": {
+    "REPORT.md": "cbd0fdab048f3e31281fa0c2ca277dae8ac74d459a751f16d59c8e86f6c89897",
+    "audit.json": "ac4725c8341887713524d7601176abf3465b720eca41a29257e7ef84b6926e12"
+  }
+}

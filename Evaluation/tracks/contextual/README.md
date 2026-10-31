@@ -1,7 +1,8 @@
 # 보존 응답 기반 문맥 검색 진단
 
 기존 v1_local·v2 응답을 재생하고 후속 프롬프트를 비교한다. 보존 응답 재생은 문맥 생성 API를 호출하지 않는다.
-실험 B의 `prompt_comparison.py generate`만 새 문맥을 실제 유료 생성한다. 계획 검증·내보내기·검색 실행은 이 호출과 분리한다.
+실험 B의 `prompt_comparison.py generate`는 새 문맥을 실제 유료 생성한다. 계획 검증·내보내기·검색 실행은 이 호출과 분리한다.
+문맥 생성 CLI의 `generate --execute`도 실제 유료 호출이며, `--execute` 없는 CLI 실행과 `span_inputs.py`는 준비만 한다.
 한 장소의 여러 입력 묶음은 각각 별도 색인으로 비교하며, 나중 묶음으로 앞 묶음을 덮어쓴 결과를 전체 데이터의 합집합으로 해석하지 않는다.
 
 `pilot_cases.json`은 한 장소의 원문 22구간에서 만든 탐색적 질문 26개다.
@@ -11,6 +12,38 @@
 [문제 정의와 해결 실험안](PROBLEMS_AND_SOLUTIONS.md)은 문맥 생성·혼합 장소 분할·리랭킹 근거 전달의 문제를 구분하고 후속 비교 기준을 제안한다. 서비스 적용 전 설계 문서다.
 [근거 1·2·3개 비교 실측](../../runs/contextual/multi-evidence-v1/20261031-01/REPORT.md)에서 실험 A의 구현·검증 결과를 확인한다.
 [v2·v4 프롬프트 비교 실측](../../runs/contextual/prompt-grounding-v1/20261031-01/REPORT.md)에서 근거 2개를 고정한 실험 B의 결과를 확인한다.
+[명시적 청크 입력 준비](../../runs/contextual/span-inputs-v1/20261101-01/REPORT.md)는 실측 품질 비교와 구분한 후속 구현 기록이다.
+
+## 명시적 원문 입력과 분할 후보 준비
+
+다음 명령은 저장 v4 응답을 읽고 요청·분할 후보·해시만 만든다. 키·HTTP 클라이언트·DB를 초기화하지 않는다.
+
+```powershell
+python -X utf8 -m Evaluation.tracks.contextual.span_inputs --generation-summary <보존-v4-generation-summary.json> --output <새-준비-폴더>
+python -X utf8 -m Evaluation.tracks.contextual.span_inputs --audit-batch <새-준비-폴더>/batch-plan.json
+```
+
+단일 기록은 `--generation-summary` 대신 `--record <v4-record.json>`을 쓴다.
+각 묶음의 `request.explicit.json`은 지시문을 유지하고 각 입력 span에 정확한 `chunk_text`만 추가한다.
+`split-candidates.json`의 구조 기반 후보는 이 요청에 적용되지 않는다. 새 문맥·장소 역할·검색 청크로 간주하지 않는다.
+요청/후보/계획 해시와 원본 4개 파일을 감사하고, 기존 실행 폴더·동결 데이터셋을 덮어쓰지 않는다.
+전체 원문·요청은 로컬 보존 자료로 관리하고, 원격에는 집계·해시·구현 기록만 게시한다.
+
+아래는 `embedding-server`에서 실행하는 **미리보기** 예다. `--execute`가 없으므로 유료 호출하지 않는다.
+
+```powershell
+python -m app.contextual.cli generate --baseline-record <보존-v4-record.json> --prompt-version contextual-source-spans-v4 --input-version source-explicit-chunks-v2 --output <새-미리보기-폴더> --comparison-output <짧은-보고서-폴더>
+```
+
+입력 비교에서는 같은 프롬프트를 명시해야 한다. 입력·지시문을 동시에 바꾸면 거부한다.
+현재 규칙으로 재검증하지 않은 예전 대조군은 먼저 무료 `revalidate`로 새 기록을 만든다.
+기존 ‘프롬프트만 비교’ 검증을 완화해 새 입력을 통과시키지 않는다.
+추후 v4 명시적 입력의 실제 응답이 생기면 그것을 대조군으로, `--prompt-version contextual-source-spans-v5`를 선택한다.
+이때 `--input-version`을 생략하면 대조군의 명시적 입력을 유지하며 지시문만 비교한다.
+v5는 명시적 청크를 직접 읽고 위치 계산을 하지 않도록 지시하지만 아직 실제 생성·검색으로 평가하지 않았다.
+
+구조 기반 후보는 부모 청크 안에서만 원문을 잘게 나눈다. 장소 경계 정답이나 운영 분할 전략으로 확정한 결과가 아니다.
+분할 전략 채택과 장소별 20개 상한·전체 출처 동시 색인은 별도 C·D 실험에 남긴다.
 
 ## 프롬프트 비교 실험 B
 

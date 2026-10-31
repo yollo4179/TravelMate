@@ -20,6 +20,7 @@ from .agent import PROMPT_VERSION, generate, parse_chunks, request_payload
 from .contracts import SearchChunk, SourceDocument, archive_directory
 from .pipeline import normalize_source
 from .pipeline import tourapi_chunks
+from .input_format import InputVersion
 from .profiles import resolve_execution_profile
 from .validation import ExclusionReason, current_validation_version
 
@@ -81,8 +82,11 @@ async def collect_bundle(
     prompt_version: str = PROMPT_VERSION,
     prepared_request: dict[str, Any] | None = None,
     request_profile_id: str | None = None,
+    input_version: str = InputVersion.OFFSETS,
 ) -> Path:
-    canonical = request_payload(bundle.places, bundle.sources, settings, prompt_version=prompt_version)
+    input_version = InputVersion(input_version)
+    canonical = request_payload(bundle.places, bundle.sources, settings,
+                                prompt_version=prompt_version, input_version=input_version)
     payload = deepcopy(prepared_request) if prepared_request is not None else canonical
     validate_request(payload, canonical, prompt_version, request_profile_id)
     validation_version = current_validation_version(prompt_version)
@@ -105,6 +109,8 @@ async def collect_bundle(
               "validation_version": validation_version}
     if request_profile_id:
         record["request_profile_id"] = request_profile_id
+    if input_version != InputVersion.OFFSETS:
+        record["input_version"] = input_version.value
     if http is not None:
         try:
             raw = await generate(http, settings, payload)
@@ -177,7 +183,9 @@ def load_record(
     raw = json.loads(path.with_name("raw_response.json").read_text(encoding="utf-8"))
     payload = json.loads(path.with_name("request.json").read_text(encoding="utf-8"))
     selector = {"preset": payload["preset"]} if "preset" in payload else {"model": payload["model"]}
-    expected = request_payload(bundle.places, bundle.sources, AgentSettings(**selector), prompt_version=prompt_version)
+    expected = request_payload(bundle.places, bundle.sources, AgentSettings(**selector),
+                               prompt_version=prompt_version,
+                               input_version=record.get("input_version", InputVersion.OFFSETS))
     validate_request(payload, expected, prompt_version, recorded_profile or baseline_profile)
     # Legacy request hashes remain unchanged; only new profiled records bind the profile ID.
     validation_version = record.get("validation_version")
@@ -255,7 +263,9 @@ def revalidate_record(path: Path, root: Path, *, baseline_profile: str | None = 
     payload = json.loads(originals["request.json"])
     bundle = SourceBundle.from_mapping(json.loads(originals["sources.json"]))
     selector = {key: payload[key] for key in ("model", "preset") if key in payload}
-    canonical = request_payload(bundle.places, bundle.sources, AgentSettings(**selector), prompt_version=prompt_version)
+    input_version = InputVersion(original.get("input_version", InputVersion.OFFSETS))
+    canonical = request_payload(bundle.places, bundle.sources, AgentSettings(**selector),
+                                prompt_version=prompt_version, input_version=input_version)
     validate_request(payload, canonical, prompt_version, profile_id or baseline_profile)
     if request_fingerprint(payload, prompt_version, profile_id, original.get("validation_version")) != original["request_hash"]:
         raise ValueError("Contextual request or source archive changed")
@@ -275,6 +285,8 @@ def revalidate_record(path: Path, root: Path, *, baseline_profile: str | None = 
                                                    for name, content in originals.items()}}, **fields}
     if profile_id:
         record["request_profile_id"] = profile_id
+    if input_version != InputVersion.OFFSETS:
+        record["input_version"] = input_version.value
     run.mkdir(parents=True)
     for name, content in originals.items():
         if name != "record.json":

@@ -20,6 +20,7 @@ from app.contextual.agent import parse_chunks
 from app.contextual.artifacts import collect_bundle, load_record, revalidate_record, request_fingerprint
 from app.contextual.cli import run
 from app.contextual.prompts import PromptVersion, resolve_prompt
+from app.contextual.input_format import InputVersion
 from app.contextual.replay import GenerationBaseline, revalidate_batch
 from app.contextual.repository import apply_bundle
 from app.contextual.validation import ValidationVersion
@@ -82,7 +83,9 @@ class SubjectFilterTests(unittest.IsolatedAsyncioTestCase):
         for version in PromptVersion:
             with self.subTest(prompt=version), tempfile.TemporaryDirectory() as directory:
                 async with httpx.AsyncClient(transport=httpx.MockTransport(lambda request: httpx.Response(200, json=raw))) as http:
-                    path = await collect_bundle(value, SETTINGS, Path(directory), http, prompt_version=version)
+                    input_version = InputVersion.EXPLICIT if resolve_prompt(version).requires_explicit_chunks else InputVersion.OFFSETS
+                    path = await collect_bundle(value, SETTINGS, Path(directory), http,
+                                                prompt_version=version, input_version=input_version)
                 _, chunks, record = load_record(path)
                 self.assertEqual(len(chunks), 1)
                 self.assertEqual(len(record['excluded_chunks']), 2)

@@ -11,6 +11,7 @@ from app.enrichment.agent import AGENT_ENDPOINT, AgentSettings
 from app.enrichment.contracts import ExistingPlace
 from .contracts import PlaceRole, SearchChunk, SourceDocument
 from .pipeline import split_source
+from .input_format import InputVersion, explicit_chunks
 from .prompts import DEFAULT_PROMPT_VERSION, resolve_prompt
 from .validation import ValidationVersion, resolve_validation_version
 
@@ -41,15 +42,21 @@ def request_payload(
     settings: AgentSettings,
     *,
     prompt_version: str = PROMPT_VERSION,
+    input_version: str = InputVersion.OFFSETS,
 ) -> dict[str, Any]:
     prompt = resolve_prompt(prompt_version)
+    if prompt.requires_explicit_chunks and InputVersion(input_version) != InputVersion.EXPLICIT:
+        raise ValueError("이 프롬프트는 source-explicit-chunks-v2 입력이 필요합니다")
     proposed = [{"source_id": source.source_id, "start": start, "end": end}
                 for source in sources for start, end in split_source(source)]
+    document = {"places": [place.to_dict() for place in places],
+                "sources": [source.to_dict() for source in sources], "spans": proposed}
+    if InputVersion(input_version) == InputVersion.EXPLICIT:
+        document = explicit_chunks(document)
     return {
         **({"preset": settings.preset} if settings.preset else {"model": settings.model}),
         "instructions": prompt.instructions, "background": False, "tools": [],
-        "input": json.dumps({"places": [place.to_dict() for place in places],
-                             "sources": [source.to_dict() for source in sources], "spans": proposed}, ensure_ascii=False),
+        "input": json.dumps(document, ensure_ascii=False),
         "response_format": {"type": "json_schema", "json_schema": {
             "name": "contextualchunks", "strict": True, "schema": SCHEMA}},
     }

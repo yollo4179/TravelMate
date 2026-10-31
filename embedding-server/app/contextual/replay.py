@@ -17,6 +17,7 @@ from .artifacts import SourceBundle, load_record, revalidate_record
 from .profiles import resolve_execution_profile
 from .prompts import resolve_prompt
 from .validation import ValidationVersion
+from .input_format import InputVersion
 
 
 @dataclass(frozen=True)
@@ -59,7 +60,11 @@ class GenerationBaseline:
 
     def candidate_request(self, prompt_version: str) -> dict[str, Any]:
         candidate = deepcopy(self.request)
-        instructions = resolve_prompt(prompt_version).instructions
+        prompt = resolve_prompt(prompt_version)
+        if (prompt.requires_explicit_chunks
+                and self.record.get("input_version", InputVersion.OFFSETS) != InputVersion.EXPLICIT):
+            raise ValueError("지시문 비교에 필요한 명시적 청크 입력을 먼저 준비해야 합니다")
+        instructions = prompt.instructions
         if self.request_profile_id:
             instructions = resolve_execution_profile(self.request_profile_id).settings_for(prompt_version)["instructions"]
         candidate["instructions"] = instructions
