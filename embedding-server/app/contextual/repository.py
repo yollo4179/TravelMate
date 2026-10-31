@@ -8,7 +8,7 @@ import uuid
 
 from app.enrichment.contracts import ExistingPlace, fingerprint
 from .artifacts import load_record
-from .contracts import SearchChunk, SourceDocument, SPLITTER_VERSION
+from .contracts import PlaceRole, SearchChunk, SourceDocument, SPLITTER_VERSION
 
 
 async def ensure_schema(pool: Any) -> None:
@@ -34,7 +34,8 @@ async def preserve_chunks(connection: Any, chunks: list[SearchChunk]) -> None:
 async def apply_bundle(pool: Any, path: Path) -> str:
     bundle, chunks, record = load_record(path)
     if not chunks:
-        raise ValueError("No attributable chunks to index")
+        return "NO_INDEXABLE_CHUNKS"
+    subject_places = {ref["place_id"] for chunk in chunks for ref in chunk.place_refs if ref["role"] == PlaceRole.SUBJECT}
     manifest = {"sources": [source.to_dict() for source in bundle.sources], "chunks": [chunk.to_dict() for chunk in chunks]}
     async with pool.acquire() as connection:
         async with connection.transaction():
@@ -53,6 +54,8 @@ async def apply_bundle(pool: Any, path: Path) -> str:
                     uuid.UUID(source.source_id), source.source_version, json.dumps(source.to_dict(), ensure_ascii=False))
             changed = False
             for place in bundle.places:
+                if place.place_id not in subject_places:
+                    continue
                 identifier = fingerprint({"request_hash": record["request_hash"], "place": place.to_dict(), "manifest": manifest})
                 inserted = await connection.execute(
                     """INSERT INTO retrieval_chunk_bundles(bundle_id,place_id,place_fingerprint,manifest)

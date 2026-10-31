@@ -12,6 +12,7 @@ from app.enrichment.contracts import ExistingPlace
 from .contracts import PlaceRole, SearchChunk, SourceDocument
 from .pipeline import split_source
 from .prompts import DEFAULT_PROMPT_VERSION, resolve_prompt
+from .validation import ValidationVersion, resolve_validation_version
 
 PROMPT_VERSION = DEFAULT_PROMPT_VERSION
 INSTRUCTIONS = resolve_prompt(PROMPT_VERSION).instructions
@@ -62,8 +63,10 @@ def parse_chunks(
     prompt_version: str = PROMPT_VERSION,
     response_schema: dict[str, Any] | None = None,
     request_profile_id: str | None = None,
+    validation_version: str | None = None,
 ) -> list[SearchChunk]:
     prompt = resolve_prompt(prompt_version)
+    validation = resolve_validation_version(validation_version, prompt_version)
     if raw.get("status") != "completed":
         raise ValueError("Incomplete contextual generation")
     text = "".join(part["text"] for item in raw.get("output", []) if item.get("type") == "message"
@@ -84,18 +87,27 @@ def parse_chunks(
             raise ValueError("Query expansion is disabled for this prompt version")
         if any(ref["place_id"] not in known_places for ref in chunk["place_refs"] + chunk["entities"]):
             raise ValueError("Agent referenced an unknown place")
+        if validation == ValidationVersion.SUBJECT_ONLY:
+            if len({ref["place_id"] for ref in chunk["place_refs"]}) != len(chunk["place_refs"]):
+                raise ValueError("Chunk place references must be present and unique")
+            if not chunk["context_text"].strip():
+                raise ValueError("Chunk context must contain 1..600 characters")
         if not chunk["place_refs"]:
-            if prompt.require_empty_unattributed_entities and chunk["entities"]:
+            if (prompt.require_empty_unattributed_entities or validation == ValidationVersion.SUBJECT_ONLY) and chunk["entities"]:
                 raise ValueError("Unattributed spans require both place_refs and entities to be empty")
             continue
         for entity in chunk["entities"]:
             if {"place_id": entity["place_id"], "role": entity["role"]} not in chunk["place_refs"]:
                 raise ValueError("Entity roles must match explicit place references")
+        if validation == ValidationVersion.SUBJECT_ONLY:
+            if not any(ref["role"] == PlaceRole.SUBJECT for ref in chunk["place_refs"]):
+                continue
         chunks.append(SearchChunk(by_id[chunk["source_id"]], chunk["start"], chunk["end"],
                                   chunk["context_text"], chunk["place_refs"],
                                   {"provider": "perplexity", "model": raw.get("model"),
                                    "response_id": raw.get("id"), "prompt_version": prompt.version.value,
-                                   **({"request_profile_id": request_profile_id} if request_profile_id else {})},
+                                   **({"request_profile_id": request_profile_id} if request_profile_id else {}),
+                                   **({"validation_version": validation_version} if validation_version else {})},
                                   chunk["entities"], chunk["hypothetical_questions"]))
     return chunks
 
