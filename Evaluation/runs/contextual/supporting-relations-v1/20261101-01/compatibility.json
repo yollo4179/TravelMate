@@ -1,0 +1,25 @@
+{
+  "implementation_base": "1b62e0062a8215b5d913d1f6d45a805911aa1d38",
+  "preserved_local_files": {
+    "span-grounding-v1/20261101-01": 63,
+    "observation-spans-v1/20261101-01": 50
+  },
+  "loaded_existing_records": {
+    "v5": 9,
+    "v6": 2
+  },
+  "v1_to_v6_prompt_git_sha256": {
+    "v1": "2e82dba2e3c6997a8293c3760ebd99063daa852eda9774f956cdc41a79bfe461",
+    "v2": "96572ce1e05f19d4cd46a04fb53937af5249e49ea657902796a1a8ee9815d2bb",
+    "v3": "85d8e1c81c3bfe2762b8228df37d17a257706fe892d4ecd5c37ae6e05c1a682e",
+    "v4": "ffd237318beb8c7d8b128184e914722e42b7c3523f9a49d3f8617cd4c1e66955",
+    "v5": "bfa364d3166eecf43af78056f8b723650ef1d4d58a75969eea87b150d2b05ffe",
+    "v6": "89fb13ec5bbf503d517fffcc0d4220f5e3a3274e7992b69968599e71b7bd73d7"
+  },
+  "legacy_schemas_unchanged": true,
+  "v6_to_v7_prompt_only_comparison_rejected": true,
+  "api_calls": 0,
+  "database_queries": 0,
+  "database_writes": 0,
+  "model_search_executions": 0
+}

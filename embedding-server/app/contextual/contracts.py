@@ -9,6 +9,8 @@ import uuid
 from app.enrichment.contracts import ExistingPlace, fingerprint
 from app.enrichment.evidence import source_url
 
+from .relations import ActiveChunkRole, independent_relations, endpoint_ids, validate_independent_relations
+
 MAX_ACTIVE_CHUNKS = 20
 
 
@@ -106,7 +108,13 @@ class SearchChunk:
         SplitterVersion(self.splitter_version)
         if self.content_kind is not None:
             ContentKind(self.content_kind)
-        if self.relations and self.content_kind != ContentKind.MOVEMENT:
+        independent = independent_relations(self.relations)
+        if independent:
+            validate_independent_relations(self.relations, self.place_refs, self.source.text, self.start, self.end)
+            for relation in self.relations:
+                for condition in relation["conditions"]:
+                    MovementCondition(condition["kind"])
+        if self.relations and not independent and self.content_kind != ContentKind.MOVEMENT:
             raise ValueError("이동 관계는 이동 내용의 청크에만 둘 수 있습니다")
         if self.content_kind == ContentKind.MOVEMENT:
             if not self.relations:
@@ -114,7 +122,7 @@ class SearchChunk:
             endpoint_ids = {endpoint["place_id"] for relation in self.relations
                             for endpoint in (relation["origin"], relation["destination"]) if endpoint["place_id"] is not None}
             subject_ids = {ref["place_id"] for ref in self.place_refs if ref["role"] == PlaceRole.SUBJECT}
-            if endpoint_ids != subject_ids:
+            if not independent and endpoint_ids != subject_ids:
                 raise ValueError("이동의 알려진 출발지·도착지가 핵심 장소여야 합니다")
             for relation in self.relations:
                 for condition in relation["conditions"]:
@@ -131,8 +139,25 @@ class SearchChunk:
             PlaceRole(reference["role"])
             if type(reference["place_id"]) is not int or reference["place_id"] <= 0:
                 raise ValueError("Invalid referenced place ID")
-        if not any(ref["role"] == PlaceRole.SUBJECT for ref in self.place_refs):
+        if not self.subject_place_ids and not self.relation_place_ids:
             raise ValueError("Chunks require at least one subject place")
+
+    @property
+    def subject_place_ids(self) -> set[int]:
+        return {ref["place_id"] for ref in self.place_refs if ref["role"] == PlaceRole.SUBJECT}
+
+    @property
+    def relation_place_ids(self) -> set[int]:
+        return endpoint_ids(self.relations) if independent_relations(self.relations) else set()
+
+    @property
+    def index_place_ids(self) -> set[int]:
+        return self.subject_place_ids | self.relation_place_ids
+
+    def active_role(self, place_id: int) -> ActiveChunkRole | None:
+        if place_id in self.subject_place_ids:
+            return ActiveChunkRole.SUBJECT
+        return ActiveChunkRole.RELATION_ENDPOINT if place_id in self.relation_place_ids else None
 
     @property
     def chunk_id(self) -> str:

@@ -8,7 +8,7 @@ import uuid
 
 from app.enrichment.contracts import ExistingPlace, fingerprint
 from .artifacts import load_record
-from .contracts import PlaceRole, SearchChunk, SourceDocument
+from .contracts import SearchChunk, SourceDocument
 from .review import reviewed_chunks
 
 
@@ -37,13 +37,13 @@ async def apply_bundle(pool: Any, path: Path, *, review_path: Path | None = None
     chunks = reviewed_chunks(path, review_path)
     if not chunks:
         return "NO_INDEXABLE_CHUNKS"
-    subject_ids = {ref["place_id"] for chunk in chunks for ref in chunk.place_refs if ref["role"] == PlaceRole.SUBJECT}
-    subject_places = sorted((place for place in bundle.places if place.place_id in subject_ids), key=lambda place: place.place_id)
+    target_place_ids = {place_id for chunk in chunks for place_id in chunk.index_place_ids}
+    target_places = sorted((place for place in bundle.places if place.place_id in target_place_ids), key=lambda place: place.place_id)
     manifest = {"sources": [source.to_dict() for source in bundle.sources], "chunks": [chunk.to_dict() for chunk in chunks]}
     async with pool.acquire() as connection:
         async with connection.transaction():
             # 참고 장소의 상태가 주체 적용을 막지 않도록 실제 쓰기 대상만 ID 순서로 잠근다.
-            for place in subject_places:
+            for place in target_places:
                 row = await connection.fetchrow("SELECT * FROM place_embeddings WHERE place_id=$1 FOR UPDATE", place.place_id)
                 if not row or row["document_status"] != "READY" or row["source_version"] != row["latest_seen_version"]:
                     raise ValueError("Place is unavailable or awaiting source indexing")
@@ -56,7 +56,7 @@ async def apply_bundle(pool: Any, path: Path, *, review_path: Path | None = None
                     VALUES($1,$2,$3::jsonb) ON CONFLICT DO NOTHING""",
                     uuid.UUID(source.source_id), source.source_version, json.dumps(source.to_dict(), ensure_ascii=False))
             changed = False
-            for place in subject_places:
+            for place in target_places:
                 identifier = fingerprint({"request_hash": record["request_hash"], "place": place.to_dict(), "manifest": manifest})
                 inserted = await connection.execute(
                     """INSERT INTO retrieval_chunk_bundles(bundle_id,place_id,place_fingerprint,manifest)
@@ -95,6 +95,8 @@ async def desired_chunks(pool: Any, place: ExistingPlace) -> tuple[int, list[Sea
 async def activate_chunks(connection: Any, place_id: int, chunks: list[SearchChunk], vectors: list[list[float]]) -> None:
     if len(chunks) != len(vectors):
         raise ValueError("Embedding count differs from chunk count")
+    if any(chunk.active_role(place_id) is None for chunk in chunks):
+        raise ValueError("활성 청크에 해당 장소의 관찰·관계 근거가 없습니다")
     for vector in vectors:
         if len(vector) != 1024 or not all(math.isfinite(value) for value in vector):
             raise ValueError("Contextual embeddings must be 1024 finite values")
@@ -105,5 +107,5 @@ async def activate_chunks(connection: Any, place_id: int, chunks: list[SearchChu
             "UPDATE retrieval_chunk_contexts SET embedding=$3::vector WHERE chunk_id=$1 AND context_version=$2",
             uuid.UUID(chunk.chunk_id), chunk.context_version, "[" + ",".join(map(str, vector)) + "]")
         await connection.execute(
-            "INSERT INTO place_active_chunks(place_id,slot,chunk_id,context_version) VALUES($1,$2,$3,$4)",
-            place_id, slot, uuid.UUID(chunk.chunk_id), chunk.context_version)
+            "INSERT INTO place_active_chunks(place_id,slot,chunk_id,context_version,role) VALUES($1,$2,$3,$4,$5)",
+            place_id, slot, uuid.UUID(chunk.chunk_id), chunk.context_version, chunk.active_role(place_id))

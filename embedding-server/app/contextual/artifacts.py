@@ -232,8 +232,9 @@ def excluded_chunks(raw: dict[str, Any], bundle: SourceBundle, chunks: list[Sear
             continue
         reason = ExclusionReason.NO_SUBJECT if chunk["place_refs"] else ExclusionReason.UNATTRIBUTED
         error = None
-        if validation_version == ValidationVersion.OBSERVATIONS:
-            error = observation_error(chunk, bundle.places, sources[chunk["source_id"]])
+        if validation_version in (ValidationVersion.OBSERVATIONS, ValidationVersion.RELATIONS):
+            error = observation_error(chunk, bundle.places, sources[chunk["source_id"]],
+                                      independent=validation_version == ValidationVersion.RELATIONS)
             if error:
                 reason = ExclusionReason.INVALID_ATTRIBUTION
             elif chunk["content_kind"] == ContentKind.MOVEMENT and not chunk["relations"]:

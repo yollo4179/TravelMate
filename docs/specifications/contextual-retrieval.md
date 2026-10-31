@@ -1,6 +1,6 @@
 # 공통 장소 청크·문맥 생성·검색 DB 명세
 
-문서 버전: 8 · 갱신: 2026-11-01
+문서 버전: 9 · 갱신: 2026-11-01
 
 [계획서](../plans/contextual-retrieval.md) · [구조도](../architecture/contextual-retrieval.md) · [기존 웹 수집](place-review-enrichment.md)
 
@@ -47,6 +47,7 @@ source_id는 출처 유형·URL 또는 TourAPI 콘텐츠 ID·필드명으로 결
 | [v4_contextual_prompt.py](../../embedding-server/app/contextual/prompts/v4_contextual_prompt.py) | `contextual-source-spans-v4`: 구간 주제 우선·인접 관찰 차용 금지·장소/시설 귀속을 강화한 실험 지시문. 기본값은 계속 v2 |
 | [v5_contextual_prompt.py](../../embedding-server/app/contextual/prompts/v5_contextual_prompt.py) | `contextual-source-spans-v5`: 코드가 추출한 `span.chunk_text`를 직접 읽는 선택 지시문. 명시적 청크 입력 필수. 22구간 검수에서 주제 대체 감소와 귀속 회귀가 함께 확인돼 기본값으로 채택하지 않음 |
 | [v6_contextual_prompt.py](../../embedding-server/app/contextual/prompts/v6_contextual_prompt.py) | `contextual-observation-relations-v6`: 관찰 종류와 장소 역할을 분리하고 출발지·도착지·이동 조건을 보존하는 선택 계약. 새 문장/문단 분할·명시적 입력·출력 스키마가 필요하며 기본값은 계속 v2 |
+| [v7_contextual_prompt.py](../../embedding-server/app/contextual/prompts/v7_contextual_prompt.py) | `contextual-independent-relations-v7`: 관찰 종류·subject와 독립적인 primary/supporting 관계 및 정확한 이동 근거를 보존하는 선택 계약. 실제 모델 품질은 미검증, 기본값은 계속 v2 |
 
 v2는 보통 1~2문장을 권장하지만 필요한 구분·부정·조건을 생략하도록 강제하지 않는다. 600자 상한은 유지한다.
 **동일 문서의 청크 밖 배경도 장소 식별·지시 대상·배경 이해에 필요하면 허용한다.**
@@ -117,7 +118,7 @@ Windows에서 원본 아카이브 아래의 깊은 경로가 파일 길이 제�
 이는 한 번의 개발 표본 검수다. 입력 추가만의 효과나 이전 오류의 원인을 분리해 입증하지 않았고 검색은 재실행하지 않았다.
 분할·색인·기본값은 유지했다. [실제 문맥 검수 기록](../../Evaluation/runs/contextual/span-grounding-v1/20261101-01/REPORT.md)을 참고한다.
 
-### 관찰 단위 분할과 이동 관계
+### 관찰 단위 분할과 이동 관계: v6 보존 계약
 
 `source-span-v1`은 기존 800자·줄바꿈 분할이며 기본값을 유지한다.
 선택 버전 `sentence-paragraph-v2`는 보존 본문 전체의 문장 종결·문단·제목·구분선 경계를 사용한다.
@@ -158,7 +159,7 @@ v6는 기존 출력 필드에 다음을 **별도 스키마**로 추가한다. v1
 v6 요청은 `fast`·8192 출력 한도·`tools=[]`로 별도 고정했다. 이번 검수에서 바뀐 것은 분할·지시문·출력 스키마·처리 버전이므로
 프롬프트만 바꾼 비교나 분할만의 효과로 표시하지 않는다.
 
-### 관찰 검증·검수 후 적용
+### 관찰 검증·검수 후 적용: v6 보존 계약
 
 v6의 새 기록은 `contextual-validation-v3`를 사용한다. v1~v5의 기존 처리 버전은 바꾸지 않는다.
 전체 출력 스키마와 source/span의 누락·중복·변조는 응답 검증 오류다.
@@ -182,6 +183,47 @@ v6의 새 기록은 `contextual-validation-v3`를 사용한다. v1~v5의 기존 
 자동 귀속은 고정 회귀 5개 중 4개 통과이며 P09 경관 오류가 남았다. 검수에서 승인하지 않은 뒤 선택 근거는 5개를 만족했다.
 이는 자동 판정 5/5나 검색 성능 개선을 뜻하지 않는다. 운영 기본값은 유지한다.
 
+### 핵심·보조 관계의 독립 보존: v7 선택 계약
+
+v6의 제한을 바꾸는 새 계약은 `contextual-independent-relations-v7`와 `contextual-validation-v4`다.
+기존 v1~v6 지시문·스키마·저장 기록은 그대로 읽으며 중요도를 임의로 채우지 않는다. 기본값은 계속 v2다.
+입력·분할은 명시적 원문과 `sentence-paragraph-v2`를 유지한다. 스키마 변경을 프롬프트 전용 비교로 통과시키지 않는다.
+
+`content_kind`는 주된 관찰의 종류이며 관계의 허용 조건이 아니다. 경관·시설·기타 청크에도 이동 관계를 둘 수 있다.
+각 관계에는 `type=movement`, `importance=primary|supporting`, `origin/destination/conditions`, `evidence`가 필요하다.
+primary는 핵심 관계, supporting은 주된 관찰에 덧붙은 보조 관계다. 둘 다 이동 검색에 사용하며 자동 점수 가중치는 없다.
+관계의 알려진 endpoint는 place_refs에 실제 역할로 보존하지만 subject와 같도록 강제하지 않는다.
+
+합성 예시 `A공원은 야경이 아름답고, 관람 후 B공원으로 걸어갈 수 있다.`는 한 청크로 보존한다.
+A=subject, B=mentioned, content_kind=landscape이며 A→B 관계는 supporting이다.
+관계의 `evidence={start,end,quote}`는 같은 원문 내 절대 Unicode 위치와 정확한 이동 절을 가리킨다.
+현재 청크 밖의 위치·변경된 인용·미등록 ID·등록 명칭 불일치·그 관계 근거 밖의 조건 인용은 해당 구간을 검증에서 격리한다.
+정확한 인용 검사만으로 모델이 이동 방향·주요도·의미 범위를 맞췄다고 보증하지 않으므로 검수 승인도 유지한다.
+
+DB의 `place_active_chunks.role`은 기존 `subject`와 새 `relation_endpoint`를 구분한다. 모델의 place_refs 역할을 바꾸지 않는다.
+A에는 subject 슬롯, B에는 relation_endpoint 슬롯이 같은 chunk/context를 참조한다. 원문·청크를 두 개로 나누거나 복제하지 않는다.
+DB trigger는 subject 슬롯에 명시적 subject를, relation_endpoint 슬롯에 독립 관계의 실제 참가자와 장소 참조를 요구한다.
+명확한 관계만 있고 subject가 없는 청크도 알려진 endpoint가 있으면 관계 전용 후보가 될 수 있다.
+알려진 endpoint도 subject도 없으면 귀속 보류로 보존한다.
+
+일반·경관·시설 검색은 subject 슬롯과 해당 관찰의 주체만 사용한다. 이동 검색만 두 슬롯을 조회하고 관계 endpoint로 방향을 제한한다.
+관계 검색에는 청크의 content_kind가 movement일 필요가 없다. 후보와 복수 근거 확장에 같은 필터를 적용한다.
+이동 리랭킹 입력과 결과 description은 일치한 관계의 정확한 evidence.quote를 사용한다.
+응답 evidence에는 원문 전체·place_refs를 보존하고 `retrieval_scope=relation`, `matched_relations`, `search_text`로 사용 범위를 표시한다.
+따라서 보존용 전체 원문을 목적지의 경관·시설 근거로 해석하지 않아야 한다.
+목적지의 기본 장소 벡터도 출발지의 혼합 관찰을 재사용하지 않고 목적지 자체의 subject 근거 또는 기본 장소 설명에서 고른다.
+관계 후보를 찾는 벡터 자체는 아직 전체 청크의 문맥+원문이다. 관계 전용 임베딩·실제 검색 품질 개선은 검증하지 않았다.
+
+apply의 상태·지문 검사와 재색인 대상은 승인 청크의 subject 및 알려진 관계 endpoint의 합집합이다.
+단순 mentioned만 있는 장소는 계속 적용 대상이 아니다. 관계 endpoint는 실제 쓰기 대상이므로 삭제·재색인 대기 상태이면 원자 적용을 중단한다.
+검수 승인 0개는 기존 번들을 변경하지 않는다. 승인한 한 청크의 관찰·관계를 함께 승인하며 관계별 부분 승인은 지원하지 않는다.
+장소별 20개 상한을 관찰·관계 슬롯이 함께 사용한다. 최신 번들 교체 정책도 유지하므로 유지할 전체 자료를 함께 적용해야 한다.
+
+이 변경의 SQL 파일과 Docker 초기화 사본은 함께 수정했지만 이번에는 DB에 실행하지 않았다.
+운영 적용에는 해당 스키마 갱신·명시적 검수·재색인이 필요하며 기존 벡터가 자동 갱신되지 않는다.
+[코드 회귀·호환 검증 기록](../../Evaluation/runs/contextual/supporting-relations-v1/20261101-01/REPORT.md)에
+합성 A/B 사례와 실제 보존 파일 검증을 기록했다. 유료 호출·DB 조회/쓰기·실제 검색 성능 실행은 0회다.
+
 ### 역할에 따른 자동 보존·검색 제외
 
 v1~v5의 새 응답 및 명시적으로 재검증한 응답은 `contextual-validation-v2`를 사용한다. 사람이 역할을 다시 분류하지 않는다.
@@ -197,6 +239,7 @@ v1~v5의 새 응답 및 명시적으로 재검증한 응답은 `contextual-valid
 subject 없는 정상 구간 때문에 같은 응답의 유효한 구간까지 실패시키지 않는다.
 모든 구간이 검색 제외 대상이면 `status=COLLECTED`, `chunks=[]`로 처리 완료한다.
 `apply`는 이 경우 `NO_INDEXABLE_CHUNKS`를 반환하고 기존 번들·활성 청크·세대·재색인 작업을 변경하지 않는다.
+아래 적용 대상 설명은 v1~v6의 subject 전용 계약이다. v7의 독립 관계는 위 별도 계약을 따른다.
 여러 장소가 있는 응답에서도 해당 장소의 subject 근거가 없으면 그 장소의 번들을 교체하거나 재색인하지 않는다.
 DB 행 잠금·READY/최신 버전·기본정보 지문 검사도 실제 적용할 subject 장소에만 수행한다.
 참고 장소의 삭제·재색인 대기·기본정보 변경은 정상 subject의 적용을 막지 않으며,
@@ -252,11 +295,11 @@ python -m app.contextual.cli apply --record /path/to/LocationReview/394_테스�
 
 `--preset` 또는 `--model`로 교체할 수 있다. 둘을 같이 지정하지 않는다.
 최초 생성 모델·계정 지원·비용은 실제 계정으로 작은 표본을 실행해 확인한다.
-`apply`는 스키마/보존 응답/원문/offset을 재검증하고 적용할 subject 장소의 DB 기본정보를 확인한다.
+`apply`는 스키마/보존 응답/원문/offset을 재검증하고 적용할 subject 장소와 v7 독립 관계 endpoint의 DB 기본정보를 확인한다.
 여러 주체 장소 적용은 ID 순으로 잠그고 원자 저장한다.
 같은 번들 재적용은 `ALREADY_APPLIED`; 새 번들은 `REINDEX_QUEUED`. 후자는 검색 반영 완료를 의미하지 않는다.
 기존 장소별 imported bundle은 최신 적용본으로 교체되며 이전 원문/청크/문맥은 삭제하지 않는다.
-누적할 자료는 새 입력 번들에 기존 유지 자료도 함께 넣는다. 언급 장소는 그 번들의 청크로 활성화하지 않는다.
+누적할 자료는 새 입력 번들에 기존 유지 자료도 함께 넣는다. 단순 언급 장소는 활성화하지 않는다. v7의 명확한 관계 endpoint는 subject 승격 없이 관계 역할로 활성화한다.
 
 ## 같은 입력으로 프롬프트 비교
 
@@ -366,7 +409,7 @@ runtime `ensure_schema`도 같은 SQL을 멱등 적용한다. FastAPI 전용 DB�
 | retrieval_chunks | 전역 chunk_id PK, 원문 offset·원문 청크·source FK |
 | retrieval_chunk_contexts | chunk_id + context_version PK, 문맥·장소 역할·질문·생성 모델·BGE-M3 벡터 |
 | retrieval_chunk_bundles | 기존 장소별 불변 입력 manifest, 기본정보 지문·적용 순서 |
-| place_active_chunks | 장소별 1..20 slot, chunk/context FK, subject 역할 강제 trigger |
+| place_active_chunks | 장소별 1..20 slot, chunk/context FK, subject/독립 관계 endpoint 역할 구분 trigger |
 | place_embeddings.chunk_generation | 추론 중 새 번들 적용을 감지하는 optimistic version |
 
 활성 slot PK와 범위 CHECK가 동시 쓰기에도 20개를 보장한다. 같은 청크의 한 장소 내 중복 활성화는 UNIQUE로 막는다.

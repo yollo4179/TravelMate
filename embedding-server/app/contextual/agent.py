@@ -12,6 +12,7 @@ from app.enrichment.agent import AGENT_ENDPOINT, AgentSettings
 from app.enrichment.contracts import ExistingPlace
 from .contracts import PlaceRole, SearchChunk, SourceDocument, SPLITTER_VERSION, SplitterVersion
 from .contracts import ContentKind, MovementCondition
+from .relations import RelationType, RelationImportance, endpoint_ids, validate_independent_relations
 from .pipeline import split_source
 from .input_format import InputVersion, explicit_chunks
 from .prompts import DEFAULT_PROMPT_VERSION, resolve_prompt
@@ -55,15 +56,39 @@ _chunk_schema["properties"].update({
 })
 
 
+SCHEMA_V7 = deepcopy(SCHEMA_V6)
+_relation_schema = SCHEMA_V7["properties"]["chunks"]["items"]["properties"]["relations"]["items"]
+_relation_schema["required"] += ["type", "importance", "evidence"]
+_relation_schema["properties"].update({
+    "type": {"type": "string", "enum": [kind.value for kind in RelationType]},
+    "importance": {"type": "string", "enum": [importance.value for importance in RelationImportance]},
+    "evidence": {"type": "object", "additionalProperties": False, "required": ["start", "end", "quote"],
+                 "properties": {"start": {"type": "integer", "minimum": 0},
+                                "end": {"type": "integer", "minimum": 1},
+                                "quote": {"type": "string", "minLength": 1, "maxLength": 800}}},
+})
+
+
 def schema_for_prompt(prompt_version: str) -> dict[str, Any]:
-    return deepcopy(SCHEMA_V6) if resolve_prompt(prompt_version).supports_relations else SCHEMA
+    prompt = resolve_prompt(prompt_version)
+    if prompt.independent_relations:
+        return deepcopy(SCHEMA_V7)
+    return deepcopy(SCHEMA_V6) if prompt.supports_relations else SCHEMA
 
 
-def validate_observation(chunk: dict[str, Any], places: list[ExistingPlace], source: SourceDocument,
-                         *, allow_unresolved: bool = False) -> None:
+def validate_observation(
+    chunk: dict[str, Any],
+    places: list[ExistingPlace],
+    source: SourceDocument,
+    *,
+    allow_unresolved: bool = False,
+    independent: bool = False,
+) -> None:
     kind = ContentKind(chunk["content_kind"])
     relations = chunk["relations"]
-    if kind != ContentKind.MOVEMENT and relations:
+    if independent:
+        validate_independent_relations(relations, chunk["place_refs"], source.text, chunk["start"], chunk["end"])
+    if not independent and kind != ContentKind.MOVEMENT and relations:
         raise ValueError("이동 종류와 출발지·도착지 관계가 일치해야 합니다")
     if kind == ContentKind.MOVEMENT and not relations:
         if allow_unresolved:
@@ -81,13 +106,19 @@ def validate_observation(chunk: dict[str, Any], places: list[ExistingPlace], sou
         for condition in relation["conditions"]:
             if condition["quote"] not in source.text[chunk["start"]:chunk["end"]]:
                 raise ValueError("이동 조건은 현재 구간 원문에 있어야 합니다")
-    if kind == ContentKind.MOVEMENT:
+    if kind == ContentKind.MOVEMENT and not independent:
         subjects = {ref["place_id"] for ref in chunk["place_refs"] if ref["role"] == PlaceRole.SUBJECT}
         if subjects != endpoints:
             raise ValueError("이동 청크의 알려진 출발지·도착지는 핵심 장소로 보존해야 합니다")
 
 
-def observation_error(chunk: dict[str, Any], places: list[ExistingPlace], source: SourceDocument) -> str | None:
+def observation_error(
+    chunk: dict[str, Any],
+    places: list[ExistingPlace],
+    source: SourceDocument,
+    *,
+    independent: bool = False,
+) -> str | None:
     try:
         known = {place.place_id for place in places}
         if any(ref["place_id"] not in known for ref in chunk["place_refs"] + chunk["entities"]):
@@ -101,7 +132,7 @@ def observation_error(chunk: dict[str, Any], places: list[ExistingPlace], source
         for entity in chunk["entities"]:
             if {"place_id": entity["place_id"], "role": entity["role"]} not in chunk["place_refs"]:
                 raise ValueError("엔티티 역할과 장소 귀속 불일치")
-        validate_observation(chunk, places, source, allow_unresolved=True)
+        validate_observation(chunk, places, source, allow_unresolved=True, independent=independent)
     except ValueError as exception:
         return str(exception)
     return None
@@ -178,8 +209,8 @@ def parse_chunks(
         source_order = {source.source_id: index for index, source in enumerate(sources)}
         ordered = sorted(ordered, key=lambda chunk: (source_order[chunk["source_id"]], chunk["start"], chunk["end"]))
     for chunk in ordered:
-        if validation == ValidationVersion.OBSERVATIONS:
-            if observation_error(chunk, places, by_id[chunk["source_id"]]) is not None:
+        if validation in (ValidationVersion.OBSERVATIONS, ValidationVersion.RELATIONS):
+            if observation_error(chunk, places, by_id[chunk["source_id"]], independent=prompt.independent_relations) is not None:
                 continue
             if chunk["content_kind"] == ContentKind.MOVEMENT and not chunk["relations"]:
                 continue
@@ -188,21 +219,22 @@ def parse_chunks(
         if any(ref["place_id"] not in known_places for ref in chunk["place_refs"] + chunk["entities"]):
             raise ValueError("Agent referenced an unknown place")
         if prompt.supports_relations:
-            validate_observation(chunk, places, by_id[chunk["source_id"]])
-        if validation in (ValidationVersion.SUBJECT_ONLY, ValidationVersion.OBSERVATIONS):
+            validate_observation(chunk, places, by_id[chunk["source_id"]], independent=prompt.independent_relations)
+        if validation in (ValidationVersion.SUBJECT_ONLY, ValidationVersion.OBSERVATIONS, ValidationVersion.RELATIONS):
             if len({ref["place_id"] for ref in chunk["place_refs"]}) != len(chunk["place_refs"]):
                 raise ValueError("Chunk place references must be present and unique")
             if not chunk["context_text"].strip():
                 raise ValueError("Chunk context must contain 1..600 characters")
         if not chunk["place_refs"]:
-            if (prompt.require_empty_unattributed_entities or validation in (ValidationVersion.SUBJECT_ONLY, ValidationVersion.OBSERVATIONS)) and chunk["entities"]:
+            if (prompt.require_empty_unattributed_entities or validation in (ValidationVersion.SUBJECT_ONLY, ValidationVersion.OBSERVATIONS, ValidationVersion.RELATIONS)) and chunk["entities"]:
                 raise ValueError("Unattributed spans require both place_refs and entities to be empty")
             continue
         for entity in chunk["entities"]:
             if {"place_id": entity["place_id"], "role": entity["role"]} not in chunk["place_refs"]:
                 raise ValueError("Entity roles must match explicit place references")
-        if validation in (ValidationVersion.SUBJECT_ONLY, ValidationVersion.OBSERVATIONS):
-            if not any(ref["role"] == PlaceRole.SUBJECT for ref in chunk["place_refs"]):
+        if validation in (ValidationVersion.SUBJECT_ONLY, ValidationVersion.OBSERVATIONS, ValidationVersion.RELATIONS):
+            has_relation_target = prompt.independent_relations and bool(endpoint_ids(chunk["relations"]))
+            if not has_relation_target and not any(ref["role"] == PlaceRole.SUBJECT for ref in chunk["place_refs"]):
                 continue
         chunks.append(SearchChunk(by_id[chunk["source_id"]], chunk["start"], chunk["end"],
                                   chunk["context_text"], chunk["place_refs"],

@@ -16,8 +16,16 @@ def cases() -> list[dict[str, Any]]:
     from app.contextual.observation_search import ObservationFilter
     route = {"content_kind": "movement", "relations": [{"origin": {"place_id": 394, "name": "A공원"},
         "destination": {"place_id": 395, "name": "B공원"}, "conditions": [{"kind": "stairs", "quote": "계단"}]}]}
+    mixed = {"content_kind": "landscape", "place_refs": [{"place_id": 394, "role": "subject"}, {"place_id": 395, "role": "mentioned"}],
+        "relations": [{**route["relations"][0], "type": "movement", "importance": "supporting",
+                       "evidence": {"start": 0, "end": 2, "quote": "계단"}}]}
     result = []
     for name, condition, document, expected in (
+        ("supporting_landscape_to_b", {"destination_place_id": 395}, mixed, [394]),
+        ("supporting_landscape_from_a", {"origin_place_id": 394}, mixed, [395]),
+        ("supporting_is_searchable", {"relation_importance": ["supporting"]}, mixed, [394, 395]),
+        ("supporting_is_not_primary", {"relation_importance": ["primary"]}, mixed, []),
+        ("b_does_not_inherit_landscape", {"content_kinds": ["landscape"]}, mixed, [394]),
         ("to_b_returns_a", {"destination_place_id": 395}, route, [394]),
         ("from_a_returns_b", {"origin_place_id": 394}, route, [395]),
         ("either_endpoint_is_scoped_to_matching_relation", {"destination_place_id": 395, "result_endpoint": "either"},
@@ -26,7 +34,7 @@ def cases() -> list[dict[str, Any]]:
              {"origin": {"place_id": 394}, "destination": {"place_id": 397}, "conditions": []}]}, [395]),
         ("route_is_not_landscape", {"content_kinds": ["landscape"]}, route, []),
         ("route_is_not_facility", {"content_kinds": ["facility"]}, route, []),
-        ("landscape_matches_kind", {"content_kinds": ["landscape"]}, {"content_kind": "landscape"}, [394, 395]),
+        ("landscape_matches_kind", {"content_kinds": ["landscape"]}, {"content_kind": "landscape", "place_refs": [{"place_id": 394, "role": "subject"}, {"place_id": 395, "role": "subject"}]}, [394, 395]),
         ("unknown_origin_is_not_invented", {"destination_place_id": 395},
          {"content_kind": "movement", "relations": [{"origin": {"place_id": None, "name": "출발지 미상"},
              "destination": {"place_id": 395, "name": "B공원"}, "conditions": []}]}, []),

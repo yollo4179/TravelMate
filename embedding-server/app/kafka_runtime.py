@@ -20,7 +20,7 @@ from app.reranker import reranker
 from app.enrichment.contracts import ExistingPlace
 from app.enrichment.evidence import search_description
 from app.enrichment.repository import latest_snapshot
-from app.contextual.pipeline import tourapi_chunks, legacy_evidence_chunks, select_active
+from app.contextual.pipeline import tourapi_chunks, legacy_evidence_chunks, select_active, index_embedding_inputs
 from app.contextual.observation_search import ObservationFilter
 from app.contextual.repository import desired_chunks, activate_chunks, preserve_chunks
 from app.contextual.artifacts import archive_index_input
@@ -254,11 +254,11 @@ class KafkaRuntime:
         augmented_description = search_description(place, enrichment["document"]) if enrichment else None
         with tracer().start_as_current_span("embedding.model_inference") as span:
             span.set_attribute("embedding.device", embedder.device)
-            texts = [chunk.embedding_text for chunk in active_chunks] or [f"{place.name}. {place.description or ''}".strip()]
+            texts, primary_index = index_embedding_inputs(place, active_chunks)
             span.set_attribute("embedding.text_count", len(texts))
             vectors = await to_thread.run_sync(lambda: embedder.embed(texts))
-            vector = vectors[0]
-            chunk_vectors = vectors if active_chunks else []
+            vector = vectors[primary_index]
+            chunk_vectors = vectors[:len(active_chunks)]
         vector_text = "[" + ",".join(map(str, vector)) + "]"
         async with self.database_pool.acquire() as connection:
             async with connection.transaction():
@@ -497,6 +497,7 @@ class KafkaRuntime:
             )
 
         observation_sql = observation.sql_predicate(parameters) if observation else ""
+        active_role_sql = observation.active_role_sql if observation else "a.role='subject'"
         if observation:
             conditions.append("evidence IS NOT NULL")
         parameters.extend([vector, RETRIEVE_TOP_K])
@@ -525,7 +526,7 @@ class KafkaRuntime:
                     JOIN retrieval_chunk_contexts c USING(chunk_id, context_version)
                     JOIN retrieval_chunks r USING(chunk_id)
                     JOIN retrieval_source_versions s USING(source_id, source_version)
-                    WHERE a.place_id = p.place_id AND a.role = 'subject' AND c.embedding IS NOT NULL {observation_sql}
+                    WHERE a.place_id = p.place_id AND {active_role_sql} AND c.embedding IS NOT NULL {observation_sql}
                     ORDER BY c.embedding <=> $1::vector, a.slot LIMIT 1
                 ) matched ON true
             ) indexed_places
@@ -546,7 +547,8 @@ class KafkaRuntime:
                 "search.retrieval_elapsed_ms",
                 (time.perf_counter() - retrieval_started_at) * 1000,
             )
-        return [dict(row) for row in rows]
+        documents = [dict(row) for row in rows]
+        return observation.scope_rows(documents) if observation else documents
 
     async def _retrieve_evidence(
         self,
@@ -561,6 +563,7 @@ class KafkaRuntime:
         # 장소 후보를 다시 뽑지 않아 근거 수 비교에서 후보 집합이 바뀌지 않게 한다.
         parameters = [vector, [candidate["place_id"] for candidate in candidates], int(count)]
         observation_sql = observation.sql_predicate(parameters) if observation else ""
+        active_role_sql = observation.active_role_sql if observation else "a.role='subject'"
         required_evidence_sql = "AND matched.evidence IS NOT NULL" if observation else ""
         query = f"""
             SELECT p.place_id, p.source_version, matched.evidence,
@@ -574,7 +577,7 @@ class KafkaRuntime:
                 JOIN retrieval_chunk_contexts c USING(chunk_id, context_version)
                 JOIN retrieval_chunks r USING(chunk_id)
                 JOIN retrieval_source_versions s USING(source_id, source_version)
-                WHERE a.place_id=p.place_id AND a.role='subject' AND c.embedding IS NOT NULL {observation_sql}
+                WHERE a.place_id=p.place_id AND {active_role_sql} AND c.embedding IS NOT NULL {observation_sql}
                 ORDER BY c.embedding <=> $1::vector, a.slot LIMIT $3
             ) matched ON true
             WHERE p.place_id=ANY($2::bigint[]) AND p.document_status='READY'
@@ -585,7 +588,8 @@ class KafkaRuntime:
         with tracer().start_as_current_span("database.contextual_evidence_search"):
             async with self.database_pool.acquire() as connection:
                 rows = await connection.fetch(query, *parameters)
-        return [dict(row) for row in rows]
+        documents = [dict(row) for row in rows]
+        return observation.scope_rows(documents) if observation else documents
 
     @staticmethod
     def _to_result_item(candidate: dict[str, Any], rank: int, rerank_score: float | None) -> dict[str, Any]:

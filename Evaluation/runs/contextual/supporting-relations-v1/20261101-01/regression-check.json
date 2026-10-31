@@ -1,0 +1,145 @@
+{
+  "fixture_kind": "synthetic-model-response",
+  "prompt_version": "contextual-independent-relations-v7",
+  "validation_version": "contextual-validation-v4",
+  "preserved_chunk_count": 1,
+  "fixture": {
+    "source_id": "8fccb82d-a643-5aca-9af8-a037872d134a",
+    "start": 0,
+    "end": 35,
+    "context_text": "A의 경관과 관람 후 B로의 이동 가능성이다.",
+    "content_kind": "landscape",
+    "place_refs": [
+      {
+        "place_id": 394,
+        "role": "subject"
+      },
+      {
+        "place_id": 395,
+        "role": "mentioned"
+      }
+    ],
+    "entities": [],
+    "hypothetical_questions": [],
+    "relations": [
+      {
+        "type": "movement",
+        "importance": "supporting",
+        "origin": {
+          "place_id": 394,
+          "name": "A공원"
+        },
+        "destination": {
+          "place_id": 395,
+          "name": "B공원"
+        },
+        "conditions": [],
+        "evidence": {
+          "start": 15,
+          "end": 35,
+          "quote": "관람 후 B공원으로 걸어갈 수 있다."
+        }
+      }
+    ]
+  },
+  "chunk_text": "A공원은 야경이 아름답고, 관람 후 B공원으로 걸어갈 수 있다.",
+  "queries": [
+    {
+      "id": "landscape_owner_only",
+      "filter": {
+        "content_kinds": [
+          "landscape"
+        ]
+      },
+      "expected": [
+        394
+      ],
+      "actual": [
+        394
+      ],
+      "passed": true
+    },
+    {
+      "id": "to_b_returns_a",
+      "filter": {
+        "destination_place_id": 395
+      },
+      "expected": [
+        394
+      ],
+      "actual": [
+        394
+      ],
+      "passed": true
+    },
+    {
+      "id": "from_a_returns_b",
+      "filter": {
+        "origin_place_id": 394
+      },
+      "expected": [
+        395
+      ],
+      "actual": [
+        395
+      ],
+      "passed": true
+    },
+    {
+      "id": "supporting_is_searchable",
+      "filter": {
+        "relation_importance": [
+          "supporting"
+        ]
+      },
+      "expected": [
+        394,
+        395
+      ],
+      "actual": [
+        394,
+        395
+      ],
+      "passed": true
+    },
+    {
+      "id": "supporting_is_not_primary",
+      "filter": {
+        "relation_importance": [
+          "primary"
+        ]
+      },
+      "expected": [],
+      "actual": [],
+      "passed": true
+    },
+    {
+      "id": "all_movements_include_supporting",
+      "filter": {
+        "content_kinds": [
+          "movement"
+        ]
+      },
+      "expected": [
+        394,
+        395
+      ],
+      "actual": [
+        394,
+        395
+      ],
+      "passed": true
+    }
+  ],
+  "active_roles": {
+    "394": "subject",
+    "395": "relation_endpoint"
+  },
+  "destination_relation_search_text": "이동 관계 근거\n출발지: A공원 → 도착지: B공원\n관람 후 B공원으로 걸어갈 수 있다.",
+  "all_passed": true,
+  "api_calls": 0,
+  "database_writes": 0,
+  "database_queries": 0,
+  "model_search_executions": 0,
+  "note": "코드 계약의 합성 검사다. Sonar 판정 품질·실제 SQL 적용·검색 성능을 측정하지 않았다."
+}

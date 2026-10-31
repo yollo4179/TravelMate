@@ -45,3 +45,19 @@
 - 새 분할·관계 청크는 원본 해시에 묶인 검수 승인 목록 없이는 DB 적용을 차단한다. 승인 0개는 기존 활성 청크를 변경하지 않는다.
 
 [관찰·이동 검수 기록](../../../Evaluation/runs/contextual/observation-spans-v1/20261101-01/REPORT.md)
+
+
+## 핵심·보조 관계 독립 보존 보완
+
+- 기준 `1b62e006`, 작업 브랜치 `fix/contextual-supporting-relations`다.
+- v6 원본은 보존하고 v7 지시문·별도 출력 스키마·검증 v4를 추가했다. 관계 type/importance/evidence를 필수로 받고 content_kind·subject와 독립적으로 저장한다.
+- A 경관+B 보조 이동을 한 청크로 보존하고 A=subject/B=mentioned를 유지한다. B의 색인 역할만 relation_endpoint로 구분한다.
+- 경관·시설 검색은 subject, 이동 검색은 관계 endpoint를 사용한다. primary/supporting 모두 검색하며 명시적 비중 필터를 지원한다.
+- 관계 검색의 리랭킹 입력·description은 이동 evidence만 사용한다. 목적지의 기본 벡터도 출발지 경관을 재사용하지 않는다.
+- SQL 역할 제약·trigger와 Docker 초기화 사본을 함께 고쳤다. 실제 DB에는 실행하지 않았다.
+- 서버 90개 통과·환경 통합 11개 미실행, 평가 9개 통과다. 새 회귀 검사는 10개이며 SQL은 생성/전달 범위만 모의 검증했다.
+- 기존 v5 9개·v6 2개 기록을 읽었고 보존 파일 63개+50개 해시, v1~v6 지시문 및 기존 스키마 보존을 확인했다.
+- 이번 유료 호출·DB 조회/쓰기·실제 검색 모델 실행은 모두 0회다. 기존 자동 4/5·검수 후 5/5 결과를 변경하지 않았다.
+- 실제 v7 모델 판정·SQL 적용·전체 근거 보존·검색 성능은 미검증이다. 기본값 v2·근거 수 1개와 Spring/UI 미연결 상태를 유지한다.
+
+[핵심·보조 관계 코드 검증](../../../Evaluation/runs/contextual/supporting-relations-v1/20261101-01/REPORT.md)

@@ -61,7 +61,8 @@ class GenerationBaseline:
     def candidate_request(self, prompt_version: str) -> dict[str, Any]:
         candidate = deepcopy(self.request)
         prompt = resolve_prompt(prompt_version)
-        if prompt.supports_relations != resolve_prompt(self.record["prompt_version"]).supports_relations:
+        baseline_prompt = resolve_prompt(self.record["prompt_version"])
+        if (prompt.supports_relations, prompt.independent_relations) != (baseline_prompt.supports_relations, baseline_prompt.independent_relations):
             raise ValueError("출력 스키마 변경은 프롬프트 전용 비교에 포함할 수 없습니다")
         if (prompt.requires_explicit_chunks
                 and self.record.get("input_version", InputVersion.OFFSETS) != InputVersion.EXPLICIT):

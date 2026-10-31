@@ -1,4 +1,4 @@
-"""명시한 내용 종류와 이동 방향으로 근거를 제한한다. 자연어에서 조건을 추측하지 않는다."""
+"""관찰 주체와 이동 관계를 서로 다른 기준으로 검색한다."""
 from __future__ import annotations
 
 from dataclasses import dataclass
@@ -6,7 +6,8 @@ from enum import StrEnum
 import json
 from typing import Any
 
-from .contracts import ContentKind
+from .contracts import ContentKind, PlaceRole
+from .relations import RelationImportance, RelationType, RetrievalScope
 
 
 class EndpointSide(StrEnum):
@@ -21,72 +22,135 @@ class ObservationFilter:
     origin_place_id: int | None = None
     destination_place_id: int | None = None
     result_endpoint: EndpointSide = EndpointSide.EITHER
+    relation_importance: tuple[RelationImportance, ...] = ()
 
     @classmethod
     def from_mapping(cls, value: dict[str, Any] | None) -> ObservationFilter | None:
         if value is None:
             return None
-        if not isinstance(value, dict) or set(value) - {"content_kinds", "origin_place_id", "destination_place_id", "result_endpoint"}:
+        allowed = {"content_kinds", "origin_place_id", "destination_place_id", "result_endpoint", "relation_importance"}
+        if not isinstance(value, dict) or set(value) - allowed:
             raise ValueError("지원하지 않는 관찰 검색 조건입니다")
         if not value:
             return None
         identifiers = [value.get(key) for key in ("origin_place_id", "destination_place_id")]
         if any(identifier is not None and (type(identifier) is not int or not 0 < identifier <= 9223372036854775807) for identifier in identifiers):
             raise ValueError("이동 장소 ID는 양의 정수여야 합니다")
-        kinds = value.get("content_kinds", [])
-        if not isinstance(kinds, list) or any(not isinstance(kind, str) for kind in kinds) or len(set(kinds)) != len(kinds):
-            raise ValueError("내용 종류는 중복 없는 배열이어야 합니다")
-        kinds = tuple(ContentKind(kind) for kind in kinds)
+        kinds = cls._enum_values(value.get("content_kinds", []), ContentKind)
+        importance = cls._enum_values(value.get("relation_importance", []), RelationImportance)
         has_direction = any(identifier is not None for identifier in identifiers) or "result_endpoint" in value
-        if not kinds and not has_direction:
+        if not kinds and not has_direction and not importance:
             return None
-        if has_direction:
+        if has_direction or importance:
             if kinds and ContentKind.MOVEMENT not in kinds:
-                raise ValueError("이동 방향 조건에는 이동 내용이 필요합니다")
+                raise ValueError("이동 방향·비중 조건에는 이동 검색이 필요합니다")
             kinds = (ContentKind.MOVEMENT,)
         default_side = EndpointSide.ORIGIN if identifiers[1] is not None else EndpointSide.DESTINATION if identifiers[0] is not None else EndpointSide.EITHER
-        return cls(kinds, identifiers[0], identifiers[1], EndpointSide(value.get("result_endpoint", default_side)))
+        return cls(
+            kinds,
+            identifiers[0],
+            identifiers[1],
+            EndpointSide(value.get("result_endpoint", default_side)),
+            importance,
+        )
+
+    @staticmethod
+    def _enum_values(values: Any, enumeration: type[StrEnum]) -> tuple[Any, ...]:
+        if not isinstance(values, list) or any(not isinstance(value, str) for value in values) or len(set(values)) != len(values):
+            raise ValueError("검색 종류·관계 비중은 중복 없는 배열이어야 합니다")
+        return tuple(enumeration(value) for value in values)
+
+    @property
+    def includes_relations(self) -> bool:
+        return (ContentKind.MOVEMENT in self.content_kinds or self.origin_place_id is not None
+                or self.destination_place_id is not None or self.result_endpoint != EndpointSide.EITHER
+                or bool(self.relation_importance))
+
+    @property
+    def active_role_sql(self) -> str:
+        return "a.role IN ('subject','relation_endpoint')" if self.includes_relations else "a.role='subject'"
 
     def to_dict(self) -> dict[str, Any]:
         return {"content_kinds": [kind.value for kind in self.content_kinds],
                 "origin_place_id": self.origin_place_id, "destination_place_id": self.destination_place_id,
-                "result_endpoint": self.result_endpoint.value}
+                **({"result_endpoint": self.result_endpoint.value} if self.includes_relations else {}),
+                **({"relation_importance": [importance.value for importance in self.relation_importance]} if self.relation_importance else {})}
 
     def sql_predicate(self, parameters: list[Any]) -> str:
         parameters.append(json.dumps(self.to_dict()))
         binding = f"${len(parameters)}::jsonb"
-        conditions = []
-        if self.content_kinds:
-            conditions.append(f"c.document->>'content_kind'=ANY(ARRAY(SELECT jsonb_array_elements_text({binding}->'content_kinds')))")
-        edges = []
-        for key, endpoint in (("origin_place_id", "origin"), ("destination_place_id", "destination")):
-            if getattr(self, key) is not None:
-                edges.append(f"(relation->'{endpoint}'->>'place_id')::bigint=({binding}->>'{key}')::bigint")
-        if self.result_endpoint != EndpointSide.EITHER:
-            edges.append(f"(relation->'{self.result_endpoint.value}'->>'place_id')::bigint=p.place_id")
-        if edges and self.result_endpoint == EndpointSide.EITHER:
-            edges.append("((relation->'origin'->>'place_id')::bigint=p.place_id OR "
-                         "(relation->'destination'->>'place_id')::bigint=p.place_id)")
-        if edges:
-            conditions.append("EXISTS(SELECT 1 FROM jsonb_array_elements(COALESCE(c.document->'relations','[]'::jsonb)) relation WHERE "
-                              + " AND ".join(edges) + ")")
-        return " AND " + " AND ".join(conditions) if conditions else ""
+        alternatives = []
+        main_kinds = [kind for kind in self.content_kinds if kind != ContentKind.MOVEMENT]
+        if main_kinds:
+            alternatives.append(f"(c.document->>'content_kind'=ANY(ARRAY(SELECT jsonb_array_elements_text({binding}->'content_kinds'))) "
+                                "AND c.document->>'content_kind'<>'movement' AND c.document->'place_refs' @> jsonb_build_array(jsonb_build_object('place_id',p.place_id,'role','subject')))")
+        if self.includes_relations:
+            edges = ["(relation->>'type'='movement' OR (relation->>'type' IS NULL AND c.document->>'content_kind'='movement'))"]
+            for key, endpoint in (("origin_place_id", "origin"), ("destination_place_id", "destination")):
+                if getattr(self, key) is not None:
+                    edges.append(f"(relation->'{endpoint}'->>'place_id')::bigint=({binding}->>'{key}')::bigint")
+            if self.result_endpoint == EndpointSide.EITHER:
+                edges.append("((relation->'origin'->>'place_id')::bigint=p.place_id OR (relation->'destination'->>'place_id')::bigint=p.place_id)")
+            else:
+                edges.append(f"(relation->'{self.result_endpoint.value}'->>'place_id')::bigint=p.place_id")
+            if self.relation_importance:
+                edges.append(f"relation->>'importance'=ANY(ARRAY(SELECT jsonb_array_elements_text({binding}->'relation_importance')))")
+            alternatives.append("EXISTS(SELECT 1 FROM jsonb_array_elements(COALESCE(c.document->'relations','[]'::jsonb)) relation WHERE "
+                                + " AND ".join(edges) + ")")
+        return " AND (" + " OR ".join(alternatives) + ")" if alternatives else ""
 
-    def matches(self, place_id: int, document: dict[str, Any] | None) -> bool:
-        if not document or (self.content_kinds and document.get("content_kind") not in self.content_kinds):
-            return False
-        if self.origin_place_id is None and self.destination_place_id is None and self.result_endpoint == EndpointSide.EITHER:
-            return True
+    def matched_relations(self, place_id: int, document: dict[str, Any]) -> list[dict[str, Any]]:
+        if not self.includes_relations:
+            return []
+        matches = []
         for relation in document.get("relations", []):
+            if relation.get("type") != RelationType.MOVEMENT and not (relation.get("type") is None and document.get("content_kind") == ContentKind.MOVEMENT):
+                continue
+            if self.relation_importance and relation.get("importance") not in self.relation_importance:
+                continue
             if self.origin_place_id is not None and relation["origin"]["place_id"] != self.origin_place_id:
                 continue
             if self.destination_place_id is not None and relation["destination"]["place_id"] != self.destination_place_id:
                 continue
-            if self.result_endpoint != EndpointSide.EITHER and relation[self.result_endpoint.value]["place_id"] != place_id:
+            if self.result_endpoint == EndpointSide.EITHER:
+                if place_id not in (relation["origin"]["place_id"], relation["destination"]["place_id"]):
+                    continue
+            elif relation[self.result_endpoint.value]["place_id"] != place_id:
                 continue
-            if self.result_endpoint == EndpointSide.EITHER and place_id not in (
-                relation["origin"]["place_id"], relation["destination"]["place_id"]
-            ):
-                continue
-            return True
-        return False
+            matches.append(relation)
+        return matches
+
+    def matches_observation(self, place_id: int, document: dict[str, Any]) -> bool:
+        return (document.get("content_kind") != ContentKind.MOVEMENT
+                and document.get("content_kind") in self.content_kinds
+                and any(ref["place_id"] == place_id and ref["role"] == PlaceRole.SUBJECT for ref in document.get("place_refs", [])))
+
+    def matches(self, place_id: int, document: dict[str, Any] | None) -> bool:
+        return bool(document and (self.matches_observation(place_id, document) or self.matched_relations(place_id, document)))
+
+    def scope_evidence(self, place_id: int, document: dict[str, Any]) -> dict[str, Any]:
+        if self.matches_observation(place_id, document):
+            return document
+        relations = self.matched_relations(place_id, document)
+        if not relations:
+            raise ValueError("선택한 장소와 일치하는 이동 근거가 없습니다")
+        quotations = [
+            f"출발지: {relation['origin']['name']} → 도착지: {relation['destination']['name']}\n"
+            + relation.get("evidence", {}).get("quote", document["chunk_text"])
+            for relation in relations
+        ]
+        # 혼합 청크 전체를 목적지의 경관 근거로 리랭커에 넘기지 않는다. 보존 원문은 그대로 둔다.
+        return {**document, "retrieval_scope": RetrievalScope.RELATION, "matched_relations": relations,
+                "search_text": "이동 관계 근거\n" + "\n".join(dict.fromkeys(quotations))}
+
+    def scope_rows(self, rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
+        scoped = []
+        for row in rows:
+            evidence = row.get("evidence")
+            document = json.loads(evidence) if isinstance(evidence, str) else evidence
+            if document is None:
+                raise ValueError("명시적 관찰 검색에는 선택 근거가 필요합니다")
+            document = self.scope_evidence(row["place_id"], document)
+            scoped.append({**row, "evidence": document,
+                           **({"description": document["search_text"]} if "search_text" in document else {})})
+        return scoped

@@ -70,7 +70,7 @@ def build_pairs(
             if key in seen:
                 continue
             seen.add(key)
-            text = f"{document['context_text']}\n\n{document['chunk_text']}" if document else candidate['description'] or candidate['name']
+            text = document.get('search_text') or f"{document['context_text']}\n\n{document['chunk_text']}" if document else candidate['description'] or candidate['name']
             pairs.append(EvidencePair(index, text, document, float(row['semantic_score'])))
             emitted += 1
             if emitted == count:

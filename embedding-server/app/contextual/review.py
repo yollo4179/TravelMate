@@ -8,7 +8,7 @@ from pathlib import Path
 from typing import Any
 
 from .artifacts import load_record
-from .contracts import SearchChunk, SplitterVersion, SPLITTER_VERSION, PlaceRole
+from .contracts import SearchChunk, SplitterVersion, SPLITTER_VERSION
 from .pipeline import select_active
 from .prompts import resolve_prompt
 
@@ -61,8 +61,7 @@ def selection_report(path: Path, review_path: Path) -> dict[str, Any]:
     approved_ids = {chunk.chunk_id for chunk in approved}
     places = []
     for place in bundle.places:
-        candidates = [chunk for chunk in all_chunks if any(
-            ref["place_id"] == place.place_id and ref["role"] == PlaceRole.SUBJECT for ref in chunk.place_refs)]
+        candidates = [chunk for chunk in all_chunks if place.place_id in chunk.index_place_ids]
         active = select_active(place.place_id, approved)
         selected_ids = {chunk.chunk_id for chunk in active}
         selected_texts = {" ".join(chunk.chunk_text.split()) for chunk in active}

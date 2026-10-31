@@ -99,7 +99,7 @@ def select_active(place_id: int, chunks: list[SearchChunk]) -> list[SearchChunk]
     groups: dict[str, deque[SearchChunk]] = defaultdict(deque)
     seen = set()
     for chunk in chunks:
-        if not any(ref["place_id"] == place_id and ref["role"] == PlaceRole.SUBJECT for ref in chunk.place_refs):
+        if place_id not in chunk.index_place_ids:
             continue
         key = " ".join(chunk.chunk_text.split())
         if key in seen:
@@ -115,3 +115,13 @@ def select_active(place_id: int, chunks: list[SearchChunk]) -> list[SearchChunk]
             if len(active) == MAX_ACTIVE_CHUNKS:
                 break
     return active
+
+
+def index_embedding_inputs(place: ExistingPlace, chunks: list[SearchChunk]) -> tuple[list[str], int]:
+    """목적지의 기본 벡터가 출발지의 관찰 문장으로 바뀌지 않도록 한다."""
+    texts = [chunk.embedding_text for chunk in chunks]
+    subject_index = next((index for index, chunk in enumerate(chunks) if place.place_id in chunk.subject_place_ids), None)
+    if subject_index is not None:
+        return texts, subject_index
+    texts.append(f"{place.name}. {place.description or ''}".strip())
+    return texts, len(texts) - 1

@@ -195,3 +195,17 @@ python -X utf8 -m unittest Evaluation.tracks.contextual.test_score
 모든 장소의 관련성을 판정한 것이 아니므로 이 목표 적중률을 전체 검색 정확도·재현율로 표현하지 않는다.
 근거 없는 질문은 잘못된 출처 노출과 장소 반환을 관찰한다. 최종 답변을 생성하지 않았으므로 답변 환각률로 표현하지 않는다.
 실행 결과는 질문별 원본 파일, 벡터, 활성 청크, 코드·입력 해시, 완료 목록과 정리 확인서로 보존한다.
+
+
+## 핵심·보조 관계의 독립 보존
+
+v7은 경관·시설 원문에도 `importance=primary/supporting` 이동 관계를 보존한다.
+[코드 회귀·호환 검증](../../runs/contextual/supporting-relations-v1/20261101-01/REPORT.md)은 합성 응답과 보존 기록 읽기로만 확인했다.
+기존 v6 응답을 중요도가 있는 것처럼 바꾸거나 다시 생성하지 않는다.
+
+```powershell
+python -X utf8 -m Evaluation.tracks.contextual.supporting_relations --output <새-결과.json>
+```
+
+이 명령은 합성 A/B 관계의 역할·방향·비중·리랭킹 사용 범위만 검사한다. 키·HTTP 클라이언트·DB·검색 모델을 사용하지 않는다.
+실제 Sonar 생성 품질이나 검색 성능을 측정하는 명령이 아니다.
