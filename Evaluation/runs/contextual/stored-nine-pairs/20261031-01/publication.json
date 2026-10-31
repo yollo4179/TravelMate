@@ -1,0 +1,24 @@
+{
+  "source_completion_sha256": "6300515e99662155a091e1a0787a40e89cbf4db2f8a4a666155967e066efd93f",
+  "original_files_verified_unchanged": 72,
+  "git_base": "b2c218034537a74f7bc652dcd688cf36240789d1",
+  "source_report_sha256": "f1d924bc32065a56d65c782895aca18d8ca606ad014102d4aa2a5f5ef0348c35",
+  "published_report_sha256": "f1d924bc32065a56d65c782895aca18d8ca606ad014102d4aa2a5f5ef0348c35",
+  "original_bytes_sha256": {
+    "scores.json": "61647531bf05352752cb3ccbfbbe598a00379bea39786a4fe42e8c4a13fdf3f6",
+    "quality-review.json": "83a5cb19355e35e5d149a135fab911d8a870c8dfd0547acff17d9f1ae0881ad1",
+    "cases.frozen.json": "895bf81ab3c9e8b2b5545fb6bb25b8fee2270392e1970dcca73391c21838e1dd",
+    "retrieval/run.json": "5eeae95bb92761e98ad9dfbcdd2d0bfa5660495b198902865f1988a20be8fb2d",
+    "retrieval/cleanup.json": "aa24f9fde3b473b4a462cda446e9f6abece559f9d0d6235d049a793bec4f5139"
+  },
+  "scope": "?? ??? ?? ??? ???. ?? ????????? ?? ???? ??.",
+  "published_content_sha256": {
+    "REPORT.md": "f1d924bc32065a56d65c782895aca18d8ca606ad014102d4aa2a5f5ef0348c35",
+    "scores.json": "69fb87b7bb1eb221022f7ea9e24e3b310ebf082ad7b93ac71bf249f4e9737c98",
+    "quality-review.json": "7c575d8b2880ae0268526e13dbfde6f5fea7ee647c10edab89365db12493cc64",
+    "cases.frozen.json": "895bf81ab3c9e8b2b5545fb6bb25b8fee2270392e1970dcca73391c21838e1dd",
+    "retrieval/run.json": "5eeae95bb92761e98ad9dfbcdd2d0bfa5660495b198902865f1988a20be8fb2d",
+    "retrieval/cleanup.json": "aa24f9fde3b473b4a462cda446e9f6abece559f9d0d6235d049a793bec4f5139"
+  },
+  "hashes_note": "original_bytes? ?? ?? ?? ??? ???? published_content? Git ???? LF ??? ????."
+}
