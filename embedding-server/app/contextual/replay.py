@@ -113,6 +113,52 @@ class GenerationBaseline:
         return destination
 
 
+def original_comparison_pairs(directory: Path) -> dict[tuple[str, str], Path]:
+    pairs = {}
+    for path in sorted(directory.rglob("comparisons/*.json")):
+        record_path = path.parent.parent / "record.json"
+        if record_path.is_file():
+            record = json.loads(record_path.read_text(encoding="utf-8"))
+            if record.get("validation_version") is not None:
+                continue
+        comparison = json.loads(path.read_text(encoding="utf-8"))
+        if comparison.get("candidate_validation_version") == ValidationVersion.SUBJECT_ONLY:
+            continue
+        pair = (comparison["baseline"]["request_hash"], comparison["candidate"]["request_hash"])
+        pairs.setdefault(pair, path)
+    return pairs
+
+
+def revalidated_comparisons(
+    pairs: dict[tuple[str, str], Path],
+    available: set[str],
+    completed: dict[str, tuple[Path, Path]],
+) -> dict[str, Any]:
+    comparisons = []
+    missing_partners = []
+    errors = []
+    for (baseline_hash, candidate_hash), source in sorted(pairs.items()):
+        details = {"baseline_request_hash": baseline_hash, "candidate_request_hash": candidate_hash,
+                   "source_comparison": str(source.resolve())}
+        sides = {"baseline": baseline_hash, "candidate": candidate_hash}
+        missing = {side: request_hash for side, request_hash in sides.items() if request_hash not in available}
+        if missing:
+            missing_partners.append({**details, "missing_sides": list(missing), "missing_request_hashes": list(missing.values())})
+            continue
+        failed = [request_hash for request_hash in sides.values() if request_hash not in completed]
+        if failed:
+            errors.append({**details, "failed_request_hashes": failed})
+            continue
+        try:
+            baseline = GenerationBaseline.load(completed[baseline_hash][1])
+            comparisons.append(str(baseline.write_report(completed[candidate_hash][1]).resolve()))
+        except (ValueError, KeyError, OSError, ValidationError) as exception:
+            errors.append({**details, "error_type": type(exception).__name__, "error_message": str(exception)})
+    return {"comparisons": comparisons, "expected_comparisons": len(pairs), "completed_comparisons": len(comparisons),
+            "comparison_complete": bool(pairs) and len(comparisons) == len(pairs),
+            "missing_comparison_partners": missing_partners, "comparison_errors": errors}
+
+
 def revalidate_batch(
     directory: Path,
     output: Path,
@@ -131,18 +177,14 @@ def revalidate_batch(
         ):
             continue
         candidates.setdefault(record["request_hash"], []).append((path, record))
-    if not candidates:
+    if not candidates and not paired_only:
         raise ValueError("No original preserved responses available for batch revalidation")
+    pairs = original_comparison_pairs(directory)
     excluded_requests = []
     if paired_only:
-        paired_hashes = set()
-        for path in sorted(directory.rglob("comparisons/*.json")):
-            comparison = json.loads(path.read_text(encoding="utf-8"))
-            paired_hashes.update((comparison["baseline"]["request_hash"], comparison["candidate"]["request_hash"]))
+        paired_hashes = {request_hash for pair in pairs for request_hash in pair}
         excluded_requests = sorted(set(candidates) - paired_hashes)
         candidates = {key: value for key, value in candidates.items() if key in paired_hashes}
-        if not candidates:
-            raise ValueError("No preserved comparison pairs available for batch revalidation")
     results = []
     completed: dict[str, tuple[Path, Path]] = {}
     for request_hash, runs in sorted(candidates.items()):
@@ -162,16 +204,9 @@ def revalidate_batch(
             else:
                 summary["error_message"] = str(exception)
         results.append(summary)
-    comparisons = []
-    for source, result in completed.values():
-        for path in sorted(source.parent.joinpath("comparisons").glob("*.json")):
-            previous = json.loads(path.read_text(encoding="utf-8"))
-            baseline_hash = previous["baseline"]["request_hash"]
-            if baseline_hash in completed:
-                baseline = GenerationBaseline.load(completed[baseline_hash][1])
-                comparisons.append(str(baseline.write_report(result).resolve()))
+    comparison_results = revalidated_comparisons(pairs, set(candidates), completed)
     report = {"api_calls": 0, "validation_version": ValidationVersion.SUBJECT_ONLY.value,
-              "selection": "earliest_preserved_response_per_request", "records": results, "comparisons": comparisons,
+              "selection": "earliest_preserved_response_per_request", "records": results, **comparison_results,
               "paired_only": paired_only, "out_of_scope_request_hashes": excluded_requests,
               "semantic_quality_evaluated": False,
               "failed": sum(item["status"] == CollectionStatus.FAILED for item in results)}

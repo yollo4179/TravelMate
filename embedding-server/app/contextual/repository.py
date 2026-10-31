@@ -35,12 +35,13 @@ async def apply_bundle(pool: Any, path: Path) -> str:
     bundle, chunks, record = load_record(path)
     if not chunks:
         return "NO_INDEXABLE_CHUNKS"
-    subject_places = {ref["place_id"] for chunk in chunks for ref in chunk.place_refs if ref["role"] == PlaceRole.SUBJECT}
+    subject_ids = {ref["place_id"] for chunk in chunks for ref in chunk.place_refs if ref["role"] == PlaceRole.SUBJECT}
+    subject_places = sorted((place for place in bundle.places if place.place_id in subject_ids), key=lambda place: place.place_id)
     manifest = {"sources": [source.to_dict() for source in bundle.sources], "chunks": [chunk.to_dict() for chunk in chunks]}
     async with pool.acquire() as connection:
         async with connection.transaction():
-            # Stable lock order makes multi-place application atomic without deadlocks.
-            for place in sorted(bundle.places, key=lambda item: item.place_id):
+            # 참고 장소의 상태가 주체 적용을 막지 않도록 실제 쓰기 대상만 ID 순서로 잠근다.
+            for place in subject_places:
                 row = await connection.fetchrow("SELECT * FROM place_embeddings WHERE place_id=$1 FOR UPDATE", place.place_id)
                 if not row or row["document_status"] != "READY" or row["source_version"] != row["latest_seen_version"]:
                     raise ValueError("Place is unavailable or awaiting source indexing")
@@ -53,9 +54,7 @@ async def apply_bundle(pool: Any, path: Path) -> str:
                     VALUES($1,$2,$3::jsonb) ON CONFLICT DO NOTHING""",
                     uuid.UUID(source.source_id), source.source_version, json.dumps(source.to_dict(), ensure_ascii=False))
             changed = False
-            for place in bundle.places:
-                if place.place_id not in subject_places:
-                    continue
+            for place in subject_places:
                 identifier = fingerprint({"request_hash": record["request_hash"], "place": place.to_dict(), "manifest": manifest})
                 inserted = await connection.execute(
                     """INSERT INTO retrieval_chunk_bundles(bundle_id,place_id,place_fingerprint,manifest)

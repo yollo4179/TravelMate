@@ -36,6 +36,43 @@ def set_roles(raw: dict, index: int, roles: list[str]) -> dict:
     return raw
 
 
+def mock_database(rows: dict[int, dict | None]) -> tuple[MagicMock, AsyncMock]:
+    connection = AsyncMock()
+    connection.fetchrow.side_effect = lambda query, place_id: rows.get(place_id)
+    connection.fetchval.return_value = 1
+    connection.execute.return_value = 'INSERT 0 1'
+    transaction = MagicMock()
+    transaction.__aenter__ = AsyncMock()
+    transaction.__aexit__ = AsyncMock(return_value=False)
+    connection.transaction = MagicMock(return_value=transaction)
+    pool = MagicMock()
+    pool.acquire.return_value.__aenter__ = AsyncMock(return_value=connection)
+    pool.acquire.return_value.__aexit__ = AsyncMock(return_value=False)
+    return pool, connection
+
+
+def legacy_candidate(baseline: GenerationBaseline, directory: Path) -> Path:
+    directory.mkdir(parents=True)
+    payload = baseline.candidate_request(PromptVersion.V2)
+    raw = {'id': 'mock-paired-response', 'model': baseline.actual_model, 'status': 'completed', 'output': [
+        {'type': 'message', 'content': [{'type': 'output_text', 'text': json.dumps({'chunks': [
+            {'source_id': source.source_id, 'start': 0, 'end': len(source.text), 'context_text': '합성 비교 문맥',
+             'place_refs': [], 'entities': [], 'hypothetical_questions': []} for source in baseline.bundle.sources
+        ]}, ensure_ascii=False)}]},
+    ]}
+    directory.joinpath('request.json').write_text(json.dumps(payload), encoding='utf-8')
+    directory.joinpath('sources.json').write_text(json.dumps(baseline.bundle.to_dict()), encoding='utf-8')
+    directory.joinpath('raw_response.json').write_text(json.dumps(raw), encoding='utf-8')
+    record = {'schema_version': 1, 'request_hash': request_fingerprint(payload, PromptVersion.V2, PROFILE_ID),
+              'prompt_version': PromptVersion.V2.value, 'request_profile_id': PROFILE_ID,
+              'created_at': '2026-10-30T01:00:00Z', 'status': 'COLLECTED', 'chunks': [],
+              'actual_model': raw['model']}
+    path = directory / 'record.json'
+    path.write_text(json.dumps(record), encoding='utf-8')
+    baseline.write_report(path)
+    return path
+
+
 class SubjectFilterTests(unittest.IsolatedAsyncioTestCase):
     async def test_mixed_roles_are_preserved_and_only_subject_chunks_are_indexable_for_all_prompts(self) -> None:
         value = bundle(3)
@@ -131,6 +168,41 @@ class SubjectFilterTests(unittest.IsolatedAsyncioTestCase):
             jobs = [call.args for call in connection.execute.await_args_list if 'INSERT INTO place_index_jobs' in call.args[0]]
             self.assertEqual([args[2] for args in bundles], [394])
             self.assertEqual([args[3] for args in jobs], [394])
+
+    async def test_unavailable_reference_place_cannot_block_subject_application(self) -> None:
+        value = bundle()
+        rows = {place.place_id: {**place.to_dict(), 'document_status': 'READY', 'source_version': 1,
+                                'latest_seen_version': 1} for place in value.places}
+        reference_states = [None, {**rows[395], 'document_status': 'INDEXING'},
+                            {**rows[395], 'latest_seen_version': 2}, {**rows[395], 'name': '변경된 참고 장소'}]
+        with tempfile.TemporaryDirectory() as directory:
+            for role in ('mentioned', 'view_target'):
+                raw = set_roles(response_for(value), 0, ['subject', role])
+                async with httpx.AsyncClient(transport=httpx.MockTransport(lambda request: httpx.Response(200, json=raw))) as http:
+                    path = await collect_bundle(value, SETTINGS, Path(directory), http, refresh=True)
+                for reference in reference_states:
+                    with self.subTest(role=role, reference=reference):
+                        pool, connection = mock_database({394: rows[394], 395: reference})
+                        self.assertEqual(await apply_bundle(pool, path), 'REINDEX_QUEUED')
+                        self.assertEqual([call.args[1] for call in connection.fetchrow.await_args_list], [394])
+                        jobs = [call.args[3] for call in connection.execute.await_args_list
+                                if 'INSERT INTO place_index_jobs' in call.args[0]]
+                        self.assertEqual(jobs, [394])
+
+    async def test_subject_still_requires_current_ready_database_state(self) -> None:
+        value = bundle()
+        subject = {**value.places[0].to_dict(), 'document_status': 'READY', 'source_version': 1, 'latest_seen_version': 1}
+        states = [None, {**subject, 'document_status': 'INDEXING'}, {**subject, 'latest_seen_version': 2},
+                  {**subject, 'name': '변경된 주체 장소'}]
+        with tempfile.TemporaryDirectory() as directory:
+            async with httpx.AsyncClient(transport=httpx.MockTransport(lambda request: httpx.Response(200, json=response_for(value)))) as http:
+                path = await collect_bundle(value, SETTINGS, Path(directory), http)
+            for state in states:
+                with self.subTest(subject=state):
+                    pool, connection = mock_database({394: state})
+                    with self.assertRaises(ValueError):
+                        await apply_bundle(pool, path)
+                    connection.execute.assert_not_awaited()
 
     async def test_revalidate_preserves_original_bytes_without_http_and_uses_saved_schema(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
@@ -246,6 +318,10 @@ class SubjectFilterTests(unittest.IsolatedAsyncioTestCase):
             self.assertEqual(report['failed'], 0)
             self.assertEqual(len(report['records']), 2)
             self.assertEqual(len(report['comparisons']), 1)
+            self.assertEqual(report['expected_comparisons'], 1)
+            self.assertTrue(report['comparison_complete'])
+            self.assertEqual(report['missing_comparison_partners'], [])
+            self.assertEqual(report['comparison_errors'], [])
             self.assertEqual(report['out_of_scope_request_hashes'], ['unrelated-request'])
             candidate = next(item for item in report['records'] if item['prompt_version'] == PromptVersion.V2)
             self.assertEqual(Path(candidate['source_record']).parent.name, 'first')
@@ -256,12 +332,104 @@ class SubjectFilterTests(unittest.IsolatedAsyncioTestCase):
             self.assertTrue(comparison['validation_versions_match'])
             self.assertTrue(comparison['input_and_settings_match'])
             self.assertEqual(before, {path: path.read_bytes() for path in before})
+            with patch('httpx.AsyncClient', side_effect=AssertionError('재실행도 API를 호출하지 않는다')):
+                repeated = revalidate_batch(root, root / 'derived', baseline_profile=PROFILE_ID, paired_only=True)
+            repeated_report = json.loads(repeated.read_text(encoding='utf-8'))
+            self.assertEqual(repeated_report['expected_comparisons'], 1)
+            self.assertTrue(repeated_report['comparison_complete'])
 
     def test_prompt_clarification_has_a_separate_version(self) -> None:
         clarified = resolve_prompt(PromptVersion.V3)
         self.assertIn('References containing only mentioned or view_target are valid', clarified.instructions)
         self.assertIn('A clear mention alone is not unclear attribution', clarified.instructions)
         self.assertNotEqual(clarified.instructions, resolve_prompt(PromptVersion.V2).instructions)
+
+    async def test_paired_batch_reports_baseline_outside_input_and_exits_nonzero(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            original = legacy_archive(root / 'outside-input')
+            baseline = GenerationBaseline.load(original, profile_id=PROFILE_ID)
+            legacy_candidate(baseline, root / 'input' / 'candidate')
+            args = argparse.Namespace(command='revalidate', record=root / 'input', output=root / 'derived',
+                                      baseline_profile=PROFILE_ID, paired_only=True)
+            stdout = io.StringIO()
+            with patch('httpx.AsyncClient', side_effect=AssertionError('비교 상대 누락 확인에는 HTTP가 필요 없다')), redirect_stdout(stdout):
+                exit_code = await run(args)
+            self.assertEqual(exit_code, 1)
+            summary = json.loads(stdout.getvalue())
+            report = json.loads(Path(summary['report']).read_text(encoding='utf-8'))
+            self.assertEqual(report['failed'], 0)
+            self.assertEqual(len(report['records']), 1)
+            self.assertEqual(report['expected_comparisons'], 1)
+            self.assertEqual(report['comparisons'], [])
+            self.assertFalse(report['comparison_complete'])
+            self.assertFalse(summary['comparison_complete'])
+            self.assertEqual(report['missing_comparison_partners'][0]['missing_request_hashes'],
+                             [baseline.record['request_hash']])
+            self.assertEqual(report['missing_comparison_partners'][0]['missing_sides'], ['baseline'])
+
+    async def test_paired_batch_reports_missing_candidate_response_or_both_originals(self) -> None:
+        for missing in ('candidate_response', 'candidate_record', 'both_records'):
+            with self.subTest(missing=missing), tempfile.TemporaryDirectory() as directory:
+                root = Path(directory)
+                original = legacy_archive(root / 'input' / 'baseline')
+                baseline = GenerationBaseline.load(original, profile_id=PROFILE_ID)
+                candidate = legacy_candidate(baseline, root / 'input' / 'candidate')
+                if missing == 'candidate_response':
+                    candidate.with_name('raw_response.json').unlink()
+                else:
+                    candidate.unlink()
+                if missing == 'both_records':
+                    original.unlink()
+                args = argparse.Namespace(command='revalidate', record=root / 'input', output=root / 'derived',
+                                          baseline_profile=PROFILE_ID, paired_only=True)
+                stdout = io.StringIO()
+                with redirect_stdout(stdout):
+                    self.assertEqual(await run(args), 1)
+                report = json.loads(Path(json.loads(stdout.getvalue())['report']).read_text(encoding='utf-8'))
+                self.assertEqual(report['failed'], 0)
+                self.assertEqual(report['expected_comparisons'], 1)
+                self.assertEqual(report['completed_comparisons'], 0)
+                self.assertFalse(report['comparison_complete'])
+                expected = ['baseline', 'candidate'] if missing == 'both_records' else ['candidate']
+                self.assertEqual(report['missing_comparison_partners'][0]['missing_sides'], expected)
+
+    async def test_paired_batch_with_no_known_pairs_cannot_report_comparison_success(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            legacy_archive(root / 'input' / 'baseline')
+            args = argparse.Namespace(command='revalidate', record=root / 'input', output=root / 'derived',
+                                      baseline_profile=PROFILE_ID, paired_only=True)
+            stdout = io.StringIO()
+            with redirect_stdout(stdout):
+                self.assertEqual(await run(args), 1)
+            report = json.loads(Path(json.loads(stdout.getvalue())['report']).read_text(encoding='utf-8'))
+            self.assertEqual(report['failed'], 0)
+            self.assertEqual(report['expected_comparisons'], 0)
+            self.assertFalse(report['comparison_complete'])
+
+    async def test_paired_batch_reports_failed_partner_and_comparison_write_errors_separately(self) -> None:
+        for failure in ('partner_validation', 'comparison_write'):
+            with self.subTest(failure=failure), tempfile.TemporaryDirectory() as directory:
+                root = Path(directory)
+                original = legacy_archive(root / 'input' / 'baseline')
+                baseline = GenerationBaseline.load(original, profile_id=PROFILE_ID)
+                legacy_candidate(baseline, root / 'input' / 'candidate')
+                args = argparse.Namespace(command='revalidate', record=root / 'input', output=root / 'derived',
+                                          baseline_profile=PROFILE_ID, paired_only=True)
+                if failure == 'partner_validation':
+                    request_path = original.with_name('request.json')
+                    payload = json.loads(request_path.read_text(encoding='utf-8'))
+                    payload['instructions'] = '등록 프로필과 다른 지시문'
+                    request_path.write_text(json.dumps(payload), encoding='utf-8')
+                stdout = io.StringIO()
+                with patch('app.contextual.replay.GenerationBaseline.write_report', side_effect=ValueError('비교 보고서 생성 실패')), redirect_stdout(stdout):
+                    self.assertEqual(await run(args), 1)
+                report = json.loads(Path(json.loads(stdout.getvalue())['report']).read_text(encoding='utf-8'))
+                self.assertFalse(report['comparison_complete'])
+                self.assertEqual(report['missing_comparison_partners'], [])
+                self.assertEqual(len(report['comparison_errors']), 1)
+                self.assertEqual(report['failed'], int(failure == 'partner_validation'))
 
 
 if __name__ == '__main__':

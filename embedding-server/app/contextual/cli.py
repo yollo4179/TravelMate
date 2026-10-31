@@ -29,8 +29,12 @@ async def run(args: argparse.Namespace) -> int:
                                           paired_only=args.paired_only)
             report = json.loads(report_path.read_text(encoding="utf-8"))
             print(json.dumps({"report": str(report_path), "api_calls": 0, "records": len(report["records"]),
-                              "failed": report["failed"], "comparisons": len(report["comparisons"])}, ensure_ascii=False))
-            return int(report["failed"] != 0)
+                              "failed": report["failed"], "comparisons": len(report["comparisons"]),
+                              "expected_comparisons": report["expected_comparisons"],
+                              "comparison_complete": report["comparison_complete"],
+                              "missing_comparison_partners": len(report["missing_comparison_partners"]),
+                              "comparison_errors": len(report["comparison_errors"])}, ensure_ascii=False))
+            return int(report["failed"] != 0 or (args.paired_only and not report["comparison_complete"]))
         path = revalidate_record(args.record, args.output, baseline_profile=args.baseline_profile)
         record = json.loads(path.read_text(encoding="utf-8"))
         print(json.dumps({"status": record["status"], "record": str(path), "api_calls": 0,
