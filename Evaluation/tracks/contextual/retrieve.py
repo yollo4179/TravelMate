@@ -62,6 +62,13 @@ class LocalModels:
     def batch_count(self, count: int) -> int:
         return math.ceil(count / self.batch_size)
 
+    def input_token_lengths(self, query: str, texts: list[str]) -> list[int]:
+        from transformers import AutoTokenizer
+        if not hasattr(self, '_tokenizer'):
+            self._tokenizer = AutoTokenizer.from_pretrained('BAAI/bge-reranker-v2-m3', local_files_only=True)
+        return self._tokenizer([query] * len(texts), texts, padding=False, truncation=True,
+            max_length=self._tokenizer.model_max_length, return_length=True)['length']
+
 
 def write_new(path: Path, document: Any) -> None:
     with path.open('x', encoding='utf-8') as stream:
@@ -92,10 +99,12 @@ async def main(args: argparse.Namespace) -> None:
     from app.contextual.repository import activate_chunks
     from app.enrichment.contracts import ExistingPlace
     from app.kafka_runtime import KafkaRuntime, RankingMode, RETRIEVE_TOP_K
+    from app.contextual.ranking import EvidenceCount
 
     class CapturingRuntime(KafkaRuntime):
         def __init__(self, pool: Any) -> None:
             self.database_pool = pool
+            self.evidence_count = EvidenceCount(args.evidence_count)
             self.captured: dict[str, Any] = {}
             self.candidates: list[dict[str, Any]] = []
 
@@ -106,7 +115,10 @@ async def main(args: argparse.Namespace) -> None:
         async def _save_recommendation_result(self, request: Any, result: dict[str, Any]) -> None:
             self.captured = result
 
-    schemas = {version: f'contextual_eval_{uuid.uuid4().hex}_{version}' for version in ('v1', 'v2')}
+    versions = (args.baseline_name, args.candidate_name)
+    if versions[0] == versions[1] or any(not version.isidentifier() or not version.isascii() for version in versions):
+        raise ValueError('비교 버전 이름은 서로 다른 ASCII 식별자여야 합니다')
+    schemas = {version: f'contextual_eval_{uuid.uuid4().hex}_{version}' for version in versions}
     created: list[str] = []
     pools: dict[str, Any] = {}
     connection = await asyncpg.connect(os.environ['DATABASE_URL'])
@@ -155,8 +167,8 @@ async def main(args: argparse.Namespace) -> None:
             write_new(args.output / f"{pair['id']}-active.json", installed)
             queries = [query for query in cases['queries'] if query['pair_id'] == pair['id']]
             for query_index, query in enumerate(queries):
-                versions = ('v1', 'v2') if (pair_index + query_index) % 2 == 0 else ('v2', 'v1')
-                for version in versions:
+                ordered_versions = versions if (pair_index + query_index) % 2 == 0 else tuple(reversed(versions))
+                for version in ordered_versions:
                     runtime = CapturingRuntime(pools[version])
                     now = datetime.now(UTC)
                     payload = {'query': query['query'], 'ranking_mode': RankingMode.RERANKED.value,
@@ -180,6 +192,8 @@ async def main(args: argparse.Namespace) -> None:
             'scope': 'actual core recommendation worker; no Spring/Kafka delivery or final answer generation',
             'target_place_id': target_id, 'public_before': before, 'snapshot_md5': snapshot,
             'queries': len(cases['queries']), 'completed': completed, 'retrieve_top_k': RETRIEVE_TOP_K,
+            'variants': {'baseline': args.baseline_name, 'candidate': args.candidate_name},
+            'evidence_per_place': args.evidence_count,
             'health': health, 'http_calls': models.calls, 'perplexity_calls': 0,
             'cases_sha256': hashlib.sha256(args.cases.read_bytes()).hexdigest(),
             'inputs_sha256': hashlib.sha256(args.inputs.read_bytes()).hexdigest(),
@@ -214,6 +228,9 @@ if __name__ == '__main__':
     parser.add_argument('--inputs', type=Path, required=True)
     parser.add_argument('--cases', type=Path, required=True)
     parser.add_argument('--output', type=Path, required=True)
+    parser.add_argument('--baseline-name', default='v1')
+    parser.add_argument('--candidate-name', default='v2')
+    parser.add_argument('--evidence-count', type=int, choices=(1, 2, 3), default=1)
     arguments = parser.parse_args()
     sys.path.insert(0, str(arguments.code))
     asyncio.run(main(arguments))

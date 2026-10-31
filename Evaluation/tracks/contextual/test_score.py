@@ -57,6 +57,18 @@ class ScoreTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, '식별자'):
                 observations(root, {'queries': [query]}, {'rows': []})
 
+    def test_explicit_prompt_versions_do_not_relabel_v2_as_v1(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            query = {'id': 'Q01', 'pair_id': 'P01', 'query': 'fixed query', 'kind': 'supported', 'relevance': {}}
+            for version in ('v2', 'v4'):
+                result = {'query_id': query['id'], 'version': version, 'pair_id': query['pair_id'],
+                          'query': query['query'], 'kind': query['kind'], 'semantic_candidates': [],
+                          'result': {'status': 'COMPLETED', 'items': []}}
+                (root / f'Q01-{version}.json').write_text(json.dumps(result), encoding='utf-8')
+            rows = observations(root, {'target_place_id': 394, 'queries': [query]}, {'rows': []}, ('v2', 'v4'))
+            self.assertEqual([row['version'] for row in rows], ['v2', 'v4'])
+
 
 if __name__ == '__main__':
     unittest.main()

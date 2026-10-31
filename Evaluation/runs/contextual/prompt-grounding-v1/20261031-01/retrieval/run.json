@@ -1,0 +1,259 @@
+{
+  "status": "COMPLETED",
+  "created_at": "2026-10-31T13:04:49.662321+00:00",
+  "scope": "actual core recommendation worker; no Spring/Kafka delivery or final answer generation",
+  "target_place_id": 394,
+  "public_before": {
+    "places": 449,
+    "content_md5": "0e1e25e507eaf5e4111c045121331fef"
+  },
+  "snapshot_md5": {
+    "v2": "359779412709cc8c7479c4b8566f930e",
+    "v4": "359779412709cc8c7479c4b8566f930e"
+  },
+  "queries": 26,
+  "completed": [
+    {
+      "query_id": "Q01",
+      "version": "v2"
+    },
+    {
+      "query_id": "Q01",
+      "version": "v4"
+    },
+    {
+      "query_id": "Q02",
+      "version": "v4"
+    },
+    {
+      "query_id": "Q02",
+      "version": "v2"
+    },
+    {
+      "query_id": "Q03",
+      "version": "v2"
+    },
+    {
+      "query_id": "Q03",
+      "version": "v4"
+    },
+    {
+      "query_id": "Q04",
+      "version": "v4"
+    },
+    {
+      "query_id": "Q04",
+      "version": "v2"
+    },
+    {
+      "query_id": "Q05",
+      "version": "v2"
+    },
+    {
+      "query_id": "Q05",
+      "version": "v4"
+    },
+    {
+      "query_id": "Q06",
+      "version": "v2"
+    },
+    {
+      "query_id": "Q06",
+      "version": "v4"
+    },
+    {
+      "query_id": "Q07",
+      "version": "v4"
+    },
+    {
+      "query_id": "Q07",
+      "version": "v2"
+    },
+    {
+      "query_id": "Q08",
+      "version": "v2"
+    },
+    {
+      "query_id": "Q08",
+      "version": "v4"
+    },
+    {
+      "query_id": "Q09",
+      "version": "v4"
+    },
+    {
+      "query_id": "Q09",
+      "version": "v2"
+    },
+    {
+      "query_id": "Q10",
+      "version": "v4"
+    },
+    {
+      "query_id": "Q10",
+      "version": "v2"
+    },
+    {
+      "query_id": "Q11",
+      "version": "v2"
+    },
+    {
+      "query_id": "Q11",
+      "version": "v4"
+    },
+    {
+      "query_id": "Q12",
+      "version": "v4"
+    },
+    {
+      "query_id": "Q12",
+      "version": "v2"
+    },
+    {
+      "query_id": "Q13",
+      "version": "v2"
+    },
+    {
+      "query_id": "Q13",
+      "version": "v4"
+    },
+    {
+      "query_id": "Q14",
+      "version": "v4"
+    },
+    {
+      "query_id": "Q14",
+      "version": "v2"
+    },
+    {
+      "query_id": "Q15",
+      "version": "v2"
+    },
+    {
+      "query_id": "Q15",
+      "version": "v4"
+    },
+    {
+      "query_id": "Q16",
+      "version": "v4"
+    },
+    {
+      "query_id": "Q16",
+      "version": "v2"
+    },
+    {
+      "query_id": "Q17",
+      "version": "v4"
+    },
+    {
+      "query_id": "Q17",
+      "version": "v2"
+    },
+    {
+      "query_id": "Q18",
+      "version": "v2"
+    },
+    {
+      "query_id": "Q18",
+      "version": "v4"
+    },
+    {
+      "query_id": "Q19",
+      "version": "v2"
+    },
+    {
+      "query_id": "Q19",
+      "version": "v4"
+    },
+    {
+      "query_id": "Q20",
+      "version": "v4"
+    },
+    {
+      "query_id": "Q20",
+      "version": "v2"
+    },
+    {
+      "query_id": "Q21",
+      "version": "v4"
+    },
+    {
+      "query_id": "Q21",
+      "version": "v2"
+    },
+    {
+      "query_id": "Q22",
+      "version": "v2"
+    },
+    {
+      "query_id": "Q22",
+      "version": "v4"
+    },
+    {
+      "query_id": "Q23",
+      "version": "v4"
+    },
+    {
+      "query_id": "Q23",
+      "version": "v2"
+    },
+    {
+      "query_id": "Q24",
+      "version": "v2"
+    },
+    {
+      "query_id": "Q24",
+      "version": "v4"
+    },
+    {
+      "query_id": "Q25",
+      "version": "v4"
+    },
+    {
+      "query_id": "Q25",
+      "version": "v2"
+    },
+    {
+      "query_id": "Q26",
+      "version": "v2"
+    },
+    {
+      "query_id": "Q26",
+      "version": "v4"
+    }
+  ],
+  "retrieve_top_k": 30,
+  "variants": {
+    "baseline": "v2",
+    "candidate": "v4"
+  },
+  "evidence_per_place": 2,
+  "health": {
+    "status": "ok",
+    "dim": 1024,
+    "embedding_device": "cuda",
+    "reranker_device": "cuda",
+    "cuda_available": true,
+    "gpu_name": "NVIDIA GeForce RTX 4050 Laptop GPU"
+  },
+  "http_calls": {
+    "embed": 19,
+    "rerank": 52
+  },
+  "perplexity_calls": 0,
+  "cases_sha256": "895bf81ab3c9e8b2b5545fb6bb25b8fee2270392e1970dcca73391c21838e1dd",
+  "inputs_sha256": "f3827b48527474859f83c7d55c14786b3a17a41a4d4395b601f1f56555d16dd2",
+  "runtime_sha256": "5ccaa7e1488d5705db73df0453982cc467f2c71590b85c0ffa02cc45c5653fcb",
+  "harness_sha256": "33bfc7bb44e451d64ea9b578306e4046ac90dec5fef663d3524a11de6fbf1492",
+  "model_configuration": {
+    "EMBEDDING_MODEL": "BAAI/bge-m3",
+    "EMBEDDING_REVISION": "5617a9f61b028005a4858fdac845db406aefb181",
+    "RERANK_BATCH_SIZE": "8",
+    "RERANK_EXECUTION_STRATEGY": "autocast_fp16"
+  },
+  "schemas": {
+    "v2": "contextual_eval_e482edd7d5ae471ab942111b2f62f529_v2",
+    "v4": "contextual_eval_14ef8feb198e43d1a4125472f92b373a_v4"
+  },
+  "installation": "each input pair separately; subject chunks plus TourAPI fallback; latest activate_chunks/select_active"
+}

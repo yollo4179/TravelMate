@@ -1,6 +1,6 @@
 # 공통 장소 청크·문맥 생성·검색 DB 명세
 
-문서 버전: 4 · 갱신: 2026-10-31
+문서 버전: 5 · 갱신: 2026-10-31
 
 [계획서](../plans/contextual-retrieval.md) · [구조도](../architecture/contextual-retrieval.md) · [기존 웹 수집](place-review-enrichment.md)
 
@@ -44,6 +44,7 @@ source_id는 출처 유형·URL 또는 TourAPI 콘텐츠 ID·필드명으로 결
 | [v1_contextual_prompt.py](../../embedding-server/app/contextual/prompts/v1_contextual_prompt.py) | `contextual-source-spans-v1`: 기존 지시문 그대로 보존 |
 | [v2_contextual_prompt.py](../../embedding-server/app/contextual/prompts/v2_contextual_prompt.py) | `contextual-source-spans-v2`: 새 생성의 기본값, 구간 중심 문맥·시설별 귀속·방문 조건 보존 |
 | [v3_contextual_prompt.py](../../embedding-server/app/contextual/prompts/v3_contextual_prompt.py) | `contextual-source-spans-v3`: 명시적으로 선택하는 후속 지시문. 단순 언급·조망 대상과 불명확한 귀속을 구분하며 이번 v1·v2 비교에는 사용하지 않음 |
+| [v4_contextual_prompt.py](../../embedding-server/app/contextual/prompts/v4_contextual_prompt.py) | `contextual-source-spans-v4`: 구간 주제 우선·인접 관찰 차용 금지·장소/시설 귀속을 강화한 실험 지시문. 기본값은 계속 v2 |
 
 v2는 보통 1~2문장을 권장하지만 필요한 구분·부정·조건을 생략하도록 강제하지 않는다. 600자 상한은 유지한다.
 **동일 문서의 청크 밖 배경도 장소 식별·지시 대상·배경 이해에 필요하면 허용한다.**
@@ -57,6 +58,16 @@ v2 검증기는 둘 중 entities만 남긴 응답과 비어 있지 않은 `hypot
 프롬프트나 검증 규칙을 변경할 때 기존 버전 파일을 덮어쓰지 않고 새 버전을 등록한다.
 생성 지시문은 `prompt_version`, 응답 처리 규칙은 별도의 `validation_version`으로 구분한다.
 이 필드가 없는 기존 기록에는 이전의 엄격한 subject 필수 검증을 그대로 적용한다.
+
+v4 비교는 기존 v2 요청을 복사해 지시문만 바꾸고, 근거 수를 2개로 고정한 별도 실험 B다.
+원문·분할·모델 선택·effort·8192 출력 한도·스키마·도구·검증 규칙은 동일하다.
+v4의 mentioned·view_target·빈 귀속 처리도 기존 검증 버전 v2를 그대로 사용한다.
+[생성·검수·검색 실측 기록](../../Evaluation/runs/contextual/prompt-grounding-v1/20261031-01/REPORT.md)에서
+관측한 문맥 오류 감소와 검색 지표 불변을 구분한다. 프롬프트나 검색 기본값을 이 결과로 바꾸지 않는다.
+
+`GenerationBaseline.write_report(..., output_directory=...)`로 비교 보고서 저장 위치를 별도 지정할 수 있다.
+지정하지 않으면 기존 응답 폴더 아래 `comparisons/`를 사용한다. 요청·원본·해시·검증 내용은 바뀌지 않는다.
+Windows에서 원본 아카이브 아래의 깊은 경로가 파일 길이 제한을 넘으면 짧은 별도 위치를 사용한다.
 
 ### 역할에 따른 자동 보존·검색 제외
 

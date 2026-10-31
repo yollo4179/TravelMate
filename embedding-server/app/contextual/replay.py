@@ -66,7 +66,7 @@ class GenerationBaseline:
         self.verify_request(candidate)
         return candidate
 
-    def write_report(self, result_path: Path) -> Path:
+    def write_report(self, result_path: Path, *, output_directory: Path | None = None) -> Path:
         result = json.loads(result_path.read_text(encoding="utf-8"))
         request = json.loads(result_path.with_name("request.json").read_text(encoding="utf-8"))
         self.verify_request(request)
@@ -104,7 +104,8 @@ class GenerationBaseline:
             report.update(baseline_validation_version=baseline_validation, candidate_validation_version=candidate_validation,
                           validation_versions_match=baseline_validation == candidate_validation,
                           indexable_chunks=len(result.get("chunks", [])), excluded_chunks=len(result.get("excluded_chunks", [])))
-        destination = result_path.parent / "comparisons" / f"{fingerprint(baseline)}.json"
+        directory = output_directory if output_directory is not None else result_path.parent / "comparisons"
+        destination = directory / f"{fingerprint(baseline)}.json"
         try:
             write_json(destination, report)
         except FileExistsError:

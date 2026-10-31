@@ -22,10 +22,10 @@ def evidence_id(evidence: dict[str, Any] | None, rows: list[dict[str, Any]], pai
         and row['start'] == span['start'] and row['end'] == span['end']), None)
 
 
-def observations(directory: Path, cases: dict[str, Any], prepared: dict[str, Any]) -> list[dict[str, Any]]:
+def observations(directory: Path, cases: dict[str, Any], prepared: dict[str, Any], versions: tuple[str, str] = ('v1', 'v2')) -> list[dict[str, Any]]:
     observed = []
     for query in cases['queries']:
-        for version in ('v1', 'v2'):
+        for version in versions:
             result = read_json(directory / f"{query['id']}-{version}.json")
             if any(result[field] != expected for field, expected in (
                 ('query_id', query['id']), ('version', version), ('pair_id', query['pair_id']),
@@ -68,22 +68,23 @@ def score(args: argparse.Namespace) -> dict[str, Any]:
     prepared = read_json(args.prepared)
     run = read_json(args.results / 'run.json')
     cleanup = read_json(args.results / 'cleanup.json')
+    versions = (getattr(args, 'baseline_name', 'v1'), getattr(args, 'candidate_name', 'v2'))
     if run['cases_sha256'] != hashlib.sha256(args.cases.read_bytes()).hexdigest():
         raise ValueError('실행 이후 질문 파일이 변경되었습니다')
-    expected = {(query['id'], version) for query in cases['queries'] for version in ('v1', 'v2')}
+    expected = {(query['id'], version) for query in cases['queries'] for version in versions}
     completed = {(row['query_id'], row['version']) for row in run['completed']}
     if run['status'] != 'COMPLETED' or completed != expected or len(run['completed']) != len(expected):
         raise ValueError('일부 질문의 비교 상대가 없거나 중복되었습니다')
-    observed = observations(args.results, cases, prepared)
+    observed = observations(args.results, cases, prepared, versions)
     supported = [row for row in observed if row['kind'] == 'supported']
     review = read_json(args.review)
     if {row['id'] for row in review['rows']} != {row['id'] for row in prepared['rows']}:
         raise ValueError('검수 구간과 실행 원문 구간이 다릅니다')
     return {'cases_sha256': run['cases_sha256'], 'perplexity_calls': run['perplexity_calls'],
         'public_unchanged': cleanup['public_unchanged'], 'schemas_remaining': cleanup['schemas_remaining'],
-        'supported': {version: aggregate([row for row in supported if row['version'] == version]) for version in ('v1', 'v2')},
-        'supported_without_ambiguous_Q10': {version: aggregate([row for row in supported if row['version'] == version and row['query_id'] != 'Q10']) for version in ('v1', 'v2')},
-        'review_flags': {version: dict(Counter(flag for row in review['rows'] for flag in row[version])) for version in ('v1', 'v2')},
+        'supported': {version: aggregate([row for row in supported if row['version'] == version]) for version in versions},
+        'supported_without_ambiguous_Q10': {version: aggregate([row for row in supported if row['version'] == version and row['query_id'] != 'Q10']) for version in versions},
+        'review_flags': {version: dict(Counter(flag for row in review['rows'] for flag in row[version])) for version in versions},
         'queries': observed,
         'interpretation': '단일 대상 장소의 순위·구간 선택 진단. 다른 장소의 적합성은 판정하지 않았으므로 전체 검색 정확도·재현율이나 운영 end-to-end 성능으로 표시하지 않는다.'}
 
@@ -95,6 +96,8 @@ if __name__ == '__main__':
     parser.add_argument('--results', type=Path, required=True)
     parser.add_argument('--review', type=Path, required=True)
     parser.add_argument('--output', type=Path, required=True)
+    parser.add_argument('--baseline-name', default='v1')
+    parser.add_argument('--candidate-name', default='v2')
     arguments = parser.parse_args()
     summary = score(arguments)
     with arguments.output.open('x', encoding='utf-8') as stream:

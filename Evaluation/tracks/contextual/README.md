@@ -1,6 +1,7 @@
 # 보존 응답 기반 문맥 검색 진단
 
-기존 v1_local 실행과 v2 응답을 재생한다. 문맥 생성 API는 호출하지 않는다.
+기존 v1_local·v2 응답을 재생하고 후속 프롬프트를 비교한다. 보존 응답 재생은 문맥 생성 API를 호출하지 않는다.
+실험 B의 `prompt_comparison.py generate`만 새 문맥을 실제 유료 생성한다. 계획 검증·내보내기·검색 실행은 이 호출과 분리한다.
 한 장소의 여러 입력 묶음은 각각 별도 색인으로 비교하며, 나중 묶음으로 앞 묶음을 덮어쓴 결과를 전체 데이터의 합집합으로 해석하지 않는다.
 
 `pilot_cases.json`은 한 장소의 원문 22구간에서 만든 탐색적 질문 26개다.
@@ -9,6 +10,36 @@
 [2026-10-31 실측 보고서](../../runs/contextual/stored-nine-pairs/20261031-01/REPORT.md)에 결과와 한계를 기록했다.
 [문제 정의와 해결 실험안](PROBLEMS_AND_SOLUTIONS.md)은 문맥 생성·혼합 장소 분할·리랭킹 근거 전달의 문제를 구분하고 후속 비교 기준을 제안한다. 서비스 적용 전 설계 문서다.
 [근거 1·2·3개 비교 실측](../../runs/contextual/multi-evidence-v1/20261031-01/REPORT.md)에서 실험 A의 구현·검증 결과를 확인한다.
+[v2·v4 프롬프트 비교 실측](../../runs/contextual/prompt-grounding-v1/20261031-01/REPORT.md)에서 근거 2개를 고정한 실험 B의 결과를 확인한다.
+
+## 프롬프트 비교 실험 B
+
+```powershell
+python -X utf8 Evaluation/tracks/contextual/prompt_comparison.py prepare --prepared <기존-prepared.json> --cases <고정-질문> --output <새-실험-폴더>
+python -X utf8 Evaluation/tracks/contextual/prompt_comparison.py generate --plan <새-실험-폴더>/plan.json --key-file <명시적-키-파일>
+python -X utf8 Evaluation/tracks/contextual/prompt_comparison.py export --plan <새-실험-폴더>/plan.json
+```
+
+`prepare`는 9개 v2 요청의 지시문만 v4로 바꾼 계획·해시를 기록하며 키나 HTTP 클라이언트를 초기화하지 않는다.
+`generate`는 실제 모델 호출 명령이다. 키 파일 하나를 직접 읽고 키·인증 헤더는 저장하지 않는다.
+기존 성공 캐시를 재사용하고 실패·실제 모델 불일치가 있으면 뒤의 호출을 중단한다. 완료/중단 요약이 있으면 자동 재시도하지 않는다.
+전송 시도와 실제 응답 usage를 분리한다. 비교 보고서는 짧은 별도 폴더에 보존해 Windows 경로 한계를 피한다.
+
+아래 검색 명령은 기존 컨테이너 임시 경로에서 실행한다. 입력 이름 `v2`·`v4`와 근거 수 `2`를 명시한다.
+
+```text
+python retrieve.py --code <최신-app의-상위경로> --inputs retrieval-inputs.json --cases cases.frozen.json --output <새-검색-폴더> --baseline-name v2 --candidate-name v4 --evidence-count 2
+```
+
+원문 구간과 양쪽 실제 응답을 연결한 로컬 `prepared-comparison.json` 및 검수 기록을 사용해 집계한다.
+기존 `retrieve.py`·`score.py` 명령의 기본 비교 이름은 v1·v2, 검색 기본 근거 수는 1개로 유지된다.
+
+```powershell
+python -X utf8 Evaluation/tracks/contextual/score.py --prepared <prepared-comparison.json> --cases <고정-질문> --results <새-검색-폴더> --review Evaluation/tracks/contextual/prompt_v4_review.json --output <새-실험-폴더>/scores.json --baseline-name v2 --candidate-name v4
+python -X utf8 Evaluation/tracks/contextual/audit_prompt.py --results <새-실험-폴더> --prior-observations Evaluation/runs/contextual/multi-evidence-v1/20261031-01/observations.json --output <새-실험-폴더>/audit.json
+```
+
+전체 원문·응답·준비 자료·벡터는 로컬 아카이브에 보존한다. 게시본의 집계와 원문 검수·실제 검색 재실행에 필요한 자료 범위를 구분한다.
 
 ## 근거 수 비교 실험 A
 
