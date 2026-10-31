@@ -322,10 +322,10 @@ class ContextualDatabaseTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(await self.pool.fetchval('SELECT count(*) FROM place_active_chunks WHERE place_id=395'), 0)
         self.assertEqual(await self.pool.fetchval('SELECT count(*) FROM retrieval_chunks'), 33)
         self.assertEqual(await self.pool.fetchval('SELECT count(*) FROM retrieval_source_versions'), 33)
-        self.assertEqual(await self.pool.fetchval('SELECT count(*) FROM place_index_jobs'), 2)
+        self.assertEqual(await self.pool.fetchval('SELECT count(*) FROM place_index_jobs'), 1)
         vector = '[' + ','.join(['1'] + ['0'] * 1023) + ']'
         candidates = await runtime._retrieve_candidates({'filters': {}}, vector)
-        self.assertEqual(len(candidates), 2)
+        self.assertEqual(len(candidates), 1)
         target = next(item for item in candidates if item['place_id'] == 394)
         result = runtime._to_result_item(target, 1, None)
         self.assertEqual(len(result['evidence_chunks']), 1)

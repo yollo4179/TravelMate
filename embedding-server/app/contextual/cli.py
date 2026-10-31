@@ -15,14 +15,33 @@ from app.enrichment.contracts import CollectionStatus
 from app.enrichment.cli import database_pool
 from app.enrichment.repository import ensure_schema as ensure_enrichment_schema
 from .agent import DEFAULT_PRESET, PROMPT_VERSION
-from .artifacts import SourceBundle, collect_bundle
+from .artifacts import SourceBundle, collect_bundle, revalidate_record
 from .prompts import PromptVersion
 from .profiles import ExecutionProfileId
-from .replay import GenerationBaseline
+from .replay import GenerationBaseline, revalidate_batch
 from .repository import apply_bundle
 
 
 async def run(args: argparse.Namespace) -> int:
+    if args.command == "revalidate":
+        if args.record.is_dir():
+            report_path = revalidate_batch(args.record, args.output, baseline_profile=args.baseline_profile,
+                                          paired_only=args.paired_only)
+            report = json.loads(report_path.read_text(encoding="utf-8"))
+            print(json.dumps({"report": str(report_path), "api_calls": 0, "records": len(report["records"]),
+                              "failed": report["failed"], "comparisons": len(report["comparisons"]),
+                              "expected_comparisons": report["expected_comparisons"],
+                              "comparison_complete": report["comparison_complete"],
+                              "missing_comparison_partners": len(report["missing_comparison_partners"]),
+                              "comparison_errors": len(report["comparison_errors"])}, ensure_ascii=False))
+            return int(report["failed"] != 0 or (args.paired_only and not report["comparison_complete"]))
+        path = revalidate_record(args.record, args.output, baseline_profile=args.baseline_profile)
+        record = json.loads(path.read_text(encoding="utf-8"))
+        print(json.dumps({"status": record["status"], "record": str(path), "api_calls": 0,
+                          "validation_version": record["validation_version"],
+                          "indexable_chunks": len(record["chunks"]),
+                          "excluded_chunks": len(record["excluded_chunks"])}, ensure_ascii=False))
+        return 0
     if args.command == "apply":
         async with database_pool() as pool:
             await ensure_enrichment_schema(pool)
@@ -61,7 +80,7 @@ async def run(args: argparse.Namespace) -> int:
             prepared_request=prepared_request,
             request_profile_id=baseline.request_profile_id if baseline else None,
         )
-    record = json.loads(path.read_text())
+    record = json.loads(path.read_text(encoding="utf-8"))
     summary = {"status": record["status"], "record": str(path), "prompt_version": record["prompt_version"]}
     if record.get("request_profile_id"):
         summary["request_profile_id"] = record["request_profile_id"]
@@ -92,13 +111,18 @@ def main() -> None:
     collection.add_argument("--prompt-version", choices=[version.value for version in PromptVersion], default=PROMPT_VERSION)
     application = commands.add_parser("apply")
     application.add_argument("--record", type=Path, required=True)
+    revalidation = commands.add_parser("revalidate", help="저장된 응답을 API 호출 없이 새 규칙으로 재검증")
+    revalidation.add_argument("--record", type=Path, required=True, help="record.json 또는 일괄 재검증할 요청 아카이브 디렉터리")
+    revalidation.add_argument("--output", type=Path, default=Path("LocationReview"))
+    revalidation.add_argument("--baseline-profile", choices=[profile.value for profile in ExecutionProfileId])
+    revalidation.add_argument("--paired-only", action="store_true", help="기존 비교 보고서에 연결된 요청만 일괄 재검증")
     args = parser.parse_args()
     if args.env_file:
         from dotenv import load_dotenv
         if not args.env_file.is_file():
             parser.error("Explicit environment file does not exist")
         load_dotenv(args.env_file, override=False)
-    if args.command == "generate":
+    if args.command in ("generate", "revalidate"):
         datasets = Path(__file__).resolve().parents[3] / "Evaluation/datasets"
         if args.output.resolve().is_relative_to(datasets.resolve()):
             parser.error("Do not write into frozen evaluation datasets")

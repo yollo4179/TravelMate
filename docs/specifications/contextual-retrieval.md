@@ -1,5 +1,7 @@
 # 공통 장소 청크·문맥 생성·검색 DB 명세
 
+문서 버전: 3 · 갱신: 2026-10-31
+
 [계획서](../plans/contextual-retrieval.md) · [구조도](../architecture/contextual-retrieval.md) · [기존 웹 수집](place-review-enrichment.md)
 
 ## 공통 계약
@@ -41,6 +43,7 @@ source_id는 출처 유형·URL 또는 TourAPI 콘텐츠 ID·필드명으로 결
 |---|---|
 | [v1_contextual_prompt.py](../../embedding-server/app/contextual/prompts/v1_contextual_prompt.py) | `contextual-source-spans-v1`: 기존 지시문 그대로 보존 |
 | [v2_contextual_prompt.py](../../embedding-server/app/contextual/prompts/v2_contextual_prompt.py) | `contextual-source-spans-v2`: 새 생성의 기본값, 구간 중심 문맥·시설별 귀속·방문 조건 보존 |
+| [v3_contextual_prompt.py](../../embedding-server/app/contextual/prompts/v3_contextual_prompt.py) | `contextual-source-spans-v3`: 명시적으로 선택하는 후속 지시문. 단순 언급·조망 대상과 불명확한 귀속을 구분하며 이번 v1·v2 비교에는 사용하지 않음 |
 
 v2는 보통 1~2문장을 권장하지만 필요한 구분·부정·조건을 생략하도록 강제하지 않는다. 600자 상한은 유지한다.
 **동일 문서의 청크 밖 배경도 장소 식별·지시 대상·배경 이해에 필요하면 허용한다.**
@@ -52,6 +55,35 @@ v2 검증기는 둘 중 entities만 남긴 응답과 비어 있지 않은 `hypot
 
 기존 실행 기록은 그 기록의 `prompt_version`으로 요청·응답·해시를 재검증한다. 새 기본값이 v2여도 v1 기록과 캐시는 유지된다.
 프롬프트나 검증 규칙을 변경할 때 기존 버전 파일을 덮어쓰지 않고 새 버전을 등록한다.
+생성 지시문은 `prompt_version`, 응답 처리 규칙은 별도의 `validation_version`으로 구분한다.
+이 필드가 없는 기존 기록에는 이전의 엄격한 subject 필수 검증을 그대로 적용한다.
+
+### 역할에 따른 자동 보존·검색 제외
+
+새 응답 및 명시적으로 재검증한 응답은 `contextual-validation-v2`를 사용한다. 사람이 역할을 다시 분류하지 않는다.
+원문 구간·스키마·등록된 장소 ID·참조 중복·엔티티 역할 일치·문맥 길이를 먼저 검증한 뒤 다음처럼 분기한다.
+
+| 반환 역할 | 자동 처리 |
+|---|---|
+| `subject` 있음 | 검색 후보 `chunks`에 저장. 각 장소의 subject 근거로만 활성화 |
+| `mentioned`·`view_target`만 있음 | `excluded_chunks`에 원문·문맥·역할·엔티티와 `exclusion_reason=no_subject`를 보존. 검색 후보에서 제외 |
+| 귀속 배열이 모두 비어 있음 | 같은 필드에 `exclusion_reason=unattributed`로 보존. 검색 후보에서 제외 |
+| 없는 장소 ID·잘못된 원문 위치·역할 불일치 등 | 계속 검증 오류로 처리. subject 없는 구간도 검증을 우회하지 않음 |
+
+subject 없는 정상 구간 때문에 같은 응답의 유효한 구간까지 실패시키지 않는다.
+모든 구간이 검색 제외 대상이면 `status=COLLECTED`, `chunks=[]`로 처리 완료한다.
+`apply`는 이 경우 `NO_INDEXABLE_CHUNKS`를 반환하고 기존 번들·활성 청크·세대·재색인 작업을 변경하지 않는다.
+여러 장소가 있는 응답에서도 해당 장소의 subject 근거가 없으면 그 장소의 번들을 교체하거나 재색인하지 않는다.
+DB 행 잠금·READY/최신 버전·기본정보 지문 검사도 실제 적용할 subject 장소에만 수행한다.
+참고 장소의 삭제·재색인 대기·기본정보 변경은 정상 subject의 적용을 막지 않으며,
+입력에 없는 장소 ID나 역할 불일치 등 보존 응답 검증은 계속 모든 참조에 적용한다.
+검색 제외 자료는 파일 아카이브에 남으며 검색용 DB 청크로 승격하지 않는다.
+
+v1·v2 비교 양쪽에 **같은 응답 처리 버전**을 적용해야 한다. 요청 설정 검증은 그대로 유지한다.
+새 처리 버전은 요청 아카이브 해시와 청크 생성 메타데이터에 포함돼 이전 캐시·기록과 구분된다.
+비교 보고서의 `validation_versions_match`가 false인 결과는 같은 처리 조건의 비교로 해석하지 않는다.
+v1·v2 프롬프트 파일 및 기존 응답 원본을 덮어쓰지 않는다.
+v3는 명확한 단순 언급에 mentioned를 허용하고, 귀속 자체가 불명확할 때만 두 배열을 비우도록 지시한다.
 
 로컬 splitter가 보존 문서의 최대 800자 구간을 정한다. Agent에는 전체 원문과 각 구간을 함께 제공한다.
 Agent는 원문을 다시 쓰지 않고 구간별 짧은 문맥·장소 역할·엔티티를 생성한다. v1의 기존 선택적 질문은 보존한다.
@@ -96,7 +128,8 @@ python -m app.contextual.cli apply --record /path/to/LocationReview/394_테스�
 
 `--preset` 또는 `--model`로 교체할 수 있다. 둘을 같이 지정하지 않는다.
 최초 생성 모델·계정 지원·비용은 실제 계정으로 작은 표본을 실행해 확인한다.
-`apply`는 스키마/보존 응답/원문/offset/장소 기본정보를 재검증한다. 여러 장소 적용은 ID 순으로 잠그고 원자 저장한다.
+`apply`는 스키마/보존 응답/원문/offset을 재검증하고 적용할 subject 장소의 DB 기본정보를 확인한다.
+여러 주체 장소 적용은 ID 순으로 잠그고 원자 저장한다.
 같은 번들 재적용은 `ALREADY_APPLIED`; 새 번들은 `REINDEX_QUEUED`. 후자는 검색 반영 완료를 의미하지 않는다.
 기존 장소별 imported bundle은 최신 적용본으로 교체되며 이전 원문/청크/문맥은 삭제하지 않는다.
 누적할 자료는 새 입력 번들에 기존 유지 자료도 함께 넣는다. 언급 장소는 그 번들의 청크로 활성화하지 않는다.
@@ -168,6 +201,37 @@ python -m app.contextual.cli generate --baseline-record "/path/to/original/recor
 7개 빈 귀속 구간과 기존 문제 청크의 품질 판정은 이 구조 검증으로 확정되지 않는다.
 
 ## DB 변경과 기존 데이터 이행
+
+### 저장 응답의 무과금 일괄 재검증
+
+```bash
+# 디렉터리를 지정하면 요청별 최초 보존 응답을 선택해 v1·v2 모두 같은 새 규칙으로 처리한다.
+python -X utf8 -m app.contextual.cli revalidate --record /path/to/requests --baseline-profile v1_local_2d365e87c12314cb --paired-only --output ../LocationReview
+
+# 개별 기록도 같은 명령으로 처리할 수 있다.
+python -X utf8 -m app.contextual.cli revalidate --record /path/to/record.json --baseline-profile v1_local_2d365e87c12314cb --output ../LocationReview
+```
+
+`revalidate`는 API 키·HTTP 클라이언트·DB 연결 없이 실행한다. 이미 처리 버전이 기록된 파생 자료와
+응답 본문이 없는 HTTP 실패·미리보기는 일괄 처리에서 제외한다.
+`--paired-only`는 기존 비교 보고서로 연결된 요청만 선택한다. 같은 폴더의 다른 과거 실행은 대상에서 제외하고
+`out_of_scope_request_hashes`에 남긴다. 이 옵션을 생략하면 원본 응답 전체를 검증하고 유효하지 않은 기록은 실패로 보고한다.
+재시도 중 성공한 결과만 고르지 않고 요청별로 가장 먼저 보존된 응답을 사용하며, 선택 기준과 실행 수를 보고서에 남긴다.
+기존 입력·요청 해시·등록 프로필·저장 스키마를 검증하고, 새 디렉터리에 원문·요청·응답 파일을 바이트 그대로 복사한다.
+원래 `record.json`도 덮어쓰지 않으며 새 기록의 `revalidated_from.file_sha256`에 원본 네 파일의 해시를 보존한다.
+파생 기록은 `api_calls=0`이고 원래 과금 usage를 중복 집계하지 않는다.
+같은 요청의 새 처리 버전 캐시에 연결하므로 후속 생성 명령도 명시적 refresh 없이는 재검증 결과를 재사용한다.
+기존 비교 보고서가 연결된 양쪽 기록을 모두 재검증하면 같은 처리 버전의 비교 보고서도 새로 생성한다.
+일괄 결과는 `revalidation-batches/<UUID>/report.json`에 남긴다. 검증 오류는 실패로 기록하고 CLI는 종료 코드 1을 반환한다.
+`failed`는 개별 응답 재검증 실패 수이며 비교 완료 여부를 뜻하지 않는다.
+`expected_comparisons`·`completed_comparisons`·`comparison_complete`로 기대한 비교 쌍의 완료 여부를 별도로 기록한다.
+v1·v2 한쪽 원본이 입력 폴더 밖에 있거나 원본/응답 파일이 없으면 `missing_comparison_partners`에
+양쪽 요청 해시·누락된 쪽·원래 비교 보고서를 기록한다. 원본 재검증이나 비교 보고서 생성 실패는 `comparison_errors`에 남긴다.
+`--paired-only`에서 비교가 0쌍이거나 일부라도 미완료이면 개별 응답의 `failed=0`이어도 종료 코드 1을 반환한다.
+이미 재검증한 파생 기록의 비교 보고서는 원본 비교 쌍 집계에서 제외하므로 같은 폴더를 재처리해도 기대 쌍 수가 늘지 않는다.
+이 명령은 구조·역할 처리 검증이며 생성 의미 품질이나 검색 성능 평가가 아니다.
+
+### DB 적용
 
 실제 SQL은 [03-contextual-chunks.sql](../../Docker/search-init/03-contextual-chunks.sql)이다.
 runtime `ensure_schema`도 같은 SQL을 멱등 적용한다. FastAPI 전용 DB에만 실행한다.
@@ -255,3 +319,25 @@ v1 아카이브 재검증, 버전별 캐시, 귀속 불명확 응답 보존, 비
 추가 8개는 명시적 프로필 선택, 설정/해시 변조 거부, 원문 문자열 보존, 저장 스키마 강제,
 빈 귀속 보존, 실제 모델 불일치 표시, 캐시/비교 기록 재사용, 키 없는 CLI 미리보기를 확인한다.
 실제 첨부 기록 9개에 대해서도 CLI 미리보기를 수행하고 실행 전후 36개 원본 파일 해시가 같은지 확인했다.
+
+2026-10-31 역할 자동 분기 변경은 임베딩 서버 전체 테스트 41개가 통과했고 환경 미설정 통합 테스트 11개는 skip했다.
+문맥 생성 관련으로는 29개 통과·5개 skip이며, subject 없는 구간의 선행 검증·제외 사유·원본 보존,
+색인 후보 0개일 때 DB 미접근, 여러 장소 중 subject 장소만 재색인, 무과금 일괄 처리·캐시 재사용을 확인했다.
+실제 DB/모델 통합 환경에서 이 변경을 재검증한 것은 아니다.
+
+기존 비교 보고서로 연결된 v1 9건·v2 9건을 같은 `contextual-validation-v2`로 재검증했다.
+양쪽 원문 구간은 각각 22개이며 v1은 검색 후보 15개·제외 7개, v2는 검색 후보 17개·제외 5개다.
+기존 v2 실패 3건도 단순 언급 구간만 제외하고 유효 구간을 처리했다.
+원본 72개 파일과 복사본 54개의 해시 일치, 비교 9쌍의 입력·설정·실제 모델·검증 버전 일치를 확인했다.
+같은 폴더의 비교 대상 외 과거 요청 2개는 별도 목록에 남기고 대상에서 제외했다.
+API 재호출은 0회이며 DB 적용·재색인·검색 성능 평가는 수행하지 않았다.
+검색 후보 개수 차이는 장소 귀속의 의미 정확도나 검색 품질 개선을 입증하는 지표가 아니다.
+후속 프롬프트 v3는 등록만 했으며 실제 생성 품질은 평가하지 않았다.
+
+같은 날 후속 검토에서 참고 장소의 DB 상태가 subject 적용을 막는 경우와 비교 상대 누락에도 CLI가 성공하는 경우를 재현했다.
+DB 검사는 subject 장소로 한정하고, 일괄 비교에는 기대/완료 쌍 수·누락 상대·완료 여부·오류에 따른 종료 코드를 추가했다.
+보완 후 임베딩 서버 전체 테스트는 47개 통과·환경 미설정 통합 테스트 11개 skip이다.
+참고 장소의 삭제·재색인 대기·정보 변경, subject 자체의 잘못된 상태, 폴더 밖 v1·누락된 v2·양쪽 원본 누락,
+비교 0쌍·파트너 재검증 실패·비교 보고서 생성 실패·파생 기록이 있는 폴더 재실행을 회귀 테스트로 확인했다.
+로컬 보존 응답 18건을 다시 처리한 결과 기대 9쌍·완료 9쌍·`comparison_complete=true`, 누락 상대·비교 오류는 0건이었다.
+원본 72개 파일 해시 불일치와 추가 API 호출은 모두 0이며, 실제 DB 반영·재색인·검색 성능 평가는 실행하지 않았다.
