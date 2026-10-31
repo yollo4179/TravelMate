@@ -3,6 +3,7 @@
 기존 v1_local·v2 응답을 재생하고 후속 프롬프트를 비교한다. 보존 응답 재생은 문맥 생성 API를 호출하지 않는다.
 실험 B의 `prompt_comparison.py generate`는 새 문맥을 실제 유료 생성한다. 계획 검증·내보내기·검색 실행은 이 호출과 분리한다.
 문맥 생성 CLI의 `generate --execute`도 실제 유료 호출이며, `--execute` 없는 CLI 실행과 `span_inputs.py`는 준비만 한다.
+`span_generation.py generate --execute`는 새 입력+v5 실제 유료 생성 검수이며 앞 실험 B와 별도 실행이다.
 한 장소의 여러 입력 묶음은 각각 별도 색인으로 비교하며, 나중 묶음으로 앞 묶음을 덮어쓴 결과를 전체 데이터의 합집합으로 해석하지 않는다.
 
 `pilot_cases.json`은 한 장소의 원문 22구간에서 만든 탐색적 질문 26개다.
@@ -40,10 +41,29 @@ python -m app.contextual.cli generate --baseline-record <보존-v4-record.json> 
 기존 ‘프롬프트만 비교’ 검증을 완화해 새 입력을 통과시키지 않는다.
 추후 v4 명시적 입력의 실제 응답이 생기면 그것을 대조군으로, `--prompt-version contextual-source-spans-v5`를 선택한다.
 이때 `--input-version`을 생략하면 대조군의 명시적 입력을 유지하며 지시문만 비교한다.
-v5는 명시적 청크를 직접 읽고 위치 계산을 하지 않도록 지시하지만 아직 실제 생성·검색으로 평가하지 않았다.
+v5는 명시적 청크를 직접 읽고 위치 계산을 하지 않도록 지시한다. 아래 실제 문맥 검수에서 일부 오류 감소와 귀속 회귀를 확인했고 검색은 평가하지 않았다.
 
 구조 기반 후보는 부모 청크 안에서만 원문을 잘게 나눈다. 장소 경계 정답이나 운영 분할 전략으로 확정한 결과가 아니다.
 분할 전략 채택과 장소별 20개 상한·전체 출처 동시 색인은 별도 C·D 실험에 남긴다.
+
+## 새 입력 + v5 실제 문맥 검수
+
+[실행·검수 결과](../../runs/contextual/span-grounding-v1/20261101-01/REPORT.md): 새 응답 9개·US$0.01681,
+다른 청크의 주제 대체 2→0과 혼합 장소 귀속 회귀 1건을 함께 기록했다. v5를 기본값으로 바꾸지 않았다.
+입력·지시문을 함께 바꾼 `explicit-input-and-instructions` 검수이며 입력 형식만의 효과로 해석하지 않는다.
+
+```powershell
+python -X utf8 -m Evaluation.tracks.contextual.span_generation prepare --batch <보존-batch-plan.json> --prepared <기존-prepared.json> --output <새-실행-폴더>
+python -X utf8 -m Evaluation.tracks.contextual.span_generation generate --plan <새-실행-폴더>/plan.json --key-file <지정-키-파일> --execute
+python -X utf8 -m Evaluation.tracks.contextual.span_generation audit --plan <새-실행-폴더>/plan.json
+python -X utf8 -m Evaluation.tracks.contextual.span_generation export-review --plan <새-실행-폴더>/plan.json
+python -X utf8 -m Evaluation.tracks.contextual.span_generation summarize-review --plan <새-실행-폴더>/plan.json --review Evaluation/tracks/contextual/prompt_v5_review.json --output <새-실행-폴더>/quality-summary.json
+```
+
+위 `generate --execute`는 **유료 호출**이다. 완료된 이번 실행을 다시 생성할 필요는 없다.
+기존 전송 시도나 생성 요약이 있으면 재시도를 거부한다. 실패 또는 실제 모델 불일치에서 뒤 호출을 중단한다.
+나머지 명령은 키나 모델을 사용하지 않는다. `summarize-review`는 사람이든 에이전트든 이미 기록한 판정을 집계할 뿐 새 의미 판정을 하지 않는다.
+전체 생성 응답의 스키마·오프셋 통과와 원문 대비 문맥 정확성을 구분한다. 새 분할·재색인·검색 측정은 실행하지 않았다.
 
 ## 프롬프트 비교 실험 B
 

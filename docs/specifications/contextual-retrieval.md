@@ -1,6 +1,6 @@
 # 공통 장소 청크·문맥 생성·검색 DB 명세
 
-문서 버전: 6 · 갱신: 2026-11-01
+문서 버전: 7 · 갱신: 2026-11-01
 
 [계획서](../plans/contextual-retrieval.md) · [구조도](../architecture/contextual-retrieval.md) · [기존 웹 수집](place-review-enrichment.md)
 
@@ -45,7 +45,7 @@ source_id는 출처 유형·URL 또는 TourAPI 콘텐츠 ID·필드명으로 결
 | [v2_contextual_prompt.py](../../embedding-server/app/contextual/prompts/v2_contextual_prompt.py) | `contextual-source-spans-v2`: 새 생성의 기본값, 구간 중심 문맥·시설별 귀속·방문 조건 보존 |
 | [v3_contextual_prompt.py](../../embedding-server/app/contextual/prompts/v3_contextual_prompt.py) | `contextual-source-spans-v3`: 명시적으로 선택하는 후속 지시문. 단순 언급·조망 대상과 불명확한 귀속을 구분하며 이번 v1·v2 비교에는 사용하지 않음 |
 | [v4_contextual_prompt.py](../../embedding-server/app/contextual/prompts/v4_contextual_prompt.py) | `contextual-source-spans-v4`: 구간 주제 우선·인접 관찰 차용 금지·장소/시설 귀속을 강화한 실험 지시문. 기본값은 계속 v2 |
-| [v5_contextual_prompt.py](../../embedding-server/app/contextual/prompts/v5_contextual_prompt.py) | `contextual-source-spans-v5`: 코드가 추출한 `span.chunk_text`를 직접 읽는 선택 지시문. 명시적 청크 입력 필수이며 실제 생성 품질은 미검증 |
+| [v5_contextual_prompt.py](../../embedding-server/app/contextual/prompts/v5_contextual_prompt.py) | `contextual-source-spans-v5`: 코드가 추출한 `span.chunk_text`를 직접 읽는 선택 지시문. 명시적 청크 입력 필수. 22구간 검수에서 주제 대체 감소와 귀속 회귀가 함께 확인돼 기본값으로 채택하지 않음 |
 
 v2는 보통 1~2문장을 권장하지만 필요한 구분·부정·조건을 생략하도록 강제하지 않는다. 600자 상한은 유지한다.
 **동일 문서의 청크 밖 배경도 장소 식별·지시 대상·배경 이해에 필요하면 허용한다.**
@@ -102,8 +102,19 @@ Windows에서 원본 아카이브 아래의 깊은 경로가 파일 길이 제�
 후보는 기존 청크 내부의 문단·생략 구분선·제목·문장 구분을 사용하고, 원문 offset·부모 구간·별도 후보 분할 버전을 보존한다.
 여러 장소를 의미적으로 판별한 운영 분할기가 아니며 모든 후보의 `indexable=false`다.
 기존 부모 경계에서 잘린 문장을 복원하지 않고, 매우 짧은 후보·주어 생략·장소당 활성 20개 상한의 누락도 해결하지 않는다.
-실제 9개 기록의 입력 22구간 보존·후보 136개·원본 36개 파일 해시를 확인했으며 생성·색인·검색 품질은 새로 측정하지 않았다.
+준비 단계에서 실제 9개 기록의 입력 22구간 보존·후보 136개·원본 36개 파일 해시를 확인했으며 생성·색인·검색 품질은 새로 측정하지 않았다.
 [준비·검증 기록](../../Evaluation/runs/contextual/span-inputs-v1/20261101-01/REPORT.md)에 범위를 구분했다.
+
+후속 실제 생성 검수는 **v4 위치 입력→v5 명시적 입력**의 두 필드 변경을
+`comparison_kind=explicit-input-and-instructions`로 별도 기록한다. 앞의 입력 형식 전용·지시문 전용 비교와 섞지 않는다.
+`span_generation.py prepare`는 기존 요청과 대조한 실행 계획을 쓰고, `generate --execute`만 최대 9회 유료 호출한다.
+요청·원본 해시 검증 후 지정 키 파일을 직접 읽으며, 실패·모델 불일치 시 뒤의 호출을 중단한다.
+기존 전송 시도나 완료/중단 요약이 있으면 자동 재실행하지 않는다. 오류 응답 진단에는 키를 제거한 제한된 본문만 남긴다.
+실제 요청·모델·검증 버전·비용을 감사하고, 문맥 의미 검수는 별도 파일에 기록한다.
+
+새 응답 9개·동일 22구간 검수에서 인접 청크 주제 대체는 2→0, 다른 장소 경관의 대상 subject 귀속 회귀는 0→1이었다.
+이는 한 번의 개발 표본 검수다. 입력 추가만의 효과나 이전 오류의 원인을 분리해 입증하지 않았고 검색은 재실행하지 않았다.
+분할·색인·기본값은 유지했다. [실제 문맥 검수 기록](../../Evaluation/runs/contextual/span-grounding-v1/20261101-01/REPORT.md)을 참고한다.
 
 ### 역할에 따른 자동 보존·검색 제외
 

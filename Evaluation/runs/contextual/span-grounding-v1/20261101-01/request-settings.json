@@ -1,0 +1,149 @@
+{
+  "comparison_kind": "explicit-input-and-instructions",
+  "pairs": [
+    {
+      "id": "P01",
+      "changed_request_fields": [
+        "instructions",
+        "input"
+      ],
+      "model": "perplexity/sonar",
+      "effort": "fast",
+      "max_output_tokens": 8192,
+      "tools": [],
+      "background": false,
+      "source_text_and_spans_match": true,
+      "explicit_spans": 3,
+      "response_format_sha256": "e395008f418353c54a4f880ae8b2e791b93e4efcb9895e2da474cd95c042916a",
+      "instructions_sha256": "b6e31a4b572b3dfffc7207ef6672be5e36664bb66738e3d0c2b20581b05db2ba"
+    },
+    {
+      "id": "P02",
+      "changed_request_fields": [
+        "instructions",
+        "input"
+      ],
+      "model": "perplexity/sonar",
+      "effort": "fast",
+      "max_output_tokens": 8192,
+      "tools": [],
+      "background": false,
+      "source_text_and_spans_match": true,
+      "explicit_spans": 3,
+      "response_format_sha256": "e395008f418353c54a4f880ae8b2e791b93e4efcb9895e2da474cd95c042916a",
+      "instructions_sha256": "b6e31a4b572b3dfffc7207ef6672be5e36664bb66738e3d0c2b20581b05db2ba"
+    },
+    {
+      "id": "P03",
+      "changed_request_fields": [
+        "instructions",
+        "input"
+      ],
+      "model": "perplexity/sonar",
+      "effort": "fast",
+      "max_output_tokens": 8192,
+      "tools": [],
+      "background": false,
+      "source_text_and_spans_match": true,
+      "explicit_spans": 3,
+      "response_format_sha256": "e395008f418353c54a4f880ae8b2e791b93e4efcb9895e2da474cd95c042916a",
+      "instructions_sha256": "b6e31a4b572b3dfffc7207ef6672be5e36664bb66738e3d0c2b20581b05db2ba"
+    },
+    {
+      "id": "P04",
+      "changed_request_fields": [
+        "instructions",
+        "input"
+      ],
+      "model": "perplexity/sonar",
+      "effort": "fast",
+      "max_output_tokens": 8192,
+      "tools": [],
+      "background": false,
+      "source_text_and_spans_match": true,
+      "explicit_spans": 2,
+      "response_format_sha256": "e395008f418353c54a4f880ae8b2e791b93e4efcb9895e2da474cd95c042916a",
+      "instructions_sha256": "b6e31a4b572b3dfffc7207ef6672be5e36664bb66738e3d0c2b20581b05db2ba"
+    },
+    {
+      "id": "P05",
+      "changed_request_fields": [
+        "instructions",
+        "input"
+      ],
+      "model": "perplexity/sonar",
+      "effort": "fast",
+      "max_output_tokens": 8192,
+      "tools": [],
+      "background": false,
+      "source_text_and_spans_match": true,
+      "explicit_spans": 3,
+      "response_format_sha256": "e395008f418353c54a4f880ae8b2e791b93e4efcb9895e2da474cd95c042916a",
+      "instructions_sha256": "b6e31a4b572b3dfffc7207ef6672be5e36664bb66738e3d0c2b20581b05db2ba"
+    },
+    {
+      "id": "P06",
+      "changed_request_fields": [
+        "instructions",
+        "input"
+      ],
+      "model": "perplexity/sonar",
+      "effort": "fast",
+      "max_output_tokens": 8192,
+      "tools": [],
+      "background": false,
+      "source_text_and_spans_match": true,
+      "explicit_spans": 2,
+      "response_format_sha256": "e395008f418353c54a4f880ae8b2e791b93e4efcb9895e2da474cd95c042916a",
+      "instructions_sha256": "b6e31a4b572b3dfffc7207ef6672be5e36664bb66738e3d0c2b20581b05db2ba"
+    },
+    {
+      "id": "P07",
+      "changed_request_fields": [
+        "instructions",
+        "input"
+      ],
+      "model": "perplexity/sonar",
+      "effort": "fast",
+      "max_output_tokens": 8192,
+      "tools": [],
+      "background": false,
+      "source_text_and_spans_match": true,
+      "explicit_spans": 1,
+      "response_format_sha256": "e395008f418353c54a4f880ae8b2e791b93e4efcb9895e2da474cd95c042916a",
+      "instructions_sha256": "b6e31a4b572b3dfffc7207ef6672be5e36664bb66738e3d0c2b20581b05db2ba"
+    },
+    {
+      "id": "P08",
+      "changed_request_fields": [
+        "instructions",
+        "input"
+      ],
+      "model": "perplexity/sonar",
+      "effort": "fast",
+      "max_output_tokens": 8192,
+      "tools": [],
+      "background": false,
+      "source_text_and_spans_match": true,
+      "explicit_spans": 2,
+      "response_format_sha256": "e395008f418353c54a4f880ae8b2e791b93e4efcb9895e2da474cd95c042916a",
+      "instructions_sha256": "b6e31a4b572b3dfffc7207ef6672be5e36664bb66738e3d0c2b20581b05db2ba"
+    },
+    {
+      "id": "P09",
+      "changed_request_fields": [
+        "instructions",
+        "input"
+      ],
+      "model": "perplexity/sonar",
+      "effort": "fast",
+      "max_output_tokens": 8192,
+      "tools": [],
+      "background": false,
+      "source_text_and_spans_match": true,
+      "explicit_spans": 3,
+      "response_format_sha256": "e395008f418353c54a4f880ae8b2e791b93e4efcb9895e2da474cd95c042916a",
+      "instructions_sha256": "b6e31a4b572b3dfffc7207ef6672be5e36664bb66738e3d0c2b20581b05db2ba"
+    }
+  ]
+}
