@@ -1,6 +1,6 @@
 # 공통 장소 청크·문맥 생성·검색 DB 명세
 
-문서 버전: 7 · 갱신: 2026-11-01
+문서 버전: 8 · 갱신: 2026-11-01
 
 [계획서](../plans/contextual-retrieval.md) · [구조도](../architecture/contextual-retrieval.md) · [기존 웹 수집](place-review-enrichment.md)
 
@@ -46,6 +46,7 @@ source_id는 출처 유형·URL 또는 TourAPI 콘텐츠 ID·필드명으로 결
 | [v3_contextual_prompt.py](../../embedding-server/app/contextual/prompts/v3_contextual_prompt.py) | `contextual-source-spans-v3`: 명시적으로 선택하는 후속 지시문. 단순 언급·조망 대상과 불명확한 귀속을 구분하며 이번 v1·v2 비교에는 사용하지 않음 |
 | [v4_contextual_prompt.py](../../embedding-server/app/contextual/prompts/v4_contextual_prompt.py) | `contextual-source-spans-v4`: 구간 주제 우선·인접 관찰 차용 금지·장소/시설 귀속을 강화한 실험 지시문. 기본값은 계속 v2 |
 | [v5_contextual_prompt.py](../../embedding-server/app/contextual/prompts/v5_contextual_prompt.py) | `contextual-source-spans-v5`: 코드가 추출한 `span.chunk_text`를 직접 읽는 선택 지시문. 명시적 청크 입력 필수. 22구간 검수에서 주제 대체 감소와 귀속 회귀가 함께 확인돼 기본값으로 채택하지 않음 |
+| [v6_contextual_prompt.py](../../embedding-server/app/contextual/prompts/v6_contextual_prompt.py) | `contextual-observation-relations-v6`: 관찰 종류와 장소 역할을 분리하고 출발지·도착지·이동 조건을 보존하는 선택 계약. 새 문장/문단 분할·명시적 입력·출력 스키마가 필요하며 기본값은 계속 v2 |
 
 v2는 보통 1~2문장을 권장하지만 필요한 구분·부정·조건을 생략하도록 강제하지 않는다. 600자 상한은 유지한다.
 **동일 문서의 청크 밖 배경도 장소 식별·지시 대상·배경 이해에 필요하면 허용한다.**
@@ -116,9 +117,74 @@ Windows에서 원본 아카이브 아래의 깊은 경로가 파일 길이 제�
 이는 한 번의 개발 표본 검수다. 입력 추가만의 효과나 이전 오류의 원인을 분리해 입증하지 않았고 검색은 재실행하지 않았다.
 분할·색인·기본값은 유지했다. [실제 문맥 검수 기록](../../Evaluation/runs/contextual/span-grounding-v1/20261101-01/REPORT.md)을 참고한다.
 
+### 관찰 단위 분할과 이동 관계
+
+`source-span-v1`은 기존 800자·줄바꿈 분할이며 기본값을 유지한다.
+선택 버전 `sentence-paragraph-v2`는 보존 본문 전체의 문장 종결·문단·제목·구분선 경계를 사용한다.
+장소 이름의 개수는 분리 조건이 아니다. 한 문장에 있는 A→B 이동은 한 구간에 그대로 남긴다.
+블로그의 단순 시각적 줄바꿈을 모두 자르지 않으며, 800자보다 긴 구간에 경계가 없으면 임의 절단하지 않고 준비 단계에서 거부한다.
+이 휴리스틱이 모든 관찰·주제 경계를 정확히 찾는 것은 아니다. 같은 문장에 여러 관찰이 섞인 경우 귀속 보류·검수가 필요하다.
+
+새 구간은 정규화 없이 원문을 정확히 재현하며 `source_id/source_version/start/end/splitter_version`을 보존한다.
+`splitter_version`을 요청·기록·캐시·청크 UUID·DB 저장·무료 재검증까지 전달한다.
+경계가 우연히 같아도 분할 버전이 다르면 chunk_id가 다르며, 기존 버전의 ID와 해시는 그대로다.
+이전 청크의 문맥·역할을 새 구간에 복사하지 않고 Sonar에게 각 구간을 새로 판정하게 한다.
+
+v6는 기존 출력 필드에 다음을 **별도 스키마**로 추가한다. v1~v5 스키마는 바꾸지 않는다.
+
+- `content_kind`: `landscape | facility | movement | other`. 시설·이용, 경관, 이동 등 내용 종류다.
+- `place_refs[].role`: 기존 `subject | mentioned | view_target`. subject는 핵심 장소이며 내용 종류가 아니다.
+- `relations[]`: 이동의 `origin`, `destination`, `conditions`. 다른 내용은 빈 배열이다.
+- 각 endpoint의 `place_id`는 제공된 기존 ID 또는 `null`, `name`은 알려진 ID일 때 등록 이름과 일치해야 한다.
+- 이동 조건은 `stairs | distance | duration | other`와 현재 구간의 정확한 `quote`를 저장한다.
+  조건 인용이 원문에 있다는 검사가 의미 분류·방향까지 보증하지는 않는다.
+
+```json
+{
+  "content_kind": "movement",
+  "place_refs": [{"place_id": 101, "role": "subject"}, {"place_id": 202, "role": "subject"}],
+  "relations": [{"origin": {"place_id": 101, "name": "A공원"},
+                 "destination": {"place_id": 202, "name": "B공원"},
+                 "conditions": [{"kind": "stairs", "quote": "계단을 내려가"}]}]
+}
+```
+
+위 ID는 계약 설명용이다. 이동의 등록된 양끝은 핵심 참가자로서 subject가 될 수 있다.
+이는 경관·시설을 양쪽 장소에 귀속한다는 뜻이 아니다. 경관은 그 관찰 장소에, 주차는 해당 시설 장소에만 연결한다.
+등록되지 않은 출발지·도착지는 이름과 `null` ID로 보존하며 다른 장소의 ID를 대신 쓰지 않는다.
+알려진 endpoint가 하나도 없거나 구체적 이동 관계를 확정하지 못하면 원문·문맥은 남기고 검색을 보류한다.
+거리·시간·계단만으로 ‘쉽다·평탄하다·안전하다’를 만들지 않는다.
+
+v6 요청은 `fast`·8192 출력 한도·`tools=[]`로 별도 고정했다. 이번 검수에서 바뀐 것은 분할·지시문·출력 스키마·처리 버전이므로
+프롬프트만 바꾼 비교나 분할만의 효과로 표시하지 않는다.
+
+### 관찰 검증·검수 후 적용
+
+v6의 새 기록은 `contextual-validation-v3`를 사용한다. v1~v5의 기존 처리 버전은 바꾸지 않는다.
+전체 출력 스키마와 source/span의 누락·중복·변조는 응답 검증 오류다.
+그 검사를 통과한 뒤 미등록 ID·관계 ID/명칭 불일치·현재 구간에 없는 조건 인용 등은 **해당 구간만**
+`invalid_attribution`으로 격리한다. `validation_error`·원래 역할·관계·문맥·원문을 보존하고 정상 구간은 처리한다.
+미등록 ID는 제공한 기존 장소 목록 밖의 ID를 뜻한다. 생성기가 운영 DB 전체를 조회한 결과로 해석하지 않는다.
+`content_kind=movement`이지만 구체적 관계가 없으면 `unresolved_movement`로 보존하고 검색에서 보류한다.
+스키마 통과와 의미 정확성은 별개다. v2 기록을 v3처럼 해석하지 않으며 받은 응답은 명시적 무료 재검증으로 새 기록을 만든다.
+
+새 분할 또는 관계 계약의 DB 적용에는 `contextual-approval-v1` 검수 목록이 필수다.
+요청 해시와 원본 4개 파일 해시에 묶인 `approved_chunk_ids`만 적용하며 오류·보류 구간은 승인할 수 없다.
+같은 이동 청크의 모든 핵심 참가자 귀속을 승인하는 의미다. 검수자는 에이전트일 수 있으며 사람 검수로 가장하지 않는다.
+승인 0개이면 기존 번들·활성 청크를 바꾸지 않고 종료한다. 승인된 청크에도 기존 장소별 20개·원문 중복 제거·출처 순회 선택을 적용한다.
+
+`generate --splitter-version sentence-paragraph-v2 --input-version source-explicit-chunks-v2 --prompt-version contextual-observation-relations-v6`
+는 새 계약의 선택 실행이다. `--execute` 없이는 미리보기다. 기존 `--baseline-record`의 프롬프트 전용 비교로 분할·스키마 변경을 통과시키지 않는다.
+`review`는 검수 후 명시한 ID 목록을 기록하고, `selection`은 DB 없이 선택·미선택 사유를 출력한다.
+`apply --review <검수파일>`은 기존대로 명시적 DB 적용이다. 이번 실험에서 apply는 실행하지 않았다.
+
+[실제 P08·P09 검수](../../Evaluation/runs/contextual/observation-spans-v1/20261101-01/REPORT.md)는 57구간·유료 2회·US$0.02041이다.
+자동 귀속은 고정 회귀 5개 중 4개 통과이며 P09 경관 오류가 남았다. 검수에서 승인하지 않은 뒤 선택 근거는 5개를 만족했다.
+이는 자동 판정 5/5나 검색 성능 개선을 뜻하지 않는다. 운영 기본값은 유지한다.
+
 ### 역할에 따른 자동 보존·검색 제외
 
-새 응답 및 명시적으로 재검증한 응답은 `contextual-validation-v2`를 사용한다. 사람이 역할을 다시 분류하지 않는다.
+v1~v5의 새 응답 및 명시적으로 재검증한 응답은 `contextual-validation-v2`를 사용한다. 사람이 역할을 다시 분류하지 않는다.
 원문 구간·스키마·등록된 장소 ID·참조 중복·엔티티 역할 일치·문맥 길이를 먼저 검증한 뒤 다음처럼 분기한다.
 
 | 반환 역할 | 자동 처리 |

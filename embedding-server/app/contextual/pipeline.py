@@ -6,6 +6,8 @@ from typing import Any, Protocol
 from app.enrichment.contracts import ExistingPlace, EvidenceStatus
 from app.enrichment.evidence import searchable_claims
 from .contracts import CaptureScope, MAX_ACTIVE_CHUNKS, PlaceRole, SearchChunk, SourceDocument, SourceType
+from .contracts import SPLITTER_VERSION
+from .splitting import split_document
 
 
 class SourceStrategy(Protocol):
@@ -39,21 +41,8 @@ def normalize_source(source: dict[str, Any]) -> SourceDocument:
     return matches[0].normalize(source)
 
 
-def split_source(source: SourceDocument, size: int = 800) -> list[tuple[int, int]]:
-    if size < 1:
-        raise ValueError("Chunk size must be positive")
-    spans = []
-    start = 0
-    while start < len(source.text):
-        end = min(start + size, len(source.text))
-        if end < len(source.text):
-            boundary = max(source.text.rfind("\n", start + size // 2, end), source.text.rfind(". ", start + size // 2, end))
-            if boundary > start:
-                end = boundary + 1
-        if source.text[start:end].strip():
-            spans.append((start, end))
-        start = end
-    return spans
+def split_source(source: SourceDocument, size: int = 800, *, splitter_version: str = SPLITTER_VERSION) -> list[tuple[int, int]]:
+    return split_document(source, size, splitter_version)
 
 
 def tourapi_chunks(place: ExistingPlace) -> list[SearchChunk]:

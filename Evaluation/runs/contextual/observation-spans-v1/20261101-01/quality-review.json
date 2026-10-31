@@ -1,0 +1,292 @@
+{
+  "version": "observation-review-v1",
+  "reviewer": "Codex 에이전트; 버전을 아는 개발 검수이며 독립 사람 블라인드 검수가 아님",
+  "scope": "실제 P08·P09 57구간. 원문·문맥·장소 역할·관계 범위를 대조. 자동 판정 결과와 검수 후 선택을 구분한다.",
+  "rows": [
+    {
+      "id": "P08-N001",
+      "decision": "approve",
+      "note": "해당 원문과 같은 문서의 장소·관찰 범위를 대조해 승인"
+    },
+    {
+      "id": "P08-N002",
+      "decision": "withhold",
+      "note": "자동 검증 제외·귀속 보류를 유지하며 원본을 보존"
+    },
+    {
+      "id": "P08-N003",
+      "decision": "approve",
+      "note": "해당 원문과 같은 문서의 장소·관찰 범위를 대조해 승인"
+    },
+    {
+      "id": "P08-N004",
+      "decision": "withhold",
+      "note": "자동 검증 제외·귀속 보류를 유지하며 원본을 보존"
+    },
+    {
+      "id": "P08-N005",
+      "decision": "withhold",
+      "note": "자동 검증 제외·귀속 보류를 유지하며 원본을 보존"
+    },
+    {
+      "id": "P08-N006",
+      "decision": "approve",
+      "note": "해당 원문과 같은 문서의 장소·관찰 범위를 대조해 승인"
+    },
+    {
+      "id": "P08-N007",
+      "decision": "approve",
+      "note": "해당 원문과 같은 문서의 장소·관찰 범위를 대조해 승인"
+    },
+    {
+      "id": "P08-N008",
+      "decision": "approve",
+      "note": "해당 원문과 같은 문서의 장소·관찰 범위를 대조해 승인"
+    },
+    {
+      "id": "P08-N009",
+      "decision": "approve",
+      "note": "해당 원문과 같은 문서의 장소·관찰 범위를 대조해 승인"
+    },
+    {
+      "id": "P08-N010",
+      "decision": "approve",
+      "note": "해당 원문과 같은 문서의 장소·관찰 범위를 대조해 승인"
+    },
+    {
+      "id": "P08-N011",
+      "decision": "approve",
+      "note": "해당 원문과 같은 문서의 장소·관찰 범위를 대조해 승인"
+    },
+    {
+      "id": "P08-N012",
+      "decision": "approve",
+      "note": "해당 원문과 같은 문서의 장소·관찰 범위를 대조해 승인"
+    },
+    {
+      "id": "P08-N013",
+      "decision": "approve",
+      "note": "해당 원문과 같은 문서의 장소·관찰 범위를 대조해 승인"
+    },
+    {
+      "id": "P08-N014",
+      "decision": "withhold",
+      "note": "자동 검증 제외·귀속 보류를 유지하며 원본을 보존"
+    },
+    {
+      "id": "P08-N015",
+      "decision": "withhold",
+      "note": "자동 검증 제외·귀속 보류를 유지하며 원본을 보존"
+    },
+    {
+      "id": "P08-N016",
+      "decision": "withhold",
+      "note": "자동 검증 제외·귀속 보류를 유지하며 원본을 보존"
+    },
+    {
+      "id": "P08-N017",
+      "decision": "withhold",
+      "note": "자동 검증 제외·귀속 보류를 유지하며 원본을 보존"
+    },
+    {
+      "id": "P08-N018",
+      "decision": "withhold",
+      "note": "자동 검증 제외·귀속 보류를 유지하며 원본을 보존"
+    },
+    {
+      "id": "P08-N019",
+      "decision": "withhold",
+      "note": "자동 검증 제외·귀속 보류를 유지하며 원본을 보존"
+    },
+    {
+      "id": "P08-N020",
+      "decision": "withhold",
+      "note": "자동 검증 제외·귀속 보류를 유지하며 원본을 보존"
+    },
+    {
+      "id": "P08-N021",
+      "decision": "withhold",
+      "note": "자동 검증 제외·귀속 보류를 유지하며 원본을 보존"
+    },
+    {
+      "id": "P08-N022",
+      "decision": "withhold",
+      "note": "자동 검증 제외·귀속 보류를 유지하며 원본을 보존"
+    },
+    {
+      "id": "P08-N023",
+      "decision": "withhold",
+      "note": "자동 검증 제외·귀속 보류를 유지하며 원본을 보존"
+    },
+    {
+      "id": "P08-N024",
+      "decision": "approve",
+      "note": "해당 원문과 같은 문서의 장소·관찰 범위를 대조해 승인"
+    },
+    {
+      "id": "P08-N025",
+      "decision": "withhold",
+      "note": "자동 검증 제외·귀속 보류를 유지하며 원본을 보존"
+    },
+    {
+      "id": "P08-N026",
+      "decision": "withhold",
+      "note": "자동 검증 제외·귀속 보류를 유지하며 원본을 보존"
+    },
+    {
+      "id": "P08-N027",
+      "decision": "withhold",
+      "note": "자동 검증 제외·귀속 보류를 유지하며 원본을 보존"
+    },
+    {
+      "id": "P08-N028",
+      "decision": "withhold",
+      "note": "자동 검증 제외·귀속 보류를 유지하며 원본을 보존"
+    },
+    {
+      "id": "P08-N029",
+      "decision": "withhold",
+      "note": "자동 검증 제외·귀속 보류를 유지하며 원본을 보존"
+    },
+    {
+      "id": "P09-N001",
+      "decision": "withhold",
+      "note": "자동 검증 제외·귀속 보류를 유지하며 원본을 보존"
+    },
+    {
+      "id": "P09-N002",
+      "decision": "approve",
+      "note": "해당 원문과 같은 문서의 장소·관찰 범위를 대조해 승인"
+    },
+    {
+      "id": "P09-N003",
+      "decision": "approve",
+      "note": "해당 원문과 같은 문서의 장소·관찰 범위를 대조해 승인"
+    },
+    {
+      "id": "P09-N004",
+      "decision": "approve",
+      "note": "해당 원문과 같은 문서의 장소·관찰 범위를 대조해 승인"
+    },
+    {
+      "id": "P09-N005",
+      "decision": "approve",
+      "note": "해당 원문과 같은 문서의 장소·관찰 범위를 대조해 승인"
+    },
+    {
+      "id": "P09-N006",
+      "decision": "withhold",
+      "note": "자동 검증 제외·귀속 보류를 유지하며 원본을 보존"
+    },
+    {
+      "id": "P09-N007",
+      "decision": "withhold",
+      "note": "이동 중 관찰의 장소 범위가 불명확해 보류"
+    },
+    {
+      "id": "P09-N008",
+      "decision": "withhold",
+      "note": "이동 중 관찰의 장소 범위가 불명확해 보류"
+    },
+    {
+      "id": "P09-N009",
+      "decision": "withhold",
+      "note": "자동 검증 제외·귀속 보류를 유지하며 원본을 보존"
+    },
+    {
+      "id": "P09-N010",
+      "decision": "withhold",
+      "note": "정원·경관·휴식 관찰의 소유 장소가 대상 공원인지 불명확하거나 잘못 귀속돼 보류"
+    },
+    {
+      "id": "P09-N011",
+      "decision": "withhold",
+      "note": "정원·경관·휴식 관찰의 소유 장소가 대상 공원인지 불명확하거나 잘못 귀속돼 보류"
+    },
+    {
+      "id": "P09-N012",
+      "decision": "withhold",
+      "note": "자동 검증 제외·귀속 보류를 유지하며 원본을 보존"
+    },
+    {
+      "id": "P09-N013",
+      "decision": "withhold",
+      "note": "정원·경관·휴식 관찰의 소유 장소가 대상 공원인지 불명확하거나 잘못 귀속돼 보류"
+    },
+    {
+      "id": "P09-N014",
+      "decision": "withhold",
+      "note": "정원·경관·휴식 관찰의 소유 장소가 대상 공원인지 불명확하거나 잘못 귀속돼 보류"
+    },
+    {
+      "id": "P09-N015",
+      "decision": "withhold",
+      "note": "다른 공원의 한강 경관을 청담도로공원 subject로 귀속해 미승인"
+    },
+    {
+      "id": "P09-N016",
+      "decision": "withhold",
+      "note": "정원·경관·휴식 관찰의 소유 장소가 대상 공원인지 불명확하거나 잘못 귀속돼 보류"
+    },
+    {
+      "id": "P09-N017",
+      "decision": "withhold",
+      "note": "정원·경관·휴식 관찰의 소유 장소가 대상 공원인지 불명확하거나 잘못 귀속돼 보류"
+    },
+    {
+      "id": "P09-N018",
+      "decision": "withhold",
+      "note": "정원·경관·휴식 관찰의 소유 장소가 대상 공원인지 불명확하거나 잘못 귀속돼 보류"
+    },
+    {
+      "id": "P09-N019",
+      "decision": "withhold",
+      "note": "정원·경관·휴식 관찰의 소유 장소가 대상 공원인지 불명확하거나 잘못 귀속돼 보류"
+    },
+    {
+      "id": "P09-N020",
+      "decision": "withhold",
+      "note": "정원·경관·휴식 관찰의 소유 장소가 대상 공원인지 불명확하거나 잘못 귀속돼 보류"
+    },
+    {
+      "id": "P09-N021",
+      "decision": "withhold",
+      "note": "자동 검증 제외·귀속 보류를 유지하며 원본을 보존"
+    },
+    {
+      "id": "P09-N022",
+      "decision": "approve",
+      "note": "해당 원문과 같은 문서의 장소·관찰 범위를 대조해 승인"
+    },
+    {
+      "id": "P09-N023",
+      "decision": "withhold",
+      "note": "자동 검증 제외·귀속 보류를 유지하며 원본을 보존"
+    },
+    {
+      "id": "P09-N024",
+      "decision": "approve",
+      "note": "해당 원문과 같은 문서의 장소·관찰 범위를 대조해 승인"
+    },
+    {
+      "id": "P09-N025",
+      "decision": "approve",
+      "note": "해당 원문과 같은 문서의 장소·관찰 범위를 대조해 승인"
+    },
+    {
+      "id": "P09-N026",
+      "decision": "approve",
+      "note": "해당 원문과 같은 문서의 장소·관찰 범위를 대조해 승인"
+    },
+    {
+      "id": "P09-N027",
+      "decision": "approve",
+      "note": "해당 원문과 같은 문서의 장소·관찰 범위를 대조해 승인"
+    },
+    {
+      "id": "P09-N028",
+      "decision": "withhold",
+      "note": "출차 조건이 진입 관계에 함께 붙어 방향 범위가 불명확해 보류"
+    }
+  ]
+}

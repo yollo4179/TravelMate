@@ -25,6 +25,7 @@ from app.contextual.input_format import InputVersion
 from app.contextual.input_replay import InputFormatComparison
 from app.contextual.prompts import PromptVersion, resolve_prompt
 from app.contextual.replay import GenerationBaseline
+from app.contextual.contracts import SplitterVersion
 from app.enrichment.artifacts import write_json
 from app.enrichment.contracts import CollectionStatus
 from Evaluation.tracks.contextual.prompt_comparison import read_api_key, request_digest
@@ -114,6 +115,19 @@ async def generate(
     transport: httpx.AsyncBaseTransport | None = None,
 ) -> Path:
     plan = verified_plan(plan_path)
+    return await execute_verified_plan(plan_path, key_path, plan, transport=transport)
+
+
+async def execute_verified_plan(
+    plan_path: Path,
+    key_path: Path,
+    plan: dict[str, Any],
+    *,
+    transport: httpx.AsyncBaseTransport | None = None,
+    prompt_version: str = PromptVersion.V5,
+    splitter_version: str = SplitterVersion.LEGACY,
+    preserve_profile: bool = True,
+) -> Path:
     output = plan_path.parent
     summary_path = output / "generation-summary.json"
     if summary_path.exists() or (output / "http-attempts").exists():
@@ -155,10 +169,11 @@ async def generate(
                     baseline.settings(api_key, 180),
                     output / "g",
                     client,
-                    prompt_version=PromptVersion.V5,
+                    prompt_version=prompt_version,
                     prepared_request=pair["request"],
-                    request_profile_id=baseline.request_profile_id,
+                    request_profile_id=baseline.request_profile_id if preserve_profile else None,
                     input_version=InputVersion.EXPLICIT,
+                    splitter_version=splitter_version,
                 )
                 record = read_json(path)
                 model_match = record.get("actual_model") == baseline.actual_model

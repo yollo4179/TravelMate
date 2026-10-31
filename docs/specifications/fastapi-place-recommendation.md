@@ -6,7 +6,9 @@
 
 [추천 구조도](../architecture/fastapi-place-recommendation.md) · [문서 목록](../README.md) · [투어 가이드 명세](personal-tour-guide.md)
 
-갱신일: 2026-10-25, 한국 시간. 코드 확인 기준: `f9f09db`, 이전 문서: `7921ecb`. **별도 FastAPI DB와 Kafka 추천 요청·완료 전달, 완료 이벤트에 추천 장소 상세까지 포함하는 것은 사용자 확정 사항입니다. 원시 임베딩 벡터를 완료 결과로 보내는 계약이 아닙니다. 아래 내용은 로컬 Codex 구현과 맞출 문서 계약이며, 이번 갱신으로 실행 코드를 변경하지 않습니다.**
+문서 버전: 2 · 갱신일: 2026-11-01, 한국 시간. 최초 계약 기준: `f9f09db`, 이전 문서: `7921ecb`.
+별도 FastAPI DB와 Kafka 추천 요청·완료 전달, 완료 이벤트에 추천 장소 상세까지 포함하는 것은 사용자 확정 사항이다.
+이번 갱신은 FastAPI 워커의 선택형 관찰·이동 방향 필터 구현을 반영한다. Spring·UI 전달이나 전체 운영 배포 완료를 뜻하지 않는다.
 
 ## 1. DB 경계와 데이터 소유권
 
@@ -172,6 +174,31 @@ area는 null 또는 아래 CIRCLE 구조입니다. 현행 Context의 500~10000m 
 ```
 
 Spring이 확정한 쿼리·조건만 전달하며 개인 기억·대화 전체나 인증 비밀값을 넣지 않습니다. deadline_at의 운영 기본값과 늦은 완료의 사용자 표시 정책은 미정입니다.
+
+#### 4.2.1 선택형 관찰·이동 방향 필터
+
+FastAPI 워커는 `filters.observation`을 선택적으로 받는다. 생략 또는 빈 조건이면 기존 검색 경로를 유지한다.
+
+```json
+{"filters": {"observation": {"content_kinds": ["movement"],
+                             "destination_place_id": 202, "result_endpoint": "origin"},
+             "exclude_place_ids": [202]}}
+```
+
+위 ID는 예시다. 등록된 A→B 관계에서 B로 이동할 수 있는 출발지 A를 찾는 형태다.
+`origin_place_id`로 A를 지정하고 `result_endpoint=destination`을 쓰면 도착지를 찾는다.
+endpoint를 지정한 기본 결과 쪽은 도착지 조건일 때 `origin`, 출발지 조건일 때 `destination`이다.
+`result_endpoint=either`는 어느 참가자든 허용한다. 공원 내부 순환도 이동이므로 ‘다른 장소’를 찾을 때는 기준 장소를 기존 제외 ID 조건에 넣는다.
+미등록 endpoint의 `null` ID를 새 장소로 만들지 않는다.
+
+`content_kinds`는 `landscape | facility | movement | other` 배열이다.
+경관·시설 조건에는 이동 방향을 결합하지 않으며 방향 조건을 지정하면 `movement`로 제한한다.
+FastAPI는 장소 후보와 복수 근거 확장 양쪽에서 같은 조건을 적용한다. 조건을 만족하는 청크가 없으면 일반 장소 설명으로 우회하지 않는다.
+근거 응답은 JSON 문서의 `content_kind/relations`를 그대로 보존한다.
+
+이 필터는 자연어에서 자동 추론하지 않는다. Spring 요청 DTO·LLM 도구·UI에서 종류와 방향을 선택해 전달하는 연결은 이번 변경에 포함하지 않았다.
+‘쉽다’는 검색 조건을 자동 만들지 않고, 실제 원문의 계단·거리·시간을 근거로 사용한다.
+워커는 선택 코드만 구현했으며 운영에 배포하지 않았다. 검증은 모의 검사와 실제 PostgreSQL의 읽기 전용 VALUES 조건 검사다.
 
 ### 4.3 완료 이벤트 예시
 

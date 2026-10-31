@@ -37,6 +37,7 @@ Evaluation/
 [근거 2개 고정 v2·v4 비교](runs/contextual/prompt-grounding-v1/20261031-01/REPORT.md)에 실험 B의 문맥 검수·검색 결과·API 비용을 기록했다.
 [명시적 원문 입력·분할 후보 준비](runs/contextual/span-inputs-v1/20261101-01/REPORT.md)는 후속 구현·원문 보존 검사이며 새로운 품질 실측은 아니다.
 [새 입력+v5 실제 문맥 검수](runs/contextual/span-grounding-v1/20261101-01/REPORT.md)에 주제 대체 감소와 장소 귀속 회귀·호출 비용을 함께 기록했다. 검색은 재실행하지 않았다.
+[관찰 분할·이동 관계 검수](runs/contextual/observation-spans-v1/20261101-01/REPORT.md)는 P08·P09의 자동 판정 4/5와 검수 후 선택 5/5를 구분한다. 운영 적용이나 검색 성능 개선을 뜻하지 않는다.
 기존 100+100 묶음은 generated/by_group에 조회용으로 보존한다. 두 LLM을 뜻하지 않는다.
 기억·페르소나 시나리오는 source/cases.source.json의 해당 문항에 포함된다.
 같은 정답을 별도 source 파일에 중복 작성하지 않는다.

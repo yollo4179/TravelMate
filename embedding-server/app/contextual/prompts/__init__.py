@@ -6,6 +6,7 @@ from enum import StrEnum
 from types import MappingProxyType
 
 from . import v1_contextual_prompt, v2_contextual_prompt, v3_contextual_prompt, v4_contextual_prompt, v5_contextual_prompt
+from . import v6_contextual_prompt
 
 
 class PromptVersion(StrEnum):
@@ -14,6 +15,7 @@ class PromptVersion(StrEnum):
     V3 = v3_contextual_prompt.PROMPT_VERSION
     V4 = v4_contextual_prompt.PROMPT_VERSION
     V5 = v5_contextual_prompt.PROMPT_VERSION
+    V6 = v6_contextual_prompt.PROMPT_VERSION
 
 
 @dataclass(frozen=True)
@@ -23,6 +25,7 @@ class PromptDefinition:
     require_empty_unattributed_entities: bool
     allow_hypothetical_questions: bool
     requires_explicit_chunks: bool = False
+    supports_relations: bool = False
 
 
 DEFAULT_PROMPT_VERSION = PromptVersion.V2.value
@@ -57,6 +60,14 @@ PROMPTS = MappingProxyType({
         require_empty_unattributed_entities=True,
         allow_hypothetical_questions=False,
         requires_explicit_chunks=True,
+    ),
+    PromptVersion.V6: PromptDefinition(
+        version=PromptVersion.V6,
+        instructions=v6_contextual_prompt.INSTRUCTIONS,
+        require_empty_unattributed_entities=True,
+        allow_hypothetical_questions=False,
+        requires_explicit_chunks=True,
+        supports_relations=True,
     ),
 })
 

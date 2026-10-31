@@ -22,9 +22,20 @@ from .replay import GenerationBaseline, revalidate_batch
 from .input_format import InputVersion
 from .input_replay import InputFormatComparison
 from .repository import apply_bundle
+from .contracts import SplitterVersion, SPLITTER_VERSION
+from .review import approval_document, reviewed_chunks, selection_report
+from app.enrichment.artifacts import write_json
 
 
 async def run(args: argparse.Namespace) -> int:
+    if args.command == "review":
+        write_json(args.output, approval_document(args.record, args.approve, args.reviewer))
+        print(args.output)
+        return 0
+    if args.command == "selection":
+        write_json(args.output, selection_report(args.record, args.review))
+        print(args.output)
+        return 0
     if args.command == "revalidate":
         if args.record.is_dir():
             report_path = revalidate_batch(args.record, args.output, baseline_profile=args.baseline_profile,
@@ -45,9 +56,13 @@ async def run(args: argparse.Namespace) -> int:
                           "excluded_chunks": len(record["excluded_chunks"])}, ensure_ascii=False))
         return 0
     if args.command == "apply":
+        review_path = getattr(args, "review", None)
+        if not reviewed_chunks(args.record, review_path):
+            print("NO_INDEXABLE_CHUNKS")
+            return 0
         async with database_pool() as pool:
             await ensure_enrichment_schema(pool)
-            print(await apply_bundle(pool, args.record))
+            print(await apply_bundle(pool, args.record, review_path=review_path))
         return 0
     if args.baseline_profile and not args.baseline_record:
         raise ValueError("--baseline-profile requires --baseline-record")
@@ -55,8 +70,12 @@ async def run(args: argparse.Namespace) -> int:
                 if args.baseline_record else None)
     prepared_request = None
     input_version = getattr(args, "input_version", None)
+    splitter_version = getattr(args, "splitter_version", None)
     comparison = baseline
     if baseline is not None:
+        if splitter_version is not None and splitter_version != baseline.record.get("splitter_version", SPLITTER_VERSION):
+            raise ValueError("분할 변경은 별도 분할 비교 실행기를 사용해야 합니다")
+        splitter_version = splitter_version or baseline.record.get("splitter_version", SPLITTER_VERSION)
         if args.preset or args.model:
             raise ValueError("Baseline comparisons reuse the recorded model selection; omit --preset and --model")
         bundle = baseline.bundle
@@ -88,6 +107,7 @@ async def run(args: argparse.Namespace) -> int:
             prepared_request=prepared_request,
             request_profile_id=baseline.request_profile_id if baseline else None,
             input_version=input_version or InputVersion.OFFSETS,
+            splitter_version=splitter_version or SPLITTER_VERSION,
         )
     record = json.loads(path.read_text(encoding="utf-8"))
     summary = {"status": record["status"], "record": str(path), "prompt_version": record["prompt_version"]}
@@ -122,8 +142,19 @@ def main() -> None:
     collection.add_argument("--input-version", choices=[version.value for version in InputVersion],
                             help="명시적 청크 입력은 별도 입력 형식 비교로 기록합니다. 기본값은 기존 위치 기반 입력")
     collection.add_argument("--comparison-output", type=Path, help="Windows의 긴 경로를 피할 별도 비교 보고서 폴더")
+    collection.add_argument("--splitter-version", choices=[version.value for version in SplitterVersion])
     application = commands.add_parser("apply")
     application.add_argument("--record", type=Path, required=True)
+    application.add_argument("--review", type=Path)
+    for command in ("review", "selection"):
+        operation = commands.add_parser(command)
+        operation.add_argument("--record", type=Path, required=True)
+        operation.add_argument("--output", type=Path, required=True)
+        if command == "review":
+            operation.add_argument("--approve", action="append", default=[], help="검수 후 승인한 청크 ID. 여러 번 지정 가능")
+            operation.add_argument("--reviewer", required=True)
+        else:
+            operation.add_argument("--review", type=Path, required=True)
     revalidation = commands.add_parser("revalidate", help="저장된 응답을 API 호출 없이 새 규칙으로 재검증")
     revalidation.add_argument("--record", type=Path, required=True, help="record.json 또는 일괄 재검증할 요청 아카이브 디렉터리")
     revalidation.add_argument("--output", type=Path, default=Path("LocationReview"))
@@ -135,7 +166,7 @@ def main() -> None:
         if not args.env_file.is_file():
             parser.error("Explicit environment file does not exist")
         load_dotenv(args.env_file, override=False)
-    if args.command in ("generate", "revalidate"):
+    if args.command in ("generate", "revalidate", "review", "selection"):
         datasets = Path(__file__).resolve().parents[3] / "Evaluation/datasets"
         destinations = [args.output]
         if getattr(args, "comparison_output", None) is not None:

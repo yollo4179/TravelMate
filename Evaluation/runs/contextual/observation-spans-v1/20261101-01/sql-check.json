@@ -1,0 +1,35 @@
+{
+  "cases": [
+    {
+      "name": "to_b_returns_a",
+      "passed": true
+    },
+    {
+      "name": "from_a_returns_b",
+      "passed": true
+    },
+    {
+      "name": "either_endpoint_is_scoped_to_matching_relation",
+      "passed": true
+    },
+    {
+      "name": "route_is_not_landscape",
+      "passed": true
+    },
+    {
+      "name": "route_is_not_facility",
+      "passed": true
+    },
+    {
+      "name": "landscape_matches_kind",
+      "passed": true
+    },
+    {
+      "name": "unknown_origin_is_not_invented",
+      "passed": true
+    }
+  ],
+  "database_writes": 0,
+  "application_tables_queried": false,
+  "mode": "readonly-values"
+}

@@ -65,6 +65,33 @@ python -X utf8 -m Evaluation.tracks.contextual.span_generation summarize-review 
 나머지 명령은 키나 모델을 사용하지 않는다. `summarize-review`는 사람이든 에이전트든 이미 기록한 판정을 집계할 뿐 새 의미 판정을 하지 않는다.
 전체 생성 응답의 스키마·오프셋 통과와 원문 대비 문맥 정확성을 구분한다. 새 분할·재색인·검색 측정은 실행하지 않았다.
 
+## 관찰 분할·이동 관계 선택 계약
+
+관찰 경계·이동 관계의 후속 선택 계약은 [v6 구현·검수 기록](../../runs/contextual/observation-spans-v1/20261101-01/REPORT.md)에 있다.
+장소 이름 수로 나누지 않고 이동 문장은 하나로 유지한다. 자동 판정과 검수 후 선택을 구분한다.
+워커의 내용 종류·이동 방향 필터는 명시적 입력만 받으며 자연어 자동 선택은 구현하지 않았다.
+
+```powershell
+python -X utf8 -m Evaluation.tracks.contextual.observation_generation prepare --summary <보존-v5-generation-summary.json> --regressions Evaluation/tracks/contextual/observation_regressions.json --pairs P08 P09 --output <새-실행-폴더>
+python -X utf8 -m Evaluation.tracks.contextual.observation_generation generate --plan <새-실행-폴더>/plan.json --key-file <지정-키-파일> --execute
+```
+
+`generate --execute`는 **유료 호출**이다. 이번 보존 응답을 다시 생성할 필요는 없다.
+기존 전송 시도·요약이 있으면 자동 재시도하지 않는다. 받은 응답의 처리 오류는 원본을 유지하고 무료 `revalidate`부터 검토한다.
+분할·지시문·출력 스키마·검증 버전이 함께 바뀐 계약 검수이며 지시문만의 비교와 섞지 않는다.
+
+`embedding-server`의 명시적 준비·검수 명령은 다음과 같다. 아래에는 `--execute`나 DB 적용이 없다.
+
+```powershell
+python -m app.contextual.cli generate --input <sources.json> --prompt-version contextual-observation-relations-v6 --input-version source-explicit-chunks-v2 --splitter-version sentence-paragraph-v2 --model perplexity/sonar --output <미리보기-폴더>
+python -m app.contextual.cli review --record <검수한-record.json> --reviewer <검수자> --approve <승인-청크-UUID> --output <승인파일.json>
+python -m app.contextual.cli selection --record <검수한-record.json> --review <승인파일.json> --output <선택보고서.json>
+```
+
+`--approve`를 여러 번 주거나 생략해 모두 보류할 수 있다. 새 계약의 `apply`에는 `--review`가 필요하다.
+승인 파일은 실제 원본 해시에 묶이며 검증 오류·귀속 보류 구간의 ID는 승인할 수 없다.
+`review/selection`은 원본·요청·응답을 수정하지 않는다. 실제 DB 적용은 별도 명령이며 이번에는 실행하지 않았다.
+
 ## 프롬프트 비교 실험 B
 
 ```powershell

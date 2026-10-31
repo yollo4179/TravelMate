@@ -8,7 +8,8 @@ import uuid
 
 from app.enrichment.contracts import ExistingPlace, fingerprint
 from .artifacts import load_record
-from .contracts import PlaceRole, SearchChunk, SourceDocument, SPLITTER_VERSION
+from .contracts import PlaceRole, SearchChunk, SourceDocument
+from .review import reviewed_chunks
 
 
 async def ensure_schema(pool: Any) -> None:
@@ -24,15 +25,16 @@ async def preserve_chunks(connection: Any, chunks: list[SearchChunk]) -> None:
         await connection.execute(
             """INSERT INTO retrieval_chunks(chunk_id,source_id,source_version,start_offset,end_offset,chunk_text,splitter_version)
             VALUES($1,$2,$3,$4,$5,$6,$7) ON CONFLICT DO NOTHING""", uuid.UUID(chunk.chunk_id),
-            uuid.UUID(chunk.source.source_id), chunk.source.source_version, chunk.start, chunk.end, chunk.chunk_text, SPLITTER_VERSION)
+            uuid.UUID(chunk.source.source_id), chunk.source.source_version, chunk.start, chunk.end, chunk.chunk_text, chunk.splitter_version)
         await connection.execute(
             """INSERT INTO retrieval_chunk_contexts(chunk_id,context_version,document) VALUES($1,$2,$3::jsonb)
             ON CONFLICT DO NOTHING""", uuid.UUID(chunk.chunk_id), chunk.context_version,
             json.dumps(chunk.to_dict(), ensure_ascii=False))
 
 
-async def apply_bundle(pool: Any, path: Path) -> str:
+async def apply_bundle(pool: Any, path: Path, *, review_path: Path | None = None) -> str:
     bundle, chunks, record = load_record(path)
+    chunks = reviewed_chunks(path, review_path)
     if not chunks:
         return "NO_INDEXABLE_CHUNKS"
     subject_ids = {ref["place_id"] for chunk in chunks for ref in chunk.place_refs if ref["role"] == PlaceRole.SUBJECT}
