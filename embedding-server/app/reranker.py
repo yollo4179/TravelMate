@@ -69,6 +69,17 @@ class Reranker:
     def batch_count(self, candidate_count: int) -> int:
         return (candidate_count + self.batch_size - 1) // self.batch_size
 
+    def input_token_lengths(self, query: str, texts: list[str]) -> list[int]:
+        encoded = self.model.tokenizer(
+            [query] * len(texts),
+            texts,
+            padding=False,
+            truncation=True,
+            max_length=self.model.max_length,
+            return_length=True,
+        )
+        return encoded["length"]
+
     def rerank(
         self,
         query: str,

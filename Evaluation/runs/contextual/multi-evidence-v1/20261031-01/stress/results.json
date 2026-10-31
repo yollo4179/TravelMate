@@ -1,0 +1,110 @@
+[
+  {
+    "repetition": 0,
+    "pair_count": 30,
+    "tokens": 7375,
+    "max_pair_tokens": 573,
+    "batch_count": 4,
+    "http_elapsed_ms": 434.70953299402026,
+    "gpu_memory": {
+      "samples": 5,
+      "device_peak_used_mib": 4755
+    }
+  },
+  {
+    "repetition": 0,
+    "pair_count": 60,
+    "tokens": 14750,
+    "max_pair_tokens": 573,
+    "batch_count": 8,
+    "http_elapsed_ms": 747.3300860001473,
+    "gpu_memory": {
+      "samples": 7,
+      "device_peak_used_mib": 4755
+    }
+  },
+  {
+    "repetition": 0,
+    "pair_count": 90,
+    "tokens": 22125,
+    "max_pair_tokens": 573,
+    "batch_count": 12,
+    "http_elapsed_ms": 1062.345838996407,
+    "gpu_memory": {
+      "samples": 11,
+      "device_peak_used_mib": 4755
+    }
+  },
+  {
+    "repetition": 1,
+    "pair_count": 60,
+    "tokens": 14750,
+    "max_pair_tokens": 573,
+    "batch_count": 8,
+    "http_elapsed_ms": 738.7819299983676,
+    "gpu_memory": {
+      "samples": 8,
+      "device_peak_used_mib": 4755
+    }
+  },
+  {
+    "repetition": 1,
+    "pair_count": 90,
+    "tokens": 22125,
+    "max_pair_tokens": 573,
+    "batch_count": 12,
+    "http_elapsed_ms": 1061.7611190027674,
+    "gpu_memory": {
+      "samples": 10,
+      "device_peak_used_mib": 4755
+    }
+  },
+  {
+    "repetition": 1,
+    "pair_count": 30,
+    "tokens": 7375,
+    "max_pair_tokens": 573,
+    "batch_count": 4,
+    "http_elapsed_ms": 439.5479360027821,
+    "gpu_memory": {
+      "samples": 5,
+      "device_peak_used_mib": 4755
+    }
+  },
+  {
+    "repetition": 2,
+    "pair_count": 90,
+    "tokens": 22125,
+    "max_pair_tokens": 573,
+    "batch_count": 12,
+    "http_elapsed_ms": 1103.2388000021456,
+    "gpu_memory": {
+      "samples": 11,
+      "device_peak_used_mib": 4755
+    }
+  },
+  {
+    "repetition": 2,
+    "pair_count": 30,
+    "tokens": 7375,
+    "max_pair_tokens": 573,
+    "batch_count": 4,
+    "http_elapsed_ms": 444.0878040040843,
+    "gpu_memory": {
+      "samples": 5,
+      "device_peak_used_mib": 4755
+    }
+  },
+  {
+    "repetition": 2,
+    "pair_count": 60,
+    "tokens": 14750,
+    "max_pair_tokens": 573,
+    "batch_count": 8,
+    "http_elapsed_ms": 762.3804039976676,
+    "gpu_memory": {
+      "samples": 7,
+      "device_peak_used_mib": 4755
+    }
+  }
+]

@@ -8,6 +8,32 @@
 `pilot_review.json`은 원문 구간별 에이전트 검수 기록이다. 검수 플래그는 중복 가능하다.
 [2026-10-31 실측 보고서](../../runs/contextual/stored-nine-pairs/20261031-01/REPORT.md)에 결과와 한계를 기록했다.
 [문제 정의와 해결 실험안](PROBLEMS_AND_SOLUTIONS.md)은 문맥 생성·혼합 장소 분할·리랭킹 근거 전달의 문제를 구분하고 후속 비교 기준을 제안한다. 서비스 적용 전 설계 문서다.
+[근거 1·2·3개 비교 실측](../../runs/contextual/multi-evidence-v1/20261031-01/REPORT.md)에서 실험 A의 구현·검증 결과를 확인한다.
+
+## 근거 수 비교 실험 A
+
+`multi_evidence.py`는 아래 입력으로 보존 v2만 활성화하고 근거 1·2·3개를 질문마다 3회 반복한다.
+실제 `_complete_recommendation`을 실행하며 후보 30개·대표 근거가 모든 비교에서 같지 않으면 중단한다.
+기존 `retrieve.py`와 `score.py`를 같은 컨테이너 임시 경로에 두고 기존과 같은 방식으로 실행한다.
+
+```text
+python multi_evidence.py --code <최신-app의-상위경로> --inputs retrieval-inputs.json --cases cases.frozen.json --prepared prepared.json --vectors vectors.json --output <새-실험-폴더> --repetitions 3
+python stress_evidence.py --code <최신-app의-상위경로> --source <새-실험-폴더> --vectors vectors.json --output <새-부하-폴더>
+```
+
+입력·준비 자료·벡터는 앞 비교의 로컬 보존 자료를 재사용한다. 실행 조건은 batch 8·autocast_fp16이며 별도 모델을 로드하지 않는다.
+품질·지연 기록은 `observations.json`·`summary.json`, 실제 쌍별 입력·점수·전체 응답은 질문별 JSON에 쓴다.
+쿼리 벡터는 재사용하므로 기록한 코어 지연은 실제 임베딩 호출이나 Spring/Kafka 전체 지연을 포함하지 않는다.
+GPU 계측은 nvidia-smi의 장치 전체 메모리 100ms 표본이다. PyTorch의 정확한 최대 할당량이나 서버 내부 대기 시간으로 표시하지 않는다.
+별도의 부하 실험은 실제 후보 텍스트를 반복한 30·60·90쌍이며 장소 검색 품질 점수가 아니다.
+
+```powershell
+python -X utf8 Evaluation/tracks/contextual/audit_multi.py --results <새-실험-폴더> --cases <고정-질문> --baseline Evaluation/runs/contextual/stored-nine-pairs/20261031-01/scores.json --output <새-실험-폴더>/audit.json
+python -X utf8 -m unittest Evaluation.tracks.contextual.test_score Evaluation.tracks.contextual.test_multi
+```
+
+감사는 반복·비교 상대 누락, 입력 후보 변경, subject가 아닌 근거 전달, 단일 근거 기준군의 기존 v2 결과 회귀를 검사한다.
+모델이 잘못 subject로 붙인 의미 오류는 형식 감사로 해결되지 않으며 문맥 검수와 함께 해석한다.
 
 ## 입력 준비
 

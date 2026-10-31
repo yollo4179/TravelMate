@@ -1,6 +1,6 @@
 # 공통 장소 청크·문맥 생성·검색 DB 명세
 
-문서 버전: 3 · 갱신: 2026-10-31
+문서 버전: 4 · 갱신: 2026-10-31
 
 [계획서](../plans/contextual-retrieval.md) · [구조도](../architecture/contextual-retrieval.md) · [기존 웹 수집](place-review-enrichment.md)
 
@@ -279,6 +279,27 @@ FROM (
 각 장소의 subject 활성 청크 중 쿼리와 가장 가까운 원문 근거 하나를 선택한다.
 장소 점수는 그 청크의 cosine score이며 청크 수나 리뷰 수로 합산하지 않는다. 기존 장소 Top-K와 반환 limit은 유지한다.
 리랭커에는 선택된 짧은 문맥+원문을 전달한다. BGE-M3 및 기존 BGE reranker의 모델·실행 전략·정밀도는 변경하지 않는다.
+
+`CONTEXTUAL_RERANK_EVIDENCE_PER_PLACE=1`이 기본값이며 위 단일 근거 경로를 유지한다.
+`2`·`3`을 명시하면 같은 Top-30 장소 후보에 한해서 subject 근거를 cosine 순으로 추가 조회한다.
+장소별 `chunk_id + context_version` 중복을 제거하고 각 문맥+원문을 별도 쌍으로 리랭킹한다.
+장소 점수는 최고 근거 점수이며 합산하지 않는다. 동점이면 기존 후보 순서를 유지한다.
+설정은 Docker Compose와 stack bootstrap이 전달한다. source.env에서 설정을 제거하면 이전 실행값도 제거해 기본값으로 돌아간다.
+이 값은 API 요청의 사용자 입력으로 받지 않는다. 범위 밖 설정은 시작 단계에서 거부한다.
+
+복수 근거 경로는 요청당 최대 90쌍·토크나이저가 실제로 절단한 뒤의 총 32,768토큰을 상한으로 둔다.
+한도를 넘으면 모델을 호출하기 전에 명시적으로 실패하며 근거를 몰래 삭제하거나 다른 검색 방식으로 바꾸지 않는다.
+모델별 입력 길이 제한·배치·정밀도는 기존 설정을 따른다. 후보 조회 이후 원본 버전·대표 활성 근거가 바뀌어도 실패 처리한다.
+`SEMANTIC_ONLY`에는 복수 근거 조회나 토큰 예산 검사를 적용하지 않는다.
+
+복수 근거의 반환 장소는 한 번만 나오며 `description`은 최고 점수 근거의 문맥+원문이다.
+장소의 `semantic_score`는 원래 장소 후보의 대표 cosine score를 유지한다.
+`evidence_chunks`는 리랭킹 점수 순이며 각 근거에 `rerank_score`·`semantic_score`를 추가한다.
+`rerank_score`는 사실 확률이 아니다. 추가된 근거에도 생성 오류가 있을 수 있으므로 복수 반환을 사실 검증으로 해석하지 않는다.
+Spring은 JSON의 기존 필드를 직접 읽고 원본 완료 JSON도 보존하므로 앱 DTO 변경은 없다.
+
+[근거 1·2·3개 실측](../../Evaluation/runs/contextual/multi-evidence-v1/20261031-01/REPORT.md)은
+한 장소·고정 26문항에서 수행한 격리 실험이다. 이 결과로 기본값이나 운영 서버를 변경하지 않았다.
 Kafka 결과 각 장소의 `evidence_chunks`에 chunk_id·원문·문맥·source_span·버전·역할·생성 모델·출처 metadata가 추가된다.
 원시 벡터는 반환하지 않는다. Spring은 원본 완료 JSON을 보존하며, 앱용 DTO에 출처 카드가 추가된 것은 아니다.
 BM25 결합과 가상 질문 벡터 색인은 이번 변경에 포함하지 않는다.

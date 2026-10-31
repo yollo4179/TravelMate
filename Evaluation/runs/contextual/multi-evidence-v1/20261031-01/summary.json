@@ -1,0 +1,158 @@
+{
+  "1": {
+    "supported_samples": 66,
+    "target_top_1": 63,
+    "target_top_5": 63,
+    "gold_delivered": 57,
+    "gold_winner_top_5": 57,
+    "gold_any_returned_top_5": 57,
+    "known_wrong_place_winner": 3,
+    "known_wrong_place_returned": 3,
+    "pair_count": {
+      "samples": 78,
+      "p50": 30,
+      "p95": 30,
+      "min": 30,
+      "max": 30
+    },
+    "token_count": {
+      "samples": 78,
+      "p50": 6169,
+      "p95": 7357,
+      "min": 5043,
+      "max": 7375
+    },
+    "core_elapsed_ms": {
+      "samples": 78,
+      "p50": 419.8783280007774,
+      "p95": 738.6424229989643,
+      "min": 329.83205399796134,
+      "max": 846.3654509978369
+    },
+    "rerank_http_ms": {
+      "samples": 78,
+      "p50": 409.5831220038235,
+      "p95": 731.7814679990988,
+      "min": 320.0663329989766,
+      "max": 834.3125829997007
+    },
+    "database_ms": {
+      "samples": 78,
+      "p50": 5.894212998100556,
+      "p95": 10.893261998717207,
+      "min": 4.674334995797835,
+      "max": 13.786015995719936
+    },
+    "worker_dispatch_wait_ms": {
+      "samples": 78,
+      "p50": 0.14197300333762541,
+      "p95": 0.2845959970727563,
+      "min": 0.08556199463782832,
+      "max": 0.3684449984575622
+    }
+  },
+  "2": {
+    "supported_samples": 66,
+    "target_top_1": 66,
+    "target_top_5": 66,
+    "gold_delivered": 66,
+    "gold_winner_top_5": 63,
+    "gold_any_returned_top_5": 66,
+    "known_wrong_place_winner": 0,
+    "known_wrong_place_returned": 6,
+    "pair_count": {
+      "samples": 78,
+      "p50": 31,
+      "p95": 31,
+      "min": 30,
+      "max": 31
+    },
+    "token_count": {
+      "samples": 78,
+      "p50": 6464,
+      "p95": 7417,
+      "min": 5279,
+      "max": 7483
+    },
+    "core_elapsed_ms": {
+      "samples": 78,
+      "p50": 443.99015700037125,
+      "p95": 782.8767050013994,
+      "min": 373.6750070020207,
+      "max": 1079.6872670034645
+    },
+    "rerank_http_ms": {
+      "samples": 78,
+      "p50": 421.8142949976027,
+      "p95": 768.9743349983473,
+      "min": 358.53109500021674,
+      "max": 1063.4208350020344
+    },
+    "database_ms": {
+      "samples": 78,
+      "p50": 7.306937004614156,
+      "p95": 14.495246003207285,
+      "min": 5.7560190034564584,
+      "max": 20.577925999532454
+    },
+    "worker_dispatch_wait_ms": {
+      "samples": 78,
+      "p50": 0.1335400011157617,
+      "p95": 0.2880269967135973,
+      "min": 0.08039000385906547,
+      "max": 0.30425699515035376
+    }
+  },
+  "3": {
+    "supported_samples": 66,
+    "target_top_1": 66,
+    "target_top_5": 66,
+    "gold_delivered": 66,
+    "gold_winner_top_5": 63,
+    "gold_any_returned_top_5": 66,
+    "known_wrong_place_winner": 0,
+    "known_wrong_place_returned": 9,
+    "pair_count": {
+      "samples": 78,
+      "p50": 32,
+      "p95": 32,
+      "min": 30,
+      "max": 32
+    },
+    "token_count": {
+      "samples": 78,
+      "p50": 6694,
+      "p95": 7474,
+      "min": 5279,
+      "max": 7526
+    },
+    "core_elapsed_ms": {
+      "samples": 78,
+      "p50": 449.02010900113964,
+      "p95": 851.767092004593,
+      "min": 381.2695340020582,
+      "max": 1024.5818780022091
+    },
+    "rerank_http_ms": {
+      "samples": 78,
+      "p50": 427.858331000607,
+      "p95": 836.5930500003742,
+      "min": 365.3168390010251,
+      "max": 1006.3353209989145
+    },
+    "database_ms": {
+      "samples": 78,
+      "p50": 7.0080399964354,
+      "p95": 14.518174997647293,
+      "min": 5.433420999906957,
+      "max": 18.247025000164285
+    },
+    "worker_dispatch_wait_ms": {
+      "samples": 78,
+      "p50": 0.11107199679827318,
+      "p95": 0.2442070035613142,
+      "min": 0.07294100214494392,
+      "max": 0.39111699879867956
+    }
+  }
+}

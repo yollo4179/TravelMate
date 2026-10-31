@@ -23,6 +23,7 @@ from app.enrichment.repository import latest_snapshot
 from app.contextual.pipeline import tourapi_chunks, legacy_evidence_chunks, select_active
 from app.contextual.repository import desired_chunks, activate_chunks, preserve_chunks
 from app.contextual.artifacts import archive_index_input
+from app.contextual.ranking import EvidenceCount, build_pairs, rank_places, validate_token_budget
 
 LOGGER = logging.getLogger(__name__)
 RETRIEVE_TOP_K = 30
@@ -41,6 +42,7 @@ class RankingMode(StrEnum):
 class KafkaRuntime:
     def __init__(self, database_pool: Any) -> None:
         self.database_pool = database_pool
+        self.evidence_count = EvidenceCount(int(os.environ.get("CONTEXTUAL_RERANK_EVIDENCE_PER_PLACE", "1")))
         self.bootstrap_servers = os.environ["KAFKA_BOOTSTRAP_SERVERS"]
         self.place_changes_topic = os.environ.get(
             "KAFKA_PLACE_CHANGES_TOPIC",
@@ -371,13 +373,22 @@ class KafkaRuntime:
             pipeline_span.set_attribute("search.candidate_count", len(candidates))
 
             if candidates and ranking_mode == RankingMode.RERANKED:
-                texts = [candidate["description"] or candidate["name"] for candidate in candidates]
+                evidence_count = getattr(self, "evidence_count", EvidenceCount.ONE)
+                expanded = await self._retrieve_evidence(candidates, vector, evidence_count) if evidence_count != EvidenceCount.ONE else []
+                pairs = build_pairs(candidates, expanded, evidence_count)
+                texts = [pair.text for pair in pairs]
+                if evidence_count != EvidenceCount.ONE:
+                    lengths = await to_thread.run_sync(lambda: reranker.input_token_lengths(query, texts))
+                    validate_token_budget(pairs, lengths)
+                    pipeline_span.set_attribute("reranking.input_tokens", sum(lengths))
                 reranking_started_at = time.perf_counter()
                 with tracer().start_as_current_span("reranking.model_inference") as reranking_span:
                     reranking_span.set_attribute("reranking.device", reranker.device)
                     reranking_span.set_attribute("reranking.model", reranker.model_name)
                     reranking_span.set_attribute("reranking.query", query)
                     reranking_span.set_attribute("reranking.candidate_count", len(texts))
+                    reranking_span.set_attribute("reranking.evidence_per_place", int(evidence_count))
+                    reranking_span.set_attribute("reranking.place_count", len(candidates))
                     worker_dispatch_at = time.perf_counter()
 
                     def run_reranker() -> list[float]:
@@ -393,7 +404,8 @@ class KafkaRuntime:
                     if scores:
                         reranking_span.set_attribute("reranking.score_min", min(scores))
                         reranking_span.set_attribute("reranking.score_max", max(scores))
-                ranked = sorted(zip(candidates, scores, strict=True), key=lambda item: item[1], reverse=True)
+                ranked = (rank_places(candidates, pairs, scores) if evidence_count != EvidenceCount.ONE else
+                          sorted(zip(candidates, scores, strict=True), key=lambda item: item[1], reverse=True))
                 items = [self._to_result_item(row, rank, score) for rank, (row, score) in enumerate(ranked[: payload["limit"]], 1)]
                 rerank_status = "APPLIED"
             else:
@@ -527,8 +539,45 @@ class KafkaRuntime:
             )
         return [dict(row) for row in rows]
 
+    async def _retrieve_evidence(
+        self,
+        candidates: list[dict[str, Any]],
+        vector: str,
+        count: EvidenceCount,
+    ) -> list[dict[str, Any]]:
+        if not candidates:
+            return []
+        # 장소 후보를 다시 뽑지 않아 근거 수 비교에서 후보 집합이 바뀌지 않게 한다.
+        query = """
+            SELECT p.place_id, p.source_version, matched.evidence,
+                   COALESCE(matched.semantic_score, 1 - (p.embedding <=> $1::vector)) AS semantic_score
+            FROM place_embeddings p
+            LEFT JOIN LATERAL (
+                SELECT c.document || jsonb_build_object('context_version', a.context_version,
+                           'metadata', s.document->'metadata') AS evidence,
+                       1 - (c.embedding <=> $1::vector) AS semantic_score, a.slot
+                FROM place_active_chunks a
+                JOIN retrieval_chunk_contexts c USING(chunk_id, context_version)
+                JOIN retrieval_chunks r USING(chunk_id)
+                JOIN retrieval_source_versions s USING(source_id, source_version)
+                WHERE a.place_id=p.place_id AND a.role='subject' AND c.embedding IS NOT NULL
+                ORDER BY c.embedding <=> $1::vector, a.slot LIMIT $3
+            ) matched ON true
+            WHERE p.place_id=ANY($2::bigint[]) AND p.document_status='READY'
+              AND p.source_version=p.latest_seen_version
+            ORDER BY p.place_id, matched.semantic_score DESC, matched.slot
+        """
+        with tracer().start_as_current_span("database.contextual_evidence_search"):
+            async with self.database_pool.acquire() as connection:
+                rows = await connection.fetch(query, vector, [candidate["place_id"] for candidate in candidates], int(count))
+        return [dict(row) for row in rows]
+
     @staticmethod
     def _to_result_item(candidate: dict[str, Any], rank: int, rerank_score: float | None) -> dict[str, Any]:
+        evidence_chunks = candidate.get("reranked_evidence_chunks")
+        if evidence_chunks is None:
+            evidence = candidate.get("evidence")
+            evidence_chunks = [json.loads(evidence) if isinstance(evidence, str) else evidence] if evidence else []
         return {
             "place_id": candidate["place_id"],
             "rank": rank,
@@ -549,7 +598,7 @@ class KafkaRuntime:
             "latest_seen_version": candidate["latest_seen_version"],
             "index_config_version": candidate.get("index_config_version", "bge-m3-v1"),
             "enrichment_snapshot_id": str(candidate["enrichment_snapshot_id"]) if candidate.get("enrichment_snapshot_id") else None,
-            "evidence_chunks": [json.loads(candidate["evidence"]) if isinstance(candidate["evidence"], str) else candidate["evidence"]] if candidate.get("evidence") else [],
+            "evidence_chunks": evidence_chunks,
         }
 
     async def _save_recommendation_result(self, request: Any, result: dict[str, Any]) -> None:

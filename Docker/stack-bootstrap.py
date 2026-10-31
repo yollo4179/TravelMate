@@ -39,6 +39,7 @@ def prepare(state: Path) -> None:
                 "RERANK_BATCH_SIZE",
                 "RERANK_DIAGNOSTICS_ENABLED",
                 "RERANK_EXECUTION_STRATEGY",
+                "CONTEXTUAL_RERANK_EVIDENCE_PER_PLACE",
                 "PERPLEXITY_API_KEY",
                 "PERPLEXITY_AGENT_PRESET",
                 "PERPLEXITY_AGENT_MODEL",
@@ -61,6 +62,14 @@ def prepare(state: Path) -> None:
         ):
             if source_values.get(key):
                 runtime_values[key] = source_values[key]
+        evidence_count_key = "CONTEXTUAL_RERANK_EVIDENCE_PER_PLACE"
+        evidence_count = source_values.get(evidence_count_key, "").strip().strip("\"'")
+        if evidence_count:
+            if evidence_count not in {"1", "2", "3"}:
+                raise ValueError("CONTEXTUAL_RERANK_EVIDENCE_PER_PLACE는 1·2·3 중 하나여야 합니다")
+            runtime_values[evidence_count_key] = evidence_count
+        else:
+            runtime_values.pop(evidence_count_key, None)
         for key in ("PERPLEXITY_API_KEY", "PERPLEXITY_AGENT_PRESET", "PERPLEXITY_AGENT_MODEL"):
             # Removing a credential/selector from .env must also remove its stale forwarded value.
             if key in source_values:

@@ -57,6 +57,17 @@ class BootstrapTests(unittest.TestCase):
         bootstrap.prepare(self.state)
         self.assertEqual((self.state / 'ca-bundle.pem').read_text(), 'custom CA')
 
+    def test_contextual_evidence_count_is_forwarded_and_removed_without_stale_setting(self):
+        (self.state / 'source.env').write_text('CONTEXTUAL_RERANK_EVIDENCE_PER_PLACE="3"\n')
+        bootstrap.prepare(self.state)
+        self.assertIn('CONTEXTUAL_RERANK_EVIDENCE_PER_PLACE=3\n', (self.state / 'runtime.env').read_text())
+        (self.state / 'source.env').write_text('')
+        bootstrap.prepare(self.state)
+        self.assertNotIn('CONTEXTUAL_RERANK_EVIDENCE_PER_PLACE=', (self.state / 'runtime.env').read_text())
+        (self.state / 'source.env').write_text('CONTEXTUAL_RERANK_EVIDENCE_PER_PLACE=4\n')
+        with self.assertRaises(ValueError):
+            bootstrap.prepare(self.state)
+
     def test_langsmith_credentials_are_copied_without_printing_into_runtime_env(self):
         os.environ['STACK_CUSTOM_CA'] = '1'
         (self.state / 'ca-bundle.pem').write_text('test certificate', encoding='utf-8')

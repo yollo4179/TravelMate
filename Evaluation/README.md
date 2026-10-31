@@ -33,6 +33,7 @@ Evaluation/
 보존 v1_local·v2 문맥 응답의 소규모 검색 진단은 [실행 방법](tracks/contextual/README.md)과
 [2026-10-31 실측 보고서](runs/contextual/stored-nine-pairs/20261031-01/REPORT.md)를 참고한다.
 [문제 정의와 해결 실험안](tracks/contextual/PROBLEMS_AND_SOLUTIONS.md)에 남은 오류와 개선안·평가 기준을 기록했다.
+[장소별 근거 1·2·3개 비교](runs/contextual/multi-evidence-v1/20261031-01/REPORT.md)에 실험 A의 구현·실측·보존 기록을 추가했다.
 기존 100+100 묶음은 generated/by_group에 조회용으로 보존한다. 두 LLM을 뜻하지 않는다.
 기억·페르소나 시나리오는 source/cases.source.json의 해당 문항에 포함된다.
 같은 정답을 별도 source 파일에 중복 작성하지 않는다.
