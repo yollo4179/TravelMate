@@ -1,5 +1,8 @@
 # TravelMate 평가
 
+[실제 평가 직전 준비](runs/contextual/model-evaluation-preparation-v1/20261101-01/REPORT.md)에
+LF 보존 검사, 로컬 Qwen 메타데이터·예산 차단, 기존 case별 계약 차이와 미승인 실행 제안을 기록했다.
+
 [토큰 예산·실행 기록 연결 모의 검증](runs/contextual/token-budget-observation-v1/20261101-01/REPORT.md)은
 서버 native 관측과 기존 case_id/입력 해시를 연결한다. 실제 모델 품질 평가 결과는 아니다.
 

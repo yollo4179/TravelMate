@@ -1,0 +1,66 @@
+{
+  "baseline": "b32486f2",
+  "process_allowlist": {
+    "LLM_PROVIDER": null,
+    "OPENAI_MODEL": null,
+    "OPENAI_CONTEXT_TOKENS": null,
+    "OPENAI_MODEL_OUTPUT_LIMIT": null,
+    "OPENAI_MAX_OUTPUT_TOKENS": null,
+    "OPENAI_LIMITS_MODEL": null,
+    "OPENAI_LIMITS_SOURCE": null,
+    "RAGAS_JUDGE_MODEL": null,
+    "OLLAMA_MODEL": null,
+    "OLLAMA_CONTEXT_TOKENS": null,
+    "OLLAMA_MAX_OUTPUT_TOKENS": null,
+    "OLLAMA-BASE-URL": null,
+    "OLLAMA_BASE_URL": null
+  },
+  "env_file_allowlist": [
+    {
+      "path": "C:\\ssafy\\Travelmate\\.env",
+      "allowlisted_values_only": {}
+    },
+    {
+      "path": "C:\\ssafy\\Travelmate\\Server\\TravelMate\\.env",
+      "allowlisted_values_only": {
+        "OLLAMA-BASE-URL": "http://localhost:11434"
+      }
+    }
+  ],
+  "application": {
+    "provider_default": "QWEN",
+    "qwen_model": "qwen3:8b",
+    "requested_context_tokens": 8192,
+    "reserved_output_tokens": 1536,
+    "think": false,
+    "source": "Server/TravelMate/src/main/resources/application.properties and OllamaLlmClient",
+    "gpt_model": null,
+    "gpt_context_default": 0,
+    "gpt_output_limit_default": 0,
+    "running_spring_process_configuration_verified": false,
+    "http_connect_timeout_ms": 5000,
+    "http_read_timeout_ms": 240000
+  },
+  "judge": {
+    "configured_model": "gpt-4.1-mini",
+    "model_override_environment": "RAGAS_JUDGE_MODEL",
+    "selected_as_app_model": false,
+    "current_output_cap_explicit": false,
+    "current_token_guard_connected": false,
+    "sdk_version_inspected": "3.3.0",
+    "sdk_default_max_retries_inspected": 2,
+    "api_called": false
+  },
+  "gpt_required_settings": [
+    "LLM_PROVIDER=OPENAI",
+    "OPENAI_MODEL=<user-selected app model>",
+    "OPENAI_CONTEXT_TOKENS=<official model context>",
+    "OPENAI_MODEL_OUTPUT_LIMIT=<official max output>",
+    "OPENAI_LIMITS_MODEL=<same exact model ID>",
+    "OPENAI_LIMITS_SOURCE=<official source and checked date>",
+    "OPENAI_MAX_OUTPUT_TOKENS=<approved reservation within model limits>",
+    "OPENAI_API_KEY=<configured securely; value never collected>",
+    "OPENAI_BASE_URL=<approved official/compatible endpoint; default official>"
+  ],
+  "gpt_model_unselected_action": "BLOCK; do not inherit judge_model"
+}

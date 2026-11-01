@@ -1,0 +1,146 @@
+{
+  "baseline": "b32486f2b4be663a7bb736c260f2bbdab66095c0",
+  "scope": "preparation only; no live inference or quality scores",
+  "real_inference_calls": 0,
+  "paid_calls": 0,
+  "search_reruns": 0,
+  "production_db_operations": 0,
+  "deployments": 0,
+  "local_metadata_requests_total": 8,
+  "preserved_metadata_requests": 4,
+  "java_counter_http_is_mock_replay": true,
+  "lf_checkout_clean": true,
+  "lf_preserved_files_all_match": true,
+  "protected_paths_unchanged": {
+    "Evaluation/datasets": true,
+    "Evaluation/runs/contextual/token-budget-observation-v1": true,
+    "Server/TravelMate/src/main": true,
+    "embedding-server": true,
+    "Docker": true,
+    "Evaluation/common": true,
+    "Evaluation/tracks/tool_call/convert_server_trace.py": true
+  },
+  "original_collectors_unchanged_since_inventory": {
+    "Evaluation/tracks/search/collect_live.py": true,
+    "Evaluation/tracks/search/collect_holdout.py": true,
+    "Evaluation/common/runs/runner.py": true,
+    "Evaluation/common/dataset/build.py": true
+  },
+  "new_python_tests": {
+    "tests": 7,
+    "failures": 0,
+    "errors": 0
+  },
+  "new_java_tests": {
+    "tests": 1,
+    "failures": 0,
+    "errors": 0
+  },
+  "lf_baseline_python_tests": {
+    "tests": 39,
+    "failures": 0,
+    "errors": 0
+  },
+  "new_execution_scope_approved": false,
+  "changed_sources": [
+    {
+      "path": "Evaluation/README.md",
+      "sha256_lf": "011beb1cc10b11f5d322b4c312bd8c81e7669a6bd78ee8c36274916f269b5629"
+    },
+    {
+      "path": "Evaluation/runs/README.md",
+      "sha256_lf": "30a84153084b03bfa8e13b5f06ebb4b218bf8ec3210113fb31f97976adb02b67"
+    },
+    {
+      "path": "Evaluation/tracks/tool_call/preparation.py",
+      "sha256_lf": "0fd0a7c8dd231508ed95cc1899308431f4a7f4127fe51fee14544459bd5d4cfe"
+    },
+    {
+      "path": "Evaluation/tests/test_model_preparation.py",
+      "sha256_lf": "1bbed6f1ab49766b10c89edc99b96e2da76ef126a6d18edca0e52d4b44049b74"
+    },
+    {
+      "path": "Server/TravelMate/src/test/java/com/yollo/TravelMate/ModelInputBudgetPreparationTest.java",
+      "sha256_lf": "7f297c50280d34cb4c030e0252e2bce35ffcc84d97ac0a3c598290581f21f027"
+    }
+  ],
+  "artifacts": [
+    {
+      "path": ".gitattributes",
+      "sha256_lf": "a79691a93b46e49ce460c26ef22afcc03d6eca1e63bf2edbc20e96159510f6c9"
+    },
+    {
+      "path": "case-connections.jsonl",
+      "sha256_lf": "aa892d8e07cb45f5f899174cb8b3a4f1d0909c3ecde5ae419fb491d2b7617e5a"
+    },
+    {
+      "path": "case-groups.json",
+      "sha256_lf": "ada2c6953d03a452c0b7d87aa45b0848a4d1c687a61f240a5e56476b35260d1c"
+    },
+    {
+      "path": "CASE_MATRIX.md",
+      "sha256_lf": "eb26054806a5b64a803ea75c4bf400e9044142ceb535a4dfe931251925fb9b25"
+    },
+    {
+      "path": "configuration-inspection.json",
+      "sha256_lf": "522611b55897038f88eb7af3eac971da5ec489e11d24f72b5e17534d23cfdec7"
+    },
+    {
+      "path": "execution-proposal.json",
+      "sha256_lf": "a1f0c148044214d8e0a9432a3a0f7798f88013fabb89128f9e34a7cf116be327"
+    },
+    {
+      "path": "initial-wire-example.json",
+      "sha256_lf": "08e219c88fd9f4d3cbaf82b4c94fdd43052bbbab075411cd0f24596b2d524133"
+    },
+    {
+      "path": "junit/TEST-com.yollo.TravelMate.ModelInputBudgetPreparationTest.xml",
+      "sha256_lf": "09c544c7a6eef08046d826827f0cc39a2f8f568af86cf5352ddccf95b26121c2"
+    },
+    {
+      "path": "lf-full-suite-summary.json",
+      "sha256_lf": "271443346b46d2f18cb419392ff458509bfe50e7764b58ee38385825c6ae5ccd"
+    },
+    {
+      "path": "lf-preservation-test.txt",
+      "sha256_lf": "3cf41be7a400573f208620164778d62dfa43747a93f325cddea8f5095e16b4a9"
+    },
+    {
+      "path": "lf-preservation.json",
+      "sha256_lf": "b890083a78967c0cbd9892a58ecb3c6c8aa0f38e78f5f610b4b5e3be4a8c9fb5"
+    },
+    {
+      "path": "local-collector-inventory.json",
+      "sha256_lf": "f619aa55308df87ce39305c989d077a0b45912d41f54cf0987f2255270e39159"
+    },
+    {
+      "path": "official-model-limits.json",
+      "sha256_lf": "303892c780b3b4e9528adedabf54fb4a345359f0e4248d113b7381e0c643c04b"
+    },
+    {
+      "path": "preparation-summary.json",
+      "sha256_lf": "40922bf549553ce179176187bbec3d9b80abc36f74351d7075a2c1633d14e5a0"
+    },
+    {
+      "path": "preparation-tests.json",
+      "sha256_lf": "5a17ddf01ddbd508bec5e90c7272561c07fbfd3870bd51a9b218b0722aa47aef"
+    },
+    {
+      "path": "qwen-budgets.jsonl",
+      "sha256_lf": "aad61ab198a2caf3b703ee9edfff4e035be7d3776c237d8fd7a3c63d288b80d3"
+    },
+    {
+      "path": "qwen-metadata.json",
+      "sha256_lf": "fc11e062daa4b9cc02e3615468d5191be2f785890a3f1d1b82b5b4eeb6ad634a"
+    },
+    {
+      "path": "qwen-show.json",
+      "sha256_lf": "551d5b65539ac81f961b900c1c716e04f461bf9933ad93b3eece3ea553ef4420"
+    },
+    {
+      "path": "REPORT.md",
+      "sha256_lf": "f0a328cddcbacfe7fd69be458209e0cf616130ffdb83bf1a15427af6856a8f3a"
+    }
+  ],
+  "hash_format": "SHA-256 after LF normalization"
+}

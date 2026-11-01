@@ -1,0 +1,43 @@
+{
+  "checked_date": "2026-11-01",
+  "app_gpt": {
+    "model": null,
+    "context_tokens": null,
+    "max_output_tokens": null,
+    "price": null,
+    "status": "UNSELECTED; no substitute model chosen"
+  },
+  "judge_gpt": {
+    "model": "gpt-4.1-mini",
+    "role": "existing evaluator config only",
+    "source": "https://developers.openai.com/api/docs/models/gpt-4.1-mini",
+    "context_tokens": 1047576,
+    "max_output_tokens": 32768,
+    "usd_per_million_tokens": {
+      "input": 0.4,
+      "cached_input": 0.1,
+      "output": 1.6
+    },
+    "official_page_status_observed": "Deprecated",
+    "account_availability_verified": false,
+    "configuration_changed": false
+  },
+  "qwen": {
+    "model": "qwen3:8b",
+    "official_upstream": "Qwen/Qwen3-8B",
+    "official_source": "https://huggingface.co/Qwen/Qwen3-8B",
+    "official_native_context_tokens": 32768,
+    "official_yarn_extended_context_tokens": 131072,
+    "local_show_context_tokens": 40960,
+    "app_requested_context_tokens": 8192,
+    "context_values_are_different_scopes": true,
+    "independent_official_max_output_tokens": null,
+    "actual_loaded_context_tokens": null,
+    "loaded_models_count": 0
+  },
+  "method_sources": [
+    "https://developers.openai.com/api/docs/guides/token-counting",
+    "https://docs.ollama.com/api-reference/show-model-details",
+    "https://docs.ollama.com/api/ps"
+  ]
+}
