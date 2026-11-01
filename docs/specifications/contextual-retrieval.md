@@ -492,12 +492,12 @@ FROM (
 장소의 `semantic_score`는 원래 장소 후보의 대표 cosine score를 유지한다.
 `evidence_chunks`는 리랭킹 점수 순이며 각 근거에 `rerank_score`·`semantic_score`를 추가한다.
 `rerank_score`는 사실 확률이 아니다. 추가된 근거에도 생성 오류가 있을 수 있으므로 복수 반환을 사실 검증으로 해석하지 않는다.
-Spring은 JSON의 기존 필드를 직접 읽고 원본 완료 JSON도 보존하므로 앱 DTO 변경은 없다.
+Spring은 원본 완료 JSON을 보존한다. 후속 근거 전달 구현에서 검색 결과/응답 DTO에 `evidenceChunks`도 추가했다.
 
 [근거 1·2·3개 실측](../../Evaluation/runs/contextual/multi-evidence-v1/20261031-01/REPORT.md)은
 한 장소·고정 26문항에서 수행한 격리 실험이다. 이 결과로 기본값이나 운영 서버를 변경하지 않았다.
 Kafka 결과 각 장소의 `evidence_chunks`에 chunk_id·원문·문맥·source_span·버전·역할·생성 모델·출처 metadata가 추가된다.
-원시 벡터는 반환하지 않는다. Spring은 원본 완료 JSON을 보존하며, 앱용 DTO에 출처 카드가 추가된 것은 아니다.
+원시 벡터는 반환하지 않는다. Spring 검색 DTO와 기존 계획 LLM 입력에 선택 근거를 보존한다. 출처 카드 UI를 추가한 것은 아니다.
 BM25 결합과 가상 질문 벡터 색인은 이번 변경에 포함하지 않는다.
 
 ```text
@@ -557,7 +557,9 @@ Compose/stack bootstrap은 이 설정을 전달하고 허용하지 않은 값은
 각 장소의 `evidence_assessment.status=not_assessed`는 질문의 의미 적합성·성공·현재 통행 상태를 평가하지 않았다는 뜻이다.
 원문 위치·출처·ID의 형식 검증과 의미 판단은 다르다. 이 상태를 근거 부족 또는 장소 부적합으로 해석하지 않는다.
 과거의 `withheld_count`, `withheld_results`, `evidence_quality_scope`와 정규식 보류 경고는 반환하지 않는다.
-Spring은 원본 완료 JSON을 보존한다. 별도 UI 변경이나 응답 생성기의 의미 판단 개선은 포함하지 않는다.
+Spring은 원본 완료 JSON과 검색 DTO의 선택 근거를 보존한다. 기존 계획 LLM에는 원문/구조화 정보/생성 문맥을 나누어 전달한다.
+선택형 구조화 인용은 실제 전달된 근거와의 소속만 검사한다. 별도 UI 변경이나 설명의 의미 정확성 판정은 포함하지 않는다.
+[Spring·계획 입력 전달 계약과 한계](../architecture/search-evidence-delivery.md)
 
 과거 정책은 `Evaluation/tracks/contextual/experiments/connection_quality`로 이동했다.
 오프라인 재생에서 `--experimental-policy movement-regex-v1`을 명시해야 실행한다. 운영 환경 변수·요청 설정은 추가하지 않는다.

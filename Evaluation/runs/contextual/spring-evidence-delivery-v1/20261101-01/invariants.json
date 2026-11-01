@@ -1,0 +1,26 @@
+{
+  "base_commit": "15d3d740",
+  "unchanged_files": {
+    "embedding-server/app/kafka_runtime.py": true,
+    "embedding-server/app/contextual/contracts.py": true,
+    "embedding-server/app/contextual/pipeline.py": true,
+    "embedding-server/app/contextual/ranking.py": true,
+    "embedding-server/app/contextual/retrieval.py": true,
+    "Server/TravelMate/src/main/java/com/yollo/TravelMate/domain/place/service/PlaceSemanticSearchService.java": true,
+    "Server/TravelMate/src/main/java/com/yollo/TravelMate/domain/place/controller/PlaceSearchController.java": true,
+    "Server/TravelMate/src/main/java/com/yollo/TravelMate/domain/plan/controller/ContextPlanningController.java": true,
+    "Server/TravelMate/src/main/java/com/yollo/TravelMate/domain/plan/validator/ContextPlanResultValidator.java": true,
+    "Server/TravelMate/src/main/java/com/yollo/TravelMate/domain/plan/repository/ContextPlanRepository.java": true,
+    "Server/TravelMate/src/main/java/com/yollo/TravelMate/domain/plan/repository/PlanRepository.java": true,
+    "Server/TravelMate/src/main/java/com/yollo/TravelMate/domain/plan/repository/PlanningJobRepository.java": true,
+    "Server/TravelMate/src/main/java/com/yollo/TravelMate/ai/llm/base/LlmClient.java": true,
+    "Server/TravelMate/src/main/java/com/yollo/TravelMate/ai/llm/derived/OllamaLlmClient.java": true
+  },
+  "unchanged_service_segments": {
+    "direct_draft_save": true,
+    "existing_request_validation": true,
+    "encoding_and_distance": true
+  },
+  "save_call_preserved": true,
+  "search_arguments_preserved": true
+}

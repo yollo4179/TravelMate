@@ -24,6 +24,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.yollo.TravelMate.config.observability.SearchTracing;
 import com.yollo.TravelMate.domain.place.data.result.PlaceResult;
 import com.yollo.TravelMate.domain.place.data.result.PlaceSemanticSearchResult;
+import com.yollo.TravelMate.domain.place.data.result.SearchEvidenceChunk;
 import com.yollo.TravelMate.domain.place.service.PlaceSemanticSearchService.RankingMode;
 import com.yollo.TravelMate.domain.plan.data.request.PlanContext;
 
@@ -318,7 +319,7 @@ public class PlaceSemanticSearchClient {
                     nullableText(item, "image_url"),
                     nullableText(item, "homepage_url")
             );
-            results.add(new PlaceSemanticSearchResult(place, rerankScore));
+            results.add(new PlaceSemanticSearchResult(place, rerankScore, SearchEvidenceChunk.parse(item.get("evidence_chunks"))));
         }
         return List.copyOf(results);
     }

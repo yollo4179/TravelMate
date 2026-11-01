@@ -14,9 +14,9 @@ import com.yollo.TravelMate.domain.place.service.PlaceSemanticSearchService;
 import com.yollo.TravelMate.domain.plan.data.internal.GeneratedPlan;
 import com.yollo.TravelMate.domain.plan.data.request.*;
 import com.yollo.TravelMate.domain.plan.data.response.PlanningResponse;
-import com.yollo.TravelMate.domain.plan.prompts.PlanPrompts;
 import com.yollo.TravelMate.domain.plan.repository.*;
 import com.yollo.TravelMate.domain.plan.validator.PlanValidator;
+import com.yollo.TravelMate.domain.plan.validator.PlanEvidenceCitationValidator;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
 import lombok.RequiredArgsConstructor;
@@ -161,17 +161,26 @@ public class ContextPlanningService {
                     + Objects.toString(request.context().additionalRequest(), "");
             if (query.isBlank()) query = "여행 관광 산책";
             var candidatesById = new LinkedHashMap<Long, PlaceResult>();
-            searchService.search(query, null, null, null, 10 - required.size(), request.context().area())
-                    .forEach(result -> candidatesById.put(result.place().id(), result.place()));
+            var searchResults = searchService.search(
+                    query,
+                    null,
+                    null,
+                    null,
+                    10 - required.size(),
+                    request.context().area()
+            );
+            searchResults.forEach(result -> candidatesById.put(result.place().id(), result.place()));
             required.forEach(place -> candidatesById.put(place.id(), place));
             var candidates = List.copyOf(candidatesById.values());
             if (candidates.isEmpty()) throw new IllegalStateException("선택한 여행 범위에서 장소를 찾지 못했습니다.");
-            String prompt = promptFactory.create(request, candidates);
+            var preparedPrompt = promptFactory.prepare(request, candidates, searchResults);
+            String prompt = preparedPrompt.userPrompt();
             log.info("planning job={} stage=GENERATING candidateIds={} contextIncluded=true promptCharacters={}",
                     jobId, candidatesById.keySet(), prompt.length());
-            String output = llmClient.generate(PlanPrompts.PLANNER_SYSTEM, prompt);
+            String output = llmClient.generate(promptFactory.systemPrompt(), prompt);
             log.info("planning job={} stage=VALIDATING_RESULT responseCharacters={}", jobId, output == null ? 0 : output.length());
             var generated = planValidator.validate(output, candidatesById.keySet(), request);
+            PlanEvidenceCitationValidator.validate(generated, preparedPrompt);
             var selectedIds = generated.pins().stream().map(GeneratedPlan.GeneratedPin::placeId).collect(Collectors.toSet());
             if (selectedIds.size() != generated.pins().size()) throw new IllegalStateException("생성 결과에 중복 장소가 있어 저장하지 않았습니다.");
             if (!selectedIds.containsAll(required.stream().map(PlaceResult::id).toList())) throw new IllegalStateException("생성 결과에서 필수 장소가 누락되어 저장하지 않았습니다.");
