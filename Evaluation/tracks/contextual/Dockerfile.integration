@@ -1,0 +1,4 @@
+FROM travelmate-embedding:local
+USER root
+RUN python -m pip install --no-cache-dir httpx==0.28.1 jsonschema==4.26.0
+USER 10001:10001

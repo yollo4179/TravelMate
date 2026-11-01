@@ -1,0 +1,21 @@
+{
+  "database": {
+    "postgresql": "PostgreSQL 17.10 (Debian 17.10-1.pgdg12+1) on x86_64-pc-linux-gnu, compiled by gcc (Debian 12.2.0-14+deb12u1) 12.2.0, 64-bit",
+    "pgvector": "0.8.5",
+    "remaining_test_schemas": 0
+  },
+  "base_model_image": "sha256:8819776872e7ede399c08e4a3694e5ce24836eb74022c72e5421e2d342ec0791",
+  "postgres_image": "sha256:d2ef61f42ef767baa5a1475393303cc235bcd92febd9d7014eddb48b41f3bad0",
+  "validation_image": "sha256:3a29b6293640ef802868aa855728e0d001b7224b2d16b5a5af0ddf4bbe835857",
+  "embedding_model": "BAAI/bge-m3",
+  "reranker_model": "BAAI/bge-reranker-v2-m3",
+  "sentence_transformers": "6.2.0",
+  "torch": "2.13.0+cu129",
+  "core_implementation_unchanged_from": "64bf5ef0",
+  "prior_files_verified_unchanged": {
+    "span-grounding-v1/20261101-01": 63,
+    "observation-spans-v1/20261101-01": 50
+  },
+  "paid_plan_baseline_files_verified_unchanged": 4,
+  "production_database_writes": 0
+}

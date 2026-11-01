@@ -1,6 +1,6 @@
 # 공통 장소 청크·문맥 생성·검색 DB 명세
 
-문서 버전: 9 · 갱신: 2026-11-01
+문서 버전: 10 · 갱신: 2026-11-01
 
 [계획서](../plans/contextual-retrieval.md) · [구조도](../architecture/contextual-retrieval.md) · [기존 웹 수집](place-review-enrichment.md)
 
@@ -47,7 +47,7 @@ source_id는 출처 유형·URL 또는 TourAPI 콘텐츠 ID·필드명으로 결
 | [v4_contextual_prompt.py](../../embedding-server/app/contextual/prompts/v4_contextual_prompt.py) | `contextual-source-spans-v4`: 구간 주제 우선·인접 관찰 차용 금지·장소/시설 귀속을 강화한 실험 지시문. 기본값은 계속 v2 |
 | [v5_contextual_prompt.py](../../embedding-server/app/contextual/prompts/v5_contextual_prompt.py) | `contextual-source-spans-v5`: 코드가 추출한 `span.chunk_text`를 직접 읽는 선택 지시문. 명시적 청크 입력 필수. 22구간 검수에서 주제 대체 감소와 귀속 회귀가 함께 확인돼 기본값으로 채택하지 않음 |
 | [v6_contextual_prompt.py](../../embedding-server/app/contextual/prompts/v6_contextual_prompt.py) | `contextual-observation-relations-v6`: 관찰 종류와 장소 역할을 분리하고 출발지·도착지·이동 조건을 보존하는 선택 계약. 새 문장/문단 분할·명시적 입력·출력 스키마가 필요하며 기본값은 계속 v2 |
-| [v7_contextual_prompt.py](../../embedding-server/app/contextual/prompts/v7_contextual_prompt.py) | `contextual-independent-relations-v7`: 관찰 종류·subject와 독립적인 primary/supporting 관계 및 정확한 이동 근거를 보존하는 선택 계약. 실제 모델 품질은 미검증, 기본값은 계속 v2 |
+| [v7_contextual_prompt.py](../../embedding-server/app/contextual/prompts/v7_contextual_prompt.py) | `contextual-independent-relations-v7`: 관찰 종류·subject와 독립적인 primary/supporting 관계 및 정확한 이동 근거를 보존하는 선택 계약. 실제 2건 검수에서 위치·귀속 오류가 남음, 기본값은 계속 v2 |
 
 v2는 보통 1~2문장을 권장하지만 필요한 구분·부정·조건을 생략하도록 강제하지 않는다. 600자 상한은 유지한다.
 **동일 문서의 청크 밖 배경도 장소 식별·지시 대상·배경 이해에 필요하면 허용한다.**
@@ -529,3 +529,17 @@ DB 검사는 subject 장소로 한정하고, 일괄 비교에는 기대/완료 �
 비교 0쌍·파트너 재검증 실패·비교 보고서 생성 실패·파생 기록이 있는 폴더 재실행을 회귀 테스트로 확인했다.
 로컬 보존 응답 18건을 다시 처리한 결과 기대 9쌍·완료 9쌍·`comparison_complete=true`, 누락 상대·비교 오류는 0건이었다.
 원본 72개 파일 해시 불일치와 추가 API 호출은 모두 0이며, 실제 DB 반영·재색인·검색 성능 평가는 실행하지 않았다.
+
+
+## v7 실제 통합 검증 후속 결과
+
+[PostgreSQL·Sonar·검색 실행 기록](../../Evaluation/runs/contextual/v7-integration-v1/20261101-01/REPORT.md)에서
+새 역할·trigger·방향 SQL의 실제 PostgreSQL 통합을 통과했다. 최종 전체 회귀 109개 통과·1개 skip이다.
+실제 Sonar 2건은 US$0.01287이며 통제 원문의 supporting 판정·인용은 맞았지만 시작 위치 1자 오류로 청크가 제외됐다.
+P09의 다른 공원 귀속 오류도 남아 기본값을 유지한다.
+
+12개 고정 검색과 2개 감독 진단은 기존 BGE·리랭커와 격리 DB에서 실행했다. 위치만 맞춘 감독 사례는
+도보 금지 합성 방해 자료 40개 사이에서 벡터 41위로 Top-30 밖이었지만 41개를 리랭킹하면 1위였다.
+B에서는 입력 순서의 활성 후보 44개 중 해당 근거가 44번째여서 활성 20개에 들지 못했다.
+이는 단계별 손실 재현이며 감독 진단을 모델 자동 성공으로 세거나 운영 상한을 변경하지 않았다.
+운영 DB 적용·배포는 없었고, 관계 위치 계산·관계 후보 검색·활성 선택 개선은 다음 구현 대상이다.

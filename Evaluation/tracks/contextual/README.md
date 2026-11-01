@@ -209,3 +209,20 @@ python -X utf8 -m Evaluation.tracks.contextual.supporting_relations --output <�
 
 이 명령은 합성 A/B 관계의 역할·방향·비중·리랭킹 사용 범위만 검사한다. 키·HTTP 클라이언트·DB·검색 모델을 사용하지 않는다.
 실제 Sonar 생성 품질이나 검색 성능을 측정하는 명령이 아니다.
+
+
+## 실제 v7 통합 검증
+
+[실행 기록](../../runs/contextual/v7-integration-v1/20261101-01/REPORT.md)은 격리 PostgreSQL과 기존 CUDA 모델을 사용한다.
+`Dockerfile.integration`은 기존 로컬 이미지에 httpx/jsonschema만 추가한다. 앱 코드는 읽기 전용 마운트로 제공한다.
+`isolated_database`는 tm-v7-eval- 호스트/contextual_v7_eval DB 이름을 요구하며 운영 DB를 허용하지 않는다.
+`--full`은 기존 DB 회귀도 포함한다. 모델 검색은 별도 `v7_search`/`v7_recall_audit` 명령이다.
+
+```powershell
+python -m Evaluation.tracks.contextual.v7_generation prepare --baseline-record <보존-P09-record.json> --output <새-폴더>
+# 유료: 최대 2회. 기존 호출 기록이 있으면 중단한다.
+python -m Evaluation.tracks.contextual.v7_generation generate --plan <새-폴더>/plan.json --key-file <키파일> --execute
+```
+
+보존된 두 응답을 다시 호출할 필요는 없다. 검색 스크립트는 해당 동결 실행 자료를 검수한 뒤 별도 폐기용 DB에서 실행한다.
+위치 정렬·후보 확대·슬롯 교체는 감독 진단으로 구분하며 원래 v7 응답이나 검증 규칙을 수정하지 않는다.

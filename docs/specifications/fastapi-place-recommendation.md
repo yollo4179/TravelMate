@@ -6,7 +6,7 @@
 
 [추천 구조도](../architecture/fastapi-place-recommendation.md) · [문서 목록](../README.md) · [투어 가이드 명세](personal-tour-guide.md)
 
-문서 버전: 3 · 갱신일: 2026-11-01, 한국 시간. 최초 계약 기준: `f9f09db`, 이전 문서: `7921ecb`.
+문서 버전: 4 · 갱신일: 2026-11-01, 한국 시간. 최초 계약 기준: `f9f09db`, 이전 문서: `7921ecb`.
 별도 FastAPI DB와 Kafka 추천 요청·완료 전달, 완료 이벤트에 추천 장소 상세까지 포함하는 것은 사용자 확정 사항이다.
 이번 갱신은 FastAPI 워커의 선택형 관찰·이동 방향 필터 구현을 반영한다. Spring·UI 전달이나 전체 운영 배포 완료를 뜻하지 않는다.
 
@@ -338,3 +338,11 @@ request_id로 Spring 접수 → 요청 발행 → FastAPI 영속 접수 → 검�
 Kafka·UI는 현재 로컬 기반 시설입니다. 별도 FastAPI DB·추천 요청/결과 토픽·producer·consumer·결과 저장 연결은 로컬 Codex 구현과 대조할 대상입니다. 이번 변경은 문서이며 기존 Docker·앱 코드를 수정하지 않습니다.
 
 운영 GPU·모델 정밀도·토큰·배치·후보 수, Kafka 운영 수치·재시도/DLQ, 결과·삭제 표식 보관, 원본 전파 지연 허용 기준, 앱 접수/진행/완료 수신 방식, 요청 기한·취소·fallback 정책은 확인 후 확정합니다.
+
+
+## 관찰·관계 검색의 후속 실측
+
+2026-11-01 [실제 통합 검증](../../Evaluation/runs/contextual/v7-integration-v1/20261101-01/REPORT.md)에서
+역할·trigger·방향 SQL은 격리 PostgreSQL에서 통과했다. 기존 BGE·리랭커로 12개 검색과 2개 감독 진단도 실행했다.
+통제 자료에서 관계의 위치 오류·활성 상한·Top-30 후보 상한의 손실이 각각 재현됐다.
+운영 전체 정확도 개선·Spring/Kafka 전달·최종 답변 품질을 검증한 것은 아니다. 운영 DB·기본값은 변경하지 않았다.

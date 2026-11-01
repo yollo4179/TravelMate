@@ -1,0 +1,16 @@
+{
+  "original_evidence": {
+    "end": 35,
+    "quote": "관람 후 B공원으로 걸어갈 수 있다.",
+    "start": 16
+  },
+  "diagnostic_evidence": {
+    "end": 35,
+    "quote": "관람 후 B공원으로 걸어갈 수 있다.",
+    "start": 15
+  },
+  "source_id": "f5066444-420f-542c-88eb-0b36811e8050",
+  "request_record_unchanged": true,
+  "automatic_validation_rules_unchanged": true,
+  "note": "서버 수정이 아니다. 같은 응답의 인용 위치만 맞춘 별도 감독 진단이며 모델 자동 성공으로 세지 않는다."
+}

@@ -104,3 +104,5 @@ v1.1.0~v1.3.0은 파일 내용을 바꾸지 않고 datasets/로 옮긴 읽기용
 아카이브에 쓰는 평가 실행은 피하고, 새 평가에는 tracks/의 실행기를 사용한다.
 
 - [v7 핵심·보조 관계 코드 회귀·호환 검증](runs/contextual/supporting-relations-v1/20261101-01/REPORT.md): 합성 응답·기존 기록만 확인, 유료/DB/실제 검색 실행 0회.
+
+- [v7 실제 PostgreSQL·Sonar·검색 검증](runs/contextual/v7-integration-v1/20261101-01/REPORT.md): SQL 통과, 위치·후보·활성 상한 손실 재현, 새 유료 2회/US$0.01287.
