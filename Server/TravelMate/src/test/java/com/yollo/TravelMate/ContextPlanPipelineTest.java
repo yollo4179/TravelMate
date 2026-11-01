@@ -1,7 +1,6 @@
 package com.yollo.TravelMate;
 
 import java.util.List;
-import java.util.Set;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.json.JsonMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
@@ -9,6 +8,8 @@ import com.yollo.TravelMate.domain.place.data.result.PlaceResult;
 import com.yollo.TravelMate.domain.plan.data.request.GeneratePlanRequest;
 import com.yollo.TravelMate.domain.plan.prompts.ContextPlanPromptFactory;
 import com.yollo.TravelMate.domain.plan.validator.ContextPlanResultValidator;
+import com.yollo.TravelMate.domain.plan.validator.DraftPlanValidator;
+import org.springframework.web.server.ResponseStatusException;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -32,20 +33,37 @@ class ContextPlanPipelineTest {
     void refusesHallucinatedDuplicateAndMissingRequiredStops() throws Exception {
         var request = mapper.readValue(PlanContextContractTest.REQUEST, GeneratePlanRequest.class);
         var validator = new ContextPlanResultValidator(mapper);
+        var candidates = List.of(101L, 102L).stream().map(placeId -> new PlaceResult(
+                placeId,
+                "장소",
+                null,
+                null,
+                null,
+                "카페",
+                null,
+                35.84,
+                129.21,
+                0.9,
+                null,
+                null,
+                null
+        )).toList();
         for (String pins : List.of(
                 "[{\"placeId\":999,\"sequence\":1}]",
                 "[{\"placeId\":102,\"sequence\":1}]",
                 "[{\"placeId\":101,\"sequence\":1},{\"placeId\":101,\"sequence\":2}]",
                 "[{\"placeId\":101,\"sequence\":4}]"
         )) {
-            assertThrows(IllegalStateException.class, () -> validator.validate(
-                    "{\"planTitle\":\"여행\",\"planDescription\":\"초안\",\"pins\":" + pins + "}",
-                    Set.of(101L, 102L), request
+            assertThrows(ResponseStatusException.class, () -> DraftPlanValidator.validate(
+                    validator.parse("{\"planTitle\":\"여행\",\"planDescription\":\"초안\",\"pins\":" + pins + "}"),
+                    candidates,
+                    request
             ));
         }
-        assertEquals(101L, validator.validate(
-                "{\"planTitle\":\"여행\",\"pins\":[{\"placeId\":101,\"sequence\":1}]}",
-                Set.of(101L), request
+        assertEquals(101L, DraftPlanValidator.validate(
+                validator.parse("{\"planTitle\":\"여행\",\"pins\":[{\"placeId\":101,\"sequence\":1}]}"),
+                candidates,
+                request
         ).pins().get(0).placeId());
     }
 }

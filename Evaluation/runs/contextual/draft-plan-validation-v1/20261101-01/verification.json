@@ -1,0 +1,130 @@
+{
+    "baseline_commit":  "86be65091a9ec3cdab81e507629d15492c3d5e27",
+    "verified_at":  "2026-11-01T17:46:48.5902555+09:00",
+    "mode":  "mock_regression_not_live_quality_evaluation",
+    "command":  ".\\gradlew.bat --offline test --tests com.yollo.TravelMate.DraftPlanValidationTest --tests com.yollo.TravelMate.SearchEvidencePipelineTest --tests com.yollo.TravelMate.ContextPlanPipelineTest --tests com.yollo.TravelMate.PlanContextContractTest --console=plain",
+    "working_directory":  "Server/TravelMate",
+    "totals":  {
+                   "tests":  29,
+                   "failures":  0,
+                   "errors":  0,
+                   "skipped":  0
+               },
+    "suites":  [
+                   {
+                       "name":  "com.yollo.TravelMate.ContextPlanPipelineTest",
+                       "tests":  2,
+                       "failures":  0,
+                       "errors":  0,
+                       "skipped":  0,
+                       "junit":  "junit/TEST-com.yollo.TravelMate.ContextPlanPipelineTest.xml",
+                       "sha256":  "6588ca5f5edddafda2ab7d7c4602525747020ce63e85fe2cc5974cbf62debf57"
+                   },
+                   {
+                       "name":  "com.yollo.TravelMate.DraftPlanValidationTest",
+                       "tests":  18,
+                       "failures":  0,
+                       "errors":  0,
+                       "skipped":  0,
+                       "junit":  "junit/TEST-com.yollo.TravelMate.DraftPlanValidationTest.xml",
+                       "sha256":  "c7d3cb75ab78ea769cee63e8e4c7b75253506f4d1cb759479145da686164ea74"
+                   },
+                   {
+                       "name":  "com.yollo.TravelMate.PlanContextContractTest",
+                       "tests":  2,
+                       "failures":  0,
+                       "errors":  0,
+                       "skipped":  0,
+                       "junit":  "junit/TEST-com.yollo.TravelMate.PlanContextContractTest.xml",
+                       "sha256":  "f578c270883195ccd96f56020f9dbacc4667014c2a7a5c17db983ba931a26b66"
+                   },
+                   {
+                       "name":  "com.yollo.TravelMate.SearchEvidencePipelineTest",
+                       "tests":  7,
+                       "failures":  0,
+                       "errors":  0,
+                       "skipped":  0,
+                       "junit":  "junit/TEST-com.yollo.TravelMate.SearchEvidencePipelineTest.xml",
+                       "sha256":  "15f252562d56c2b6ff301964e5031dcf109aed7194d32b78116b3b8af60ab972"
+                   }
+               ],
+    "preserved_tracked_paths":  [
+                                    {
+                                        "path":  "Server/TravelMate/src/main/java/com/yollo/TravelMate/domain/place",
+                                        "tracked_diff_from_baseline":  "none"
+                                    },
+                                    {
+                                        "path":  "Server/TravelMate/src/main/java/com/yollo/TravelMate/domain/plan/prompts",
+                                        "tracked_diff_from_baseline":  "none"
+                                    },
+                                    {
+                                        "path":  "Server/TravelMate/src/main/java/com/yollo/TravelMate/domain/plan/data/internal/GeneratedPlan.java",
+                                        "tracked_diff_from_baseline":  "none"
+                                    },
+                                    {
+                                        "path":  "Server/TravelMate/src/main/java/com/yollo/TravelMate/domain/plan/validator/PlanEvidenceCitationValidator.java",
+                                        "tracked_diff_from_baseline":  "none"
+                                    },
+                                    {
+                                        "path":  "Server/TravelMate/src/main/java/com/yollo/TravelMate/domain/plan/repository",
+                                        "tracked_diff_from_baseline":  "none"
+                                    },
+                                    {
+                                        "path":  "Server/TravelMate/src/main/java/com/yollo/TravelMate/domain/plan/data/request",
+                                        "tracked_diff_from_baseline":  "none"
+                                    },
+                                    {
+                                        "path":  "Server/TravelMate/src/main/resources",
+                                        "tracked_diff_from_baseline":  "none"
+                                    }
+                                ],
+    "source_sha256":  [
+                          {
+                              "path":  "Server/TravelMate/src/main/java/com/yollo/TravelMate/domain/plan/service/ContextPlanningService.java",
+                              "sha256":  "29b305672f93c6dba92b4d539ccd19d8dc88d5bd1eee3c4dcb4eae97511d891f"
+                          },
+                          {
+                              "path":  "Server/TravelMate/src/main/java/com/yollo/TravelMate/domain/plan/validator/ContextPlanResultValidator.java",
+                              "sha256":  "8ebfd1028b7278c98040356ff4528c7c8dda70f89fe0f2039fa99ef8a1020f01"
+                          },
+                          {
+                              "path":  "Server/TravelMate/src/main/java/com/yollo/TravelMate/domain/plan/validator/DraftPlanValidator.java",
+                              "sha256":  "60984284ab421437138f651d15df89fb21426406eb23926f19c21aa60b317087"
+                          },
+                          {
+                              "path":  "Server/TravelMate/src/main/java/com/yollo/TravelMate/domain/plan/validator/PlanAreaValidator.java",
+                              "sha256":  "da00aa635926692c9061e2d8dc82cf64d310a52f37265ea9d701620f5ee0f332"
+                          },
+                          {
+                              "path":  "Server/TravelMate/src/test/java/com/yollo/TravelMate/ContextPlanPipelineTest.java",
+                              "sha256":  "4bb295b17cb1cc10c452c7568136be1452bc79f0d01852ff4f66ef1eae6018f6"
+                          },
+                          {
+                              "path":  "Server/TravelMate/src/test/java/com/yollo/TravelMate/DraftPlanValidationTest.java",
+                              "sha256":  "c62708b04f823039238695e231b9c381b902a9f869ac8c7979097b4394d60824"
+                          },
+                          {
+                              "path":  "docs/architecture/draft-plan-validation.md",
+                              "sha256":  "fa10e7f3def19969ccaa1eb870af0e21d2a7ed9ed5131cf346124ec873a24b2e"
+                          },
+                          {
+                              "path":  "Evaluation/runs/contextual/draft-plan-validation-v1/20261101-01/REPORT.md",
+                              "sha256":  "de473fae21d2c7663216f194ef5dfcbd9abf49892e6b60309f4e1c2c4dc8a3a0"
+                          }
+                      ],
+    "external_execution":  {
+                               "actual_model_calls":  0,
+                               "actual_search_runs":  0,
+                               "production_database_writes":  0,
+                               "deployments":  0,
+                               "basis":  "Only Mockito LlmClient/search/repository mocks were used in the selected suites; not a live observation collector."
+                           },
+    "limitations":  [
+                        "No CONFIRMED path or finalization validation",
+                        "No actual travel time or route optimization validation",
+                        "No search/reranking/real-model quality evaluation",
+                        "Token budget unresolved; check before next real LLM execution",
+                        "Local uncommitted collectors were not copied or modified"
+                    ],
+    "hash_normalization":  "UTF-8 without BOM, CRLF normalized to LF; published JUnit XML uses the same normalization."
+}
