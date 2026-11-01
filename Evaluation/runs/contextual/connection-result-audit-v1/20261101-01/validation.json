@@ -1,0 +1,9 @@
+{
+  "deterministic_outputs": 6,
+  "application_unchanged": true,
+  "original_comparison_unchanged": true,
+  "reviewed_rows": 60,
+  "reviewed_chunks": 33,
+  "new_searches": 0,
+  "new_model_calls": 0
+}

@@ -1,0 +1,34 @@
+{
+  "evaluated_commit": "b35afbab",
+  "file_sha256": {
+    "rubric.json": "3e3704bb81f057ec8c7081c25c3187700e3fa4faad21d10347363699294637e6",
+    "reviewed-groups.json": "af407e2f660e20e388ae6089c779067980ed1824cd8b5480de5bdb8e9d00b6f9",
+    "evidence-packets.json": "a6c79e4f986bf446f11ba4b417b31b9be96af414e72480c8a934856aac027b76",
+    "saved-rows.json": "dd49a0acdcc4698029c59f3d5d49e7af866757e62d471f9cf7db76d38a461c0c",
+    "judgments.json": "af42dad27748f80dadbd7b0afcb8e5776c7e9da57b85bc95c3b56ff600c7622f",
+    "row-judgments.json": "7370d040675ae63371a7177ea091d6074f23e21be1dd6c206416d5f948048690",
+    "metrics.json": "9890812a87da95d1a601b0bc5cda267481c1a6cb8a9735a5f8c93cff3b209576",
+    "provenance.json": "70e9c6476f001b11a4b1d23f05722b65865afe8a1d06467e50cce0e9b679052d",
+    "prepare_evidence.py": "3b24339b126be636b0deb7bcd86ad5ecd55b7594f98a16bc2d48deb747165f58",
+    "score_review.py": "6bb73ece39426323bc06675a054d7b0526d9af936cb011524e0f72eb18ba3fe9",
+    "review-table.md": "c8299c960c7e0c7d6c0d9cec68652d3e02d4613968e443e9f71b2a0e712cb438",
+    "REPORT.md": "612a4215aeea75d6528239b2a0da0824a3b1c817e477ef28a2ff6e1eb7702ca6"
+  },
+  "metric_implementation": "Evaluation/common/metrics/ranking.py",
+  "metric_implementation_sha256": "50f57b3d3b607c9a3ba4bf5eda17eaf49cbe3b26aab14781606d3c7ee0355810",
+  "lf_normalized_sha256": {
+    "rubric.json": "3e3704bb81f057ec8c7081c25c3187700e3fa4faad21d10347363699294637e6",
+    "reviewed-groups.json": "af407e2f660e20e388ae6089c779067980ed1824cd8b5480de5bdb8e9d00b6f9",
+    "evidence-packets.json": "d2685c4cf30dce8096dc0082c6f3aab31e02176feb2fae676c7002978f8a1e94",
+    "saved-rows.json": "9412d7d2354909675f5830c3f3d51331ea8e15096e0287e83b7282acfcd944ff",
+    "judgments.json": "97922c20728dc1adfbe36375c833991b505f0b266e4d1f191b0fa9bf6c293547",
+    "row-judgments.json": "1188e6a82ff0b189400aa5b59a4b0fb5ae2a5872b28b9d9ea440baba570f65ec",
+    "metrics.json": "cf43aada153b0e31d9b500deb2103d54e0e4f976c382e19324b77aa8cc96842e",
+    "provenance.json": "5cd5ced0165fdbf4d82d0546adf377597e3a13537f1d8eba78f044d5daeaf565",
+    "prepare_evidence.py": "3b24339b126be636b0deb7bcd86ad5ecd55b7594f98a16bc2d48deb747165f58",
+    "score_review.py": "6bb73ece39426323bc06675a054d7b0526d9af936cb011524e0f72eb18ba3fe9",
+    "review-table.md": "53bd100689b67fa038ab1f1a84c9339e4ceb8daf4ce6ee005022d60c95e0b185",
+    "REPORT.md": "612a4215aeea75d6528239b2a0da0824a3b1c817e477ef28a2ff6e1eb7702ca6"
+  },
+  "hash_basis": "file_sha256는 실행 당시 로컬 바이트 기준. lf_normalized_sha256는 CRLF를 LF로 정규화한 UTF-8 텍스트 기준."
+}

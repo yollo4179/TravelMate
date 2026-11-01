@@ -1,0 +1,332 @@
+[
+  {
+    "evidence_key": "5901c8ca-e895-5a6a-b2da-445f3a531b80:cce3564d713a5f80b119ace335e0f6dbb1f3e217003a630563b5a21f79b9fdf7",
+    "chunk_id": "5901c8ca-e895-5a6a-b2da-445f3a531b80",
+    "context_version": "cce3564d713a5f80b119ace335e0f6dbb1f3e217003a630563b5a21f79b9fdf7",
+    "group_id": "vehicle-only-connection",
+    "grade": 2,
+    "status": "positive-connection",
+    "travel_mode": "vehicle-only",
+    "rationale": "각 연결공원에서 B공원까지 차량 이동이 가능하다는 직접 근거다. 질문에 도보 조건이 없으므로 통행 금지를 보존한 차량 연결을 인정한다."
+  },
+  {
+    "evidence_key": "b9de82cc-0571-51bb-8781-4c3ba8131ed6:8a1afa79b0b43add20674ffa736ecb25a0ff0c01b300a6c23ec8a1a31cab95d7",
+    "chunk_id": "b9de82cc-0571-51bb-8781-4c3ba8131ed6",
+    "context_version": "8a1afa79b0b43add20674ffa736ecb25a0ff0c01b300a6c23ec8a1a31cab95d7",
+    "group_id": "vehicle-only-connection",
+    "grade": 2,
+    "status": "positive-connection",
+    "travel_mode": "vehicle-only",
+    "rationale": "각 연결공원에서 B공원까지 차량 이동이 가능하다는 직접 근거다. 질문에 도보 조건이 없으므로 통행 금지를 보존한 차량 연결을 인정한다."
+  },
+  {
+    "evidence_key": "64343591-1952-5d48-a6a6-7e5b303381bb:139014fe1d58e47bdbcb431dc4f3e5e087c35d4aa4605d93e1361c1e789c4276",
+    "chunk_id": "64343591-1952-5d48-a6a6-7e5b303381bb",
+    "context_version": "139014fe1d58e47bdbcb431dc4f3e5e087c35d4aa4605d93e1361c1e789c4276",
+    "group_id": "vehicle-only-connection",
+    "grade": 2,
+    "status": "positive-connection",
+    "travel_mode": "vehicle-only",
+    "rationale": "각 연결공원에서 B공원까지 차량 이동이 가능하다는 직접 근거다. 질문에 도보 조건이 없으므로 통행 금지를 보존한 차량 연결을 인정한다."
+  },
+  {
+    "evidence_key": "380ef480-3686-5416-aa36-d2d472a7fdac:39b2f7ec6f20de20392837a2892ff76b5656d54a2f6b30bf0369ed7e03a3e0f3",
+    "chunk_id": "380ef480-3686-5416-aa36-d2d472a7fdac",
+    "context_version": "39b2f7ec6f20de20392837a2892ff76b5656d54a2f6b30bf0369ed7e03a3e0f3",
+    "group_id": "vehicle-only-connection",
+    "grade": 2,
+    "status": "positive-connection",
+    "travel_mode": "vehicle-only",
+    "rationale": "각 연결공원에서 B공원까지 차량 이동이 가능하다는 직접 근거다. 질문에 도보 조건이 없으므로 통행 금지를 보존한 차량 연결을 인정한다."
+  },
+  {
+    "evidence_key": "383b63b4-eca3-5836-a821-8b689515e81a:97f80f25ef72486be6fddf3a66be05f379884623fed2245dbbb112d4b34940f7",
+    "chunk_id": "383b63b4-eca3-5836-a821-8b689515e81a",
+    "context_version": "97f80f25ef72486be6fddf3a66be05f379884623fed2245dbbb112d4b34940f7",
+    "group_id": "vehicle-only-connection",
+    "grade": 2,
+    "status": "positive-connection",
+    "travel_mode": "vehicle-only",
+    "rationale": "각 연결공원에서 B공원까지 차량 이동이 가능하다는 직접 근거다. 질문에 도보 조건이 없으므로 통행 금지를 보존한 차량 연결을 인정한다."
+  },
+  {
+    "evidence_key": "03f28b8b-d7ab-5b43-8a73-4dd38ea40252:f12cbedd909d59a0c05a498f4a7b56816ebc8956ab7ba5271597db4a4d71c041",
+    "chunk_id": "03f28b8b-d7ab-5b43-8a73-4dd38ea40252",
+    "context_version": "f12cbedd909d59a0c05a498f4a7b56816ebc8956ab7ba5271597db4a4d71c041",
+    "group_id": "vehicle-only-connection",
+    "grade": 2,
+    "status": "positive-connection",
+    "travel_mode": "vehicle-only",
+    "rationale": "각 연결공원에서 B공원까지 차량 이동이 가능하다는 직접 근거다. 질문에 도보 조건이 없으므로 통행 금지를 보존한 차량 연결을 인정한다."
+  },
+  {
+    "evidence_key": "6b721a93-60b8-5209-b70e-db705627a10d:98082add5d1949e22bf61ab9d404f3c6e22e270bb44cc02f227a2c2c4d8b8fd5",
+    "chunk_id": "6b721a93-60b8-5209-b70e-db705627a10d",
+    "context_version": "98082add5d1949e22bf61ab9d404f3c6e22e270bb44cc02f227a2c2c4d8b8fd5",
+    "group_id": "vehicle-only-connection",
+    "grade": 2,
+    "status": "positive-connection",
+    "travel_mode": "vehicle-only",
+    "rationale": "각 연결공원에서 B공원까지 차량 이동이 가능하다는 직접 근거다. 질문에 도보 조건이 없으므로 통행 금지를 보존한 차량 연결을 인정한다."
+  },
+  {
+    "evidence_key": "e033433a-0119-5850-bdad-ba3b90833cfc:54da61000838efd6f8c311abbdd54e2963d52d56358505400041ef2929b36607",
+    "chunk_id": "e033433a-0119-5850-bdad-ba3b90833cfc",
+    "context_version": "54da61000838efd6f8c311abbdd54e2963d52d56358505400041ef2929b36607",
+    "group_id": "vehicle-only-connection",
+    "grade": 2,
+    "status": "positive-connection",
+    "travel_mode": "vehicle-only",
+    "rationale": "각 연결공원에서 B공원까지 차량 이동이 가능하다는 직접 근거다. 질문에 도보 조건이 없으므로 통행 금지를 보존한 차량 연결을 인정한다."
+  },
+  {
+    "evidence_key": "13e6eef8-7429-5138-93bd-e8e119f10e7f:cc2367f64c3672f0832445363cc67f535f83b2ed134cc23099daa3707ec3633c",
+    "chunk_id": "13e6eef8-7429-5138-93bd-e8e119f10e7f",
+    "context_version": "cc2367f64c3672f0832445363cc67f535f83b2ed134cc23099daa3707ec3633c",
+    "group_id": "vehicle-only-connection",
+    "grade": 2,
+    "status": "positive-connection",
+    "travel_mode": "vehicle-only",
+    "rationale": "각 연결공원에서 B공원까지 차량 이동이 가능하다는 직접 근거다. 질문에 도보 조건이 없으므로 통행 금지를 보존한 차량 연결을 인정한다."
+  },
+  {
+    "evidence_key": "ba3f3730-ce51-50d0-a0b3-6a649d315f77:388739631e7551ce34c8f89686be5beaf81e1581420b710bfcf0e79a3cefbd48",
+    "chunk_id": "ba3f3730-ce51-50d0-a0b3-6a649d315f77",
+    "context_version": "388739631e7551ce34c8f89686be5beaf81e1581420b710bfcf0e79a3cefbd48",
+    "group_id": "vehicle-only-connection",
+    "grade": 2,
+    "status": "positive-connection",
+    "travel_mode": "vehicle-only",
+    "rationale": "각 연결공원에서 B공원까지 차량 이동이 가능하다는 직접 근거다. 질문에 도보 조건이 없으므로 통행 금지를 보존한 차량 연결을 인정한다."
+  },
+  {
+    "evidence_key": "4774fb27-63ca-5687-86dd-1e140ef57fe0:74977ab2091087494cfb68b597e73d8487c2ead5a17ceaa7c48b2207ac3d543a",
+    "chunk_id": "4774fb27-63ca-5687-86dd-1e140ef57fe0",
+    "context_version": "74977ab2091087494cfb68b597e73d8487c2ead5a17ceaa7c48b2207ac3d543a",
+    "group_id": "vehicle-only-connection",
+    "grade": 2,
+    "status": "positive-connection",
+    "travel_mode": "vehicle-only",
+    "rationale": "각 연결공원에서 B공원까지 차량 이동이 가능하다는 직접 근거다. 질문에 도보 조건이 없으므로 통행 금지를 보존한 차량 연결을 인정한다."
+  },
+  {
+    "evidence_key": "3bba97ca-d1a9-5d86-bc8f-adae2e0b1178:393b04bc17e253d43f237a06228b901f9b7920a5c3806ed678e93c2a9a058435",
+    "chunk_id": "3bba97ca-d1a9-5d86-bc8f-adae2e0b1178",
+    "context_version": "393b04bc17e253d43f237a06228b901f9b7920a5c3806ed678e93c2a9a058435",
+    "group_id": "vehicle-only-connection",
+    "grade": 2,
+    "status": "positive-connection",
+    "travel_mode": "vehicle-only",
+    "rationale": "각 연결공원에서 B공원까지 차량 이동이 가능하다는 직접 근거다. 질문에 도보 조건이 없으므로 통행 금지를 보존한 차량 연결을 인정한다."
+  },
+  {
+    "evidence_key": "3f3e3be9-1ffa-5974-88af-a4e68638b8b6:57c49afeb46f00e3c06c7777fe45d4924af4186a6d4852b6ca438fbc38460149",
+    "chunk_id": "3f3e3be9-1ffa-5974-88af-a4e68638b8b6",
+    "context_version": "57c49afeb46f00e3c06c7777fe45d4924af4186a6d4852b6ca438fbc38460149",
+    "group_id": "vehicle-only-connection",
+    "grade": 2,
+    "status": "positive-connection",
+    "travel_mode": "vehicle-only",
+    "rationale": "각 연결공원에서 B공원까지 차량 이동이 가능하다는 직접 근거다. 질문에 도보 조건이 없으므로 통행 금지를 보존한 차량 연결을 인정한다."
+  },
+  {
+    "evidence_key": "d24ac0f1-2435-571e-b1fe-8c8eb322eaf3:a53d24ac6deff9c8fc032c468a7acbab904dcbfde7b139d00d96893042cace41",
+    "chunk_id": "d24ac0f1-2435-571e-b1fe-8c8eb322eaf3",
+    "context_version": "a53d24ac6deff9c8fc032c468a7acbab904dcbfde7b139d00d96893042cace41",
+    "group_id": "vehicle-only-connection",
+    "grade": 2,
+    "status": "positive-connection",
+    "travel_mode": "vehicle-only",
+    "rationale": "각 연결공원에서 B공원까지 차량 이동이 가능하다는 직접 근거다. 질문에 도보 조건이 없으므로 통행 금지를 보존한 차량 연결을 인정한다."
+  },
+  {
+    "evidence_key": "623f4c3b-9223-5fa0-a878-e71052b39c0c:d1902064ec26bc2b801d48d82f12270e3b1ba01e3636d3ae5403a2f34ad94808",
+    "chunk_id": "623f4c3b-9223-5fa0-a878-e71052b39c0c",
+    "context_version": "d1902064ec26bc2b801d48d82f12270e3b1ba01e3636d3ae5403a2f34ad94808",
+    "group_id": "vehicle-only-connection",
+    "grade": 2,
+    "status": "positive-connection",
+    "travel_mode": "vehicle-only",
+    "rationale": "각 연결공원에서 B공원까지 차량 이동이 가능하다는 직접 근거다. 질문에 도보 조건이 없으므로 통행 금지를 보존한 차량 연결을 인정한다."
+  },
+  {
+    "evidence_key": "ab1a1daf-09d8-588c-9bdd-d1721fd1e028:77944344305d95fd8cf795d576808cc31fdeaf3ad62bae4ab758449c7e0b7454",
+    "chunk_id": "ab1a1daf-09d8-588c-9bdd-d1721fd1e028",
+    "context_version": "77944344305d95fd8cf795d576808cc31fdeaf3ad62bae4ab758449c7e0b7454",
+    "group_id": "vehicle-only-connection",
+    "grade": 2,
+    "status": "positive-connection",
+    "travel_mode": "vehicle-only",
+    "rationale": "각 연결공원에서 B공원까지 차량 이동이 가능하다는 직접 근거다. 질문에 도보 조건이 없으므로 통행 금지를 보존한 차량 연결을 인정한다."
+  },
+  {
+    "evidence_key": "4598c3d2-7358-5779-87bb-4f55d2f0c743:fca2d0fed1d497b0879c60e244fdc47b1be606c7300fa669009d190f321d2041",
+    "chunk_id": "4598c3d2-7358-5779-87bb-4f55d2f0c743",
+    "context_version": "fca2d0fed1d497b0879c60e244fdc47b1be606c7300fa669009d190f321d2041",
+    "group_id": "vehicle-only-connection",
+    "grade": 2,
+    "status": "positive-connection",
+    "travel_mode": "vehicle-only",
+    "rationale": "각 연결공원에서 B공원까지 차량 이동이 가능하다는 직접 근거다. 질문에 도보 조건이 없으므로 통행 금지를 보존한 차량 연결을 인정한다."
+  },
+  {
+    "evidence_key": "4b40d3bb-02f4-5d76-b46c-a795b60dc48c:2b715757fc2bf2784bfe8f57d7105d9d813883f1186cabf67c64725a0c51d37f",
+    "chunk_id": "4b40d3bb-02f4-5d76-b46c-a795b60dc48c",
+    "context_version": "2b715757fc2bf2784bfe8f57d7105d9d813883f1186cabf67c64725a0c51d37f",
+    "group_id": "vehicle-only-connection",
+    "grade": 2,
+    "status": "positive-connection",
+    "travel_mode": "vehicle-only",
+    "rationale": "각 연결공원에서 B공원까지 차량 이동이 가능하다는 직접 근거다. 질문에 도보 조건이 없으므로 통행 금지를 보존한 차량 연결을 인정한다."
+  },
+  {
+    "evidence_key": "a2dc3cd2-2b2a-5754-93cc-359a7ebd0743:f4420887ed31f82b118ae782331048afbd37014881dfb7e4d913ea7c1803749f",
+    "chunk_id": "a2dc3cd2-2b2a-5754-93cc-359a7ebd0743",
+    "context_version": "f4420887ed31f82b118ae782331048afbd37014881dfb7e4d913ea7c1803749f",
+    "group_id": "vehicle-only-connection",
+    "grade": 2,
+    "status": "positive-connection",
+    "travel_mode": "vehicle-only",
+    "rationale": "각 연결공원에서 B공원까지 차량 이동이 가능하다는 직접 근거다. 질문에 도보 조건이 없으므로 통행 금지를 보존한 차량 연결을 인정한다."
+  },
+  {
+    "evidence_key": "47ddbfd9-33c6-56a3-93fb-bdb4817aea5f:d2df8601eb9c94ea6476f14a27455292914d2759fdb2470c22514cb296a46742",
+    "chunk_id": "47ddbfd9-33c6-56a3-93fb-bdb4817aea5f",
+    "context_version": "d2df8601eb9c94ea6476f14a27455292914d2759fdb2470c22514cb296a46742",
+    "group_id": "vehicle-only-connection",
+    "grade": 2,
+    "status": "positive-connection",
+    "travel_mode": "vehicle-only",
+    "rationale": "각 연결공원에서 B공원까지 차량 이동이 가능하다는 직접 근거다. 질문에 도보 조건이 없으므로 통행 금지를 보존한 차량 연결을 인정한다."
+  },
+  {
+    "evidence_key": "8bbdca03-470f-56d9-8d1e-d30e43378950:00d9d6c3f1f4a81c50d696fe7ff3dd1a7e3699911fab1e500f9d4d595b6c4ccb",
+    "chunk_id": "8bbdca03-470f-56d9-8d1e-d30e43378950",
+    "context_version": "00d9d6c3f1f4a81c50d696fe7ff3dd1a7e3699911fab1e500f9d4d595b6c4ccb",
+    "group_id": "vehicle-only-connection",
+    "grade": 2,
+    "status": "positive-connection",
+    "travel_mode": "vehicle-only",
+    "rationale": "각 연결공원에서 B공원까지 차량 이동이 가능하다는 직접 근거다. 질문에 도보 조건이 없으므로 통행 금지를 보존한 차량 연결을 인정한다."
+  },
+  {
+    "evidence_key": "58c09655-998e-5535-b521-6e85178d126a:938b41b6db44d2dd5500e9c67b8a9595a9e7ae3aa2032d7c7c541d9cb759edb4",
+    "chunk_id": "58c09655-998e-5535-b521-6e85178d126a",
+    "context_version": "938b41b6db44d2dd5500e9c67b8a9595a9e7ae3aa2032d7c7c541d9cb759edb4",
+    "group_id": "vehicle-only-connection",
+    "grade": 2,
+    "status": "positive-connection",
+    "travel_mode": "vehicle-only",
+    "rationale": "각 연결공원에서 B공원까지 차량 이동이 가능하다는 직접 근거다. 질문에 도보 조건이 없으므로 통행 금지를 보존한 차량 연결을 인정한다."
+  },
+  {
+    "evidence_key": "7b5eade9-4f33-5889-a7cd-6de26eeb1a0e:9311c3bf8d6aca5f035b9794af2f4b88d4bc2e1454a7774b2fda5e37c7681b73",
+    "chunk_id": "7b5eade9-4f33-5889-a7cd-6de26eeb1a0e",
+    "context_version": "9311c3bf8d6aca5f035b9794af2f4b88d4bc2e1454a7774b2fda5e37c7681b73",
+    "group_id": "vehicle-only-connection",
+    "grade": 2,
+    "status": "positive-connection",
+    "travel_mode": "vehicle-only",
+    "rationale": "각 연결공원에서 B공원까지 차량 이동이 가능하다는 직접 근거다. 질문에 도보 조건이 없으므로 통행 금지를 보존한 차량 연결을 인정한다."
+  },
+  {
+    "evidence_key": "46f1d6d7-e31e-5d24-8c84-daf07a106dd6:bfbda0c650f274e28d6057aa2dc7513ed57f1cc67f4aef23e888c6d0d78cac4e",
+    "chunk_id": "46f1d6d7-e31e-5d24-8c84-daf07a106dd6",
+    "context_version": "bfbda0c650f274e28d6057aa2dc7513ed57f1cc67f4aef23e888c6d0d78cac4e",
+    "group_id": "vehicle-only-connection",
+    "grade": 2,
+    "status": "positive-connection",
+    "travel_mode": "vehicle-only",
+    "rationale": "각 연결공원에서 B공원까지 차량 이동이 가능하다는 직접 근거다. 질문에 도보 조건이 없으므로 통행 금지를 보존한 차량 연결을 인정한다."
+  },
+  {
+    "evidence_key": "568639a3-df87-5009-8bfb-202b0122800b:8012fa76dc58a7c21e19ce134353b206f7302e13ca6745523e4f7a1245cc1a15",
+    "chunk_id": "568639a3-df87-5009-8bfb-202b0122800b",
+    "context_version": "8012fa76dc58a7c21e19ce134353b206f7302e13ca6745523e4f7a1245cc1a15",
+    "group_id": "vehicle-only-connection",
+    "grade": 2,
+    "status": "positive-connection",
+    "travel_mode": "vehicle-only",
+    "rationale": "각 연결공원에서 B공원까지 차량 이동이 가능하다는 직접 근거다. 질문에 도보 조건이 없으므로 통행 금지를 보존한 차량 연결을 인정한다."
+  },
+  {
+    "evidence_key": "a0299fb8-01f1-51ec-8b9c-4fc73c318617:f27a48da82ff51c35e883f286219dba61f4269eac4f80c2d6a0857732ec68f14",
+    "chunk_id": "a0299fb8-01f1-51ec-8b9c-4fc73c318617",
+    "context_version": "f27a48da82ff51c35e883f286219dba61f4269eac4f80c2d6a0857732ec68f14",
+    "group_id": "vehicle-only-connection",
+    "grade": 2,
+    "status": "positive-connection",
+    "travel_mode": "vehicle-only",
+    "rationale": "각 연결공원에서 B공원까지 차량 이동이 가능하다는 직접 근거다. 질문에 도보 조건이 없으므로 통행 금지를 보존한 차량 연결을 인정한다."
+  },
+  {
+    "evidence_key": "b486b9c6-8dea-534e-ab91-cdccd2cde37e:5df4869465092aad3d899e0048b2023b32879c55f761f6d0a1772d62ce04820d",
+    "chunk_id": "b486b9c6-8dea-534e-ab91-cdccd2cde37e",
+    "context_version": "5df4869465092aad3d899e0048b2023b32879c55f761f6d0a1772d62ce04820d",
+    "group_id": "vehicle-only-connection",
+    "grade": 2,
+    "status": "positive-connection",
+    "travel_mode": "vehicle-only",
+    "rationale": "각 연결공원에서 B공원까지 차량 이동이 가능하다는 직접 근거다. 질문에 도보 조건이 없으므로 통행 금지를 보존한 차량 연결을 인정한다."
+  },
+  {
+    "evidence_key": "c51adca8-0784-5a39-85cd-0df51d562c77:8d55b872212d1484e99422ad05ae3f37523bb7085caac68583e4d4581f7fd74e",
+    "chunk_id": "c51adca8-0784-5a39-85cd-0df51d562c77",
+    "context_version": "8d55b872212d1484e99422ad05ae3f37523bb7085caac68583e4d4581f7fd74e",
+    "group_id": "vehicle-only-connection",
+    "grade": 2,
+    "status": "positive-connection",
+    "travel_mode": "vehicle-only",
+    "rationale": "각 연결공원에서 B공원까지 차량 이동이 가능하다는 직접 근거다. 질문에 도보 조건이 없으므로 통행 금지를 보존한 차량 연결을 인정한다."
+  },
+  {
+    "evidence_key": "da9d85a8-d80e-539e-ac25-020f712e6e6d:3dcf21686d8107244378e119038434bac279d78b2efc69402951f8d231b04eb8",
+    "chunk_id": "da9d85a8-d80e-539e-ac25-020f712e6e6d",
+    "context_version": "3dcf21686d8107244378e119038434bac279d78b2efc69402951f8d231b04eb8",
+    "group_id": "soil-path-only",
+    "grade": 0,
+    "status": "no-connection-evidence",
+    "travel_mode": "unspecified",
+    "rationale": "흙길의 관찰만 있고 어느 다른 관광지로 이어지는지는 없다. 제목과 문서의 미선택 구간에 나온 이동 내용을 끌어와 보충하지 않는다."
+  },
+  {
+    "evidence_key": "91e0be6a-1ef0-514f-b4ce-0bd98ac461f1:3f1475380bb365b5045b40023ae10039e735df1eedc2acbe43b2d3b91a512468",
+    "chunk_id": "91e0be6a-1ef0-514f-b4ce-0bd98ac461f1",
+    "context_version": "3f1475380bb365b5045b40023ae10039e735df1eedc2acbe43b2d3b91a512468",
+    "group_id": "place-existence-only",
+    "grade": 0,
+    "status": "no-connection-evidence",
+    "travel_mode": "unspecified",
+    "rationale": "청담도로공원의 존재를 언급할 뿐 다른 관광지와의 연결을 설명하지 않는다."
+  },
+  {
+    "evidence_key": "7ea8ad87-e493-59bc-b5fa-e59537dc853f:b0762887fc9187f12b4e2b0659235a3d5469918f9591f5fa15e8c946a8d10d41",
+    "chunk_id": "7ea8ad87-e493-59bc-b5fa-e59537dc853f",
+    "context_version": "b0762887fc9187f12b4e2b0659235a3d5469918f9591f5fa15e8c946a8d10d41",
+    "group_id": "walking-after-visit",
+    "grade": 2,
+    "status": "positive-connection",
+    "travel_mode": "walking",
+    "rationale": "A공원 관람 후 B공원으로 도보 이동이 가능하다는 직접 근거다. 이동수단을 이유로 차량 연결보다 높은 등급을 주지 않는다."
+  },
+  {
+    "evidence_key": "9c8e771b-2927-583c-be2f-f159415b1566:8643ae9c78432ae736d781399c502807544a438c02e9295149f6e44ad8368213",
+    "chunk_id": "9c8e771b-2927-583c-be2f-f159415b1566",
+    "context_version": "8643ae9c78432ae736d781399c502807544a438c02e9295149f6e44ad8368213",
+    "group_id": "construction-blocked",
+    "grade": 1,
+    "status": "blocked-route",
+    "travel_mode": "unspecified",
+    "rationale": "A→B 경로에 관한 내용은 있으나 해당 기록에서는 이동에 실패했다. 부정 조건이 보존됐으므로 왜곡은 아니지만, 이용 가능한 연결의 긍정 대표 근거로는 부족하다. 현재 개방 여부는 확정하지 않는다."
+  },
+  {
+    "evidence_key": "4b5cc070-6010-519c-af1b-0f5111263807:2c50e7dc5f66b703d5623b2354d1e7c2be1fdc28999b9fcda3cef5d44258b964",
+    "chunk_id": "4b5cc070-6010-519c-af1b-0f5111263807",
+    "context_version": "2c50e7dc5f66b703d5623b2354d1e7c2be1fdc28999b9fcda3cef5d44258b964",
+    "group_id": "walking-down-stairs",
+    "grade": 2,
+    "status": "positive-connection",
+    "travel_mode": "walking-stairs",
+    "rationale": "A에서 계단을 내려가 B까지 걸어간 경험이 있어 A→B 연결을 뒷받침한다. B도 그 연결의 도착지지만 B→A 이동까지 증명하지는 않는다."
+  }
+]

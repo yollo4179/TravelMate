@@ -1,0 +1,727 @@
+[
+  {
+    "phase": "baseline-1e646b33",
+    "rank": 1,
+    "place_id": 1003,
+    "score": 0.002115703420713544,
+    "representative_evidence_key": "5901c8ca-e895-5a6a-b2da-445f3a531b80:cce3564d713a5f80b119ace335e0f6dbb1f3e217003a630563b5a21f79b9fdf7",
+    "representative_path": "chunk",
+    "evidence_keys": [
+      "5901c8ca-e895-5a6a-b2da-445f3a531b80:cce3564d713a5f80b119ace335e0f6dbb1f3e217003a630563b5a21f79b9fdf7"
+    ],
+    "direction_and_restrictions_preserved": true
+  },
+  {
+    "phase": "baseline-1e646b33",
+    "rank": 2,
+    "place_id": 1014,
+    "score": 0.0020911062601953745,
+    "representative_evidence_key": "b9de82cc-0571-51bb-8781-4c3ba8131ed6:8a1afa79b0b43add20674ffa736ecb25a0ff0c01b300a6c23ec8a1a31cab95d7",
+    "representative_path": "chunk",
+    "evidence_keys": [
+      "b9de82cc-0571-51bb-8781-4c3ba8131ed6:8a1afa79b0b43add20674ffa736ecb25a0ff0c01b300a6c23ec8a1a31cab95d7"
+    ],
+    "direction_and_restrictions_preserved": true
+  },
+  {
+    "phase": "baseline-1e646b33",
+    "rank": 3,
+    "place_id": 1001,
+    "score": 0.002082970691844821,
+    "representative_evidence_key": "64343591-1952-5d48-a6a6-7e5b303381bb:139014fe1d58e47bdbcb431dc4f3e5e087c35d4aa4605d93e1361c1e789c4276",
+    "representative_path": "chunk",
+    "evidence_keys": [
+      "64343591-1952-5d48-a6a6-7e5b303381bb:139014fe1d58e47bdbcb431dc4f3e5e087c35d4aa4605d93e1361c1e789c4276"
+    ],
+    "direction_and_restrictions_preserved": true
+  },
+  {
+    "phase": "baseline-1e646b33",
+    "rank": 4,
+    "place_id": 1010,
+    "score": 0.00204276479780674,
+    "representative_evidence_key": "380ef480-3686-5416-aa36-d2d472a7fdac:39b2f7ec6f20de20392837a2892ff76b5656d54a2f6b30bf0369ed7e03a3e0f3",
+    "representative_path": "chunk",
+    "evidence_keys": [
+      "380ef480-3686-5416-aa36-d2d472a7fdac:39b2f7ec6f20de20392837a2892ff76b5656d54a2f6b30bf0369ed7e03a3e0f3"
+    ],
+    "direction_and_restrictions_preserved": true
+  },
+  {
+    "phase": "baseline-1e646b33",
+    "rank": 5,
+    "place_id": 1021,
+    "score": 0.0019494021544232965,
+    "representative_evidence_key": "383b63b4-eca3-5836-a821-8b689515e81a:97f80f25ef72486be6fddf3a66be05f379884623fed2245dbbb112d4b34940f7",
+    "representative_path": "chunk",
+    "evidence_keys": [
+      "383b63b4-eca3-5836-a821-8b689515e81a:97f80f25ef72486be6fddf3a66be05f379884623fed2245dbbb112d4b34940f7"
+    ],
+    "direction_and_restrictions_preserved": true
+  },
+  {
+    "phase": "baseline-1e646b33",
+    "rank": 6,
+    "place_id": 1011,
+    "score": 0.0019117692718282342,
+    "representative_evidence_key": "03f28b8b-d7ab-5b43-8a73-4dd38ea40252:f12cbedd909d59a0c05a498f4a7b56816ebc8956ab7ba5271597db4a4d71c041",
+    "representative_path": "chunk",
+    "evidence_keys": [
+      "03f28b8b-d7ab-5b43-8a73-4dd38ea40252:f12cbedd909d59a0c05a498f4a7b56816ebc8956ab7ba5271597db4a4d71c041"
+    ],
+    "direction_and_restrictions_preserved": true
+  },
+  {
+    "phase": "baseline-1e646b33",
+    "rank": 7,
+    "place_id": 1035,
+    "score": 0.0019043302163481712,
+    "representative_evidence_key": "6b721a93-60b8-5209-b70e-db705627a10d:98082add5d1949e22bf61ab9d404f3c6e22e270bb44cc02f227a2c2c4d8b8fd5",
+    "representative_path": "chunk",
+    "evidence_keys": [
+      "6b721a93-60b8-5209-b70e-db705627a10d:98082add5d1949e22bf61ab9d404f3c6e22e270bb44cc02f227a2c2c4d8b8fd5"
+    ],
+    "direction_and_restrictions_preserved": true
+  },
+  {
+    "phase": "baseline-1e646b33",
+    "rank": 8,
+    "place_id": 1013,
+    "score": 0.0018969200318679214,
+    "representative_evidence_key": "e033433a-0119-5850-bdad-ba3b90833cfc:54da61000838efd6f8c311abbdd54e2963d52d56358505400041ef2929b36607",
+    "representative_path": "chunk",
+    "evidence_keys": [
+      "e033433a-0119-5850-bdad-ba3b90833cfc:54da61000838efd6f8c311abbdd54e2963d52d56358505400041ef2929b36607"
+    ],
+    "direction_and_restrictions_preserved": true
+  },
+  {
+    "phase": "baseline-1e646b33",
+    "rank": 9,
+    "place_id": 1004,
+    "score": 0.0018895388348028064,
+    "representative_evidence_key": "13e6eef8-7429-5138-93bd-e8e119f10e7f:cc2367f64c3672f0832445363cc67f535f83b2ed134cc23099daa3707ec3633c",
+    "representative_path": "chunk",
+    "evidence_keys": [
+      "13e6eef8-7429-5138-93bd-e8e119f10e7f:cc2367f64c3672f0832445363cc67f535f83b2ed134cc23099daa3707ec3633c"
+    ],
+    "direction_and_restrictions_preserved": true
+  },
+  {
+    "phase": "baseline-1e646b33",
+    "rank": 10,
+    "place_id": 1037,
+    "score": 0.001838665222749114,
+    "representative_evidence_key": "ba3f3730-ce51-50d0-a0b3-6a649d315f77:388739631e7551ce34c8f89686be5beaf81e1581420b710bfcf0e79a3cefbd48",
+    "representative_path": "chunk",
+    "evidence_keys": [
+      "ba3f3730-ce51-50d0-a0b3-6a649d315f77:388739631e7551ce34c8f89686be5beaf81e1581420b710bfcf0e79a3cefbd48"
+    ],
+    "direction_and_restrictions_preserved": true
+  },
+  {
+    "phase": "baseline-1e646b33",
+    "rank": 11,
+    "place_id": 1022,
+    "score": 0.0018172829877585173,
+    "representative_evidence_key": "4774fb27-63ca-5687-86dd-1e140ef57fe0:74977ab2091087494cfb68b597e73d8487c2ead5a17ceaa7c48b2207ac3d543a",
+    "representative_path": "chunk",
+    "evidence_keys": [
+      "4774fb27-63ca-5687-86dd-1e140ef57fe0:74977ab2091087494cfb68b597e73d8487c2ead5a17ceaa7c48b2207ac3d543a"
+    ],
+    "direction_and_restrictions_preserved": true
+  },
+  {
+    "phase": "baseline-1e646b33",
+    "rank": 12,
+    "place_id": 1033,
+    "score": 0.0018102108733728528,
+    "representative_evidence_key": "3bba97ca-d1a9-5d86-bc8f-adae2e0b1178:393b04bc17e253d43f237a06228b901f9b7920a5c3806ed678e93c2a9a058435",
+    "representative_path": "chunk",
+    "evidence_keys": [
+      "3bba97ca-d1a9-5d86-bc8f-adae2e0b1178:393b04bc17e253d43f237a06228b901f9b7920a5c3806ed678e93c2a9a058435"
+    ],
+    "direction_and_restrictions_preserved": true
+  },
+  {
+    "phase": "baseline-1e646b33",
+    "rank": 13,
+    "place_id": 1032,
+    "score": 0.0017961491830646992,
+    "representative_evidence_key": "3f3e3be9-1ffa-5974-88af-a4e68638b8b6:57c49afeb46f00e3c06c7777fe45d4924af4186a6d4852b6ca438fbc38460149",
+    "representative_path": "chunk",
+    "evidence_keys": [
+      "3f3e3be9-1ffa-5974-88af-a4e68638b8b6:57c49afeb46f00e3c06c7777fe45d4924af4186a6d4852b6ca438fbc38460149"
+    ],
+    "direction_and_restrictions_preserved": true
+  },
+  {
+    "phase": "baseline-1e646b33",
+    "rank": 14,
+    "place_id": 1027,
+    "score": 0.0017546144081279635,
+    "representative_evidence_key": "d24ac0f1-2435-571e-b1fe-8c8eb322eaf3:a53d24ac6deff9c8fc032c468a7acbab904dcbfde7b139d00d96893042cace41",
+    "representative_path": "chunk",
+    "evidence_keys": [
+      "d24ac0f1-2435-571e-b1fe-8c8eb322eaf3:a53d24ac6deff9c8fc032c468a7acbab904dcbfde7b139d00d96893042cace41"
+    ],
+    "direction_and_restrictions_preserved": true
+  },
+  {
+    "phase": "baseline-1e646b33",
+    "rank": 15,
+    "place_id": 1034,
+    "score": 0.001747785834595561,
+    "representative_evidence_key": "623f4c3b-9223-5fa0-a878-e71052b39c0c:d1902064ec26bc2b801d48d82f12270e3b1ba01e3636d3ae5403a2f34ad94808",
+    "representative_path": "chunk",
+    "evidence_keys": [
+      "623f4c3b-9223-5fa0-a878-e71052b39c0c:d1902064ec26bc2b801d48d82f12270e3b1ba01e3636d3ae5403a2f34ad94808"
+    ],
+    "direction_and_restrictions_preserved": true
+  },
+  {
+    "phase": "baseline-1e646b33",
+    "rank": 16,
+    "place_id": 1002,
+    "score": 0.001747785834595561,
+    "representative_evidence_key": "ab1a1daf-09d8-588c-9bdd-d1721fd1e028:77944344305d95fd8cf795d576808cc31fdeaf3ad62bae4ab758449c7e0b7454",
+    "representative_path": "chunk",
+    "evidence_keys": [
+      "ab1a1daf-09d8-588c-9bdd-d1721fd1e028:77944344305d95fd8cf795d576808cc31fdeaf3ad62bae4ab758449c7e0b7454"
+    ],
+    "direction_and_restrictions_preserved": true
+  },
+  {
+    "phase": "baseline-1e646b33",
+    "rank": 17,
+    "place_id": 1031,
+    "score": 0.0017207354540005326,
+    "representative_evidence_key": "4598c3d2-7358-5779-87bb-4f55d2f0c743:fca2d0fed1d497b0879c60e244fdc47b1be606c7300fa669009d190f321d2041",
+    "representative_path": "chunk",
+    "evidence_keys": [
+      "4598c3d2-7358-5779-87bb-4f55d2f0c743:fca2d0fed1d497b0879c60e244fdc47b1be606c7300fa669009d190f321d2041"
+    ],
+    "direction_and_restrictions_preserved": true
+  },
+  {
+    "phase": "baseline-1e646b33",
+    "rank": 18,
+    "place_id": 1028,
+    "score": 0.0017207354540005326,
+    "representative_evidence_key": "4b40d3bb-02f4-5d76-b46c-a795b60dc48c:2b715757fc2bf2784bfe8f57d7105d9d813883f1186cabf67c64725a0c51d37f",
+    "representative_path": "chunk",
+    "evidence_keys": [
+      "4b40d3bb-02f4-5d76-b46c-a795b60dc48c:2b715757fc2bf2784bfe8f57d7105d9d813883f1186cabf67c64725a0c51d37f"
+    ],
+    "direction_and_restrictions_preserved": true
+  },
+  {
+    "phase": "baseline-1e646b33",
+    "rank": 19,
+    "place_id": 1023,
+    "score": 0.0017073675990104675,
+    "representative_evidence_key": "a2dc3cd2-2b2a-5754-93cc-359a7ebd0743:f4420887ed31f82b118ae782331048afbd37014881dfb7e4d913ea7c1803749f",
+    "representative_path": "chunk",
+    "evidence_keys": [
+      "a2dc3cd2-2b2a-5754-93cc-359a7ebd0743:f4420887ed31f82b118ae782331048afbd37014881dfb7e4d913ea7c1803749f"
+    ],
+    "direction_and_restrictions_preserved": true
+  },
+  {
+    "phase": "baseline-1e646b33",
+    "rank": 20,
+    "place_id": 1012,
+    "score": 0.0017073675990104675,
+    "representative_evidence_key": "47ddbfd9-33c6-56a3-93fb-bdb4817aea5f:d2df8601eb9c94ea6476f14a27455292914d2759fdb2470c22514cb296a46742",
+    "representative_path": "chunk",
+    "evidence_keys": [
+      "47ddbfd9-33c6-56a3-93fb-bdb4817aea5f:d2df8601eb9c94ea6476f14a27455292914d2759fdb2470c22514cb296a46742"
+    ],
+    "direction_and_restrictions_preserved": true
+  },
+  {
+    "phase": "baseline-1e646b33",
+    "rank": 21,
+    "place_id": 1007,
+    "score": 0.001674399245530367,
+    "representative_evidence_key": "8bbdca03-470f-56d9-8d1e-d30e43378950:00d9d6c3f1f4a81c50d696fe7ff3dd1a7e3699911fab1e500f9d4d595b6c4ccb",
+    "representative_path": "chunk",
+    "evidence_keys": [
+      "8bbdca03-470f-56d9-8d1e-d30e43378950:00d9d6c3f1f4a81c50d696fe7ff3dd1a7e3699911fab1e500f9d4d595b6c4ccb"
+    ],
+    "direction_and_restrictions_preserved": true
+  },
+  {
+    "phase": "baseline-1e646b33",
+    "rank": 22,
+    "place_id": 1025,
+    "score": 0.0016484829830005765,
+    "representative_evidence_key": "58c09655-998e-5535-b521-6e85178d126a:938b41b6db44d2dd5500e9c67b8a9595a9e7ae3aa2032d7c7c541d9cb759edb4",
+    "representative_path": "chunk",
+    "evidence_keys": [
+      "58c09655-998e-5535-b521-6e85178d126a:938b41b6db44d2dd5500e9c67b8a9595a9e7ae3aa2032d7c7c541d9cb759edb4"
+    ],
+    "direction_and_restrictions_preserved": true
+  },
+  {
+    "phase": "baseline-1e646b33",
+    "rank": 23,
+    "place_id": 1038,
+    "score": 0.0016420665197074413,
+    "representative_evidence_key": "7b5eade9-4f33-5889-a7cd-6de26eeb1a0e:9311c3bf8d6aca5f035b9794af2f4b88d4bc2e1454a7774b2fda5e37c7681b73",
+    "representative_path": "chunk",
+    "evidence_keys": [
+      "7b5eade9-4f33-5889-a7cd-6de26eeb1a0e:9311c3bf8d6aca5f035b9794af2f4b88d4bc2e1454a7774b2fda5e37c7681b73"
+    ],
+    "direction_and_restrictions_preserved": true
+  },
+  {
+    "phase": "baseline-1e646b33",
+    "rank": 24,
+    "place_id": 1036,
+    "score": 0.0016166499117389321,
+    "representative_evidence_key": "46f1d6d7-e31e-5d24-8c84-daf07a106dd6:bfbda0c650f274e28d6057aa2dc7513ed57f1cc67f4aef23e888c6d0d78cac4e",
+    "representative_path": "chunk",
+    "evidence_keys": [
+      "46f1d6d7-e31e-5d24-8c84-daf07a106dd6:bfbda0c650f274e28d6057aa2dc7513ed57f1cc67f4aef23e888c6d0d78cac4e"
+    ],
+    "direction_and_restrictions_preserved": true
+  },
+  {
+    "phase": "baseline-1e646b33",
+    "rank": 25,
+    "place_id": 1009,
+    "score": 0.0015247863484546542,
+    "representative_evidence_key": "568639a3-df87-5009-8bfb-202b0122800b:8012fa76dc58a7c21e19ce134353b206f7302e13ca6745523e4f7a1245cc1a15",
+    "representative_path": "chunk",
+    "evidence_keys": [
+      "568639a3-df87-5009-8bfb-202b0122800b:8012fa76dc58a7c21e19ce134353b206f7302e13ca6745523e4f7a1245cc1a15"
+    ],
+    "direction_and_restrictions_preserved": true
+  },
+  {
+    "phase": "baseline-1e646b33",
+    "rank": 26,
+    "place_id": 1015,
+    "score": 0.0015070488443598151,
+    "representative_evidence_key": "a0299fb8-01f1-51ec-8b9c-4fc73c318617:f27a48da82ff51c35e883f286219dba61f4269eac4f80c2d6a0857732ec68f14",
+    "representative_path": "chunk",
+    "evidence_keys": [
+      "a0299fb8-01f1-51ec-8b9c-4fc73c318617:f27a48da82ff51c35e883f286219dba61f4269eac4f80c2d6a0857732ec68f14"
+    ],
+    "direction_and_restrictions_preserved": true
+  },
+  {
+    "phase": "baseline-1e646b33",
+    "rank": 27,
+    "place_id": 1008,
+    "score": 0.0015070488443598151,
+    "representative_evidence_key": "b486b9c6-8dea-534e-ab91-cdccd2cde37e:5df4869465092aad3d899e0048b2023b32879c55f761f6d0a1772d62ce04820d",
+    "representative_path": "chunk",
+    "evidence_keys": [
+      "b486b9c6-8dea-534e-ab91-cdccd2cde37e:5df4869465092aad3d899e0048b2023b32879c55f761f6d0a1772d62ce04820d"
+    ],
+    "direction_and_restrictions_preserved": true
+  },
+  {
+    "phase": "baseline-1e646b33",
+    "rank": 28,
+    "place_id": 1026,
+    "score": 0.0015011823270469904,
+    "representative_evidence_key": "c51adca8-0784-5a39-85cd-0df51d562c77:8d55b872212d1484e99422ad05ae3f37523bb7085caac68583e4d4581f7fd74e",
+    "representative_path": "chunk",
+    "evidence_keys": [
+      "c51adca8-0784-5a39-85cd-0df51d562c77:8d55b872212d1484e99422ad05ae3f37523bb7085caac68583e4d4581f7fd74e"
+    ],
+    "direction_and_restrictions_preserved": true
+  },
+  {
+    "phase": "baseline-1e646b33",
+    "rank": 29,
+    "place_id": 394,
+    "score": 0.0008072304772213101,
+    "representative_evidence_key": "da9d85a8-d80e-539e-ac25-020f712e6e6d:3dcf21686d8107244378e119038434bac279d78b2efc69402951f8d231b04eb8",
+    "representative_path": "chunk",
+    "evidence_keys": [
+      "da9d85a8-d80e-539e-ac25-020f712e6e6d:3dcf21686d8107244378e119038434bac279d78b2efc69402951f8d231b04eb8",
+      "91e0be6a-1ef0-514f-b4ce-0bd98ac461f1:3f1475380bb365b5045b40023ae10039e735df1eedc2acbe43b2d3b91a512468"
+    ],
+    "direction_and_restrictions_preserved": true
+  },
+  {
+    "phase": "baseline-1e646b33",
+    "rank": 30,
+    "place_id": 101,
+    "score": 7.368592923739925e-05,
+    "representative_evidence_key": "7ea8ad87-e493-59bc-b5fa-e59537dc853f:b0762887fc9187f12b4e2b0659235a3d5469918f9591f5fa15e8c946a8d10d41",
+    "representative_path": "chunk",
+    "evidence_keys": [
+      "7ea8ad87-e493-59bc-b5fa-e59537dc853f:b0762887fc9187f12b4e2b0659235a3d5469918f9591f5fa15e8c946a8d10d41",
+      "9c8e771b-2927-583c-be2f-f159415b1566:8643ae9c78432ae736d781399c502807544a438c02e9295149f6e44ad8368213"
+    ],
+    "direction_and_restrictions_preserved": true
+  },
+  {
+    "phase": "general-relations",
+    "rank": 1,
+    "place_id": 1001,
+    "score": 0.007431773468852043,
+    "representative_evidence_key": "64343591-1952-5d48-a6a6-7e5b303381bb:139014fe1d58e47bdbcb431dc4f3e5e087c35d4aa4605d93e1361c1e789c4276",
+    "representative_path": "relation",
+    "evidence_keys": [
+      "64343591-1952-5d48-a6a6-7e5b303381bb:139014fe1d58e47bdbcb431dc4f3e5e087c35d4aa4605d93e1361c1e789c4276"
+    ],
+    "direction_and_restrictions_preserved": true
+  },
+  {
+    "phase": "general-relations",
+    "rank": 2,
+    "place_id": 1003,
+    "score": 0.0067449891939759254,
+    "representative_evidence_key": "5901c8ca-e895-5a6a-b2da-445f3a531b80:cce3564d713a5f80b119ace335e0f6dbb1f3e217003a630563b5a21f79b9fdf7",
+    "representative_path": "relation",
+    "evidence_keys": [
+      "5901c8ca-e895-5a6a-b2da-445f3a531b80:cce3564d713a5f80b119ace335e0f6dbb1f3e217003a630563b5a21f79b9fdf7"
+    ],
+    "direction_and_restrictions_preserved": true
+  },
+  {
+    "phase": "general-relations",
+    "rank": 3,
+    "place_id": 1002,
+    "score": 0.006692850962281227,
+    "representative_evidence_key": "ab1a1daf-09d8-588c-9bdd-d1721fd1e028:77944344305d95fd8cf795d576808cc31fdeaf3ad62bae4ab758449c7e0b7454",
+    "representative_path": "relation",
+    "evidence_keys": [
+      "ab1a1daf-09d8-588c-9bdd-d1721fd1e028:77944344305d95fd8cf795d576808cc31fdeaf3ad62bae4ab758449c7e0b7454"
+    ],
+    "direction_and_restrictions_preserved": true
+  },
+  {
+    "phase": "general-relations",
+    "rank": 4,
+    "place_id": 1010,
+    "score": 0.006217078305780888,
+    "representative_evidence_key": "380ef480-3686-5416-aa36-d2d472a7fdac:39b2f7ec6f20de20392837a2892ff76b5656d54a2f6b30bf0369ed7e03a3e0f3",
+    "representative_path": "relation",
+    "evidence_keys": [
+      "380ef480-3686-5416-aa36-d2d472a7fdac:39b2f7ec6f20de20392837a2892ff76b5656d54a2f6b30bf0369ed7e03a3e0f3"
+    ],
+    "direction_and_restrictions_preserved": true
+  },
+  {
+    "phase": "general-relations",
+    "rank": 5,
+    "place_id": 1033,
+    "score": 0.006026951130479574,
+    "representative_evidence_key": "3bba97ca-d1a9-5d86-bc8f-adae2e0b1178:393b04bc17e253d43f237a06228b901f9b7920a5c3806ed678e93c2a9a058435",
+    "representative_path": "relation",
+    "evidence_keys": [
+      "3bba97ca-d1a9-5d86-bc8f-adae2e0b1178:393b04bc17e253d43f237a06228b901f9b7920a5c3806ed678e93c2a9a058435"
+    ],
+    "direction_and_restrictions_preserved": true
+  },
+  {
+    "phase": "general-relations",
+    "rank": 6,
+    "place_id": 1004,
+    "score": 0.005865338258445263,
+    "representative_evidence_key": "13e6eef8-7429-5138-93bd-e8e119f10e7f:cc2367f64c3672f0832445363cc67f535f83b2ed134cc23099daa3707ec3633c",
+    "representative_path": "relation",
+    "evidence_keys": [
+      "13e6eef8-7429-5138-93bd-e8e119f10e7f:cc2367f64c3672f0832445363cc67f535f83b2ed134cc23099daa3707ec3633c"
+    ],
+    "direction_and_restrictions_preserved": true
+  },
+  {
+    "phase": "general-relations",
+    "rank": 7,
+    "place_id": 1014,
+    "score": 0.005774929653853178,
+    "representative_evidence_key": "b9de82cc-0571-51bb-8781-4c3ba8131ed6:8a1afa79b0b43add20674ffa736ecb25a0ff0c01b300a6c23ec8a1a31cab95d7",
+    "representative_path": "relation",
+    "evidence_keys": [
+      "b9de82cc-0571-51bb-8781-4c3ba8131ed6:8a1afa79b0b43add20674ffa736ecb25a0ff0c01b300a6c23ec8a1a31cab95d7"
+    ],
+    "direction_and_restrictions_preserved": true
+  },
+  {
+    "phase": "general-relations",
+    "rank": 8,
+    "place_id": 1011,
+    "score": 0.005663865711539984,
+    "representative_evidence_key": "03f28b8b-d7ab-5b43-8a73-4dd38ea40252:f12cbedd909d59a0c05a498f4a7b56816ebc8956ab7ba5271597db4a4d71c041",
+    "representative_path": "relation",
+    "evidence_keys": [
+      "03f28b8b-d7ab-5b43-8a73-4dd38ea40252:f12cbedd909d59a0c05a498f4a7b56816ebc8956ab7ba5271597db4a4d71c041"
+    ],
+    "direction_and_restrictions_preserved": true
+  },
+  {
+    "phase": "general-relations",
+    "rank": 9,
+    "place_id": 1009,
+    "score": 0.005663865711539984,
+    "representative_evidence_key": "568639a3-df87-5009-8bfb-202b0122800b:8012fa76dc58a7c21e19ce134353b206f7302e13ca6745523e4f7a1245cc1a15",
+    "representative_path": "relation",
+    "evidence_keys": [
+      "568639a3-df87-5009-8bfb-202b0122800b:8012fa76dc58a7c21e19ce134353b206f7302e13ca6745523e4f7a1245cc1a15"
+    ],
+    "direction_and_restrictions_preserved": true
+  },
+  {
+    "phase": "general-relations",
+    "rank": 10,
+    "place_id": 1027,
+    "score": 0.005511934403330088,
+    "representative_evidence_key": "d24ac0f1-2435-571e-b1fe-8c8eb322eaf3:a53d24ac6deff9c8fc032c468a7acbab904dcbfde7b139d00d96893042cace41",
+    "representative_path": "relation",
+    "evidence_keys": [
+      "d24ac0f1-2435-571e-b1fe-8c8eb322eaf3:a53d24ac6deff9c8fc032c468a7acbab904dcbfde7b139d00d96893042cace41"
+    ],
+    "direction_and_restrictions_preserved": true
+  },
+  {
+    "phase": "general-relations",
+    "rank": 11,
+    "place_id": 1037,
+    "score": 0.005511934403330088,
+    "representative_evidence_key": "ba3f3730-ce51-50d0-a0b3-6a649d315f77:388739631e7551ce34c8f89686be5beaf81e1581420b710bfcf0e79a3cefbd48",
+    "representative_path": "relation",
+    "evidence_keys": [
+      "ba3f3730-ce51-50d0-a0b3-6a649d315f77:388739631e7551ce34c8f89686be5beaf81e1581420b710bfcf0e79a3cefbd48"
+    ],
+    "direction_and_restrictions_preserved": true
+  },
+  {
+    "phase": "general-relations",
+    "rank": 12,
+    "place_id": 1013,
+    "score": 0.005426943302154541,
+    "representative_evidence_key": "e033433a-0119-5850-bdad-ba3b90833cfc:54da61000838efd6f8c311abbdd54e2963d52d56358505400041ef2929b36607",
+    "representative_path": "relation",
+    "evidence_keys": [
+      "e033433a-0119-5850-bdad-ba3b90833cfc:54da61000838efd6f8c311abbdd54e2963d52d56358505400041ef2929b36607"
+    ],
+    "direction_and_restrictions_preserved": true
+  },
+  {
+    "phase": "general-relations",
+    "rank": 13,
+    "place_id": 1032,
+    "score": 0.005405900068581104,
+    "representative_evidence_key": "3f3e3be9-1ffa-5974-88af-a4e68638b8b6:57c49afeb46f00e3c06c7777fe45d4924af4186a6d4852b6ca438fbc38460149",
+    "representative_path": "relation",
+    "evidence_keys": [
+      "3f3e3be9-1ffa-5974-88af-a4e68638b8b6:57c49afeb46f00e3c06c7777fe45d4924af4186a6d4852b6ca438fbc38460149"
+    ],
+    "direction_and_restrictions_preserved": true
+  },
+  {
+    "phase": "general-relations",
+    "rank": 14,
+    "place_id": 1007,
+    "score": 0.0053640566766262054,
+    "representative_evidence_key": "8bbdca03-470f-56d9-8d1e-d30e43378950:00d9d6c3f1f4a81c50d696fe7ff3dd1a7e3699911fab1e500f9d4d595b6c4ccb",
+    "representative_path": "relation",
+    "evidence_keys": [
+      "8bbdca03-470f-56d9-8d1e-d30e43378950:00d9d6c3f1f4a81c50d696fe7ff3dd1a7e3699911fab1e500f9d4d595b6c4ccb"
+    ],
+    "direction_and_restrictions_preserved": true
+  },
+  {
+    "phase": "general-relations",
+    "rank": 15,
+    "place_id": 1015,
+    "score": 0.005343256052583456,
+    "representative_evidence_key": "a0299fb8-01f1-51ec-8b9c-4fc73c318617:f27a48da82ff51c35e883f286219dba61f4269eac4f80c2d6a0857732ec68f14",
+    "representative_path": "relation",
+    "evidence_keys": [
+      "a0299fb8-01f1-51ec-8b9c-4fc73c318617:f27a48da82ff51c35e883f286219dba61f4269eac4f80c2d6a0857732ec68f14"
+    ],
+    "direction_and_restrictions_preserved": true
+  },
+  {
+    "phase": "general-relations",
+    "rank": 16,
+    "place_id": 1028,
+    "score": 0.0053225355222821236,
+    "representative_evidence_key": "4b40d3bb-02f4-5d76-b46c-a795b60dc48c:2b715757fc2bf2784bfe8f57d7105d9d813883f1186cabf67c64725a0c51d37f",
+    "representative_path": "relation",
+    "evidence_keys": [
+      "4b40d3bb-02f4-5d76-b46c-a795b60dc48c:2b715757fc2bf2784bfe8f57d7105d9d813883f1186cabf67c64725a0c51d37f"
+    ],
+    "direction_and_restrictions_preserved": true
+  },
+  {
+    "phase": "general-relations",
+    "rank": 17,
+    "place_id": 1008,
+    "score": 0.0053225355222821236,
+    "representative_evidence_key": "b486b9c6-8dea-534e-ab91-cdccd2cde37e:5df4869465092aad3d899e0048b2023b32879c55f761f6d0a1772d62ce04820d",
+    "representative_path": "relation",
+    "evidence_keys": [
+      "b486b9c6-8dea-534e-ab91-cdccd2cde37e:5df4869465092aad3d899e0048b2023b32879c55f761f6d0a1772d62ce04820d"
+    ],
+    "direction_and_restrictions_preserved": true
+  },
+  {
+    "phase": "general-relations",
+    "rank": 18,
+    "place_id": 1035,
+    "score": 0.005301894154399633,
+    "representative_evidence_key": "6b721a93-60b8-5209-b70e-db705627a10d:98082add5d1949e22bf61ab9d404f3c6e22e270bb44cc02f227a2c2c4d8b8fd5",
+    "representative_path": "relation",
+    "evidence_keys": [
+      "6b721a93-60b8-5209-b70e-db705627a10d:98082add5d1949e22bf61ab9d404f3c6e22e270bb44cc02f227a2c2c4d8b8fd5"
+    ],
+    "direction_and_restrictions_preserved": true
+  },
+  {
+    "phase": "general-relations",
+    "rank": 19,
+    "place_id": 1022,
+    "score": 0.005159622989594936,
+    "representative_evidence_key": "4774fb27-63ca-5687-86dd-1e140ef57fe0:74977ab2091087494cfb68b597e73d8487c2ead5a17ceaa7c48b2207ac3d543a",
+    "representative_path": "relation",
+    "evidence_keys": [
+      "4774fb27-63ca-5687-86dd-1e140ef57fe0:74977ab2091087494cfb68b597e73d8487c2ead5a17ceaa7c48b2207ac3d543a"
+    ],
+    "direction_and_restrictions_preserved": true
+  },
+  {
+    "phase": "general-relations",
+    "rank": 20,
+    "place_id": 1038,
+    "score": 0.005139611195772886,
+    "representative_evidence_key": "7b5eade9-4f33-5889-a7cd-6de26eeb1a0e:9311c3bf8d6aca5f035b9794af2f4b88d4bc2e1454a7774b2fda5e37c7681b73",
+    "representative_path": "relation",
+    "evidence_keys": [
+      "7b5eade9-4f33-5889-a7cd-6de26eeb1a0e:9311c3bf8d6aca5f035b9794af2f4b88d4bc2e1454a7774b2fda5e37c7681b73"
+    ],
+    "direction_and_restrictions_preserved": true
+  },
+  {
+    "phase": "general-relations",
+    "rank": 21,
+    "place_id": 1034,
+    "score": 0.005119676236063242,
+    "representative_evidence_key": "623f4c3b-9223-5fa0-a878-e71052b39c0c:d1902064ec26bc2b801d48d82f12270e3b1ba01e3636d3ae5403a2f34ad94808",
+    "representative_path": "relation",
+    "evidence_keys": [
+      "623f4c3b-9223-5fa0-a878-e71052b39c0c:d1902064ec26bc2b801d48d82f12270e3b1ba01e3636d3ae5403a2f34ad94808"
+    ],
+    "direction_and_restrictions_preserved": true
+  },
+  {
+    "phase": "general-relations",
+    "rank": 22,
+    "place_id": 1031,
+    "score": 0.005099818110466003,
+    "representative_evidence_key": "4598c3d2-7358-5779-87bb-4f55d2f0c743:fca2d0fed1d497b0879c60e244fdc47b1be606c7300fa669009d190f321d2041",
+    "representative_path": "relation",
+    "evidence_keys": [
+      "4598c3d2-7358-5779-87bb-4f55d2f0c743:fca2d0fed1d497b0879c60e244fdc47b1be606c7300fa669009d190f321d2041"
+    ],
+    "direction_and_restrictions_preserved": true
+  },
+  {
+    "phase": "general-relations",
+    "rank": 23,
+    "place_id": 1025,
+    "score": 0.005060331895947456,
+    "representative_evidence_key": "58c09655-998e-5535-b521-6e85178d126a:938b41b6db44d2dd5500e9c67b8a9595a9e7ae3aa2032d7c7c541d9cb759edb4",
+    "representative_path": "relation",
+    "evidence_keys": [
+      "58c09655-998e-5535-b521-6e85178d126a:938b41b6db44d2dd5500e9c67b8a9595a9e7ae3aa2032d7c7c541d9cb759edb4"
+    ],
+    "direction_and_restrictions_preserved": true
+  },
+  {
+    "phase": "general-relations",
+    "rank": 24,
+    "place_id": 1026,
+    "score": 0.005040702875703573,
+    "representative_evidence_key": "c51adca8-0784-5a39-85cd-0df51d562c77:8d55b872212d1484e99422ad05ae3f37523bb7085caac68583e4d4581f7fd74e",
+    "representative_path": "relation",
+    "evidence_keys": [
+      "c51adca8-0784-5a39-85cd-0df51d562c77:8d55b872212d1484e99422ad05ae3f37523bb7085caac68583e4d4581f7fd74e"
+    ],
+    "direction_and_restrictions_preserved": true
+  },
+  {
+    "phase": "general-relations",
+    "rank": 25,
+    "place_id": 1036,
+    "score": 0.005001672077924013,
+    "representative_evidence_key": "46f1d6d7-e31e-5d24-8c84-daf07a106dd6:bfbda0c650f274e28d6057aa2dc7513ed57f1cc67f4aef23e888c6d0d78cac4e",
+    "representative_path": "relation",
+    "evidence_keys": [
+      "46f1d6d7-e31e-5d24-8c84-daf07a106dd6:bfbda0c650f274e28d6057aa2dc7513ed57f1cc67f4aef23e888c6d0d78cac4e"
+    ],
+    "direction_and_restrictions_preserved": true
+  },
+  {
+    "phase": "general-relations",
+    "rank": 26,
+    "place_id": 1021,
+    "score": 0.004905405919998884,
+    "representative_evidence_key": "383b63b4-eca3-5836-a821-8b689515e81a:97f80f25ef72486be6fddf3a66be05f379884623fed2245dbbb112d4b34940f7",
+    "representative_path": "relation",
+    "evidence_keys": [
+      "383b63b4-eca3-5836-a821-8b689515e81a:97f80f25ef72486be6fddf3a66be05f379884623fed2245dbbb112d4b34940f7"
+    ],
+    "direction_and_restrictions_preserved": true
+  },
+  {
+    "phase": "general-relations",
+    "rank": 27,
+    "place_id": 1023,
+    "score": 0.004905405919998884,
+    "representative_evidence_key": "a2dc3cd2-2b2a-5754-93cc-359a7ebd0743:f4420887ed31f82b118ae782331048afbd37014881dfb7e4d913ea7c1803749f",
+    "representative_path": "relation",
+    "evidence_keys": [
+      "a2dc3cd2-2b2a-5754-93cc-359a7ebd0743:f4420887ed31f82b118ae782331048afbd37014881dfb7e4d913ea7c1803749f"
+    ],
+    "direction_and_restrictions_preserved": true
+  },
+  {
+    "phase": "general-relations",
+    "rank": 28,
+    "place_id": 101,
+    "score": 0.0044683837331831455,
+    "representative_evidence_key": "7ea8ad87-e493-59bc-b5fa-e59537dc853f:b0762887fc9187f12b4e2b0659235a3d5469918f9591f5fa15e8c946a8d10d41",
+    "representative_path": "relation",
+    "evidence_keys": [
+      "7ea8ad87-e493-59bc-b5fa-e59537dc853f:b0762887fc9187f12b4e2b0659235a3d5469918f9591f5fa15e8c946a8d10d41",
+      "4b5cc070-6010-519c-af1b-0f5111263807:2c50e7dc5f66b703d5623b2354d1e7c2be1fdc28999b9fcda3cef5d44258b964"
+    ],
+    "direction_and_restrictions_preserved": true
+  },
+  {
+    "phase": "general-relations",
+    "rank": 29,
+    "place_id": 202,
+    "score": 0.002540992572903633,
+    "representative_evidence_key": "9c8e771b-2927-583c-be2f-f159415b1566:8643ae9c78432ae736d781399c502807544a438c02e9295149f6e44ad8368213",
+    "representative_path": "relation",
+    "evidence_keys": [
+      "9c8e771b-2927-583c-be2f-f159415b1566:8643ae9c78432ae736d781399c502807544a438c02e9295149f6e44ad8368213",
+      "4b5cc070-6010-519c-af1b-0f5111263807:2c50e7dc5f66b703d5623b2354d1e7c2be1fdc28999b9fcda3cef5d44258b964"
+    ],
+    "direction_and_restrictions_preserved": true
+  },
+  {
+    "phase": "general-relations",
+    "rank": 30,
+    "place_id": 394,
+    "score": 0.0008072304772213101,
+    "representative_evidence_key": "da9d85a8-d80e-539e-ac25-020f712e6e6d:3dcf21686d8107244378e119038434bac279d78b2efc69402951f8d231b04eb8",
+    "representative_path": "chunk",
+    "evidence_keys": [
+      "da9d85a8-d80e-539e-ac25-020f712e6e6d:3dcf21686d8107244378e119038434bac279d78b2efc69402951f8d231b04eb8",
+      "91e0be6a-1ef0-514f-b4ce-0bd98ac461f1:3f1475380bb365b5045b40023ae10039e735df1eedc2acbe43b2d3b91a512468"
+    ],
+    "direction_and_restrictions_preserved": true
+  }
+]
