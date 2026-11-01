@@ -1,0 +1,339 @@
+{
+  "audit_commit": "67f9f7997fcd161ad6686cef2adf0b909a48bf99",
+  "audit_type": "static_source_and_contract_inventory; not a quality evaluation",
+  "dataset": {
+    "version": "v1.4.0",
+    "declared_case_count": 200,
+    "track_membership_counts": {
+      "tool_call": 200,
+      "search": 85,
+      "message": 200,
+      "plan": 50,
+      "state": 70,
+      "behavior": 45,
+      "memory": 20
+    },
+    "response_type_counts": {
+      "PLACES": 85,
+      "PLAN": 29,
+      "TEXT": 47,
+      "CLARIFICATION": 20,
+      "PLAN_DIFF": 19
+    },
+    "required_tool_call_instances": {
+      "search_places": 85,
+      "create_plan": 30,
+      "ask_clarification": 20,
+      "modify_plan": 16,
+      "recall_memory": 2
+    },
+    "cases_with_route_fixture": 20,
+    "corpus_place_count": 449,
+    "tool_contract_implementation_status": "evaluation_design_contract; not a claim that production tools exist",
+    "tool_contracts": {
+      "search_places": {
+        "response_type": "PLACES",
+        "arguments": [
+          "query",
+          "region",
+          "city",
+          "exclude_place_ids",
+          "area"
+        ],
+        "effect": "read_only"
+      },
+      "create_plan": {
+        "response_type": "PLAN",
+        "arguments": [
+          "place_ids",
+          "start_at",
+          "end_at",
+          "origin",
+          "transport"
+        ],
+        "effect": "preview; server schedules selected IDs using trusted route/time inputs",
+        "existing_design_mapping": "build_schedule plus plan preview; not direct DRAFT persistence"
+      },
+      "modify_plan": {
+        "response_type": "PLAN_DIFF",
+        "arguments": [
+          "plan_id",
+          "operation",
+          "target_place_id",
+          "new_place_id"
+        ],
+        "effect": "preview; commit belongs to the confirmed backend flow"
+      },
+      "ask_clarification": {
+        "response_type": "CLARIFICATION",
+        "arguments": [
+          "missing"
+        ],
+        "effect": "read_only clarification"
+      },
+      "recall_memory": {
+        "response_type": null,
+        "arguments": [
+          "query"
+        ],
+        "effect": "owner-scoped read; internal evidence does not override the user task's public response type"
+      }
+    }
+  },
+  "contextual_pilot": {
+    "query_count": 26,
+    "source": "Evaluation/tracks/contextual/pilot_cases.json",
+    "held_out": false
+  },
+  "audited_branch_files": {
+    "Server/TravelMate/src/main/java/com/yollo/TravelMate/ai/llm/base/LlmClient.java": {
+      "exists": true,
+      "raw_sha256": "2e13a1f9468493bcb65a6a6fa289aedab2acdbda3781fa7cb75737bb0d08a492",
+      "lf_sha256": "28ef4c760cb87abca13f574cfaa3e060b0e1e7be7ff569e23a7736cf6bae8292",
+      "git_status": ""
+    },
+    "Server/TravelMate/src/main/java/com/yollo/TravelMate/ai/llm/derived/OllamaLlmClient.java": {
+      "exists": true,
+      "raw_sha256": "60de6b153014ec03ad111e96dc92ae3fa113b2753f75de964e4063e0a4de40b4",
+      "lf_sha256": "b56568f4cf8d1ea0f31da94514bfb98a977fa25a4c92242f2631197590294251",
+      "git_status": ""
+    },
+    "Server/TravelMate/src/main/java/com/yollo/TravelMate/domain/place/client/PlaceSemanticSearchClient.java": {
+      "exists": true,
+      "raw_sha256": "90370b1c856e68b70d15a9618678f6f4ae6241a3f0e6a03affe402802f5b5e26",
+      "lf_sha256": "c793c87768394e108cd14a56e3936c62f0f3d09d504d2ddfae0d607878c91ecb",
+      "git_status": ""
+    },
+    "Server/TravelMate/src/main/java/com/yollo/TravelMate/domain/place/data/result/PlaceSemanticSearchResult.java": {
+      "exists": true,
+      "raw_sha256": "f61a7b8b482ad26b5ecce1c4972200ca56b1facf58aa1e8e560574348c0e4f6f",
+      "lf_sha256": "db0edb27e6ec155a36fa6a147dae1302525693d8dcf06e8d4df4895600f2189f",
+      "git_status": ""
+    },
+    "Server/TravelMate/src/main/java/com/yollo/TravelMate/domain/place/data/response/PlaceSearchResponseDto.java": {
+      "exists": true,
+      "raw_sha256": "7b939d8c7526525c9a89446f65d72c43e3ab7c39f0a6a34c325cb68f41218e58",
+      "lf_sha256": "e06a57cd6a3d0b8b46c1258e03dddab989f36d0d69bb70f213d596072449462f",
+      "git_status": ""
+    },
+    "Server/TravelMate/src/main/java/com/yollo/TravelMate/domain/place/controller/PlaceSearchController.java": {
+      "exists": true,
+      "raw_sha256": "7fe1fd96bf84a82ce289fb48a9487612e49b856aa91eeeaba7a7e37f49812d2f",
+      "lf_sha256": "0e7229d0aff3b3bd2e884522d3146fe8ebf0ebca84b32ca71fbbbb13653e503c",
+      "git_status": ""
+    },
+    "Server/TravelMate/src/main/java/com/yollo/TravelMate/domain/place/service/PlaceSemanticSearchService.java": {
+      "exists": true,
+      "raw_sha256": "bed896263ebf7e9dc5e57ef247aab2bb1c5bb9c828801245802c318aa83f8fdf",
+      "lf_sha256": "4438a5500343b1a80593a8a572b7e50b1f88f7521ce99fb77da88f114158fc88",
+      "git_status": ""
+    },
+    "Server/TravelMate/src/main/java/com/yollo/TravelMate/domain/plan/controller/ContextPlanningController.java": {
+      "exists": true,
+      "raw_sha256": "21000e02b81478b03e6769eb8adb63eaad25e0fa2b03202e978abebc4ad90355",
+      "lf_sha256": "f6071ad2562c69785218aa4989876e7dcf084fa988ac080282e6f2228f9d0af3",
+      "git_status": ""
+    },
+    "Server/TravelMate/src/main/java/com/yollo/TravelMate/domain/plan/service/ContextPlanningService.java": {
+      "exists": true,
+      "raw_sha256": "769a09fb1173c676ac5d5aa0ac8547e544c842cf13dba9c3b239e921095dd486",
+      "lf_sha256": "e8a3fdecd58dcc350e32385cefbe4e0f96735fef992f7182972164e9d78e5df4",
+      "git_status": ""
+    },
+    "Server/TravelMate/src/main/java/com/yollo/TravelMate/domain/plan/service/PlanGenerationService.java": {
+      "exists": true,
+      "raw_sha256": "536eb47f21427f330268986d7d850acbf9627610d707857d127002cc6866f5f2",
+      "lf_sha256": "bed2d3de6b5a98326ae82a7d9e67a7790b92257b33515a49e587d912d4a25234",
+      "git_status": ""
+    },
+    "Server/TravelMate/src/main/java/com/yollo/TravelMate/domain/plan/data/request/GeneratePlanRequest.java": {
+      "exists": true,
+      "raw_sha256": "004eba2eebc78dade03a7549a8f609eeb1e8b43b1b10302856de136194e329be",
+      "lf_sha256": "be3a83323f1ed3cc6071b3e1038a22c449607472f8610fe3ee0dadd3c94e3015",
+      "git_status": ""
+    },
+    "Server/TravelMate/src/main/java/com/yollo/TravelMate/domain/plan/data/request/PlanContext.java": {
+      "exists": true,
+      "raw_sha256": "979f3b8eb400fcb9de98464ab78d93c033494a31e9a03c8dce48803b775aa380",
+      "lf_sha256": "f0284b2b444892d10414c4c628dcd3e552487379d614e2550ed319b6c641288f",
+      "git_status": ""
+    },
+    "Server/TravelMate/src/main/java/com/yollo/TravelMate/domain/plan/data/response/PlanningResponse.java": {
+      "exists": true,
+      "raw_sha256": "7612a32cb9994f307a88ffa3717b92dda4bf6b74a4a511fe76dd2f732e9d5255",
+      "lf_sha256": "db3bdccd9e84f11549cd5e307debeaa1004d1d81141450b5a3d171c309616ec3",
+      "git_status": ""
+    },
+    "Server/TravelMate/src/main/java/com/yollo/TravelMate/domain/plan/validator/ContextPlanResultValidator.java": {
+      "exists": true,
+      "raw_sha256": "b26c88e5953d9e0705d981614f9af40ae7b45d9e1f8736327f88ec129ad90794",
+      "lf_sha256": "5a934c2e76fa578f5005c9966ad92285ea8b43c51b25a205d8d34116dfa44117",
+      "git_status": ""
+    },
+    "Server/TravelMate/src/main/java/com/yollo/TravelMate/domain/plan/prompts/ContextPlanPromptFactory.java": {
+      "exists": true,
+      "raw_sha256": "55227b6bc84b2d2819eb26177e56287f96eaf1cf4cc15571f914ba39ca35e98a",
+      "lf_sha256": "5491d6ceef0a9260eadcf3f4b72437b057439c5dda74b2193c0939f967e7f12a",
+      "git_status": ""
+    },
+    "Server/TravelMate/src/main/java/com/yollo/TravelMate/domain/plan/repository/ContextPlanRepository.java": {
+      "exists": true,
+      "raw_sha256": "ffccdf8c7b3e37a9a9b425da82aab04997cf13279d1bfdfc7ad02fa757ae9d44",
+      "lf_sha256": "cd39137ee91497227b962c9ac8acb522f2a1195a8385d9396825933d60f158a3",
+      "git_status": ""
+    },
+    "Server/TravelMate/src/main/java/com/yollo/TravelMate/domain/plan/repository/PlanRepository.java": {
+      "exists": true,
+      "raw_sha256": "0b3e2c714ffaeccc2fd459d3258e6dd9576de131e8ef98aef620beafc5f6a1fb",
+      "lf_sha256": "e01e346ec1077cd22dabcf213a5ca5ed5d94f96cb4e9715c4b257d1251e1156d",
+      "git_status": ""
+    },
+    "embedding-server/app/kafka_runtime.py": {
+      "exists": true,
+      "raw_sha256": "fbf78fa33acd6724ce87712160b81238224d186c305c89c5c456b776c465ae3b",
+      "lf_sha256": "fbf78fa33acd6724ce87712160b81238224d186c305c89c5c456b776c465ae3b",
+      "git_status": ""
+    },
+    "Evaluation/common/paths.py": {
+      "exists": true,
+      "raw_sha256": "2657d95e26461dbfd04f679a31eb80a5907ac4bf1be91f5b47e29ef73ed4354e",
+      "lf_sha256": "2657d95e26461dbfd04f679a31eb80a5907ac4bf1be91f5b47e29ef73ed4354e",
+      "git_status": ""
+    },
+    "Evaluation/common/dataset/contracts.py": {
+      "exists": true,
+      "raw_sha256": "b30ce7ba96e513db5b712b6b4fd351f2035289aa52733da2e42e8eb05b601488",
+      "lf_sha256": "b30ce7ba96e513db5b712b6b4fd351f2035289aa52733da2e42e8eb05b601488",
+      "git_status": ""
+    },
+    "Evaluation/common/runs/runner.py": {
+      "exists": true,
+      "raw_sha256": "ca99cb8e0424f6bb64ff49543a03851dd984a97049eb0b5a7822594ec5670b6c",
+      "lf_sha256": "ca99cb8e0424f6bb64ff49543a03851dd984a97049eb0b5a7822594ec5670b6c",
+      "git_status": ""
+    },
+    "Evaluation/tracks/end_to_end/score.py": {
+      "exists": true,
+      "raw_sha256": "c77038e5f129f98d1e66782a7b3800bfd8b739d20b89336e8912ac882f35a12d",
+      "lf_sha256": "c77038e5f129f98d1e66782a7b3800bfd8b739d20b89336e8912ac882f35a12d",
+      "git_status": ""
+    },
+    "Evaluation/tracks/tool_call/score_args.py": {
+      "exists": true,
+      "raw_sha256": "f794c62aa57af7035727fb3ae256c693a6cbe8f5f4ef0729d79fa1931af9834e",
+      "lf_sha256": "f794c62aa57af7035727fb3ae256c693a6cbe8f5f4ef0729d79fa1931af9834e",
+      "git_status": ""
+    },
+    "Evaluation/tracks/search/score_ranking.py": {
+      "exists": true,
+      "raw_sha256": "ff1bb03c86004ded5405afe9d2ae97e4904a107fccb19f03ca32d9027cecb17b",
+      "lf_sha256": "ff1bb03c86004ded5405afe9d2ae97e4904a107fccb19f03ca32d9027cecb17b",
+      "git_status": ""
+    },
+    "Evaluation/tracks/plan/score_rules.py": {
+      "exists": true,
+      "raw_sha256": "3f60f7cd38dabbffcb8a44f9dad5544bf42589449e5b80cae46266d7c274ddad",
+      "lf_sha256": "3f60f7cd38dabbffcb8a44f9dad5544bf42589449e5b80cae46266d7c274ddad",
+      "git_status": ""
+    },
+    "Evaluation/tracks/state/score.py": {
+      "exists": true,
+      "raw_sha256": "f4a1ca30615100e30c1b3d06fb31727097e15d9ca6aef1b53938f6c8831c1a53",
+      "lf_sha256": "f4a1ca30615100e30c1b3d06fb31727097e15d9ca6aef1b53938f6c8831c1a53",
+      "git_status": ""
+    },
+    "Evaluation/datasets/v1.4.0/generated/schemas/tool_contracts.json": {
+      "exists": true,
+      "raw_sha256": "69574ebfc08a9e3bd53fb7e31af33abb8a2eb1c72edd482a637fae995d6a699e",
+      "lf_sha256": "69574ebfc08a9e3bd53fb7e31af33abb8a2eb1c72edd482a637fae995d6a699e",
+      "git_status": ""
+    },
+    "Evaluation/datasets/v1.4.0/generated/schemas/response_record.schema.json": {
+      "exists": true,
+      "raw_sha256": "f53ce3b11cb36ad607f86a008ad451865a4b61e0ba9bcfa93d4464e8041f56b8",
+      "lf_sha256": "f53ce3b11cb36ad607f86a008ad451865a4b61e0ba9bcfa93d4464e8041f56b8",
+      "git_status": ""
+    },
+    "Evaluation/datasets/v1.4.0/manifest.json": {
+      "exists": true,
+      "raw_sha256": "42235cfe110d208f9f30656dc90a510951e1ec6dbb8d6b861efe8f4d1e460038",
+      "lf_sha256": "42235cfe110d208f9f30656dc90a510951e1ec6dbb8d6b861efe8f4d1e460038",
+      "git_status": ""
+    },
+    "Evaluation/datasets/v1.4.0/generated/golden.jsonl": {
+      "exists": true,
+      "raw_sha256": "ea298b5b0d690c3dc8b8f6962e3f9c726039d75e8119c39ed1b602882c9dd609",
+      "lf_sha256": "ea298b5b0d690c3dc8b8f6962e3f9c726039d75e8119c39ed1b602882c9dd609",
+      "git_status": ""
+    },
+    "Evaluation/tracks/contextual/pilot_cases.json": {
+      "exists": true,
+      "raw_sha256": "895bf81ab3c9e8b2b5545fb6bb25b8fee2270392e1970dcca73391c21838e1dd",
+      "lf_sha256": "895bf81ab3c9e8b2b5545fb6bb25b8fee2270392e1970dcca73391c21838e1dd",
+      "git_status": ""
+    }
+  },
+  "local_workspace_differences_not_committed_with_audit": {
+    "Evaluation/common/runs/runner.py": {
+      "exists": true,
+      "raw_sha256": "773649432d761a44f93cbbfd221fdcaf9aeafc585967ec399ab97466290f42de",
+      "lf_sha256": "773649432d761a44f93cbbfd221fdcaf9aeafc585967ec399ab97466290f42de",
+      "git_status": "M Evaluation/common/runs/runner.py",
+      "same_as_audited_branch": false
+    },
+    "Evaluation/tracks/search/score_ranking.py": {
+      "exists": true,
+      "raw_sha256": "d198fb44edac909f149f0992f8e24a2ceeef1db74c823b1f64e9c3a063ee0a01",
+      "lf_sha256": "d198fb44edac909f149f0992f8e24a2ceeef1db74c823b1f64e9c3a063ee0a01",
+      "git_status": "M Evaluation/tracks/search/score_ranking.py",
+      "same_as_audited_branch": false
+    },
+    "Evaluation/tracks/search/collect_live.py": {
+      "exists": true,
+      "raw_sha256": "bca962f1c2ca2fe37993b582803dabc9aafcf251fe6ba5a68d2afd38fa489b12",
+      "lf_sha256": "bca962f1c2ca2fe37993b582803dabc9aafcf251fe6ba5a68d2afd38fa489b12",
+      "git_status": "?? Evaluation/tracks/search/collect_live.py",
+      "same_as_audited_branch": false
+    },
+    "Evaluation/tracks/search/collect_holdout.py": {
+      "exists": true,
+      "raw_sha256": "4fe15dc94e6ef25f24739a4d36f8eae593d97e70e3750ca886b3621a10cd8220",
+      "lf_sha256": "4fe15dc94e6ef25f24739a4d36f8eae593d97e70e3750ca886b3621a10cd8220",
+      "git_status": "?? Evaluation/tracks/search/collect_holdout.py",
+      "same_as_audited_branch": false
+    },
+    "Evaluation/tracks/search/holdout.py": {
+      "exists": true,
+      "raw_sha256": "5c0d8072aa56cba7525e3290ec3fa6e96980f83886ee148200e7a3ba5f7e1c86",
+      "lf_sha256": "5c0d8072aa56cba7525e3290ec3fa6e96980f83886ee148200e7a3ba5f7e1c86",
+      "git_status": "?? Evaluation/tracks/search/holdout.py",
+      "same_as_audited_branch": false
+    },
+    "Evaluation/tracks/search/compare_holdout.py": {
+      "exists": true,
+      "raw_sha256": "6e72f0a4c10acd9eea1ea19dcd9cd03440bc1b24874ca3779067c5370689fb0a",
+      "lf_sha256": "6e72f0a4c10acd9eea1ea19dcd9cd03440bc1b24874ca3779067c5370689fb0a",
+      "git_status": "?? Evaluation/tracks/search/compare_holdout.py",
+      "same_as_audited_branch": false
+    },
+    "Evaluation/tracks/search/judge_candidates.py": {
+      "exists": true,
+      "raw_sha256": "1adb31e1ea1b5d9485eeb94c77b491ae3385fc5b30c29b3adb2595bda4bdc4e6",
+      "lf_sha256": "1adb31e1ea1b5d9485eeb94c77b491ae3385fc5b30c29b3adb2595bda4bdc4e6",
+      "git_status": "?? Evaluation/tracks/search/judge_candidates.py",
+      "same_as_audited_branch": false
+    },
+    "Evaluation/tracks/search/audit_candidate_conditions.py": {
+      "exists": true,
+      "raw_sha256": "caca85a8d5f7925c87fb6585c61b629f01f9d5c297cb160aeffe6327ed713ea1",
+      "lf_sha256": "caca85a8d5f7925c87fb6585c61b629f01f9d5c297cb160aeffe6327ed713ea1",
+      "git_status": "?? Evaluation/tracks/search/audit_candidate_conditions.py",
+      "same_as_audited_branch": false
+    }
+  },
+  "executed_quality_evaluation_cases": 0,
+  "new_evaluation_cases": 0,
+  "real_model_calls": 0,
+  "live_search_calls": 0,
+  "production_database_writes": 0
+}

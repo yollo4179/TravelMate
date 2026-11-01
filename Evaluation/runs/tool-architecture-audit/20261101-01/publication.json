@@ -1,0 +1,18 @@
+{
+  "files": {
+    "docs/architecture/single-llm-tool-integration-audit.md": {
+      "raw_sha256": "1c9f3ab6b76aba6028a653cf0864dae5ea47235465c4725dd12c747e07118ed7",
+      "lf_sha256": "1c9f3ab6b76aba6028a653cf0864dae5ea47235465c4725dd12c747e07118ed7"
+    },
+    "Evaluation/tracks/tool_call/audit_architecture.py": {
+      "raw_sha256": "ceeb93505157833f37a4d6b401b868c60336f2120627543dd092c458c21afb50",
+      "lf_sha256": "ceeb93505157833f37a4d6b401b868c60336f2120627543dd092c458c21afb50"
+    },
+    "Evaluation/runs/tool-architecture-audit/20261101-01/inventory.json": {
+      "raw_sha256": "42d72a5078b499f95b6c27cf7670ca7454ae2ab22ed8b84f161c95f339f6933d",
+      "lf_sha256": "c629868cebdc4b19fb76d1d2ef5db9ca51f1e915f89526e056f54ad67c5d9896"
+    }
+  },
+  "quality_evaluation_executed": false,
+  "actual_model_calls": 0
+}
