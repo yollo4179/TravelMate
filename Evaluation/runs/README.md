@@ -1,5 +1,8 @@
 # 실제 평가 실행 결과
 
+[동일 Qwen 입력 정확 계산과 검색 계약 제안](contextual/exact-qwen-and-search-contract-v1/20261102-01/REPORT.md)은
+추론을 보류한 오프라인 검증이며 기존 가드는 변경하지 않았다.
+
 [모델 평가 준비 기록](contextual/model-evaluation-preparation-v1/20261101-01/REPORT.md)은
 메타데이터 조사·오프라인 예산·모의 검증이며 실제 추론 결과와 구분한다.
 

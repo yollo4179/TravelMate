@@ -1,5 +1,8 @@
 # TravelMate 평가
 
+[Qwen 정확 계산·검색 계약 검토](runs/contextual/exact-qwen-and-search-contract-v1/20261102-01/REPORT.md)는
+동일 입력의 오프라인 토큰 검증과 계획 없는 검색 제안이다. 실제 추론·검색 품질 평가 완료가 아니다.
+
 [실제 평가 직전 준비](runs/contextual/model-evaluation-preparation-v1/20261101-01/REPORT.md)에
 LF 보존 검사, 로컬 Qwen 메타데이터·예산 차단, 기존 case별 계약 차이와 미승인 실행 제안을 기록했다.
 

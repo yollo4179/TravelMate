@@ -1,0 +1,163 @@
+{
+  "baseline": "95552e7f32efcaf0ebd28aedc2724b0ab2012588",
+  "scope": "offline exact tokenization and proposed search contract only",
+  "model_inference_calls": 0,
+  "embedding_reranking_runs": 0,
+  "application_search_calls": 0,
+  "paid_model_calls": 0,
+  "planning_jobs_created": 0,
+  "production_db_operations": 0,
+  "deployments": 0,
+  "local_metadata_requests": 4,
+  "native_context_created": false,
+  "model_tensors_loaded": false,
+  "same_request_tokenization_comparisons": 201,
+  "independent_token_id_agreements": 201,
+  "runtime_guard_changed": false,
+  "context_increased": false,
+  "evidence_truncated": false,
+  "proposed_search_contract_implemented": false,
+  "future_scope_approved": false,
+  "protected_paths_unchanged": {
+    "Server/TravelMate/src/main": true,
+    "embedding-server": true,
+    "Docker": true,
+    "Evaluation/datasets": true,
+    "Evaluation/common": true,
+    "Evaluation/tracks/search": true,
+    "Evaluation/runs/contextual/model-evaluation-preparation-v1": true,
+    "Evaluation/runs/contextual/token-budget-observation-v1": true
+  },
+  "original_collectors_unchanged_since_inventory": {
+    "Evaluation/tracks/search/collect_live.py": true,
+    "Evaluation/tracks/search/collect_holdout.py": true,
+    "Evaluation/common/runs/runner.py": true,
+    "Evaluation/common/dataset/build.py": true
+  },
+  "tests": {
+    "python_passed": 10,
+    "go_passed": 3,
+    "native_same_input_crosschecks_passed": 201
+  },
+  "source_hash_format": "SHA-256 after LF normalization",
+  "changed_sources": [
+    {
+      "path": "Evaluation/README.md",
+      "sha256_lf": "94b76156ce0abf5874710c586b9297efafe877544d7f49d2183847bbd48a084b"
+    },
+    {
+      "path": "Evaluation/proposals/place_search_mapping.py",
+      "sha256_lf": "9cb4a0d06a709c87d62bcc1bace089ecd4388ac27f26b7b7d4e602ca81babcbb"
+    },
+    {
+      "path": "Evaluation/proposals/plan-independent-place-search.request.schema.json",
+      "sha256_lf": "a8ca378afee7e11b12528043e8f49aa65d87057df496c828c92298633fe9fde3"
+    },
+    {
+      "path": "Evaluation/requirements/token-verification.txt",
+      "sha256_lf": "fced8dd87e88799618c1737e8731e1b5980bb5a8d8c5d5b707182d512a884d1c"
+    },
+    {
+      "path": "Evaluation/runs/README.md",
+      "sha256_lf": "14c0750b131d37ab4d28013c30ddcd98f1138468fba2f811d3cbc42d0ca4a60e"
+    },
+    {
+      "path": "Evaluation/tests/test_exact_qwen_and_search_contract.py",
+      "sha256_lf": "685263ff0c920dae1ff5a6d2d3b9282319be8dfe9825a41d1905c4fd67573ea7"
+    },
+    {
+      "path": "Evaluation/tools/qwen-tokenizer-check/README.md",
+      "sha256_lf": "08f97f8191162a0409476aa0bbb4cc747b73d1c8c6a3ccb1f646215737791950"
+    },
+    {
+      "path": "Evaluation/tools/qwen-tokenizer-check/go.mod",
+      "sha256_lf": "c44397640275bf5c0bb4eae4b9a4bd3a3102437a8a4f2d01d48fad7b8c0da55b"
+    },
+    {
+      "path": "Evaluation/tools/qwen-tokenizer-check/go.sum",
+      "sha256_lf": "a37a10ceee687b65c19b0e4f485d28637eb34fc195be2be1a9a290d1b70b39b8"
+    },
+    {
+      "path": "Evaluation/tools/qwen-tokenizer-check/main.go",
+      "sha256_lf": "0f4d21f23d0a6c20645d0c5a09d0cb5adb0670b9db4d92e0c65978341ea7f569"
+    },
+    {
+      "path": "Evaluation/tools/qwen-tokenizer-check/main_test.go",
+      "sha256_lf": "fa24e484457daf8d7ff12bfe6cef8cf90d715562b3d54ea3e1b8315cfad161d4"
+    },
+    {
+      "path": "Evaluation/tracks/tool_call/qwen_tokenization.py",
+      "sha256_lf": "4aaf5d1de96dd2a76da000e6abf74372ff28621e38f4a2abab1899607cc0cec7"
+    },
+    {
+      "path": "Evaluation/tracks/tool_call/verify_qwen_tokens.py",
+      "sha256_lf": "8568a4a5e02beca6677444d018cb55aaf10c5af1f13bb84bd5ea9159e54a489f"
+    },
+    {
+      "path": "docs/architecture/plan-independent-place-search-contract.md",
+      "sha256_lf": "ebfef13490f45a425ac41cb0f5a08742f51e9107e61257c6308c28992c462762"
+    }
+  ],
+  "artifacts": [
+    {
+      "path": ".gitattributes",
+      "sha256_lf": "e1a5a5b5f7596dbc24ba96caa607269589266ab7224d15c8167a280dd7392541"
+    },
+    {
+      "path": "current-qwen-metadata.json",
+      "sha256_lf": "cd3a0213ddba1fa6f553192043878e08c9ae218147210531dd7ad6258f64c836"
+    },
+    {
+      "path": "execution-scope-proposal.json",
+      "sha256_lf": "f8aab93f9fad914379360eee4b044e75915600401e3613510e6e935a0cf2e30b"
+    },
+    {
+      "path": "local-collector-inventory.json",
+      "sha256_lf": "b4e6d75b1746b88cf01908edaac19957e1d5d1ad84bc69bd061988712e14b6fa"
+    },
+    {
+      "path": "REPORT.md",
+      "sha256_lf": "da005c69fe55bad7e0a5e6df92abaa5dd310de17bfdcb480e6140999448c7a32"
+    },
+    {
+      "path": "search-case-mapping.jsonl",
+      "sha256_lf": "d6cd4cfba922ff08551f51c96e4c96bd306c1054e609e22d4926d9e3de5eba89"
+    },
+    {
+      "path": "search-mapping-summary.json",
+      "sha256_lf": "bd6b1127656edc258c8c924f1c153fb432434aa62c57fb8cb8547906d1b24357"
+    },
+    {
+      "path": "tests.json",
+      "sha256_lf": "6b796ce3b70350d2f788ccfe0fdf3a53713dba1e5a556cf5caa37c8ddb4b7c09"
+    },
+    {
+      "path": "token-counts/counts.jsonl",
+      "sha256_lf": "1dc83421525046230454bb29da0afe1db1c65386302db2c4a57b299190db993a"
+    },
+    {
+      "path": "token-counts/first-rendered-prompt.txt",
+      "sha256_lf": "3422997507601cc2db0a52802e04c6a79eb0aa4b503b0cf277e7df261114993f"
+    },
+    {
+      "path": "token-counts/first-wire.json",
+      "sha256_lf": "445c36e7ac3b28b6b97f4344e56752cae3de7ee1554bcc4eb25fe4d2611cb62c"
+    },
+    {
+      "path": "token-counts/native-vocabulary-load.txt",
+      "sha256_lf": "4418f362465418c6fe163068b0d9fc106d6fb3a49e15c390eda5df76eacdaafa"
+    },
+    {
+      "path": "token-counts/summary.json",
+      "sha256_lf": "35fcc0ee59dd98fe4a19b03eb525da47d3f3adab13f897fb80bc2b70671815d2"
+    },
+    {
+      "path": "toolchain-and-native-identity.json",
+      "sha256_lf": "020f86361bd0083049762b848eb62eda041c015d385180740574fc7347866638"
+    }
+  ],
+  "raw_whitespace_preserved_files": [
+    "token-counts/first-rendered-prompt.txt",
+    "token-counts/native-vocabulary-load.txt"
+  ]
+}

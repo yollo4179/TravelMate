@@ -1,0 +1,3 @@
+* text eol=lf
+token-counts/first-rendered-prompt.txt -whitespace
+token-counts/native-vocabulary-load.txt -whitespace
