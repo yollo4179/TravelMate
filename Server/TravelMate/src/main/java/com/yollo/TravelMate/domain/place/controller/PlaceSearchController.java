@@ -4,6 +4,10 @@ import java.util.List;
 
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import jakarta.validation.Valid;
+import com.yollo.TravelMate.domain.place.data.request.PlaceSearchRequest;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -23,6 +27,11 @@ import lombok.RequiredArgsConstructor;
 public class PlaceSearchController {
 
     private final PlaceSemanticSearchService placeSemanticSearchService;
+
+    @PostMapping("/search")
+    public List<PlaceSearchResponseDto> search(@Valid @RequestBody PlaceSearchRequest request) {
+        return placeSemanticSearchService.search(request).stream().map(PlaceSearchResponseDto::from).toList();
+    }
 
     @GetMapping("/search")
     public List<PlaceSearchResponseDto> search(

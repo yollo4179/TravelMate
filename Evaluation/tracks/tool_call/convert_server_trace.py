@@ -11,6 +11,7 @@ from typing import Any
 from common.dataset.io import canonical_digest, read_jsonl, write_jsonl
 from common.dataset.contracts import TOOL_ARGUMENT_SCHEMAS
 from jsonschema import Draft202012Validator
+from tracks.tool_call.place_search_projection import project_search_call, conditions_covered, history_covered
 
 
 class RecordMode(StrEnum):
@@ -150,6 +151,14 @@ def _convert(
         "cache_hit": result["status"] == "CACHED",
         "call_id": result["callId"],
     } for result, tool_event in zip(observed_tools, tool_events, strict=True)]
+    projections = []
+    for call in calls:
+        matching = [row for row in tool_events if row["result"]["callId"] == call["id"]
+                    and row["result"]["status"] != "FAILED"]
+        if len(matching) == 1:
+            projected = project_search_call(call, matching[0].get("modelData") or {})
+            if projected is not None:
+                projections.append(projected)
     primary = native.get("primaryResultId")
     if primary is not None:
         artifact = next((result for result in results if result["result_id"] == primary), None)
@@ -189,8 +198,10 @@ def _convert(
         "response_type": complete and legacy_type,
         "tool_call": complete and tools_compatible,
         "message": complete and legacy_type and native.get("messageSource") == "LLM",
-        "search": complete and native["type"] == "PLACES" and search_verified
-                  and _conditions_covered(exported["model_input"].get("conditions") or {}, actual_request),
+        "search": complete and native["type"] == "PLACES" and search_verified and history_covered(exported["model_input"], actual_request)
+                  and ((bool(projections) and all(conditions_covered(exported["model_input"].get("conditions") or {},
+                        projection["effective_search_criteria"]) for projection in projections))
+                       or (not projections and _conditions_covered(exported["model_input"].get("conditions") or {}, actual_request))),
         "plan": False, "state": False, "memory": False,
     }
     envelope = {name: native[name] for name in ("type", "message", "data", "conversationId")}
@@ -203,7 +214,7 @@ def _convert(
         "api_input_sha256": request["bodySha256"], "api_request": actual_request,
         "model": ",".join(providers) if providers else "not_observed",
         "response": envelope, "native_response": native,
-        "tool_calls": calls, "tool_results": results, "primary_result_id": primary,
+        "tool_calls": calls, "evaluation_tool_call_projections": projections, "tool_results": results, "primary_result_id": primary,
         "termination": native["termination"], "model_calls": finished_calls,
         "usage_summary": _usage_summary(finished_calls),
         "observation_coverage": coverage,

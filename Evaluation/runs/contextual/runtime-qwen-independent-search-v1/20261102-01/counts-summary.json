@@ -1,0 +1,14 @@
+{
+  "initial_input_tokens_min": 936,
+  "initial_input_tokens_max": 1029,
+  "mock_followup_input_tokens_min": 2697,
+  "mock_followup_input_tokens_max": 2899,
+  "local_count_duration_ms_min": 5649.897299997974,
+  "local_count_duration_ms_max": 6151.539799990132,
+  "local_count_duration_ms_sum": 47542.49609995168,
+  "wire_hashes_match": true,
+  "server_reported_usage": null,
+  "live_metadata_checked_this_task": false,
+  "llm_inference_calls": 0,
+  "search_calls": 0
+}

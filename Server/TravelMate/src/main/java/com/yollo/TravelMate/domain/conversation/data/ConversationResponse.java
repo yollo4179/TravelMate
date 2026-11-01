@@ -20,7 +20,7 @@ public record ConversationResponse(
         MessageSource messageSource
 ) {
     public enum ResultType { TEXT, PLACES, PLANNING_JOB, DRAFT, ERROR }
-    public enum Termination { COMPLETED, MODEL_FAILED, INVALID_RESPONSE, MODEL_LIMIT, TOOL_LIMIT, BUDGET_REJECTED, COUNT_UNAVAILABLE }
+    public enum Termination { COMPLETED, MODEL_FAILED, INVALID_RESPONSE, MODEL_LIMIT, TOOL_LIMIT, TOOL_FAILED, BUDGET_REJECTED, COUNT_UNAVAILABLE }
     public enum ToolStatus { SUCCEEDED, FAILED, CACHED }
     public enum MessageSource { LLM, SERVER_RECEIPT, SERVER_FALLBACK }
 

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.yollo.TravelMate.ExactQwenGuardTest" tests="4" skipped="0" failures="0" errors="0" timestamp="2026-11-01T16:51:56.867Z" hostname="DESKTOP-MS327CL" time="1.374">
+  <properties/>
+  <testcase name="missingProcessConfigurationFailsClosed()" classname="com.yollo.TravelMate.ExactQwenGuardTest" time="0.02"/>
+  <testcase name="timeoutNonzeroExitAndMalformedOutputAreCountingFailures()" classname="com.yollo.TravelMate.ExactQwenGuardTest" time="1.297"/>
+  <testcase name="everyCallCountsTheCompleteAccumulatedWireAndReservationBeforeDispatch()" classname="com.yollo.TravelMate.ExactQwenGuardTest" time="0.039"/>
+  <testcase name="workerFailureAndMismatchedWireIdentityCannotReachInference()" classname="com.yollo.TravelMate.ExactQwenGuardTest" time="0.018"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

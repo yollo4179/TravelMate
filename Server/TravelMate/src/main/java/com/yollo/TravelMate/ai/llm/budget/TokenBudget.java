@@ -6,7 +6,7 @@ import lombok.Builder;
 
 public final class TokenBudget {
     private TokenBudget() {}
-    public enum Quality { CONFIRMED_API, CONSERVATIVE_BOUND, ESTIMATE }
+    public enum Quality { CONFIRMED_API, EXACT_LOCAL_CROSSCHECKED, CONSERVATIVE_BOUND, ESTIMATE }
     public enum Status { SUCCEEDED, FAILED, BUDGET_REJECTED, COUNT_UNAVAILABLE }
 
     @Builder

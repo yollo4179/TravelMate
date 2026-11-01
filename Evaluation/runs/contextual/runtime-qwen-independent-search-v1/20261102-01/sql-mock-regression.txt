@@ -1,0 +1,6 @@
+test_region_city_exclusions_and_meter_radius_reach_where_before_top_k (test_independent_search_filters.IndependentSearchFilterTests.test_region_city_exclusions_and_meter_radius_reach_where_before_top_k) ... ok
+
+----------------------------------------------------------------------
+Ran 1 test in 0.028s
+
+OK

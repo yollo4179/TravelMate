@@ -5,6 +5,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import com.yollo.TravelMate.domain.place.service.PlaceSemanticSearchService;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
@@ -44,8 +45,6 @@ class ModelInputBudgetPreparationTest {
         var metadata = mapper.readTree(PREPARATION.resolve("qwen-show.json").toFile());
         var builder = RestClient.builder().baseUrl("http://metadata-replay.invalid");
         var http = MockRestServiceServer.bindTo(builder).build();
-        http.expect(ExpectedCount.times(connections.size() + 1), requestTo("http://metadata-replay.invalid/api/show"))
-                .andRespond(withSuccess(metadata.toString(), MediaType.APPLICATION_JSON));
         var captureGuard = mock(LlmCallGuard.class);
         var current = new AtomicReference<Label>();
         List<JsonNode> budgets = new ArrayList<>();
@@ -77,11 +76,12 @@ class ModelInputBudgetPreparationTest {
             // The production inference supplier is deliberately never invoked by this inspection.
             return LlmTurn.builder().content("{\"message\":\"준비용 모의 종료\",\"citations\":[]}").build();
         }).when(captureGuard).call(any(), any(), any(), any(), any(), any());
-        var client = new OllamaLlmClient(builder.build(), "qwen3:8b", 8192, 1536, captureGuard);
+        var client = new OllamaLlmClient(builder.build(), "qwen3:8b", 8192, 1536, captureGuard, unconfiguredCounter());
         var planning = mock(ContextPlanningService.class);
+        var searches = mock(PlaceSemanticSearchService.class);
         var prompts = new ContextPlanPromptFactory(mapper);
         var planningResults = new PlanningToolResults(planning, mapper);
-        var registry = new ConversationToolRegistry(List.of(new SearchPlacesTool(planning, prompts, mapper),
+        var registry = new ConversationToolRegistry(List.of(new SearchPlacesTool(searches, new PlaceSearchCriteriaResolver(), prompts, mapper),
                 new GeneratePlanTool(planning, planningResults), new GetPlanningJobTool(planning, planningResults)));
         var recordingClient = mock(LlmClient.class);
         when(recordingClient.chat(anyList(), anyList())).thenAnswer(invocation -> {
@@ -120,14 +120,21 @@ class ModelInputBudgetPreparationTest {
         assertEquals(connections.size() + 3, budgets.size());
         assertTrue(budgets.stream().noneMatch(row -> row.path("inference_dispatched").asBoolean()));
         assertTrue(budgets.stream().filter(row -> row.has("count")).allMatch(row ->
-                "CONSERVATIVE_BOUND".equals(row.path("count").path("quality").asText())));
-        verifyNoInteractions(planning);
+                "EXACT_LOCAL_CROSSCHECKED".equals(row.path("count").path("quality").asText())));
+        assertEquals(connections.size() + 3, budgets.stream().filter(row -> "UNVERIFIED".equals(row.path("status").asText())).count());
+        verifyNoInteractions(planning, searches);
         http.verify();
         var output = Path.of("build/pre-evaluation");
         Files.createDirectories(output);
         Files.writeString(output.resolve("qwen-budgets.jsonl"), budgets.stream().map(JsonNode::toString)
                 .collect(java.util.stream.Collectors.joining("\n", "", "\n")), StandardCharsets.UTF_8);
         Files.writeString(output.resolve("initial-wire-example.json"), exampleWire.get().toPrettyString() + "\n", StandardCharsets.UTF_8);
+    }
+
+    private QwenTokenCounter unconfiguredCounter() {
+        var counter = mock(QwenTokenCounter.class);
+        when(counter.count(any(), any())).thenThrow(new IllegalStateException("MOCK unconfigured exact counter"));
+        return counter;
     }
 
     private List<JsonNode> readLines(Path source) throws Exception {

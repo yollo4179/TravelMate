@@ -17,6 +17,7 @@ import com.yollo.TravelMate.domain.conversation.data.ConversationResponse.*;
 import com.yollo.TravelMate.domain.conversation.tool.*;
 import com.yollo.TravelMate.domain.plan.prompts.ContextPlanPromptFactory.CitationSource;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -51,6 +52,8 @@ public class ConversationService {
     private final ObjectMapper mapper;
     private final int maxModelTurns;
     private final int maxToolCalls;
+    public enum ToolFailurePolicy { CONTINUE, STOP }
+    private final ToolFailurePolicy toolFailurePolicy;
 
     public ConversationService(
             LlmClient llm,
@@ -58,8 +61,22 @@ public class ConversationService {
             ConversationToolExecutor executor,
             ConversationAnswerRenderer renderer,
             ObjectMapper mapper,
+            int maxModelTurns,
+            int maxToolCalls
+    ) {
+        this(llm, registry, executor, renderer, mapper, maxModelTurns, maxToolCalls, ToolFailurePolicy.CONTINUE);
+    }
+
+    @Autowired
+    public ConversationService(
+            LlmClient llm,
+            ConversationToolRegistry registry,
+            ConversationToolExecutor executor,
+            ConversationAnswerRenderer renderer,
+            ObjectMapper mapper,
             @Value("${travelmate.conversation.max-model-turns:6}") int maxModelTurns,
-            @Value("${travelmate.conversation.max-tool-calls:8}") int maxToolCalls
+            @Value("${travelmate.conversation.max-tool-calls:8}") int maxToolCalls,
+            @Value("${travelmate.conversation.tool-failure-policy:CONTINUE}") ToolFailurePolicy toolFailurePolicy
     ) {
         if (maxModelTurns < 1 || maxToolCalls < 1) throw new IllegalArgumentException("도구 루프 한도는 양수여야 합니다.");
         this.llm = llm;
@@ -69,6 +86,7 @@ public class ConversationService {
         this.mapper = mapper;
         this.maxModelTurns = maxModelTurns;
         this.maxToolCalls = maxToolCalls;
+        this.toolFailurePolicy = java.util.Objects.requireNonNull(toolFailurePolicy);
     }
 
     public ConversationResponse respond(String userUid, UUID turnKey, ConversationRequest request) {
@@ -87,6 +105,7 @@ public class ConversationService {
                 LlmMessage.Role.valueOf(message.role().name()), message.content())));
         var userInput = mapper.createObjectNode().put("message", request.message());
         userInput.set("planningRequest", mapper.valueToTree(request.planningRequest()));
+        userInput.set("searchContext", mapper.valueToTree(request.searchContext()));
         messages.add(LlmMessage.text(LlmMessage.Role.USER, userInput.toString()));
         List<ToolObservation> observations = new ArrayList<>();
         Map<String, ConversationTool.Result> cache = new LinkedHashMap<>();
@@ -138,6 +157,9 @@ public class ConversationService {
                 toolEvent.set("result", mapper.valueToTree(observation));
                 toolEvent.set("modelData", result.modelData());
                 ObservationContext.record(ObservationContext.Event.TOOL_RESULT, toolEvent);
+                if (toolFailurePolicy == ToolFailurePolicy.STOP && executed.status() == ToolStatus.FAILED) {
+                    return renderer.render(primary, null, Termination.TOOL_FAILED, turn, observations);
+                }
                 sources.putAll(result.sources());
                 var feedback = mapper.createObjectNode().put("type", result.type().name());
                 feedback.set("data", result.modelData());

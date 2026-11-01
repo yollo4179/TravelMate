@@ -1,6 +1,7 @@
 package com.yollo.TravelMate;
 
 import java.util.List;
+import com.yollo.TravelMate.domain.place.service.PlaceSemanticSearchService;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -34,13 +35,14 @@ import static org.mockito.Mockito.*;
 class ConversationToolLoopTest {
     private final ObjectMapper mapper = JsonMapper.builder().addModule(new JavaTimeModule()).build();
     private final ContextPlanningService planning = mock(ContextPlanningService.class);
+    private final PlaceSemanticSearchService searches = mock(PlaceSemanticSearchService.class);
     private final LlmClient llm = mock(LlmClient.class);
     private final UUID jobId = UUID.randomUUID();
 
     @Test
     void actualToolLoopReturnsExactServerDataAndGroundsExplanationInSelectedOriginals() throws Exception {
         var result = searchResult();
-        when(planning.search(any(), eq("야경과 연결"), eq(5))).thenReturn(List.of(result));
+        when(searches.search(any(com.yollo.TravelMate.domain.place.data.request.PlaceSearchRequest.class))).thenReturn(List.of(result));
         AtomicInteger turns = new AtomicInteger();
         when(llm.chat(anyList(), anyList())).thenAnswer(invocation -> {
             List<LlmMessage> history = invocation.getArgument(0);
@@ -68,14 +70,14 @@ class ConversationToolLoopTest {
         assertEquals(mapper.valueToTree(List.of(PlaceSearchResponseDto.from(result))), response.data());
         assertEquals(1, response.citations().size());
         assertEquals(2, response.modelTurns());
-        verify(planning).search(any(), eq("야경과 연결"), eq(5));
+        verify(searches).search(argThat(criteria -> criteria.query().equals("야경과 연결") && criteria.limit() == 5));
     }
 
     @ParameterizedTest
     @ValueSource(strings = {"wrong-place", "wrong-source", "invented-id", "supplement", "negation-rewrite"})
     void citationMembershipRejectsForeignSourcesAttributionAndInventedQuotes(String defect) throws Exception {
         var result = searchResult();
-        when(planning.search(any(), anyString(), anyInt())).thenReturn(List.of(result));
+        when(searches.search(any(com.yollo.TravelMate.domain.place.data.request.PlaceSearchRequest.class))).thenReturn(List.of(result));
         AtomicInteger turns = new AtomicInteger();
         when(llm.chat(anyList(), anyList())).thenAnswer(invocation -> {
             if (turns.getAndIncrement() == 0) return call("s1", "search_places", "{\"query\":\"연결\",\"limit\":5}");
@@ -98,7 +100,7 @@ class ConversationToolLoopTest {
 
     @Test
     void modelCannotReplaceServerPlaceOrPlanDataInFinalJson() throws Exception {
-        when(planning.search(any(), anyString(), anyInt())).thenReturn(List.of(searchResult()));
+        when(searches.search(any(com.yollo.TravelMate.domain.place.data.request.PlaceSearchRequest.class))).thenReturn(List.of(searchResult()));
         when(llm.chat(anyList(), anyList())).thenReturn(
                 call("s1", "search_places", "{\"query\":\"연결\",\"limit\":5}"),
                 LlmTurn.builder().content("{\"message\":\"설명\",\"citations\":[],\"type\":\"DRAFT\",\"data\":{\"planId\":999}}").build()
@@ -127,7 +129,7 @@ class ConversationToolLoopTest {
     @Test
     void repeatedGenerationIsCachedAndAPlanningReceiptRemainsPrimaryAfterLaterSearch() throws Exception {
         when(planning.generate(anyString(), any(), any())).thenReturn(job(PlanningResponse.JobStatus.QUEUED, null));
-        when(planning.search(any(), anyString(), anyInt())).thenReturn(List.of(searchResult()));
+        when(searches.search(any(com.yollo.TravelMate.domain.place.data.request.PlaceSearchRequest.class))).thenReturn(List.of(searchResult()));
         when(llm.chat(anyList(), anyList())).thenReturn(
                 call("g1", "generate_plan", "{}"),
                 call("g2", "generate_plan", "{}"),
@@ -204,7 +206,7 @@ class ConversationToolLoopTest {
 
     @Test
     void modelAndToolLimitsStopLoopsAndPreserveAlreadyObservedServerResults() throws Exception {
-        when(planning.search(any(), anyString(), anyInt())).thenReturn(List.of(searchResult()));
+        when(searches.search(any(com.yollo.TravelMate.domain.place.data.request.PlaceSearchRequest.class))).thenReturn(List.of(searchResult()));
         AtomicInteger turns = new AtomicInteger();
         when(llm.chat(anyList(), anyList())).thenAnswer(invocation -> call(
                 "s" + turns.incrementAndGet(), "search_places", turns.get() % 2 == 0
@@ -213,13 +215,13 @@ class ConversationToolLoopTest {
         assertEquals(Termination.MODEL_LIMIT, response.termination());
         assertEquals(ResultType.PLACES, response.type());
         assertEquals(3, response.modelTurns());
-        verify(planning).search(any(), anyString(), anyInt());
+        verify(searches).search(any(com.yollo.TravelMate.domain.place.data.request.PlaceSearchRequest.class));
         assertEquals(ToolStatus.CACHED, response.toolResults().get(2).status());
-        clearInvocations(planning);
+        clearInvocations(searches);
         var limited = service(6, 1).respond("owner", UUID.randomUUID(), request());
         assertEquals(Termination.TOOL_LIMIT, limited.termination());
         assertEquals(1, limited.toolResults().size());
-        verify(planning).search(any(), anyString(), anyInt());
+        verify(searches).search(any(com.yollo.TravelMate.domain.place.data.request.PlaceSearchRequest.class));
     }
 
     @Test
@@ -248,7 +250,7 @@ class ConversationToolLoopTest {
     private ConversationService service(int modelTurns, int toolCalls) {
         var resultMapper = new PlanningToolResults(planning, mapper);
         var registry = new ConversationToolRegistry(List.of(
-                new SearchPlacesTool(planning, new ContextPlanPromptFactory(mapper), mapper),
+                new SearchPlacesTool(searches, new PlaceSearchCriteriaResolver(), new ContextPlanPromptFactory(mapper), mapper),
                 new GeneratePlanTool(planning, resultMapper),
                 new GetPlanningJobTool(planning, resultMapper)
         ));

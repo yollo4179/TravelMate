@@ -110,7 +110,7 @@ class AsyncPlanObservationTest {
         var mappedResults = new PlanningToolResults(planning, mapper);
         var registry = new ConversationToolRegistry(List.of(
                 new GeneratePlanTool(planning, mappedResults), new GetPlanningJobTool(planning, mappedResults),
-                new SearchPlacesTool(planning, prompts, mapper)));
+                new SearchPlacesTool(search, new PlaceSearchCriteriaResolver(), prompts, mapper)));
         var conversation = new ConversationService(llm, registry, new ConversationToolExecutor(registry, mapper),
                 new ConversationAnswerRenderer(mapper), mapper, 6, 8);
         try {

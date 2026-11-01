@@ -20,6 +20,7 @@ class TokenBudgetGuardTest {
     @ParameterizedTest
     @CsvSource({"80,100,20,CONFIRMED_API,true", "81,100,20,CONFIRMED_API,false",
             "80,90,20,CONFIRMED_API,false", "80,100,20,CONSERVATIVE_BOUND,true",
+            "80,100,20,EXACT_LOCAL_CROSSCHECKED,true", "81,100,20,EXACT_LOCAL_CROSSCHECKED,false",
             "10,100,20,ESTIMATE,false", "10,100,51,CONFIRMED_API,false",
             "10,0,20,CONFIRMED_API,false", "10,100,20,,false"})
     void rejectsBeforeDispatchAndDistinguishesExactCountsBoundsAndEstimates(

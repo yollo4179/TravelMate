@@ -27,3 +27,6 @@ run.json의 latency_measurement는 현재 not_collected_by_this_runner다.
 
 [토큰 예산·서버 실행 관측 모의 검증](contextual/token-budget-observation-v1/20261101-01/REPORT.md)은
 실제 모델 평가와 구분해 보존한다. MOCK 실행의 품질 항목은 채점하지 않는다.
+
+[Qwen 정확 가드·계획 없는 검색 구현](contextual/runtime-qwen-independent-search-v1/20261102-01/REPORT.md)은
+모의 회귀와 저장 메타데이터의 오프라인 토큰 검증이다. 실제 모델·검색 평가를 실행하지 않았다.

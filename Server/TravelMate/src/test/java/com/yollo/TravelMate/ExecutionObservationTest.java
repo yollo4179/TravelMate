@@ -4,6 +4,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
+import com.yollo.TravelMate.domain.place.service.PlaceSemanticSearchService;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -81,6 +82,7 @@ class ExecutionObservationTest {
                 })
                 .andRespond(withSuccess("{\"object\":\"response.input_tokens\",\"input_tokens\":100000}", MediaType.APPLICATION_JSON));
         var planning = mock(ContextPlanningService.class);
+        var searches = mock(PlaceSemanticSearchService.class);
         var place = mapper.readValue("""
                 {"id":101,"name":"모의 A공원","category":"카페","latitude":35.8395,"longitude":129.212}
                 """, PlaceResult.class);
@@ -88,11 +90,11 @@ class ExecutionObservationTest {
                 new SearchEvidenceChunk(chunk(mapper, ORIGINAL, WALK)),
                 new SearchEvidenceChunk(chunk(mapper, BLOCK, BLOCK))
         ));
-        when(planning.search(any(), anyString(), anyInt())).thenReturn(List.of(result));
+        when(searches.search(any(com.yollo.TravelMate.domain.place.data.request.PlaceSearchRequest.class))).thenReturn(List.of(result));
         var factory = new ContextPlanPromptFactory(mapper);
         var jobResults = new PlanningToolResults(planning, mapper);
         var registry = new ConversationToolRegistry(List.of(
-                new SearchPlacesTool(planning, factory, mapper),
+                new SearchPlacesTool(searches, new PlaceSearchCriteriaResolver(), factory, mapper),
                 new GeneratePlanTool(planning, jobResults), new GetPlanningJobTool(planning, jobResults)));
         var service = new ConversationService(
                 new StrategyLlmClient(List.of(client), LlmProvider.OPENAI),
@@ -128,8 +130,10 @@ class ExecutionObservationTest {
         var toolEvent = events.stream().filter(event -> "TOOL_RESULT".equals(event.path("event").asText()))
                 .findFirst().orElseThrow();
         JsonNode expectedRequest = mapper.valueToTree(mapper.readValue(PlanContextContractTest.REQUEST, GeneratePlanRequest.class));
-        assertEquals(expectedRequest.path("context").path("preferences"),
-                toolEvent.path("payload").path("modelData").path("request").path("context").path("preferences"));
+        assertFalse(toolEvent.path("payload").path("modelData").has("request"));
+        assertEquals(expectedRequest.path("context").path("area").path("radiusMeters"),
+                toolEvent.path("payload").path("modelData").path("searchCriteria").path("area").path("radiusMeters"));
+        assertEquals("LEGACY_PLAN_AREA", toolEvent.path("payload").path("modelData").path("filterProvenance").path("area").asText());
         assertTrue(events.stream().allMatch(event -> event.path("mode").asText().equals("MOCK")));
         long rejected = events.stream().filter(event -> event.path("payload").path("status").asText().equals("BUDGET_REJECTED")).count();
         assertEquals(1, rejected);

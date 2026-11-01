@@ -72,12 +72,25 @@ public class PlaceSemanticSearchClient {
             PlanContext.Area area,
             RankingMode rankingMode
     ) {
+        return search(query, region, city, category, limit, area, rankingMode, List.of());
+    }
+
+    public List<PlaceSemanticSearchResult> search(
+            String query,
+            String region,
+            String city,
+            String category,
+            int limit,
+            PlanContext.Area area,
+            RankingMode rankingMode,
+            List<Long> excludePlaceIds
+    ) {
         UUID requestId = UUID.randomUUID();
         CompletableFuture<List<PlaceSemanticSearchResult>> resultFuture = new CompletableFuture<>();
         pendingRequests.put(requestId, resultFuture);
 
         try {
-            ObjectNode request = buildRequest(requestId, query, region, city, category, limit, area, rankingMode);
+            ObjectNode request = buildRequest(requestId, query, region, city, category, limit, area, rankingMode, excludePlaceIds);
             String payload = objectMapper.writeValueAsString(request);
             persistRequest(requestId, request.path("context_version").asLong(), payload);
             return searchTracing.trace("recommendation.kafka_roundtrip", () -> {
@@ -209,7 +222,8 @@ public class PlaceSemanticSearchClient {
             String category,
             int limit,
             PlanContext.Area area,
-            RankingMode rankingMode
+            RankingMode rankingMode,
+            List<Long> excludePlaceIds
     ) {
         ObjectNode request = objectMapper.createObjectNode();
         request.put("schema_version", 1);
@@ -250,7 +264,8 @@ public class PlaceSemanticSearchClient {
                 areaNode.put("radius_meters", area.radiusMeters());
             }
         }
-        filters.putArray("exclude_place_ids");
+        var exclusions = filters.putArray("exclude_place_ids");
+        excludePlaceIds.forEach(exclusions::add);
         request.put("ranking_mode", rankingMode.name());
         request.put("limit", limit);
         return request;

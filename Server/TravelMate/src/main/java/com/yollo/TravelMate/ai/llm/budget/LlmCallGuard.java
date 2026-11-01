@@ -53,7 +53,10 @@ public class LlmCallGuard {
                 validateLimits(limits);
                 countStarted = System.nanoTime();
                 try { count = counter.get(); }
-                catch (RuntimeException exception) { throw new TokenBudgetException(Reason.COUNT_UNAVAILABLE); }
+                catch (RuntimeException exception) {
+                    event.put("countFailure", exception.getMessage());
+                    throw new TokenBudgetException(Reason.COUNT_UNAVAILABLE);
+                }
                 finally { countDuration = elapsed(countStarted); }
                 validateCount(limits, count);
                 event.set("count", mapper.valueToTree(count));
@@ -101,7 +104,8 @@ public class LlmCallGuard {
     private static void validateCount(TokenBudget.Limits limits, TokenBudget.Count count) {
         if (count == null || count.inputTokens() < 0
                 || (count.quality() != TokenBudget.Quality.CONFIRMED_API
-                    && count.quality() != TokenBudget.Quality.CONSERVATIVE_BOUND)
+                    && count.quality() != TokenBudget.Quality.CONSERVATIVE_BOUND
+                    && count.quality() != TokenBudget.Quality.EXACT_LOCAL_CROSSCHECKED)
                 || (count.nativeContextTokens() != null && count.nativeContextTokens() < 1)) {
             throw new TokenBudgetException(Reason.COUNT_UNVERIFIED);
         }

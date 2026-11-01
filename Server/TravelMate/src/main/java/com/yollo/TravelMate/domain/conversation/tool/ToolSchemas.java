@@ -24,8 +24,18 @@ public final class ToolSchemas {
         return JSON.createObjectNode().put("type", "string").put("minLength", 1).put("maxLength", maximum);
     }
 
-    public static ObjectNode integer(int minimum, int maximum) {
+    public static ObjectNode integer(long minimum, long maximum) {
         return JSON.createObjectNode().put("type", "integer").put("minimum", minimum).put("maximum", maximum);
+    }
+
+    public static ObjectNode number(double minimum, double maximum) {
+        return JSON.createObjectNode().put("type", "number").put("minimum", minimum).put("maximum", maximum);
+    }
+
+    public static ObjectNode nullable(JsonNode definition) {
+        var union = JSON.createObjectNode();
+        union.putArray("anyOf").add(definition).add(JSON.createObjectNode().put("type", "null"));
+        return union;
     }
 
     public static void requireFields(JsonNode arguments, Set<String> required) {

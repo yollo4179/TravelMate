@@ -1,6 +1,8 @@
 package com.yollo.TravelMate.domain.place.service;
 
 import java.util.List;
+import com.yollo.TravelMate.domain.place.data.request.PlaceSearchRequest;
+import jakarta.validation.Validation;
 
 import org.springframework.stereotype.Service;
 
@@ -19,9 +21,24 @@ public class PlaceSemanticSearchService {
         SEMANTIC_ONLY
     }
 
+    private static final jakarta.validation.Validator VALIDATOR = Validation.buildDefaultValidatorFactory().getValidator();
     private static final int MAX_SEARCH_LIMIT = 30;
 
     private final PlaceSemanticSearchClient placeSemanticSearchClient;
+
+    public List<PlaceSemanticSearchResult> search(PlaceSearchRequest request) {
+        if (!VALIDATOR.validate(request).isEmpty()) throw new IllegalArgumentException("Invalid search criteria");
+        return placeSemanticSearchClient.search(
+                request.query(),
+                request.region(),
+                request.city(),
+                request.category(),
+                request.limit(),
+                request.area() == null ? null : request.area().toPlanArea(),
+                request.rankingMode(),
+                request.excludePlaceIds()
+        );
+    }
 
     public List<PlaceSemanticSearchResult> search(
             String query,

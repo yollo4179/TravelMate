@@ -21,6 +21,7 @@ public class OllamaLlmClient implements LlmStrategy {
     private final String model;
     private final TokenBudget.Limits limits;
     private final LlmCallGuard guard;
+    private final QwenTokenCounter tokenCounter;
 
     @Autowired
     public OllamaLlmClient(
@@ -28,9 +29,12 @@ public class OllamaLlmClient implements LlmStrategy {
             @Value("${ollama.model:qwen3:8b}") String model,
             @Value("${ollama.context-tokens:8192}") int contextTokens,
             @Value("${ollama.max-output-tokens:1536}") int outputTokens,
-            LlmCallGuard guard
+            LlmCallGuard guard,
+            @Value("${ollama.exact-counter-command:[]}") String counterCommand,
+            @Value("${ollama.exact-counter-timeout-seconds:90}") long counterTimeout
     ) {
-        this(LlmHttpClients.create(baseUrl), model, contextTokens, outputTokens, guard);
+        this(LlmHttpClients.create(baseUrl), model, contextTokens, outputTokens, guard,
+                new QwenTokenCounter(new ExactQwenProcess(counterCommand, counterTimeout)));
     }
 
     public OllamaLlmClient(RestClient restClient, String model) {
@@ -45,12 +49,25 @@ public class OllamaLlmClient implements LlmStrategy {
             int outputTokens,
             LlmCallGuard guard
     ) {
+        this(restClient, model, contextTokens, outputTokens, guard,
+                new QwenTokenCounter(new ExactQwenProcess("[]", 90)));
+    }
+
+    public OllamaLlmClient(
+            RestClient restClient,
+            String model,
+            int contextTokens,
+            int outputTokens,
+            LlmCallGuard guard,
+            QwenTokenCounter tokenCounter
+    ) {
+        this.tokenCounter = tokenCounter;
         this.restClient = restClient;
         this.model = model;
         this.guard = guard;
         this.limits = TokenBudget.Limits.builder().provider(LlmProvider.QWEN).model(model)
                 .contextTokens(contextTokens).outputReservation(outputTokens).modelOutputLimit(contextTokens)
-                .limitsModel(model).limitsSource("configured num_ctx/output; api/show native ceiling and template checked per call").build();
+                .limitsModel(model).limitsSource("configured num_ctx/output; exact local full-input count with pinned model/template/tokenizer per call").build();
     }
 
     @Override
@@ -90,7 +107,7 @@ public class OllamaLlmClient implements LlmStrategy {
             )).toList());
         }
         JsonNode wireRequest = JSON.valueToTree(request);
-        return guard.call(limits, wireRequest, () -> QwenTokenCounter.count(restClient, wireRequest),
+        return guard.call(limits, wireRequest, () -> tokenCounter.count(restClient, wireRequest),
                 () -> infer(request), this::receipt, this::decode);
     }
 

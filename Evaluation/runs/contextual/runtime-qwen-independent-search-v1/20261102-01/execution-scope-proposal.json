@@ -1,0 +1,150 @@
+{
+  "status": "PROPOSED_NOT_EXECUTED",
+  "implementation_and_mock_regressions_ready": true,
+  "ready_for_live_execution_now": false,
+  "provider": "QWEN",
+  "model": "qwen3:8b",
+  "think": false,
+  "app_gpt_model": null,
+  "judge_calls": 0,
+  "context_tokens": 8192,
+  "output_reservation_per_call": 1536,
+  "ranking_mode": "RERANKED",
+  "concurrency": 1,
+  "automatic_retries": 0,
+  "case_requests": [
+    {
+      "case_id": "PLR-TM-palaces-01",
+      "input_sha256": "13f07e1370f08c3962a159bbf18ff3ef60b7a5b2d03f1d550a34c96f70f9598b",
+      "repeats": 1,
+      "area_provenance": null,
+      "api_request": {
+        "message": "창경궁을 찾아줘.",
+        "planningRequest": null,
+        "history": [],
+        "searchContext": {
+          "region": "서울",
+          "city": null,
+          "category": null,
+          "excludePlaceIds": [],
+          "area": null
+        }
+      }
+    },
+    {
+      "case_id": "PLR-TM-palaces-03",
+      "input_sha256": "42a6a1b0fb5c40e8be6c37f1cf5e685c982b4d927151646eb6b2467478d8246d",
+      "repeats": 1,
+      "area_provenance": null,
+      "api_request": {
+        "message": "종로에서 조선 왕실 가족이 생활했던 궁이나 거처를 둘러보고 싶어.",
+        "planningRequest": null,
+        "history": [],
+        "searchContext": {
+          "region": "서울",
+          "city": "종로",
+          "category": null,
+          "excludePlaceIds": [],
+          "area": null
+        }
+      }
+    },
+    {
+      "case_id": "PLR-TM-palaces-04",
+      "input_sha256": "249b37f984a47963c19fbe27e48434e11c54c46b761cc98574217603bd3f79c0",
+      "repeats": 1,
+      "area_provenance": null,
+      "api_request": {
+        "message": "방금 본 곳은 빼고, 단청 없이 소박하게 지은 왕실 거처를 더 찾아줘.",
+        "planningRequest": null,
+        "history": [
+          {
+            "role": "USER",
+            "content": "창경궁은 이미 봤어. 종로 안에서 다음 장소를 찾고 있어."
+          }
+        ],
+        "searchContext": {
+          "region": "서울",
+          "city": "종로",
+          "category": null,
+          "excludePlaceIds": [
+            378
+          ],
+          "area": null
+        }
+      }
+    },
+    {
+      "case_id": "PLR-TM-family_parks-04",
+      "input_sha256": "88a500f748e36555ecd834f1aaae6d133d6a68db34d17bdc763c15717cd9d417",
+      "repeats": 1,
+      "area_provenance": {
+        "center_place_id": 311,
+        "distance_method": "haversine_straight_line",
+        "meaning": "spatial anchor and straight-line radius; not mandatory visit or walk-time evidence"
+      },
+      "api_request": {
+        "message": "지금 선택한 공원에서 500m 안으로만 찾아줘. 돗자리를 펴고 아이와 놀 공간이면 좋겠어.",
+        "planningRequest": null,
+        "history": [
+          {
+            "role": "USER",
+            "content": "지도에서 올림픽공원피크닉장을 선택했어."
+          }
+        ],
+        "searchContext": {
+          "region": "서울",
+          "city": null,
+          "category": null,
+          "excludePlaceIds": [],
+          "area": {
+            "type": "CIRCLE",
+            "center": {
+              "lat": 37.5206092598,
+              "lon": 127.1150682209
+            },
+            "radiusMeters": 500
+          }
+        }
+      }
+    }
+  ],
+  "maximum_calls": {
+    "conversation_api_requests": 4,
+    "qwen_inference": 8,
+    "search_tool_executions": 4,
+    "plan_jobs": 0,
+    "additional_plan_llm": 0
+  },
+  "evaluation_only_server_properties": {
+    "travelmate.conversation.allowed-tools": "SEARCH_PLACES",
+    "travelmate.conversation.max-model-turns": 2,
+    "travelmate.conversation.max-tool-calls": 1,
+    "travelmate.conversation.tool-failure-policy": "STOP"
+  },
+  "requirements_before_execution": [
+    "user_confirmation_of_this_exact_scope",
+    "evaluation_only_server_and_database",
+    "counter_command_and_verified_profile_configured",
+    "fresh_server_model_template_tokenizer_identity",
+    "frozen_corpus_place_ids_and_search_configuration_verified",
+    "fixed_four_request_capture_no_additional_requests_or_retries"
+  ],
+  "stop_batch_on_first": [
+    "identity_or_count_failure",
+    "budget_rejection",
+    "unexpected_or_multiple_or_repeated_tool_call",
+    "search_failure_or_timeout",
+    "invalid_citation_membership",
+    "missing_observation_or_corpus_configuration_mismatch",
+    "attempt_to_generate_plan",
+    "call_cap_reached"
+  ],
+  "server_wide_shared_call_budget_implemented": false,
+  "actual_model_usage": null,
+  "actual_search_latency_ms": null,
+  "actual_inference_latency_ms": null,
+  "paid_provider_calls_proposed": 0,
+  "embedding_rerank_internal_call_count_and_cost": "UNVERIFIED_BEFORE_LIVE_CONFIGURATION_CHECK",
+  "scope_note": "Native search/filter/ranking/evidence observations only; not full frozen persona/context or PLAN completion."
+}
