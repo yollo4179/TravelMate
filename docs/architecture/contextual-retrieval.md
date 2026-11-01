@@ -103,3 +103,29 @@ flowchart TD
 명시적 경관·시설 필터는 subject 관찰 검색을 유지한다. 기본 설정 chunk-only도 기존 경로를 유지한다.
 [고정 비교·결과·남은 한계](../../Evaluation/runs/contextual/relation-vector-retrieval-v1/20261101-01/REPORT.md)
 [일반 의미 검색 통합의 고정 비교](../../Evaluation/runs/contextual/general-relation-retrieval-v1/20261101-01/REPORT.md)
+
+## 연결 근거 품질의 후처리
+
+`KafkaRuntime._complete_recommendation`은 기존 검색·리랭킹 뒤 연결 근거 품질 정책을 적용하고 최종 반환 개수를 제한한다.
+질문의 연결 조건 판별은 이 후처리 범위만 정한다. 일반 의미 검색에서 관계 벡터를 사용하는 경로를 이 판별에 묶지 않는다.
+
+```mermaid
+flowchart TD
+    Rank[기존 후보·리랭킹 순서] --> Policy[선택 원문 관계의 긍정·차단·미판정]
+    Active[후보별 기존 활성 슬롯·최대 20개] --> Conflict[동일 방향 관계의 차단 기록 대조]
+    Policy --> Supported{선택 근거가 연결 조건을 지지하는가}
+    Supported -->|아니오| Hold[추천 보류·원문과 사유 보존]
+    Supported -->|예| Representative[긍정 기록을 대표로 선택·장소 순서 유지]
+    Conflict --> Representative
+    Representative --> Limit[현재 통행 미확인 표시·최종 limit]
+```
+
+`connection_statements.py`는 원문 표현을 판정하는 교체 가능한 전략 레지스트리다.
+`evidence_quality.py`는 원문 위치 검사·대표 선택·충돌/보류 기록을 담당한다.
+`_retrieve_quality_context`는 기존 활성 문맥을 읽는 SQL만 실행하며, 새 임베딩·리랭킹·비활성 근거 검색은 하지 않는다.
+활성 슬롯/장소 버전 불일치가 발견되면 결과를 보류한다. DB 읽기 이후 변경까지 잠그는 트랜잭션은 추가하지 않았다.
+검색 기본값·후보 30개·활성 상한·거리 계산은 유지한다. 후처리는 기본 chunk-only 경로의 연결 질문에도 적용된다.
+
+제한된 한국어 규칙이므로 모든 자연어 질문의 함의를 검증하지 않는다. 사실의 현재성·실제 거리·경로 안전성을 판정하지 않으며
+근거 인용과 이동 조건을 보존한 채 불확실성을 표시한다.
+[실제 예시·저장 결과 검증·남은 한계](../../Evaluation/runs/contextual/evidence-quality-policy-v1/20261101-01/REPORT.md)

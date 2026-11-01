@@ -1,0 +1,24 @@
+{
+  "test_suite": "python /output/run-server-tests.py; unittest discover /workspace/embedding-server/tests",
+  "runner_image": "travelmate-contextual-validation:64bf5ef0",
+  "database_image": "pgvector/pgvector:pg17",
+  "network": "tm-v7-eval-quality-policy",
+  "network_internal": true,
+  "runner_networks": ["tm-v7-eval-quality-policy"],
+  "database_name": "contextual_v7_eval_quality",
+  "database_tmpfs": "/var/lib/postgresql/data",
+  "code_mount_read_only": true,
+  "model_service_connected": false,
+  "new_real_model_calls": 0,
+  "new_real_searches": 0,
+  "paid_cost_usd": 0,
+  "production_database_writes": 0,
+  "non_system_schemas_after_tests": 0,
+  "cleanup": {
+    "removed_containers": ["tm-v7-eval-quality-policy-runner", "tm-v7-eval-quality-policy-db"],
+    "removed_network": "tm-v7-eval-quality-policy",
+    "remaining_matching_containers": [],
+    "remaining_matching_networks": []
+  },
+  "validation_scope": "Stored-result policy replay plus synthetic SQL/mock-model server regression; no new real retrieval or end-to-end model quality evaluation."
+}
