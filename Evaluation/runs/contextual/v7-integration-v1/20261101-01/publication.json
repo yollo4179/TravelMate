@@ -62,10 +62,12 @@
     "sonar/http-attempts/ec115eb3-5301-4c97-825d-870ab61d40a3.json": "89282b24781fae52f10f7657480017f3b858bde246678af81be05eb38a56a5fb",
     "sonar/plan.json": "b362fce79ddbccf94da43817d213af4f5a9d97b1998dbff304b34cb76dd0b281",
     "tests-final.json": "5e2646bac8f9199a783aab247b45076a6c3112a8722351f6806bd213d234ce3d",
-    "tests-passed.json": "6c81c70dcd7e5abd132d561ce92e4a34f4dc29955e2924278b6e633455467d25"
+    "tests-passed.json": "6c81c70dcd7e5abd132d561ce92e4a34f4dc29955e2924278b6e633455467d25",
+    "publication-before-report-v2.json": "fb42a7fab960aba382a3a0fefe4364a2f342e1ed289635c819e0d4a290638ade",
+    "published-REPORT-v2.md": "37a909e0e1df788926bdf672a59d2df5beee28fb1383bcdc551931907b96da2f"
   },
   "published_file_sha256": {
-    "REPORT.md": "49c5ecc7d5619f21b1a10f34af55cc7c9ff5239003177f4511f355861d59ccfa",
+    "REPORT.md": "37a909e0e1df788926bdf672a59d2df5beee28fb1383bcdc551931907b96da2f",
     "alignment-diagnostic.json": "42278053f6d2a8c59633ae07fd9304be133f9a855c8b14dba2f4ad0fd71b3bb9",
     "cleanup.json": "dbf9dc682ad74ac9cbf2471d0cd91107f5bc52ff2d6ea04f75e0fdbb24626311",
     "environment.json": "48978abdc0c5e96fb537d7a46dee4d8ec6b06641ff55065b312b3dedd1ded8f2",
@@ -86,8 +88,16 @@
     "Evaluation/tracks/contextual/v7_search.py": "99ee7734e35e50b62467e687e69b60f8fd8d7ebf8304e39675cc04a9872c6bda",
     "docs/specifications/contextual-retrieval.md": "bad15af404108f29b714d68c7476a3a4514f968dd4d50fca75838c35b921e31a",
     "docs/specifications/fastapi-place-recommendation.md": "a10bd8eaa57cd61a04dafed095f3bfeed0ce15bfe5679a902007d1c5c09ed17e",
-    "docs/worklog/2026-11-01/be-llm.md": "ccf012a7328a04fb9bb0ba5994de05d9c43050245679d5c6e75573b72a67948e",
+    "docs/worklog/2026-11-01/be-llm.md": "b5baa514ef639a7a49fe66704a620b823536223b2c1e17ab5ff9c43e1a58ec50",
     "embedding-server/tests/test_contextual_supporting_postgres.py": "1d726e1782b8c28458c98e87eba8e73c137c330b5dc6661923651ae83b2539b7",
     "embedding-server/tests/test_contextual_v7_execution.py": "5eb7b781451db9e5fbbb1c26c8de908d9b48cbf11f54f193cc99eac9f7d492cc"
-  }
+  },
+  "documentation_revisions": [
+    {
+      "date": "2026-11-01",
+      "report_version": 2,
+      "baseline_commit": "eaddb485",
+      "change": "관계 인용 위치 오류의 실제 범위·슬라이스 예시 추가. 기존 실행 자료·코드 변경 없음."
+    }
+  ]
 }
