@@ -1,92 +1,122 @@
 package com.yollo.TravelMate.ai.llm.derived;
 
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import java.util.UUID;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.yollo.TravelMate.ai.llm.base.*;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
 
-import com.yollo.TravelMate.ai.llm.base.LlmClient;
-import com.yollo.TravelMate.exceptions.cumtom.ErrorCodeException;
-import com.yollo.TravelMate.exceptions.errorCodes.ErrorCode;
-
 @Component
-public class OllamaLlmClient implements LlmClient{
+public class OllamaLlmClient implements LlmStrategy {
+    private static final com.fasterxml.jackson.databind.ObjectMapper JSON = new com.fasterxml.jackson.databind.ObjectMapper();
+    private final RestClient restClient;
+    private final String model;
 
+    @Autowired
+    public OllamaLlmClient(
+            @Value("${ollama.base-url:http://localhost:11434}") String baseUrl,
+            @Value("${ollama.model:qwen3:8b}") String model
+    ) {
+        this(LlmHttpClients.create(baseUrl), model);
+    }
 
-	private static final Logger logger = LoggerFactory.getLogger(OllamaLlmClient.class);
-	
-	private RestClient restClient;
-	
-	private final String model ; 
-	
-	
-	 public OllamaLlmClient(
-	            @Value("${ollama.base-url:http://localhost:11434}") String baseUrl,
-	            @Value("${ollama.model:qwen3:8b}") String model) {
+    public OllamaLlmClient(RestClient restClient, String model) {
+        this.restClient = restClient;
+        this.model = model;
+    }
 
-                var requestFactory = new org.springframework.http.client.SimpleClientHttpRequestFactory();
-                requestFactory.setConnectTimeout(5000);
-                requestFactory.setReadTimeout(240000);
-	        this.restClient = RestClient.builder()
-	                .baseUrl(baseUrl)
-                        .requestFactory(requestFactory)
-	                .build();
-	        this.model = model;
-	        logger.info("OllamaLlmClient 초기화 - baseUrl={}, model={}", baseUrl, model);
-	    }
-	
-	
-	@Override
-	public String generate(String systemPrompt, String userPrompt) {
-		//모델 특징 튜닝(요청 body애 요구사항 다 적습니다)
-		Map<String , Object> body  =Map.of(
-				"model", model,
-				"think", false,
-				"stream",false,
-                                "format", "json",
-				"messages",List.of(
-						Map.of("role", "system",
-								"content", systemPrompt),
-						Map.of( "role","user",
-								"content",userPrompt)
-						),
-				
-				"options", Map.of(
-						"temperature",0.3,
-						"num_ctx",8192,
-                                                "num_predict", 1536
-						)
-				);
-				
-		 try {
-	            OllamaChatResponse res = restClient.post()
-	                    .uri("/api/chat")
-	                    .body(body)
-	                    .retrieve()
-	                    .body(OllamaChatResponse.class);
+    @Override
+    public boolean supports(LlmProvider provider) {
+        return provider == LlmProvider.QWEN;
+    }
 
-	            if (res == null || res.message() == null) {
-	            	logger.error("Ollama 응답이 비어있습니다.");
-	                throw new ErrorCodeException(ErrorCode.PLAN_LLM_PARSE_FAILED);
-	            }
-	            return res.message().content();
+    @Override
+    public String generate(String systemPrompt, String userPrompt) {
+        return complete(List.of(
+                LlmMessage.text(LlmMessage.Role.SYSTEM, systemPrompt),
+                LlmMessage.text(LlmMessage.Role.USER, userPrompt)
+        ), List.of(), true).content();
+    }
 
-	        } catch (ErrorCodeException e) {
-	            throw e;   
-	        } catch (Exception e) {
-	            logger.error("Ollama 호출 실패: {}", e.getMessage());
-	            throw new ErrorCodeException(ErrorCode.LLM_SERVER_UNAVAILABLE);   // 진짜 통신 오류만
-	        }
-		 
-	}
-	
-	
-	 public record OllamaChatResponse(Message message) {
-	        public record Message(String role, String content) {}
-	    }
-	
+    @Override
+    public LlmTurn chat(List<LlmMessage> messages, List<LlmTurn.ToolDefinition> tools) {
+        return complete(messages, tools, false);
+    }
+
+    private LlmTurn complete(
+            List<LlmMessage> messages,
+            List<LlmTurn.ToolDefinition> tools,
+            boolean jsonOutput
+    ) {
+        Map<String, Object> request = new LinkedHashMap<>();
+        request.put("model", model);
+        request.put("think", false);
+        request.put("stream", false);
+        request.put("messages", messages.stream().map(this::wireMessage).toList());
+        request.put("options", Map.of("temperature", 0.3, "num_ctx", 8192, "num_predict", 1536));
+        if (jsonOutput) request.put("format", "json");
+        if (!tools.isEmpty()) {
+            request.put("tools", tools.stream().map(tool -> Map.of(
+                    "type", "function",
+                    "function", Map.of("name", tool.name(), "description", tool.description(), "parameters", tool.parameters())
+            )).toList());
+        }
+        final JsonNode response;
+        try {
+            response = restClient.post().uri("/api/chat").body(request).retrieve().body(JsonNode.class);
+        } catch (RuntimeException exception) {
+            throw new IllegalStateException("Qwen 서버 호출에 실패했습니다.");
+        }
+        if (response == null || !response.path("done").asBoolean()
+                || "length".equals(response.path("done_reason").asText())
+                || !response.path("message").isObject()
+                || !"assistant".equals(response.path("message").path("role").asText())) {
+            throw new IllegalStateException("Qwen 응답이 비어 있거나 완료되지 않았습니다.");
+        }
+        JsonNode assistant = response.get("message");
+        List<LlmTurn.ToolCall> calls = new ArrayList<>();
+        JsonNode toolCalls = assistant.path("tool_calls");
+        if (!toolCalls.isMissingNode() && !toolCalls.isArray()) {
+            throw new IllegalStateException("Qwen 도구 호출 형식이 올바르지 않습니다.");
+        }
+        toolCalls.forEach(call -> {
+            JsonNode function = call.path("function");
+            JsonNode arguments = function.path("arguments");
+            String serialized = arguments.isTextual() ? arguments.textValue() : arguments.toString();
+            calls.add(new LlmTurn.ToolCall(
+                    UUID.randomUUID().toString(),
+                    function.path("name").asText(),
+                    serialized
+            ));
+        });
+        return LlmTurn.builder().content(assistant.path("content").asText("")).toolCalls(calls).build();
+    }
+
+    private Map<String, Object> wireMessage(LlmMessage message) {
+        Map<String, Object> encoded = new LinkedHashMap<>();
+        encoded.put("role", message.role().name().toLowerCase(java.util.Locale.ROOT));
+        encoded.put("content", message.content() == null ? "" : message.content());
+        if (message.role() == LlmMessage.Role.TOOL) encoded.put("tool_name", message.toolName());
+        if (!message.toolCalls().isEmpty()) {
+            encoded.put("tool_calls", message.toolCalls().stream().map(call -> Map.of(
+                    "type", "function",
+                    "function", Map.of("name", call.name(), "arguments", parsedArguments(call.arguments()))
+            )).toList());
+        }
+        return encoded;
+    }
+
+    private JsonNode parsedArguments(String arguments) {
+        try {
+            return JSON.readTree(arguments);
+        } catch (com.fasterxml.jackson.core.JsonProcessingException exception) {
+            throw new IllegalStateException("Qwen 도구 인자를 다시 직렬화하지 못했습니다.");
+        }
+    }
 }

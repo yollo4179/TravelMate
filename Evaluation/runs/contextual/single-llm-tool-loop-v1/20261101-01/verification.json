@@ -1,0 +1,285 @@
+{
+    "baseline_commit":  "2756ff127f7aacba48ddbe5bd89422da680aa9a8",
+    "verified_at":  "2026-11-01T18:26:21.1516515+09:00",
+    "mode":  "mock_protocol_and_tool_loop_regression_not_live_quality_evaluation",
+    "working_directory":  "Server/TravelMate",
+    "command":  ".\\gradlew.bat --offline test --tests com.yollo.TravelMate.LlmStrategyTest --tests com.yollo.TravelMate.ConversationToolLoopTest --tests com.yollo.TravelMate.ConversationControllerTest --tests com.yollo.TravelMate.DraftPlanValidationTest --tests com.yollo.TravelMate.SearchEvidencePipelineTest --tests com.yollo.TravelMate.ContextPlanPipelineTest --tests com.yollo.TravelMate.PlanContextContractTest --console=plain",
+    "totals":  {
+                   "tests":  67,
+                   "failures":  0,
+                   "errors":  0,
+                   "skipped":  0
+               },
+    "suites":  [
+                   {
+                       "name":  "com.yollo.TravelMate.LlmStrategyTest",
+                       "tests":  11,
+                       "failures":  0,
+                       "errors":  0,
+                       "skipped":  0,
+                       "junit":  "junit/TEST-com.yollo.TravelMate.LlmStrategyTest.xml",
+                       "sha256":  "89d397012686f67bd799a05cc50525848146b2ddef39887fbad101673dadc36b"
+                   },
+                   {
+                       "name":  "com.yollo.TravelMate.ConversationToolLoopTest",
+                       "tests":  24,
+                       "failures":  0,
+                       "errors":  0,
+                       "skipped":  0,
+                       "junit":  "junit/TEST-com.yollo.TravelMate.ConversationToolLoopTest.xml",
+                       "sha256":  "43522b0e6cbab9757c83ca4e66a85aa19f690e17cd1df2baaffe95e85cfea279"
+                   },
+                   {
+                       "name":  "com.yollo.TravelMate.ConversationControllerTest",
+                       "tests":  3,
+                       "failures":  0,
+                       "errors":  0,
+                       "skipped":  0,
+                       "junit":  "junit/TEST-com.yollo.TravelMate.ConversationControllerTest.xml",
+                       "sha256":  "e45d5ce51304f0f6a6bfd78e70359bc4aeacf5b8a8acaa3777208abe056f28dd"
+                   },
+                   {
+                       "name":  "com.yollo.TravelMate.DraftPlanValidationTest",
+                       "tests":  18,
+                       "failures":  0,
+                       "errors":  0,
+                       "skipped":  0,
+                       "junit":  "junit/TEST-com.yollo.TravelMate.DraftPlanValidationTest.xml",
+                       "sha256":  "1a28dff56ae80ba73236b49296cdcc0726ebf5ac28e8a1c4d102105f29a4dddb"
+                   },
+                   {
+                       "name":  "com.yollo.TravelMate.SearchEvidencePipelineTest",
+                       "tests":  7,
+                       "failures":  0,
+                       "errors":  0,
+                       "skipped":  0,
+                       "junit":  "junit/TEST-com.yollo.TravelMate.SearchEvidencePipelineTest.xml",
+                       "sha256":  "df52e0cd85d0d06d14da11ac533bcc17a5537e1a8b83a4c0c88ae8895f8af7e3"
+                   },
+                   {
+                       "name":  "com.yollo.TravelMate.ContextPlanPipelineTest",
+                       "tests":  2,
+                       "failures":  0,
+                       "errors":  0,
+                       "skipped":  0,
+                       "junit":  "junit/TEST-com.yollo.TravelMate.ContextPlanPipelineTest.xml",
+                       "sha256":  "a0b3cefa21e53f4412ea902fe94960c45bfa4d47fd465100dfdf142521d9462a"
+                   },
+                   {
+                       "name":  "com.yollo.TravelMate.PlanContextContractTest",
+                       "tests":  2,
+                       "failures":  0,
+                       "errors":  0,
+                       "skipped":  0,
+                       "junit":  "junit/TEST-com.yollo.TravelMate.PlanContextContractTest.xml",
+                       "sha256":  "10acdf43a7db365d62f1b65b1ea57fabc691fb957cec007d11d68fe50dc17150"
+                   }
+               ],
+    "hash_normalization":  "UTF-8 without BOM; CRLF normalized to LF. Published JUnit uses the same normalization.",
+    "source_sha256":  [
+                          {
+                              "path":  "docs/architecture/single-llm-tool-loop.md",
+                              "sha256":  "7a7917cf0f58cf4f4f1a68cddbdcca2a48b80af6bc8712ce8b06b02734ca901f"
+                          },
+                          {
+                              "path":  "docs/README.md",
+                              "sha256":  "f20fe60025a873b0f9b8912e104a2293378ca0c46908ca9d90236e8b5104c059"
+                          },
+                          {
+                              "path":  "Evaluation/runs/contextual/single-llm-tool-loop-v1/20261101-01/REPORT.md",
+                              "sha256":  "85c1d0527c0e6e00d74b6943c702a09f642aa3ca6ec4bae155439c059275b46e"
+                          },
+                          {
+                              "path":  "Server/TravelMate/src/main/java/com/yollo/TravelMate/ai/llm/base/LlmClient.java",
+                              "sha256":  "1cfc8930e0361f5733db7042258539d12c996615f642e01e60c45d6b6c5a17f4"
+                          },
+                          {
+                              "path":  "Server/TravelMate/src/main/java/com/yollo/TravelMate/ai/llm/base/LlmHttpClients.java",
+                              "sha256":  "41ab72e2b2d14acbdeb3f5428e0d35092cba8fa24b4f39d68658255650cf4fac"
+                          },
+                          {
+                              "path":  "Server/TravelMate/src/main/java/com/yollo/TravelMate/ai/llm/base/LlmMessage.java",
+                              "sha256":  "50a02de1734b34af3532b91370f009dc94a29a1fe6bdc301dcf00f8cbf49b325"
+                          },
+                          {
+                              "path":  "Server/TravelMate/src/main/java/com/yollo/TravelMate/ai/llm/base/LlmProvider.java",
+                              "sha256":  "b55fa981d6602ead238e44281a980c8299e6ca1b0b028b130048e53bf70928fc"
+                          },
+                          {
+                              "path":  "Server/TravelMate/src/main/java/com/yollo/TravelMate/ai/llm/base/LlmStrategy.java",
+                              "sha256":  "0a0d3d00cc827164bf1e99eb621d8132c5079a0f9a4ad74e9a36b7975384c094"
+                          },
+                          {
+                              "path":  "Server/TravelMate/src/main/java/com/yollo/TravelMate/ai/llm/base/LlmTurn.java",
+                              "sha256":  "9692f867705829a435ea2ccfab9ae7458e32b51c84e2b5284766a134c8065519"
+                          },
+                          {
+                              "path":  "Server/TravelMate/src/main/java/com/yollo/TravelMate/ai/llm/base/StrategyLlmClient.java",
+                              "sha256":  "09e06d01bbda0834ec8c95485a65d1583658d2da42db4b5bd318531401df4f02"
+                          },
+                          {
+                              "path":  "Server/TravelMate/src/main/java/com/yollo/TravelMate/ai/llm/derived/OllamaLlmClient.java",
+                              "sha256":  "f1232041c5dbf9c29722922fa8fdfdf5fd6c57795674cd9205cd51fb576544a7"
+                          },
+                          {
+                              "path":  "Server/TravelMate/src/main/java/com/yollo/TravelMate/ai/llm/derived/OpenAiLlmClient.java",
+                              "sha256":  "5a0d05b4380c911fd581e4cbdfc9070b989d937b86bfa72e18cb2972b7cd3dda"
+                          },
+                          {
+                              "path":  "Server/TravelMate/src/main/java/com/yollo/TravelMate/domain/conversation/controller/ConversationController.java",
+                              "sha256":  "df71009f87c92535541db0979d1d0639468005c658990b8966d7dd3941606642"
+                          },
+                          {
+                              "path":  "Server/TravelMate/src/main/java/com/yollo/TravelMate/domain/conversation/data/ConversationRequest.java",
+                              "sha256":  "eb1a290e504c28266300aef679df5fcf19445bf31a0ea049323c65e6c4679989"
+                          },
+                          {
+                              "path":  "Server/TravelMate/src/main/java/com/yollo/TravelMate/domain/conversation/data/ConversationResponse.java",
+                              "sha256":  "c7bbc099597dc79556ca6eccac6d75ea9320ac58b7050ee620afe020bdc4bb8b"
+                          },
+                          {
+                              "path":  "Server/TravelMate/src/main/java/com/yollo/TravelMate/domain/conversation/service/ConversationAnswerRenderer.java",
+                              "sha256":  "e4ab709af4f01202523ae4c2a70c2f6e953c3a2f30ef52f9c4c8f27fcd049082"
+                          },
+                          {
+                              "path":  "Server/TravelMate/src/main/java/com/yollo/TravelMate/domain/conversation/service/ConversationService.java",
+                              "sha256":  "89d09610fc410470898874e6c0399929ebe7ce31b50125a091a2afdf8ad82a89"
+                          },
+                          {
+                              "path":  "Server/TravelMate/src/main/java/com/yollo/TravelMate/domain/conversation/service/ConversationToolExecutor.java",
+                              "sha256":  "c22f8d0ea58fc7676108d6dd1a769a009db93b2f9561355985a50375971cb81e"
+                          },
+                          {
+                              "path":  "Server/TravelMate/src/main/java/com/yollo/TravelMate/domain/conversation/tool/ConversationTool.java",
+                              "sha256":  "31be9237d1d5b14b3c1880089828c97d2cb88e6b6a154e1d42beab49637c93ac"
+                          },
+                          {
+                              "path":  "Server/TravelMate/src/main/java/com/yollo/TravelMate/domain/conversation/tool/ConversationToolRegistry.java",
+                              "sha256":  "a8c70bac1d8fbd1eac1bbd75ee8a57529dfba60b8fbb2d17f9fe883db2ea9848"
+                          },
+                          {
+                              "path":  "Server/TravelMate/src/main/java/com/yollo/TravelMate/domain/conversation/tool/GeneratePlanTool.java",
+                              "sha256":  "0ac87dd9245c65fb0e065fdf3cced6a734450b305015ec4be688169d089d4bc2"
+                          },
+                          {
+                              "path":  "Server/TravelMate/src/main/java/com/yollo/TravelMate/domain/conversation/tool/GetPlanningJobTool.java",
+                              "sha256":  "547cb7cc45947cd77679c395a5b936318bdbaddab0317a6c5c24aeb4d8180e28"
+                          },
+                          {
+                              "path":  "Server/TravelMate/src/main/java/com/yollo/TravelMate/domain/conversation/tool/PlanningToolResults.java",
+                              "sha256":  "609242c2c8f75b2b58461b41c573ec549dc1734595916486bb1d3c49f5e7615b"
+                          },
+                          {
+                              "path":  "Server/TravelMate/src/main/java/com/yollo/TravelMate/domain/conversation/tool/SearchPlacesTool.java",
+                              "sha256":  "c5fcc25110c5d2f7bcfe0a4cfe53e4bad71597f6c880e0bc10fe9968271a368d"
+                          },
+                          {
+                              "path":  "Server/TravelMate/src/main/java/com/yollo/TravelMate/domain/conversation/tool/ToolSchemas.java",
+                              "sha256":  "7d4daaed81d3c8d9fcd7295595f4ecf6c64791d189f0e38b3fc00348527ed3e7"
+                          },
+                          {
+                              "path":  "Server/TravelMate/src/main/java/com/yollo/TravelMate/domain/plan/prompts/ContextPlanPromptFactory.java",
+                              "sha256":  "0e88d713b50bde83bd8e3edb9e087c6445920ce27e3bbc0947c272ae0b9c2d0d"
+                          },
+                          {
+                              "path":  "Server/TravelMate/src/main/java/com/yollo/TravelMate/domain/plan/validator/PlanEvidenceCitationValidator.java",
+                              "sha256":  "26b2e3d3cfd7c6d8d5cb6890f75532bccbfcee3169c550eb437bd373c184c550"
+                          },
+                          {
+                              "path":  "Server/TravelMate/src/main/resources/application.properties",
+                              "sha256":  "264b1a118a45c68bd7e25699949805c8283f354a687c70de32c209cc2d29dc2b"
+                          },
+                          {
+                              "path":  "Server/TravelMate/src/test/java/com/yollo/TravelMate/ConversationControllerTest.java",
+                              "sha256":  "64764fc10b0c1850f895df933c416c0f60b38920b39d25cb9166a4d9225e06d1"
+                          },
+                          {
+                              "path":  "Server/TravelMate/src/test/java/com/yollo/TravelMate/ConversationToolLoopTest.java",
+                              "sha256":  "dcc4c03c5d9e9881cac28306ce9364868861fe1290641e191eb9b68dba464554"
+                          },
+                          {
+                              "path":  "Server/TravelMate/src/test/java/com/yollo/TravelMate/LlmStrategyTest.java",
+                              "sha256":  "ee14d69544215a5877ead80c937f0b7190425929569315002b36218d012fe96a"
+                          }
+                      ],
+    "preserved_tracked_paths":  [
+                                    {
+                                        "path":  "Server/TravelMate/src/main/java/com/yollo/TravelMate/domain/place",
+                                        "tracked_diff_from_baseline":  "none"
+                                    },
+                                    {
+                                        "path":  "Server/TravelMate/src/main/java/com/yollo/TravelMate/domain/plan/service",
+                                        "tracked_diff_from_baseline":  "none"
+                                    },
+                                    {
+                                        "path":  "Server/TravelMate/src/main/java/com/yollo/TravelMate/domain/plan/repository",
+                                        "tracked_diff_from_baseline":  "none"
+                                    },
+                                    {
+                                        "path":  "Server/TravelMate/src/main/java/com/yollo/TravelMate/domain/plan/data",
+                                        "tracked_diff_from_baseline":  "none"
+                                    },
+                                    {
+                                        "path":  "Server/TravelMate/src/main/java/com/yollo/TravelMate/domain/plan/validator/DraftPlanValidator.java",
+                                        "tracked_diff_from_baseline":  "none"
+                                    },
+                                    {
+                                        "path":  "Server/TravelMate/src/main/java/com/yollo/TravelMate/domain/plan/validator/PlanAreaValidator.java",
+                                        "tracked_diff_from_baseline":  "none"
+                                    },
+                                    {
+                                        "path":  "Server/TravelMate/src/main/java/com/yollo/TravelMate/jwt",
+                                        "tracked_diff_from_baseline":  "none"
+                                    },
+                                    {
+                                        "path":  "embedding-server",
+                                        "tracked_diff_from_baseline":  "none"
+                                    },
+                                    {
+                                        "path":  "Docker",
+                                        "tracked_diff_from_baseline":  "none"
+                                    },
+                                    {
+                                        "path":  "Evaluation/common",
+                                        "tracked_diff_from_baseline":  "none"
+                                    },
+                                    {
+                                        "path":  "Evaluation/tracks",
+                                        "tracked_diff_from_baseline":  "none"
+                                    },
+                                    {
+                                        "path":  "Evaluation/datasets",
+                                        "tracked_diff_from_baseline":  "none"
+                                    }
+                                ],
+    "registered_tools":  [
+                             "generate_plan",
+                             "get_planning_job",
+                             "search_places"
+                         ],
+    "provider_strategy":  {
+                              "default_provider":  "QWEN",
+                              "available":  [
+                                                "QWEN",
+                                                "OPENAI"
+                                            ],
+                              "openai_model_selected":  false,
+                              "automatic_fallback":  false
+                          },
+    "external_execution":  {
+                               "actual_model_calls":  0,
+                               "actual_search_runs":  0,
+                               "production_database_writes":  0,
+                               "deployments":  0,
+                               "basis":  "Only selected Mockito, standalone MockMvc, ApplicationContextRunner and MockRestServiceServer tests; no live observation collection."
+                           },
+    "unresolved":  [
+                       "Token budget: verify before next real LLM execution",
+                       "Live provider/model compatibility and semantic quality",
+                       "Natural-language planning condition extraction",
+                       "Actual collector/evaluator adapters and state observations",
+                       "Frontend and conversation persistence",
+                       "Plan preview/modify/confirm/rollback",
+                       "Real travel time and route optimization"
+                   ]
+}

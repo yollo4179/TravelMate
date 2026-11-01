@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.yollo.TravelMate.ConversationControllerTest" tests="3" skipped="0" failures="0" errors="0" timestamp="2026-11-01T09:22:12.604Z" hostname="DESKTOP-MS327CL" time="1.904">
+  <properties/>
+  <testcase name="callerCannotInjectSystemOrToolRolesThroughConversationHistory()" classname="com.yollo.TravelMate.ConversationControllerTest" time="0.519"/>
+  <testcase name="nestedPlanningConditionsStillUseTheExistingBeanValidationContract()" classname="com.yollo.TravelMate.ConversationControllerTest" time="0.795"/>
+  <testcase name="controllerBindsExistingAuthenticatedOwnerAndTurnKeyToTheLoop()" classname="com.yollo.TravelMate.ConversationControllerTest" time="0.48"/>
+  <system-out><![CDATA[18:22:10.753 [Test worker] INFO org.hibernate.validator.internal.util.Version -- HV000001: Hibernate Validator 8.0.3.Final
+18:22:12.579 [Test worker] INFO org.springframework.mock.web.MockServletContext -- Initializing Spring TestDispatcherServlet ''
+18:22:12.579 [Test worker] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Initializing Servlet ''
+18:22:12.596 [Test worker] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Completed initialization in 12 ms
+18:22:13.097 [Test worker] WARN org.springframework.web.servlet.mvc.support.DefaultHandlerExceptionResolver -- Resolved [org.springframework.http.converter.HttpMessageNotReadableException: JSON parse error: Cannot deserialize value of type `com.yollo.TravelMate.domain.conversation.data.ConversationRequest$HistoryRole` from String "SYSTEM": not one of the values accepted for Enum class: [USER, ASSISTANT]]
+18:22:13.158 [Test worker] INFO org.springframework.mock.web.MockServletContext -- Initializing Spring TestDispatcherServlet ''
+18:22:13.158 [Test worker] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Initializing Servlet ''
+18:22:13.162 [Test worker] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Completed initialization in 4 ms
+18:22:13.959 [Test worker] WARN org.springframework.web.servlet.mvc.support.DefaultHandlerExceptionResolver -- Resolved [org.springframework.web.bind.MethodArgumentNotValidException: Validation failed for argument [2] in public com.yollo.TravelMate.domain.conversation.data.ConversationResponse com.yollo.TravelMate.domain.conversation.controller.ConversationController.respond(com.yollo.TravelMate.domain.user.entity.User,java.util.UUID,com.yollo.TravelMate.domain.conversation.data.ConversationRequest): [Field error in object 'conversationRequest' on field 'planningRequest.context.area.radiusMeters': rejected value [1]; codes [Min.conversationRequest.planningRequest.context.area.radiusMeters,Min.planningRequest.context.area.radiusMeters,Min.radiusMeters,Min.java.lang.Integer,Min]; arguments [org.springframework.context.support.DefaultMessageSourceResolvable: codes [conversationRequest.planningRequest.context.area.radiusMeters,planningRequest.context.area.radiusMeters]; arguments []; default message [planningRequest.context.area.radiusMeters],500]; default message [must be greater than or equal to 500]] ]
+18:22:14.023 [Test worker] INFO org.springframework.mock.web.MockServletContext -- Initializing Spring TestDispatcherServlet ''
+18:22:14.026 [Test worker] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Initializing Servlet ''
+18:22:14.028 [Test worker] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Completed initialization in 0 ms
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>
