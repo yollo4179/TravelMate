@@ -206,13 +206,15 @@ DB trigger는 subject 슬롯에 명시적 subject를, relation_endpoint 슬롯�
 명확한 관계만 있고 subject가 없는 청크도 알려진 endpoint가 있으면 관계 전용 후보가 될 수 있다.
 알려진 endpoint도 subject도 없으면 귀속 보류로 보존한다.
 
-일반·경관·시설 검색은 subject 슬롯과 해당 관찰의 주체만 사용한다. 이동 검색만 두 슬롯을 조회하고 관계 endpoint로 방향을 제한한다.
+chunk-only의 일반 검색과 명시적 경관·시설 검색은 subject 슬롯과 해당 관찰의 주체만 사용한다.
+chunk-and-relation-v1의 필터 없는 일반 검색은 양쪽 활성 슬롯의 관계 인용도 조회한다. 전체 청크 벡터는 subject 슬롯에만 허용한다.
+명시적 이동 검색은 두 슬롯을 조회하고 관계 endpoint로 방향을 제한한다.
 관계 검색에는 청크의 content_kind가 movement일 필요가 없다. 후보와 복수 근거 확장에 같은 필터를 적용한다.
 이동 리랭킹 입력과 결과 description은 일치한 관계의 정확한 evidence.quote를 사용한다.
 응답 evidence에는 원문 전체·place_refs를 보존하고 `retrieval_scope=relation`, `matched_relations`, `search_text`로 사용 범위를 표시한다.
 따라서 보존용 전체 원문을 목적지의 경관·시설 근거로 해석하지 않아야 한다.
 목적지의 기본 장소 벡터도 출발지의 혼합 관찰을 재사용하지 않고 목적지 자체의 subject 근거 또는 기본 장소 설명에서 고른다.
-관계 후보를 찾는 벡터 자체는 아직 전체 청크의 문맥+원문이다. 관계 전용 임베딩·실제 검색 품질 개선은 검증하지 않았다.
+위 v7 초기 경로에서 관계 후보를 찾던 벡터는 전체 청크의 문맥+원문이었다. 후속 선택형 관계 인용 벡터와 일반 검색 통합은 아래 절에 구분해 기록한다.
 
 apply의 상태·지문 검사와 재색인 대상은 승인 청크의 subject 및 알려진 관계 endpoint의 합집합이다.
 단순 mentioned만 있는 장소는 계속 적용 대상이 아니다. 관계 endpoint는 실제 쓰기 대상이므로 삭제·재색인 대기 상태이면 원자 적용을 중단한다.
@@ -521,9 +523,14 @@ Docker 작업자의 LOCATION_REVIEW_DIR는 `/enrichment-data/LocationReview`, �
 trigger는 해당 순번의 type=movement, importance=primary/supporting, evidence 동일성·청크 안 위치·실제 원문 substring 일치를 검사한다.
 색인 작업자는 기존 전체/대표 벡터와 함께 추가 벡터를 추론하고, 기존 버전·스냅샷·청크 세대 CAS 성공 트랜잭션 안에서만 저장한다. 선택되지 않은 청크의 관계 벡터는 추가 생성하지 않는다.
 
-추가 경로는 명시적 observation 필터에 이동 검색이 포함될 때만 사용한다. 참가자·방향·결과 endpoint·비중을 **개별 relation_index에도 먼저 적용**한다.
+추가 경로는 observation 필터가 없는 일반 의미 검색에서도 사용한다. 질의 임베딩을 추가 호출하지 않고 같은 벡터를 전체 청크와 관계 인용에 사용한다.
+일반 검색은 출발지·도착지·비중을 제한하지 않는다. 전체 청크 표현은 subject 슬롯만 사용하고 관계 인용은 일치하는 양쪽 endpoint 슬롯에서 사용할 수 있다.
+명시적 observation 필터가 있으면 기존 범위를 유지한다. 이동 조건의 참가자·방향·결과 endpoint·비중을 **개별 relation_index에도 먼저 적용**하고, 경관·시설 조건에 관계 후보를 섞지 않는다.
 같은 청크의 전체 벡터와 조건에 맞는 관계 벡터 중 최고 cosine, 같은 장소의 활성 청크 중 최고 cosine을 선택한다. 합산하지 않고 장소 중복 제거 후 Top-30을 유지한다.
 후보와 추가 근거 조회에 동일한 규칙을 사용한다. 관계 벡터가 선택되면 evidence에 `retrieval_path=relation`, `retrieved_relation_index`를 넣고 그 관계의 실제 인용으로만 리랭킹한다.
+일반 검색의 추가 근거에서는 같은 청크의 전체 표현과 관계별 인용을 별도 근거로 취급한다. 중복 키는 chunk_id/context_version/retrieval_path/relation_index이며 동일 표현만 제거한다.
+근거 수는 기존 설정(기본 1, 선택 2·3)과 전체 쌍·토큰 예산 안에서 제한한다. 복합 질문에 두 근거가 항상 보장되는 것은 아니다.
+같은 청크여도 후보 검색 뒤 선택 표현이 바뀌면 재검증에서 거부한다. 결과의 보존 원문·place_refs는 변경하지 않으며 relation 범위와 matched_relations로 실제 사용 범위를 표시한다.
 다른 장소의 경관을 목적지에 공유하거나 예상 질문을 추천 인용으로 사용하지 않는다. 경관·시설·필터 없는 기존 검색은 그대로다.
 
 Compose/stack bootstrap은 이 설정을 전달하고 허용하지 않은 값은 거부한다. source.env에서 제거하면 이전 실행값도 제거해 chunk-only로 복귀한다.

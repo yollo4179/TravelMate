@@ -1,0 +1,47 @@
+{
+  "base_commit": "1e646b33",
+  "branch": "feat/contextual-general-relation-retrieval",
+  "local_run": "C:\\ssafy\\Travelmate\\Evaluation\\runs\\contextual\\general-relation-retrieval-v1\\20261101-01",
+  "implementation_sha256": {
+    "embedding-server/app/contextual/observation_search.py": "45c31728f18977df59a86ebf25f1233d0048a51b069f59d66da8a3620654620f",
+    "embedding-server/app/contextual/ranking.py": "5dce56286666a7cb9efee8539ed5772a1b9dae07cc5343ae7537c3caf7a0a7c0",
+    "embedding-server/app/contextual/relation_vectors.py": "aa05f12948a418d6b961ed6c38bae5e3453ca835422d81f98046eb604f4677d0",
+    "embedding-server/app/contextual/retrieval.py": "c72b5fd5b4284332dfe3fa00c3992f2615fa18f5f3148b22c3d9025a675a75ce",
+    "embedding-server/app/kafka_runtime.py": "49708fcd7cdbd719edfdc79c59c6aa1c0c70e90d6b1a481fcf1d6b4abfc6e940",
+    "embedding-server/tests/test_contextual_general_relations.py": "9873dbd00e33d6bd6c51e291881286ce5216da876605850bde4f4ba3f8cda1bf",
+    "embedding-server/tests/test_contextual_general_relations_postgres.py": "23918cd076a41d473079343d8ab5193c1314f535b116705f578d6fa4baccc2a8",
+    "embedding-server/tests/test_contextual_relation_vectors.py": "60be30f88a639b219feee9a314d48bd90c715f64b93f64ab5c15ba52f089dc0b",
+    "embedding-server/tests/test_contextual_supporting_relations.py": "c1688b3c968dd7bd27d0cf56c7523bf99c2b75fdff3b8b18e86526bd66fbe757",
+    "Evaluation/tracks/contextual/general_relation_comparison.py": "648c0370785e8c9c0ce4cab5e94e02d0294c258dcc3cbe9f881383c48ab30f65"
+  },
+  "local_file_sha256": {
+    "approval-CONTROL-v5.json": "3a3e1458ca88251a37644feaa518e64b2c0e9e39d5cd0969314a47b43cf42e95",
+    "baseline-runtime.py": "b73f4c3d0a29ffebc0a7239742c66e555922a42fcc692088a04f8a65af30a621",
+    "cleanup.json": "ce585f3a3de918c6bc7d439983ddaac39e07dd8b8c453379926f24f1364c3a68",
+    "comparison-plan.json": "f946933e6d0d28c3d522d32ddc64e521beb15526146e51c00cd5ba18de75779b",
+    "comparison.json": "4a92a668732141d558c459d19fa0eb47942dee8277bf4250698e79641c2161f4",
+    "embedding-cache.json": "572bc2ddab6f23bc556584285df18efc3a1ec0146f1c1bada5bec5b949de7fca",
+    "environment.json": "3d585bef79c03405cbd40c543bc47ea05d7dcb4e16095a4b055206d7bec3de93",
+    "inspect-environment.py": "e440b276e182d694ed3470844f7bbee86b6b5bed95e9f8da9dd8618fee3b2f32",
+    "new-rerank-calls.json": "e07fcb6260cf6a01f84e1c527586282a5a22713669d0fb3f7d4515df85799f03",
+    "publish-results.py": "e43cafb68a9d8ae73d74baac898043e25b8f5826b82c509bfb5ad0ce34d86adb",
+    "REPORT.md": "0958d500fa656238fc1ef4d12db1402b81176fe58423dfc377742fd32d1035df",
+    "run-server-tests.py": "e2b39248f95205676ffe15b5879ed01976c842e2e96ca80434bd588f064321a4",
+    "server-tests.log": "105b277836c7c9c500d36e7d90151ab3c20af515cea1b0413aa402117dfd5bef",
+    "tests.json": "cffb414cb4542a2a278b5801fdcc17b0d5d69a100b8f3f174d704165a8c3b0a2"
+  },
+  "public_result_policy": "원문 전체·리랭킹 입력·벡터는 로컬 보존. 공개 결과에는 순위·점수·귀속·표현 경로만 포함.",
+  "implementation_hash_basis": "implementation_sha256는 실행 당시 로컬 파일 바이트 기준. git_file_sha256는 Git의 줄바꿈 정규화가 적용된 저장소 파일 바이트 기준.",
+  "git_file_sha256": {
+    "embedding-server/app/contextual/observation_search.py": "95ffb6eb54b4b896beffcde45a6c8d7d527e20ef3a5aff9e21bd36ac2a42f553",
+    "embedding-server/app/contextual/ranking.py": "4be795d51f1e065d1ee8a787dbc037152438169c43bb64b70992c5b1603c9e14",
+    "embedding-server/app/contextual/relation_vectors.py": "a83755f75558367b2deed2133a6dc0f6f3fe0e05005e6a3cc2324cffd6ef63c0",
+    "embedding-server/app/contextual/retrieval.py": "c72b5fd5b4284332dfe3fa00c3992f2615fa18f5f3148b22c3d9025a675a75ce",
+    "embedding-server/app/kafka_runtime.py": "e81773fb750b2fdafd6b6800205bad76da8339f76b6bfff5670a5b116657efda",
+    "embedding-server/tests/test_contextual_general_relations.py": "9873dbd00e33d6bd6c51e291881286ce5216da876605850bde4f4ba3f8cda1bf",
+    "embedding-server/tests/test_contextual_general_relations_postgres.py": "23918cd076a41d473079343d8ab5193c1314f535b116705f578d6fa4baccc2a8",
+    "embedding-server/tests/test_contextual_relation_vectors.py": "e36171592d8da085f24af42fcc09fde40f75fa77a1715d3e162bd5ae9b743278",
+    "embedding-server/tests/test_contextual_supporting_relations.py": "db03ee335818f25fb0534c54673b4f5813a69ce182ff40b06a62c928d2375746",
+    "Evaluation/tracks/contextual/general_relation_comparison.py": "648c0370785e8c9c0ce4cab5e94e02d0294c258dcc3cbe9f881383c48ab30f65"
+  }
+}

@@ -226,7 +226,9 @@ class SupportingRelationTests(unittest.IsolatedAsyncioTestCase):
         runtime = next(node for node in module.body if isinstance(node, ast.ClassDef) and node.name == "KafkaRuntime")
         methods = [node for node in runtime.body if isinstance(node, ast.AsyncFunctionDef) and node.name in ("_retrieve_candidates", "_retrieve_evidence")]
         trace = MagicMock()
+        from app.contextual.retrieval import resolve_retrieval_strategy
         namespace = {"Any": Any, "ObservationFilter": ObservationFilter, "EvidenceCount": EvidenceCount,
+                     "resolve_retrieval_strategy": resolve_retrieval_strategy,
                      "time": time, "tracer": lambda: trace, "RETRIEVE_TOP_K": 30}
         exec(compile(ast.Module(body=methods, type_ignores=[]), '<runtime-search>', 'exec'), namespace)
         bundle, raw = fixture()

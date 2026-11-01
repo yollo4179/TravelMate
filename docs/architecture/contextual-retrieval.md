@@ -80,20 +80,26 @@ v8은 출력 스키마 변경이므로 지시문 전용 비교와 구분한다. 
 ## 선택형 이동 근거 벡터 검색
 
 `chunk-only`가 기본값이다. `chunk-and-relation-v1`을 선택하면 같은 활성 청크의 실제 이동 인용을 별도 벡터로 보존한다.
-검색은 여전히 place_active_chunks를 통하며 장소별 20개를 유지한다. 관계 벡터 경로에서도 먼저 개별 관계의 방향·endpoint·비중을 검사한다.
+검색은 여전히 place_active_chunks를 통하며 장소별 20개를 유지한다. observation 필터가 없는 일반 의미 검색에서도 같은 질의 벡터로 관계 인용을 함께 검색한다.
+출발지·도착지는 선택 조건이다. 명시적 이동 필터가 있으면 기존처럼 개별 관계의 방향·endpoint·비중을 먼저 검사한다.
+검색 표현과 원문 범위는 `contextual/retrieval.py`의 전략 레지스트리에서 일반 관계·조건부 관계·청크 전용 중 정확히 하나를 선택한다.
 
 ```mermaid
 flowchart TD
     Active[같은 활성 청크·최대 20개] --> Whole[기존 문맥+원문 벡터]
     Active --> Route[검증된 이동 인용 벡터]
-    Query[질의 벡터·명시적 이동 필터] --> Whole
+    Query[질의 벡터 1개·장소 조건은 선택] --> Whole
     Query --> Route
     Whole --> Best[청크·장소별 최고 cosine·중복 제거]
     Route --> Best
     Best --> Top[최대 30개 장소 후보]
-    Top --> Rerank[원문 이동 근거로 리랭킹]
+    Top --> Rerank[각 표현의 원문 근거로 리랭킹]
 ```
 
 새 관계 벡터는 기존 색인 세대 CAS 성공 트랜잭션에서만 저장하며, 구간·인용 불일치는 SQL trigger로 거부한다.
 별도 벡터가 없는 자료는 기존 전체 벡터로 검색한다. 기본값·활성 상한 의미·장소 귀속·예상 질문 정책은 바꾸지 않았다.
+일반 검색에서 전체 청크 벡터는 subject 슬롯에만 허용하고, relation_endpoint 슬롯은 해당 관계 인용만 사용한다.
+같은 청크의 전체 설명과 이동 인용은 서로 다른 근거로 유지하되 기존 근거 수 예산 안에서 선택한다. 장소 점수는 합산하지 않는다.
+명시적 경관·시설 필터는 subject 관찰 검색을 유지한다. 기본 설정 chunk-only도 기존 경로를 유지한다.
 [고정 비교·결과·남은 한계](../../Evaluation/runs/contextual/relation-vector-retrieval-v1/20261101-01/REPORT.md)
+[일반 의미 검색 통합의 고정 비교](../../Evaluation/runs/contextual/general-relation-retrieval-v1/20261101-01/REPORT.md)

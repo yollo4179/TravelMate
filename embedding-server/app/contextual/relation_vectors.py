@@ -7,7 +7,7 @@ from enum import StrEnum
 import json
 from typing import Any
 
-from .contracts import SearchChunk
+from .contracts import ContentKind, SearchChunk
 from .observation_search import ObservationFilter
 from .relations import independent_relations
 
@@ -19,6 +19,11 @@ class RelationRetrievalMode(StrEnum):
 
 class VectorRepresentation(StrEnum):
     RELATION_QUOTE = "relation-quote-vector-v1"
+
+
+class RetrievalPath(StrEnum):
+    CHUNK = "chunk"
+    RELATION = "relation"
 
 
 @dataclass(frozen=True)
@@ -40,23 +45,50 @@ def relation_embedding_inputs(chunks: list[SearchChunk]) -> list[RelationVectorI
 
 
 def relation_vector_sql(observation: ObservationFilter, parameters: list[Any]) -> tuple[str, str]:
-    parameters.append(json.dumps(observation.to_dict()))
-    predicate = observation.relation_predicate(f"${len(parameters)}::jsonb", "(c.document->'relations'->e.relation_index)")
-    # 같은 청크·장소가 경로 수만큼 유리해지지 않도록 가장 가까운 표현 하나만 선택한다.
+    return _vector_sql(
+        observation,
+        parameters,
+        chunk_condition="",
+        selection="ORDER BY vectors.embedding <=> $1::vector, vectors.relation_index NULLS FIRST LIMIT 1",
+    )
+
+
+def semantic_relation_vector_sql(parameters: list[Any]) -> tuple[str, str]:
+    # 도착지 슬롯에서는 출발지의 경관을 담은 전체 청크를 검색 표현으로 쓰지 않는다.
+    return _vector_sql(
+        ObservationFilter(content_kinds=(ContentKind.MOVEMENT,)),
+        parameters,
+        chunk_condition="WHERE a.role='subject'",
+        selection="",
+    )
+
+
+def _vector_sql(
+    observation: ObservationFilter,
+    parameters: list[Any],
+    *,
+    chunk_condition: str,
+    selection: str,
+) -> tuple[str, str]:
+    binding = f"${len(parameters) + 1}::jsonb"
+    predicate = observation.relation_predicate(binding, "(c.document->'relations'->e.relation_index)")
+    if binding in predicate:
+        parameters.append(json.dumps(observation.to_dict()))
+    # 표현 수가 장소 점수를 부풀리지 않도록 바깥 쿼리에서도 최고 점수만 사용한다.
     join = f"""CROSS JOIN LATERAL (
         SELECT vectors.embedding, vectors.relation_index, vectors.retrieval_path
         FROM (
-            SELECT c.embedding, NULL::integer AS relation_index, 'chunk'::text AS retrieval_path
+            SELECT c.embedding, NULL::integer AS relation_index, '{RetrievalPath.CHUNK.value}'::text AS retrieval_path
+            {chunk_condition}
             UNION ALL
-            SELECT e.embedding, e.relation_index, 'relation'::text AS retrieval_path
+            SELECT e.embedding, e.relation_index, '{RetrievalPath.RELATION.value}'::text AS retrieval_path
             FROM retrieval_relation_embeddings e
             WHERE e.chunk_id=c.chunk_id AND e.context_version=c.context_version
               AND e.representation_version='{VectorRepresentation.RELATION_QUOTE.value}'
               AND e.embedding_model='BAAI/bge-m3' AND {predicate}
         ) vectors
         WHERE vectors.embedding IS NOT NULL
-        ORDER BY vectors.embedding <=> $1::vector, vectors.relation_index NULLS FIRST
-        LIMIT 1
+        {selection}
     ) selected_vector"""
     extension = " || jsonb_strip_nulls(jsonb_build_object('retrieval_path', selected_vector.retrieval_path, 'retrieved_relation_index', selected_vector.relation_index))"
     return join, extension

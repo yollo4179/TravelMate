@@ -77,8 +77,7 @@ class ObservationFilter:
                 **({"relation_importance": [importance.value for importance in self.relation_importance]} if self.relation_importance else {})}
 
     def sql_predicate(self, parameters: list[Any]) -> str:
-        parameters.append(json.dumps(self.to_dict()))
-        binding = f"${len(parameters)}::jsonb"
+        binding = f"${len(parameters) + 1}::jsonb"
         alternatives = []
         main_kinds = [kind for kind in self.content_kinds if kind != ContentKind.MOVEMENT]
         if main_kinds:
@@ -87,7 +86,10 @@ class ObservationFilter:
         if self.includes_relations:
             alternatives.append("EXISTS(SELECT 1 FROM jsonb_array_elements(COALESCE(c.document->'relations','[]'::jsonb)) relation WHERE "
                                 + self.relation_predicate(binding) + ")")
-        return " AND (" + " OR ".join(alternatives) + ")" if alternatives else ""
+        predicate = " AND (" + " OR ".join(alternatives) + ")" if alternatives else ""
+        if binding in predicate:
+            parameters.append(json.dumps(self.to_dict()))
+        return predicate
 
     def relation_predicate(self, binding: str, relation: str = "relation") -> str:
         edges = [f"({relation}->>'type'='movement' OR ({relation}->>'type' IS NULL AND c.document->>'content_kind'='movement'))"]

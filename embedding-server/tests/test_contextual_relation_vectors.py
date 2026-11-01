@@ -18,6 +18,7 @@ from app.contextual.observation_search import ObservationFilter
 from app.contextual.relation_vectors import RelationRetrievalMode, relation_embedding_inputs, relation_vector_sql
 from app.contextual.repository import store_relation_embeddings
 from app.contextual.ranking import EvidenceCount, build_pairs
+from app.contextual.retrieval import resolve_retrieval_strategy
 from test_contextual_supporting_relations import fixture, parsed, QUOTE, TEXT
 from test_contextual_subject_filter import mock_database
 
@@ -103,7 +104,8 @@ class RelationVectorTests(unittest.IsolatedAsyncioTestCase):
         methods = [node for node in runtime.body if isinstance(node, ast.AsyncFunctionDef) and node.name in ("_retrieve_candidates", "_retrieve_evidence")]
         trace = MagicMock()
         namespace = {"Any": Any, "ObservationFilter": ObservationFilter, "EvidenceCount": EvidenceCount,
-                     "relation_vector_sql": relation_vector_sql, "time": time, "tracer": lambda: trace, "RETRIEVE_TOP_K": 30}
+                     "resolve_retrieval_strategy": resolve_retrieval_strategy,
+                     "time": time, "tracer": lambda: trace, "RETRIEVE_TOP_K": 30}
         exec(compile(ast.Module(body=methods, type_ignores=[]), "<relation-search>", "exec"), namespace)
         pool, connection = mock_database({})
         connection.fetch.return_value = []

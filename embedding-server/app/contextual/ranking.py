@@ -8,6 +8,8 @@ import json
 import math
 from typing import Any
 
+from .relation_vectors import RetrievalPath
+
 MAX_RERANK_PAIRS = 90
 MAX_RERANK_TOKENS = 32768
 
@@ -22,8 +24,14 @@ def evidence_document(value: Any) -> dict[str, Any] | None:
     return json.loads(value) if isinstance(value, str) else value
 
 
-def evidence_key(document: dict[str, Any]) -> tuple[str, str]:
-    return document['chunk_id'], document['context_version']
+def evidence_key(document: dict[str, Any]) -> tuple[str, str, str, int | None]:
+    path = document.get('retrieval_path', RetrievalPath.CHUNK)
+    return (
+        document['chunk_id'],
+        document['context_version'],
+        path,
+        document.get('retrieved_relation_index') if path == RetrievalPath.RELATION else None,
+    )
 
 
 @dataclass(frozen=True)

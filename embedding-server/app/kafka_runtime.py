@@ -23,7 +23,8 @@ from app.enrichment.repository import latest_snapshot
 from app.contextual.pipeline import tourapi_chunks, legacy_evidence_chunks, select_active, index_embedding_inputs
 from app.contextual.observation_search import ObservationFilter
 from app.contextual.repository import desired_chunks, activate_chunks, preserve_chunks, store_relation_embeddings
-from app.contextual.relation_vectors import RelationRetrievalMode, relation_embedding_inputs, relation_vector_sql
+from app.contextual.relation_vectors import RelationRetrievalMode, relation_embedding_inputs
+from app.contextual.retrieval import resolve_retrieval_strategy
 from app.contextual.artifacts import archive_index_input
 from app.contextual.ranking import EvidenceCount, build_pairs, rank_places, validate_token_budget
 
@@ -504,13 +505,8 @@ class KafkaRuntime:
                     * power(sin(radians(longitude - ${longitude}) / 2), 2)))) <= ${radius}"""
             )
 
-        observation_sql = observation.sql_predicate(parameters) if observation else ""
-        active_role_sql = observation.active_role_sql if observation else "a.role='subject'"
-        vector_join, evidence_extension = "", ""
-        chunk_embedding = "c.embedding"
-        if getattr(self, "use_relation_vectors", False) is True and observation is not None and observation.includes_relations:
-            vector_join, evidence_extension = relation_vector_sql(observation, parameters)
-            chunk_embedding = "selected_vector.embedding"
+        strategy = resolve_retrieval_strategy(observation, getattr(self, "use_relation_vectors", False) is True)
+        retrieval = strategy.build_sql(observation, parameters)
         if observation:
             conditions.append("evidence IS NOT NULL")
         parameters.extend([vector, RETRIEVE_TOP_K])
@@ -532,16 +528,16 @@ class KafkaRuntime:
                        COALESCE(matched.chunk_embedding, p.embedding) AS retrieval_embedding
                 FROM place_embeddings p
                 LEFT JOIN LATERAL (
-                    SELECT a.chunk_id, a.context_version, {chunk_embedding} AS chunk_embedding,
+                    SELECT a.chunk_id, a.context_version, {retrieval.embedding} AS chunk_embedding,
                            c.document || jsonb_build_object('context_version', a.context_version,
-                               'metadata', s.document->'metadata'){evidence_extension} AS evidence
+                               'metadata', s.document->'metadata'){retrieval.evidence_extension} AS evidence
                     FROM place_active_chunks a
                     JOIN retrieval_chunk_contexts c USING(chunk_id, context_version)
                     JOIN retrieval_chunks r USING(chunk_id)
                     JOIN retrieval_source_versions s USING(source_id, source_version)
-                    {vector_join}
-                    WHERE a.place_id = p.place_id AND {active_role_sql} AND {chunk_embedding} IS NOT NULL {observation_sql}
-                    ORDER BY {chunk_embedding} <=> $1::vector, a.slot LIMIT 1
+                    {retrieval.vector_join}
+                    WHERE a.place_id = p.place_id AND {retrieval.active_role} AND {retrieval.embedding} IS NOT NULL {retrieval.observation}
+                    ORDER BY {retrieval.embedding} <=> $1::vector, a.slot, {retrieval.relation_index} NULLS FIRST LIMIT 1
                 ) matched ON true
             ) indexed_places
             WHERE {' AND '.join(conditions)}
@@ -562,7 +558,7 @@ class KafkaRuntime:
                 (time.perf_counter() - retrieval_started_at) * 1000,
             )
         documents = [dict(row) for row in rows]
-        return observation.scope_rows(documents) if observation else documents
+        return strategy.scope_rows(documents, observation)
 
     async def _retrieve_evidence(
         self,
@@ -576,13 +572,8 @@ class KafkaRuntime:
             return []
         # 장소 후보를 다시 뽑지 않아 근거 수 비교에서 후보 집합이 바뀌지 않게 한다.
         parameters = [vector, [candidate["place_id"] for candidate in candidates], int(count)]
-        observation_sql = observation.sql_predicate(parameters) if observation else ""
-        active_role_sql = observation.active_role_sql if observation else "a.role='subject'"
-        vector_join, evidence_extension = "", ""
-        chunk_embedding = "c.embedding"
-        if getattr(self, "use_relation_vectors", False) is True and observation is not None and observation.includes_relations:
-            vector_join, evidence_extension = relation_vector_sql(observation, parameters)
-            chunk_embedding = "selected_vector.embedding"
+        strategy = resolve_retrieval_strategy(observation, getattr(self, "use_relation_vectors", False) is True)
+        retrieval = strategy.build_sql(observation, parameters)
         required_evidence_sql = "AND matched.evidence IS NOT NULL" if observation else ""
         query = f"""
             SELECT p.place_id, p.source_version, matched.evidence,
@@ -590,26 +581,27 @@ class KafkaRuntime:
             FROM place_embeddings p
             LEFT JOIN LATERAL (
                 SELECT c.document || jsonb_build_object('context_version', a.context_version,
-                           'metadata', s.document->'metadata'){evidence_extension} AS evidence,
-                       1 - ({chunk_embedding} <=> $1::vector) AS semantic_score, a.slot
+                           'metadata', s.document->'metadata'){retrieval.evidence_extension} AS evidence,
+                       1 - ({retrieval.embedding} <=> $1::vector) AS semantic_score, a.slot,
+                       {retrieval.relation_index} AS relation_index
                 FROM place_active_chunks a
                 JOIN retrieval_chunk_contexts c USING(chunk_id, context_version)
                 JOIN retrieval_chunks r USING(chunk_id)
                 JOIN retrieval_source_versions s USING(source_id, source_version)
-                {vector_join}
-                WHERE a.place_id=p.place_id AND {active_role_sql} AND {chunk_embedding} IS NOT NULL {observation_sql}
-                ORDER BY {chunk_embedding} <=> $1::vector, a.slot LIMIT $3
+                {retrieval.vector_join}
+                WHERE a.place_id=p.place_id AND {retrieval.active_role} AND {retrieval.embedding} IS NOT NULL {retrieval.observation}
+                ORDER BY {retrieval.embedding} <=> $1::vector, a.slot, {retrieval.relation_index} NULLS FIRST LIMIT $3
             ) matched ON true
             WHERE p.place_id=ANY($2::bigint[]) AND p.document_status='READY'
               AND p.source_version=p.latest_seen_version
               {required_evidence_sql}
-            ORDER BY p.place_id, matched.semantic_score DESC, matched.slot
+            ORDER BY p.place_id, matched.semantic_score DESC, matched.slot, matched.relation_index NULLS FIRST
         """
         with tracer().start_as_current_span("database.contextual_evidence_search"):
             async with self.database_pool.acquire() as connection:
                 rows = await connection.fetch(query, *parameters)
         documents = [dict(row) for row in rows]
-        return observation.scope_rows(documents) if observation else documents
+        return strategy.scope_rows(documents, observation)
 
     @staticmethod
     def _to_result_item(candidate: dict[str, Any], rank: int, rerank_score: float | None) -> dict[str, Any]:
