@@ -7,6 +7,9 @@ import java.util.Locale;
 import java.util.Map;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.yollo.TravelMate.ai.llm.base.*;
+import com.yollo.TravelMate.ai.llm.budget.*;
+import com.yollo.TravelMate.ai.llm.observation.ExecutionRecorder;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -14,19 +17,29 @@ import org.springframework.web.client.RestClient;
 
 @Component
 public class OpenAiLlmClient implements LlmStrategy {
+    private static final ObjectMapper JSON = new ObjectMapper();
     private final RestClient restClient;
     private final String model;
     private final String apiKey;
     private final int maxOutputTokens;
+    private final TokenBudget.Limits limits;
+    private final LlmCallGuard guard;
 
     @Autowired
     public OpenAiLlmClient(
             @Value("${openai.base-url:https://api.openai.com/v1}") String baseUrl,
             @Value("${openai.model:}") String model,
             @Value("${openai.api-key:}") String apiKey,
-            @Value("${openai.max-output-tokens:1536}") int maxOutputTokens
+            @Value("${openai.max-output-tokens:1536}") int maxOutputTokens,
+            @Value("${openai.context-tokens:0}") long contextTokens,
+            @Value("${openai.model-output-limit:0}") long modelOutputLimit,
+            @Value("${openai.limits-model:}") String limitsModel,
+            @Value("${openai.limits-source:}") String limitsSource,
+            LlmCallGuard guard
     ) {
-        this(LlmHttpClients.create(baseUrl), model, apiKey, maxOutputTokens);
+        this(LlmHttpClients.create(baseUrl), apiKey, TokenBudget.Limits.builder()
+                .provider(LlmProvider.OPENAI).model(model).contextTokens(contextTokens).outputReservation(maxOutputTokens)
+                .modelOutputLimit(modelOutputLimit).limitsModel(limitsModel).limitsSource(limitsSource).build(), guard);
     }
 
     public OpenAiLlmClient(
@@ -35,10 +48,23 @@ public class OpenAiLlmClient implements LlmStrategy {
             String apiKey,
             int maxOutputTokens
     ) {
+        this(restClient, apiKey, TokenBudget.Limits.builder().provider(LlmProvider.OPENAI).model(model)
+                .outputReservation(maxOutputTokens).build(),
+                new LlmCallGuard(JSON, new ExecutionRecorder("build/observations")));
+    }
+
+    public OpenAiLlmClient(
+            RestClient restClient,
+            String apiKey,
+            TokenBudget.Limits limits,
+            LlmCallGuard guard
+    ) {
         this.restClient = restClient;
-        this.model = model;
+        this.model = limits.model();
         this.apiKey = apiKey;
-        this.maxOutputTokens = maxOutputTokens;
+        this.maxOutputTokens = Math.toIntExact(limits.outputReservation());
+        this.limits = limits;
+        this.guard = guard;
     }
 
     @Override
@@ -66,9 +92,6 @@ public class OpenAiLlmClient implements LlmStrategy {
             List<LlmTurn.ToolDefinition> tools,
             boolean jsonOutput
     ) {
-        if (model.isBlank() || apiKey.isBlank() || maxOutputTokens < 1) {
-            throw new IllegalStateException("OpenAI 모델·API 키·출력 토큰 설정이 필요합니다.");
-        }
         Map<String, Object> request = new LinkedHashMap<>();
         request.put("model", model);
         request.put("input", messages.stream().flatMap(message -> wireItems(message).stream()).toList());
@@ -88,15 +111,52 @@ public class OpenAiLlmClient implements LlmStrategy {
             )).toList());
             request.put("parallel_tool_calls", false);
         }
-        final JsonNode response;
+        JsonNode wireRequest = JSON.valueToTree(request);
+        return guard.call(limits, wireRequest, () -> countInput(wireRequest),
+                () -> infer(request), this::receipt, this::decode);
+    }
+
+    private TokenBudget.Count countInput(JsonNode wireRequest) {
+        if (apiKey.isBlank()) throw new IllegalStateException("OpenAI API 키 설정이 필요합니다.");
+        var countRequest = JSON.createObjectNode();
+        for (String name : List.of("model", "input", "tools", "text", "parallel_tool_calls")) {
+            if (wireRequest.has(name)) countRequest.set(name, wireRequest.get(name));
+        }
+        JsonNode count = restClient.post().uri("/responses/input_tokens")
+                .header("Authorization", "Bearer " + apiKey).body(countRequest).retrieve().body(JsonNode.class);
+        Long tokens = count == null ? null : TokenBudget.reported(count, "input_tokens");
+        if (tokens == null || !"response.input_tokens".equals(count.path("object").asText())) {
+            throw new IllegalStateException("OpenAI 입력 토큰 확인값이 없습니다.");
+        }
+        return new TokenBudget.Count(tokens, TokenBudget.Quality.CONFIRMED_API,
+                "OPENAI_RESPONSES_INPUT_TOKENS", null, count);
+    }
+
+    private JsonNode infer(Map<String, Object> request) {
         try {
-            response = restClient.post().uri("/responses")
+            return restClient.post().uri("/responses")
                     .header("Authorization", "Bearer " + apiKey)
                     .body(request).retrieve().body(JsonNode.class);
         } catch (RuntimeException exception) {
             // 공급자 오류 본문이나 인증 헤더를 외부 응답·작업 실패 사유에 노출하지 않는다.
             throw new IllegalStateException("OpenAI 서버 호출에 실패했습니다.");
         }
+    }
+
+    private TokenBudget.Receipt receipt(JsonNode response) {
+        var usage = response.path("usage");
+        var calls = JSON.createArrayNode();
+        response.path("output").forEach(item -> {
+            if ("function_call".equals(item.path("type").asText())) calls.add(item.deepCopy());
+        });
+        return new TokenBudget.Receipt(new TokenBudget.Usage(
+                TokenBudget.reported(usage, "input_tokens"), TokenBudget.reported(usage, "output_tokens"),
+                TokenBudget.reported(usage.path("output_tokens_details"), "reasoning_tokens"),
+                TokenBudget.reported(usage.path("input_tokens_details"), "cached_tokens")
+        ), calls, response.path("status").asText(null));
+    }
+
+    private LlmTurn decode(JsonNode response) {
         if (response == null || !"completed".equals(response.path("status").asText())
                 || !response.path("output").isArray()) {
             throw new IllegalStateException("OpenAI 응답이 비어 있거나 완료되지 않았습니다.");

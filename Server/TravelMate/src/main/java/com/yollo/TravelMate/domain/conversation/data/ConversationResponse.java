@@ -12,11 +12,17 @@ public record ConversationResponse(
         List<Citation> citations,
         Termination termination,
         int modelTurns,
-        List<ToolObservation> toolResults
+        List<ToolObservation> toolResults,
+        String requestId,
+        String turnId,
+        String conversationId,
+        String primaryResultId,
+        MessageSource messageSource
 ) {
     public enum ResultType { TEXT, PLACES, PLANNING_JOB, DRAFT, ERROR }
-    public enum Termination { COMPLETED, MODEL_FAILED, INVALID_RESPONSE, MODEL_LIMIT, TOOL_LIMIT }
+    public enum Termination { COMPLETED, MODEL_FAILED, INVALID_RESPONSE, MODEL_LIMIT, TOOL_LIMIT, BUDGET_REJECTED, COUNT_UNAVAILABLE }
     public enum ToolStatus { SUCCEEDED, FAILED, CACHED }
+    public enum MessageSource { LLM, SERVER_RECEIPT, SERVER_FALLBACK }
 
     public record Citation(Long placeId, String evidenceId, String sourceId, String quote) {}
 
@@ -26,6 +32,7 @@ public record ConversationResponse(
             String arguments,
             ToolStatus status,
             ResultType type,
-            JsonNode publicData
+            JsonNode publicData,
+            String resultId
     ) {}
 }

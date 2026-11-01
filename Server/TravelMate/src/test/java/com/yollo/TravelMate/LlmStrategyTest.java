@@ -5,6 +5,8 @@ import java.util.Map;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.yollo.TravelMate.ai.llm.base.*;
 import com.yollo.TravelMate.ai.llm.derived.*;
+import com.yollo.TravelMate.ai.llm.budget.*;
+import com.yollo.TravelMate.ai.llm.observation.ExecutionRecorder;
 import com.yollo.TravelMate.domain.conversation.tool.ToolSchemas;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -30,7 +32,9 @@ class LlmStrategyTest {
     @EnumSource(LlmProvider.class)
     void springSelectsOnePrimaryClientWithoutStartingAnyProviderRequest(LlmProvider provider) {
         new ApplicationContextRunner()
-                .withUserConfiguration(StrategyLlmClient.class, OllamaLlmClient.class, OpenAiLlmClient.class)
+                .withBean(ObjectMapper.class, ObjectMapper::new)
+                .withUserConfiguration(StrategyLlmClient.class, OllamaLlmClient.class, OpenAiLlmClient.class,
+                        LlmCallGuard.class, ExecutionRecorder.class)
                 .withPropertyValues("llm.provider=" + provider.name())
                 .run(context -> {
                     assertNull(context.getStartupFailure());
@@ -72,7 +76,7 @@ class LlmStrategyTest {
     void openAiReplaysFunctionCallIdsAndEncryptedReasoningBeforeToolResults() throws Exception {
         var builder = RestClient.builder().baseUrl("https://mock.invalid/v1");
         var server = MockRestServiceServer.bindTo(builder).build();
-        var client = new OpenAiLlmClient(builder.build(), "gpt-mock", "test-key", 1536);
+        var client = openAi(builder.build());
         server.expect(requestTo("https://mock.invalid/v1/responses"))
                 .andExpect(header("Authorization", "Bearer test-key"))
                 .andExpect(jsonPath("$.store").value(false))
@@ -109,7 +113,7 @@ class LlmStrategyTest {
     void qwenReplaysObjectArgumentsAndToolNameAndKeepsExistingGenerationOptions() {
         var builder = RestClient.builder().baseUrl("http://mock.invalid");
         var server = MockRestServiceServer.bindTo(builder).build();
-        var client = new OllamaLlmClient(builder.build(), "qwen3:8b");
+        var client = new OllamaLlmClient(builder.build(), "qwen3:8b", 8192, 1536, wireOnlyGuard());
         server.expect(requestTo("http://mock.invalid/api/chat"))
                 .andExpect(jsonPath("$.tools[0].function.name").value("search_places"))
                 .andExpect(jsonPath("$.format").doesNotExist())
@@ -143,7 +147,7 @@ class LlmStrategyTest {
     void openAiGenerationUsesConfiguredModelAndJsonWithoutChangingThePlannerContract() {
         var builder = RestClient.builder().baseUrl("https://mock.invalid/v1");
         var server = MockRestServiceServer.bindTo(builder).build();
-        var client = new OpenAiLlmClient(builder.build(), "gpt-mock", "test-key", 1536);
+        var client = openAi(builder.build());
         server.expect(requestTo("https://mock.invalid/v1/responses"))
                 .andExpect(jsonPath("$.model").value("gpt-mock"))
                 .andExpect(jsonPath("$.text.format.type").value("json_object"))
@@ -172,9 +176,25 @@ class LlmStrategyTest {
     void openAiIncompleteOrRefusedOutputCannotExecuteTools(String response) {
         var builder = RestClient.builder().baseUrl("https://mock.invalid/v1");
         var server = MockRestServiceServer.bindTo(builder).build();
-        var client = new OpenAiLlmClient(builder.build(), "gpt-mock", "test-key", 1536);
+        var client = openAi(builder.build());
         server.expect(requestTo("https://mock.invalid/v1/responses")).andRespond(withSuccess(response, MediaType.APPLICATION_JSON));
         assertThrows(IllegalStateException.class, () -> client.chat(input, tools));
         server.verify();
+    }
+
+    private OpenAiLlmClient openAi(RestClient client) {
+        return new OpenAiLlmClient(client, "test-key", TokenBudget.Limits.builder()
+                .provider(LlmProvider.OPENAI).model("gpt-mock").contextTokens(16000).outputReservation(1536)
+                .modelOutputLimit(4000).limitsModel("gpt-mock").limitsSource("mock fixture").build(), wireOnlyGuard());
+    }
+
+    private LlmCallGuard wireOnlyGuard() {
+        var guard = mock(LlmCallGuard.class);
+        when(guard.call(any(), any(), any(), any(), any(), any())).thenAnswer(invocation -> {
+            java.util.function.Supplier<com.fasterxml.jackson.databind.JsonNode> inference = invocation.getArgument(3);
+            java.util.function.Function<com.fasterxml.jackson.databind.JsonNode, LlmTurn> decode = invocation.getArgument(5);
+            return decode.apply(inference.get());
+        });
+        return guard;
     }
 }

@@ -7,6 +7,8 @@ import java.util.Map;
 import java.util.UUID;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.yollo.TravelMate.ai.llm.base.*;
+import com.yollo.TravelMate.ai.llm.budget.*;
+import com.yollo.TravelMate.ai.llm.observation.ExecutionRecorder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -17,18 +19,38 @@ public class OllamaLlmClient implements LlmStrategy {
     private static final com.fasterxml.jackson.databind.ObjectMapper JSON = new com.fasterxml.jackson.databind.ObjectMapper();
     private final RestClient restClient;
     private final String model;
+    private final TokenBudget.Limits limits;
+    private final LlmCallGuard guard;
 
     @Autowired
     public OllamaLlmClient(
             @Value("${ollama.base-url:http://localhost:11434}") String baseUrl,
-            @Value("${ollama.model:qwen3:8b}") String model
+            @Value("${ollama.model:qwen3:8b}") String model,
+            @Value("${ollama.context-tokens:8192}") int contextTokens,
+            @Value("${ollama.max-output-tokens:1536}") int outputTokens,
+            LlmCallGuard guard
     ) {
-        this(LlmHttpClients.create(baseUrl), model);
+        this(LlmHttpClients.create(baseUrl), model, contextTokens, outputTokens, guard);
     }
 
     public OllamaLlmClient(RestClient restClient, String model) {
+        this(restClient, model, 8192, 1536,
+                new LlmCallGuard(JSON, new ExecutionRecorder("build/observations")));
+    }
+
+    public OllamaLlmClient(
+            RestClient restClient,
+            String model,
+            int contextTokens,
+            int outputTokens,
+            LlmCallGuard guard
+    ) {
         this.restClient = restClient;
         this.model = model;
+        this.guard = guard;
+        this.limits = TokenBudget.Limits.builder().provider(LlmProvider.QWEN).model(model)
+                .contextTokens(contextTokens).outputReservation(outputTokens).modelOutputLimit(contextTokens)
+                .limitsModel(model).limitsSource("configured num_ctx/output; api/show native ceiling and template checked per call").build();
     }
 
     @Override
@@ -59,7 +81,7 @@ public class OllamaLlmClient implements LlmStrategy {
         request.put("think", false);
         request.put("stream", false);
         request.put("messages", messages.stream().map(this::wireMessage).toList());
-        request.put("options", Map.of("temperature", 0.3, "num_ctx", 8192, "num_predict", 1536));
+        request.put("options", Map.of("temperature", 0.3, "num_ctx", limits.contextTokens(), "num_predict", limits.outputReservation()));
         if (jsonOutput) request.put("format", "json");
         if (!tools.isEmpty()) {
             request.put("tools", tools.stream().map(tool -> Map.of(
@@ -67,12 +89,27 @@ public class OllamaLlmClient implements LlmStrategy {
                     "function", Map.of("name", tool.name(), "description", tool.description(), "parameters", tool.parameters())
             )).toList());
         }
-        final JsonNode response;
+        JsonNode wireRequest = JSON.valueToTree(request);
+        return guard.call(limits, wireRequest, () -> QwenTokenCounter.count(restClient, wireRequest),
+                () -> infer(request), this::receipt, this::decode);
+    }
+
+    private JsonNode infer(Map<String, Object> request) {
         try {
-            response = restClient.post().uri("/api/chat").body(request).retrieve().body(JsonNode.class);
+            return restClient.post().uri("/api/chat").body(request).retrieve().body(JsonNode.class);
         } catch (RuntimeException exception) {
             throw new IllegalStateException("Qwen 서버 호출에 실패했습니다.");
         }
+    }
+
+    private TokenBudget.Receipt receipt(JsonNode response) {
+        return new TokenBudget.Receipt(new TokenBudget.Usage(
+                TokenBudget.reported(response, "prompt_eval_count"), TokenBudget.reported(response, "eval_count"),
+                null, TokenBudget.reported(response, "prompt_eval_cached_count")
+        ), response.path("message").get("tool_calls"), response.path("done_reason").asText(null));
+    }
+
+    private LlmTurn decode(JsonNode response) {
         if (response == null || !response.path("done").asBoolean()
                 || "length".equals(response.path("done_reason").asText())
                 || !response.path("message").isObject()

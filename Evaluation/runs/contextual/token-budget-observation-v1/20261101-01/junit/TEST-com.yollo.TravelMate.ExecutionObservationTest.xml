@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.yollo.TravelMate.ExecutionObservationTest" tests="1" skipped="0" failures="0" errors="0" timestamp="2026-11-01T13:50:23.430Z" hostname="DESKTOP-MS327CL" time="2.555">
+  <properties/>
+  <testcase name="actualFilterAndLoopCaptureBudgetRejectionAfterUntruncatedToolEvidence()" classname="com.yollo.TravelMate.ExecutionObservationTest" time="2.555"/>
+  <system-out><![CDATA[22:50:24.964 [Test worker] INFO org.hibernate.validator.internal.util.Version -- HV000001: Hibernate Validator 8.0.3.Final
+22:50:25.481 [Test worker] INFO org.springframework.mock.web.MockServletContext -- Initializing Spring TestDispatcherServlet ''
+22:50:25.481 [Test worker] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Initializing Servlet ''
+22:50:25.493 [Test worker] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Completed initialization in 12 ms
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

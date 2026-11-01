@@ -13,6 +13,7 @@ import com.yollo.TravelMate.domain.conversation.tool.ToolSchemas;
 import com.yollo.TravelMate.domain.plan.data.internal.GeneratedPlan;
 import com.yollo.TravelMate.domain.plan.prompts.ContextPlanPromptFactory.CitationSource;
 import com.yollo.TravelMate.domain.plan.validator.PlanEvidenceCitationValidator;
+import com.yollo.TravelMate.ai.llm.observation.ObservationContext;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -62,13 +63,30 @@ public class ConversationAnswerRenderer {
         JsonNode publicData = primary == null ? mapper.nullNode() : primary.publicData();
         String message = answer == null ? "설명을 완료하지 못했습니다. 확인된 서버 결과와 작업 상태를 확인해 주세요." : answer.message();
         List<Citation> citations = answer == null ? List.of() : answer.citations();
+        MessageSource messageSource = answer == null ? MessageSource.SERVER_FALLBACK : MessageSource.LLM;
+        if (termination == Termination.BUDGET_REJECTED || termination == Termination.COUNT_UNAVAILABLE) {
+            message = "토큰 예산이 확인되지 않았거나 한도를 초과해 다음 모델 호출을 중단했습니다.";
+        }
         if (type == ResultType.PLANNING_JOB) {
             // 접수 기록을 생성 완료로 바꾸는 자유문장은 현재 상태 영수증을 대신할 수 없다.
             message = jobMessage(publicData);
             citations = List.of();
+            messageSource = MessageSource.SERVER_RECEIPT;
         }
+        String primaryId = null;
+        for (int index = observations.size() - 1; index >= 0; index--) {
+            var observation = observations.get(index);
+            if (observation.type() == type && java.util.Objects.equals(observation.publicData(), publicData)) {
+                primaryId = observation.resultId();
+                break;
+            }
+        }
+        var context = ObservationContext.capture();
         return ConversationResponse.builder().type(type).data(publicData).message(message).citations(citations)
-                .termination(termination).modelTurns(modelTurns).toolResults(List.copyOf(observations)).build();
+                .termination(termination).modelTurns(modelTurns).toolResults(List.copyOf(observations))
+                .requestId(context == null ? null : context.requestId()).turnId(context == null ? null : context.turnId())
+                .conversationId(context == null ? null : context.conversationId()).primaryResultId(primaryId)
+                .messageSource(messageSource).build();
     }
 
     private String jobMessage(JsonNode receipt) {

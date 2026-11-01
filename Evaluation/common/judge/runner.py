@@ -7,6 +7,7 @@ from typing import Any
 from .settings import JudgeSettings
 from .structured_output import CRITERIA, JUDGE_SCHEMA
 from .citation_check import validate_judge_output
+from common.observability.server_trace import is_native_record
 
 def text_evidence(value: Any) -> str:
     if isinstance(value, str):
@@ -25,7 +26,7 @@ def judge_prompt(
     rubric: str,
 ) -> tuple[list[dict[str, str]], str, str]:
     supplied_evidence = {
-        "model_input": model_input,
+        "model_input": record["api_request"] if is_native_record(record) else model_input,
         "actual_tool_summaries": [result.get("llm_summary") for result in record.get("tool_results", [])],
     }
     output_text = text_evidence({"response": record["response"], "tool_calls": record["tool_calls"]})

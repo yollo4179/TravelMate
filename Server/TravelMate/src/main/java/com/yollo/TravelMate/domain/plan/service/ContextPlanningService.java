@@ -6,6 +6,7 @@ import java.util.stream.IntStream;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.yollo.TravelMate.ai.llm.base.LlmClient;
+import com.yollo.TravelMate.ai.llm.observation.ObservationContext;
 import com.yollo.TravelMate.domain.place.data.result.PlaceResult;
 import com.yollo.TravelMate.domain.place.service.PlaceSemanticSearchService;
 import com.yollo.TravelMate.domain.plan.data.internal.GeneratedPlan;
@@ -26,6 +27,9 @@ import org.springframework.web.server.ResponseStatusException;
 @RequiredArgsConstructor
 @lombok.extern.slf4j.Slf4j
 public class ContextPlanningService {
+    private enum JobObservationOperation {
+        IDEMPOTENCY_READ, INSERT_ACKNOWLEDGED, QUEUE_REJECTED, OWNER_SCOPED_READ, UPDATE_ACKNOWLEDGED
+    }
     private final PlanningJobRepository jobs;
     private final ContextPlanRepository plans;
     private final PlaceSemanticSearchService searchService;
@@ -47,15 +51,27 @@ public class ContextPlanningService {
         validateRequest(request);
         String requestJson = encode(request);
         var previous = jobs.findExisting(userUid, PlanningJobRepository.Operation.GENERATE, key, requestJson);
-        if (previous.isPresent()) return previous.get();
+        if (previous.isPresent()) {
+            recordJob(previous.get().jobId(), previous.get().status(), previous.get().planId(), JobObservationOperation.IDEMPOTENCY_READ);
+            return previous.get();
+        }
         UUID jobId = UUID.randomUUID();
         if (!jobs.insert(jobId, userUid, PlanningJobRepository.Operation.GENERATE, key, requestJson)) {
-            return jobs.findExisting(userUid, PlanningJobRepository.Operation.GENERATE, key, requestJson).orElseThrow();
+            var existing = jobs.findExisting(userUid, PlanningJobRepository.Operation.GENERATE, key, requestJson).orElseThrow();
+            recordJob(existing.jobId(), existing.status(), existing.planId(), JobObservationOperation.IDEMPOTENCY_READ);
+            return existing;
         }
+        recordJob(jobId, PlanningResponse.JobStatus.QUEUED, null, JobObservationOperation.INSERT_ACKNOWLEDGED);
+        var generationContext = ObservationContext.child(ObservationContext.Phase.PLAN_GENERATION, jobId.toString(), null, null);
         try {
-            executor.submit(() -> runGeneration(jobId, userUid, request, requestJson));
+            executor.submit(() -> {
+                try (var scope = ObservationContext.open(generationContext)) {
+                    runGeneration(jobId, userUid, request, requestJson);
+                }
+            });
         } catch (java.util.concurrent.RejectedExecutionException exception) {
             jobs.update(jobId, PlanningResponse.JobStatus.FAILED, null, "생성 요청이 많습니다. 잠시 후 새 요청으로 시도해 주세요.");
+            recordJob(jobId, PlanningResponse.JobStatus.FAILED, null, JobObservationOperation.QUEUE_REJECTED);
         }
         return jobs.get(jobId, userUid);
     }
@@ -92,7 +108,11 @@ public class ContextPlanningService {
         }
     }
 
-    public PlanningResponse.Job job(UUID jobId, String userUid) { return jobs.get(jobId, userUid); }
+    public PlanningResponse.Job job(UUID jobId, String userUid) {
+        var job = jobs.get(jobId, userUid);
+        recordJob(jobId, job.status(), job.planId(), JobObservationOperation.OWNER_SCOPED_READ);
+        return job;
+    }
     public PlanningResponse.Draft plan(long planId, String userUid) { return plans.get(planId, userUid); }
 
     public List<com.yollo.TravelMate.domain.place.data.result.PlaceSemanticSearchResult> search(
@@ -153,8 +173,16 @@ public class ContextPlanningService {
     }
 
     private void runGeneration(UUID jobId, String userUid, GeneratePlanRequest request, String requestJson) {
+        try (var scope = ObservationContext.open(ObservationContext.child(
+                ObservationContext.Phase.PLAN_GENERATION, jobId.toString(), null, null))) {
+            generateDraft(jobId, userUid, request, requestJson);
+        }
+    }
+
+    private void generateDraft(UUID jobId, String userUid, GeneratePlanRequest request, String requestJson) {
         try {
             jobs.update(jobId, PlanningResponse.JobStatus.RUNNING, null, null);
+            recordJob(jobId, PlanningResponse.JobStatus.RUNNING, null, JobObservationOperation.UPDATE_ACKNOWLEDGED);
             validateHoursPolicy(request);
             var required = validatedRequiredPlaces(request);
             log.info("planning job={} stage=SEARCHING radiusMeters={}", jobId, request.context().area().radiusMeters());
@@ -189,6 +217,7 @@ public class ContextPlanningService {
                     }).toList());
             long planId = plans.save(userUid, request, normalized, candidates, requestJson);
             jobs.update(jobId, PlanningResponse.JobStatus.SUCCEEDED, planId, null);
+            recordJob(jobId, PlanningResponse.JobStatus.SUCCEEDED, planId, JobObservationOperation.UPDATE_ACKNOWLEDGED);
             log.info("planning job={} stage=SUCCEEDED planId={} pinCount={}", jobId, planId, normalized.pins().size());
         } catch (Exception exception) {
             log.warn("planning job={} stage=FAILED exception={}", jobId, exception.toString());
@@ -197,6 +226,21 @@ public class ContextPlanningService {
                     : exception instanceof com.yollo.TravelMate.exceptions.cumtom.ErrorCodeException known ? known.getErrorCode().getMessage()
                     : "일정 생성 처리에 실패했습니다. 잠시 후 새 요청으로 시도해 주세요.";
             jobs.update(jobId, PlanningResponse.JobStatus.FAILED, null, message);
+            recordJob(jobId, PlanningResponse.JobStatus.FAILED, null, JobObservationOperation.UPDATE_ACKNOWLEDGED);
+        }
+    }
+
+    private void recordJob(
+            UUID jobId,
+            PlanningResponse.JobStatus status,
+            Long planId,
+            JobObservationOperation operation
+    ) {
+        try (var scope = ObservationContext.open(ObservationContext.child(
+                ObservationContext.Phase.PLAN_GENERATION, jobId.toString(), null, null))) {
+            var snapshot = objectMapper.createObjectNode().put("jobId", jobId.toString())
+                    .put("status", status.name()).put("planId", planId).put("operation", operation.name());
+            ObservationContext.record(ObservationContext.Event.JOB_STATUS, snapshot);
         }
     }
 

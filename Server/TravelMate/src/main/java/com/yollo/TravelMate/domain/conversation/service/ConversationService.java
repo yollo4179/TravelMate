@@ -9,6 +9,8 @@ import java.util.Set;
 import java.util.UUID;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.yollo.TravelMate.ai.llm.base.*;
+import com.yollo.TravelMate.ai.llm.budget.TokenBudgetException;
+import com.yollo.TravelMate.ai.llm.observation.ObservationContext;
 import com.yollo.TravelMate.domain.conversation.data.ConversationRequest;
 import com.yollo.TravelMate.domain.conversation.data.ConversationResponse;
 import com.yollo.TravelMate.domain.conversation.data.ConversationResponse.*;
@@ -70,6 +72,15 @@ public class ConversationService {
     }
 
     public ConversationResponse respond(String userUid, UUID turnKey, ConversationRequest request) {
+        try (var scope = ObservationContext.open(ObservationContext.child(
+                ObservationContext.Phase.CONVERSATION, null, null, null))) {
+            var response = run(userUid, turnKey, request);
+            ObservationContext.record(ObservationContext.Event.TURN_RESULT, mapper.valueToTree(response));
+            return response;
+        }
+    }
+
+    private ConversationResponse run(String userUid, UUID turnKey, ConversationRequest request) {
         List<LlmMessage> messages = new ArrayList<>();
         messages.add(LlmMessage.text(LlmMessage.Role.SYSTEM, SYSTEM_PROMPT));
         request.history().forEach(message -> messages.add(LlmMessage.text(
@@ -84,11 +95,18 @@ public class ConversationService {
         ConversationTool.Result primary = null;
         for (int turn = 1; turn <= maxModelTurns; turn++) {
             final LlmTurn completion;
-            try {
+            try (var scope = ObservationContext.open(ObservationContext.child(
+                    ObservationContext.Phase.CONVERSATION, null, null, turn))) {
                 completion = llm.chat(List.copyOf(messages), registry.definitions());
                 if (completion == null) throw new IllegalStateException("모델 응답이 없습니다.");
+                var observedTurn = mapper.createObjectNode().put("modelTurn", turn).put("content", completion.content());
+                observedTurn.set("toolCalls", mapper.valueToTree(completion.toolCalls()));
+                ObservationContext.record(ObservationContext.Event.MODEL_TURN, observedTurn);
             } catch (RuntimeException exception) {
-                return renderer.render(primary, null, Termination.MODEL_FAILED, turn, observations);
+                Termination termination = exception instanceof TokenBudgetException budget
+                        ? (budget.reason() == TokenBudgetException.Reason.COUNT_UNAVAILABLE
+                            ? Termination.COUNT_UNAVAILABLE : Termination.BUDGET_REJECTED) : Termination.MODEL_FAILED;
+                return renderer.render(primary, null, termination, turn, observations);
             }
             if (completion.toolCalls().isEmpty()) {
                 try {
@@ -106,9 +124,20 @@ public class ConversationService {
             messages.add(LlmMessage.assistant(completion));
             for (var call : completion.toolCalls()) {
                 var invocation = ConversationTool.Invocation.builder().userUid(userUid).turnKey(turnKey).request(request).build();
-                var executed = executor.execute(call, invocation, cache);
+                long toolStarted = System.nanoTime();
+                final ConversationToolExecutor.Executed executed;
+                try (var scope = ObservationContext.open(ObservationContext.child(
+                        ObservationContext.Phase.CONVERSATION, null, call.id(), turn))) {
+                    executed = executor.execute(call, invocation, cache);
+                }
                 var result = executed.result();
-                observations.add(new ToolObservation(call.id(), call.name(), call.arguments(), executed.status(), result.type(), result.publicData()));
+                var observation = new ToolObservation(call.id(), call.name(), call.arguments(), executed.status(),
+                        result.type(), result.publicData(), UUID.randomUUID().toString());
+                observations.add(observation);
+                var toolEvent = mapper.createObjectNode().put("durationMs", (System.nanoTime() - toolStarted) / 1_000_000.0);
+                toolEvent.set("result", mapper.valueToTree(observation));
+                toolEvent.set("modelData", result.modelData());
+                ObservationContext.record(ObservationContext.Event.TOOL_RESULT, toolEvent);
                 sources.putAll(result.sources());
                 var feedback = mapper.createObjectNode().put("type", result.type().name());
                 feedback.set("data", result.modelData());

@@ -15,7 +15,7 @@ def read_json(path: Path) -> Any:
 
 
 def read_jsonl(path: Path) -> list[dict[str, Any]]:
-    return [json.loads(line) for line in path.read_text(encoding="utf-8-sig").splitlines() if line.strip()]
+    return [json.loads(line) for line in path.read_text(encoding="utf-8-sig").split("\n") if line.strip()]
 
 
 def write_json(path: Path, document: Any) -> None:

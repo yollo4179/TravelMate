@@ -1,0 +1,111 @@
+python.exe : test_200_canonical_references_shared_splits_and_all_five_types (test_evaluation.EvaluationTests.test_200_c
+anonical_references_shared_splits_and_all_five_types) ... ok
+위치 줄:2 문자:1
++ & C:/ssafy/Travelmate/.venv-ragas/Scripts/python.exe -X utf8 -m unitt ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (test_200_canoni...e_types) ... ok:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+
+end_to_end: PLR-TM-palaces-01 (1/2)
+end_to_end: PLR-TM-palaces-02 (2/2)
+test_authentication_failure_stops_repeated_paid_judge_attempts_but_keeps_code_checks (test_evaluation.EvaluationTests.t
+est_authentication_failure_stops_repeated_paid_judge_attempts_but_keeps_code_checks) ... ok
+test_build_does_not_clear_existing_results_and_view_tampering_is_rejected (test_evaluation.EvaluationTests.test_build_d
+oes_not_clear_existing_results_and_view_tampering_is_rejected) ... ok
+test_candidate_guard_checks_raw_selected_ids (test_evaluation.EvaluationTests.test_candidate_guard_checks_raw_selected_
+ids) ... ok
+test_clarification_uses_field_ids_instead_of_exact_question_wording (test_evaluation.EvaluationTests.test_clarification
+_uses_field_ids_instead_of_exact_question_wording) ... ok
+test_confirmation_receipt_requires_observed_new_version (test_evaluation.EvaluationTests.test_confirmation_receipt_requ
+ires_observed_new_version) ... ok
+test_context_filter_arguments_are_not_just_tool_name_matches (test_evaluation.EvaluationTests.test_context_filter_argum
+ents_are_not_just_tool_name_matches) ... ok
+test_export_never_leaks_gold_or_private_memory_to_model (test_evaluation.EvaluationTests.test_export_never_leaks_gold_o
+r_private_memory_to_model) ... ok
+test_judge_quotes_cannot_come_from_private_memory (test_evaluation.EvaluationTests.test_judge_quotes_cannot_come_from_p
+rivate_memory) ... ok
+test_last_internal_search_cannot_override_primary_plan (test_evaluation.EvaluationTests.test_last_internal_search_canno
+t_override_primary_plan) ... ok
+test_missing_backend_observation_is_not_state_pass (test_evaluation.EvaluationTests.test_missing_backend_observation_is
+_not_state_pass) ... ok
+end_to_end: PLR-TM-palaces-01 (1/1)
+test_offline_evaluation_reports_partial_coverage_without_fake_zero_answers (test_evaluation.EvaluationTests.test_offlin
+e_evaluation_reports_partial_coverage_without_fake_zero_answers) ... ok
+test_original_corpus_and_human_review_are_preserved (test_evaluation.EvaluationTests.test_original_corpus_and_human_rev
+iew_are_preserved) ... ok
+test_real_openai_adapter_uses_selected_model_and_md_without_paid_calls (test_evaluation.EvaluationTests.test_real_opena
+i_adapter_uses_selected_model_and_md_without_paid_calls) ... ok
+test_top_k_hit_differs_from_recall_and_duplicates_do_not_inflate_ndcg (test_evaluation.EvaluationTests.test_top_k_hit_d
+iffers_from_recall_and_duplicates_do_not_inflate_ndcg) ... ok
+test_type_and_server_data_are_separately_checked (test_evaluation.EvaluationTests.test_type_and_server_data_are_separat
+ely_checked) ... ok
+test_valid_alternative_selection_and_code_route_are_accepted (test_evaluation.EvaluationTests.test_valid_alternative_se
+lection_and_code_route_are_accepted) ... ok
+test_wrong_input_hash_is_not_a_valid_model_answer (test_evaluation.EvaluationTests.test_wrong_input_hash_is_not_a_valid
+_model_answer) ... ok
+test_all_archived_and_original_payload_hashes_match_before_move (test_migration.MigrationTests.test_all_archived_and_or
+iginal_payload_hashes_match_before_move) ... FAIL
+test_build_preserves_source_rubrics_and_sibling_runs (test_migration.MigrationTests.test_build_preserves_source_rubrics
+_and_sibling_runs) ... ok
+search: PLR-TM-palaces-01 (1/1)
+test_evaluate_command_writes_complete_run_and_precheck_keeps_latest (test_migration.MigrationTests.test_evaluate_comman
+d_writes_complete_run_and_precheck_keeps_latest) ... ok
+test_exported_model_input_hashes_match_pre_migration_inputs (test_migration.MigrationTests.test_exported_model_input_ha
+shes_match_pre_migration_inputs) ... ok
+test_new_run_directories_never_overwrite_or_enter_dataset (test_migration.MigrationTests.test_new_run_directories_never
+_overwrite_or_enter_dataset) ... ok
+test_run_metadata_and_latest_do_not_mutate_prior_results (test_migration.MigrationTests.test_run_metadata_and_latest_do
+_not_mutate_prior_results) ... ok
+Reports: C:\Users\SSAFY\AppData\Local\Temp\tmp92a533fi\runs\search\v1.4.0\20261101T134932Z-5c4de776
+Reports: C:\Users\SSAFY\AppData\Local\Temp\tmp92a533fi\runs\search\v1.4.0\20261101T134932Z-5bf46c94
+search: PLR-TM-palaces-01 (1/1)
+test_search_only_scores_rankings_without_judge_or_tool_penalties (test_migration.MigrationTests.test_search_only_scores
+_rankings_without_judge_or_tool_penalties) ... ok
+test_track_cli_exports_from_arbitrary_working_directory (test_migration.MigrationTests.test_track_cli_exports_from_arbi
+trary_working_directory) ... ok
+test_track_views_retain_case_counts_and_shared_split (test_migration.MigrationTests.test_track_views_retain_case_counts
+_and_shared_split) ... ok
+test_absent_state_snapshots_remain_unobserved_in_the_existing_scorer (test_server_trace_adapter.ServerTraceAdapterTests
+.test_absent_state_snapshots_remain_unobserved_in_the_existing_scorer) ... ok
+test_existing_java_case_binding_matches_the_frozen_export (test_server_trace_adapter.ServerTraceAdapterTests.test_exist
+ing_java_case_binding_matches_the_frozen_export) ... ok
+test_jsonl_preserves_unicode_line_separators_inside_original_evidence (test_server_trace_adapter.ServerTraceAdapterTest
+s.test_jsonl_preserves_unicode_line_separators_inside_original_evidence) ... ok
+test_keeps_pending_job_and_draft_as_native_types_without_faking_preview (test_server_trace_adapter.ServerTraceAdapterTe
+sts.test_keeps_pending_job_and_draft_as_native_types_without_faking_preview) ... ok
+test_mock_or_budget_blocked_calls_cannot_become_successful_quality_metrics (test_server_trace_adapter.ServerTraceAdapte
+rTests.test_mock_or_budget_blocked_calls_cannot_become_successful_quality_metrics) ... ok
+test_mock_records_cannot_be_relabelled_live (test_server_trace_adapter.ServerTraceAdapterTests.test_mock_records_cannot
+_be_relabelled_live) ... ok
+end_to_end: PLR-TM-palaces-01 (1/1)
+test_mock_records_never_construct_a_paid_judge_client (test_server_trace_adapter.ServerTraceAdapterTests.test_mock_reco
+rds_never_construct_a_paid_judge_client) ... ok
+test_native_judge_receives_actual_tool_evidence_and_api_input (test_server_trace_adapter.ServerTraceAdapterTests.test_n
+ative_judge_receives_actual_tool_evidence_and_api_input) ... ok
+test_rejects_missing_input_trace_hash_changes_and_rebound_api_payloads (test_server_trace_adapter.ServerTraceAdapterTes
+ts.test_rejects_missing_input_trace_hash_changes_and_rebound_api_payloads) ... ok
+test_rejects_replaced_primary_artifacts (test_server_trace_adapter.ServerTraceAdapterTests.test_rejects_replaced_primar
+y_artifacts) ... ok
+test_reuses_existing_input_hash_and_preserves_actual_calls_data_and_explanation (test_server_trace_adapter.ServerTraceA
+dapterTests.test_reuses_existing_input_hash_and_preserves_actual_calls_data_and_explanation) ... ok
+test_unobserved_native_quality_fields_fail_closed_even_in_live_mode (test_server_trace_adapter.ServerTraceAdapterTests.
+test_unobserved_native_quality_fields_fail_closed_even_in_live_mode) ... ok
+
+======================================================================
+FAIL: test_all_archived_and_original_payload_hashes_match_before_move (test_migration.MigrationTests.test_all_archived_
+and_original_payload_hashes_match_before_move)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\SSAFY\AppData\Local\Temp\travelmate-general-relation-retrieval\Evaluation\tests\test_migration.py", li
+ne 35, in test_all_archived_and_original_payload_hashes_match_before_move
+    self.assertEqual(digest(EVALUATION_ROOT.parent / row["current_path"]), row["sha256"], row["current_path"])
+AssertionError: 'd4905cd0d9d15143a60ca186f8260aedf1633aa28ab742829611881127527319' != '8fc8ae72e7c698ecf6f336b04fb706e3
+8f709ae04906ed16a64aa529c1473188'
+- d4905cd0d9d15143a60ca186f8260aedf1633aa28ab742829611881127527319
++ 8fc8ae72e7c698ecf6f336b04fb706e38f709ae04906ed16a64aa529c1473188
+ : Evaluation/datasets/v1.1.0/.gitattributes
+
+----------------------------------------------------------------------
+Ran 39 tests in 5.426s
+
+FAILED (failures=1)

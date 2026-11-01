@@ -11,6 +11,7 @@ from tracks.plan.score_rules import plan_metrics
 from tracks.state.score import state_metrics
 from tracks.memory.score_retrieval import score_retrieval
 from tracks.memory.score_extraction import score_extraction
+from common.observability.server_trace import mask_unobserved
 
 
 def provenance_metrics(record: dict[str, Any], response: dict[str, Any]) -> dict[str, float | None]:
@@ -62,4 +63,4 @@ def evaluate_record(case: dict[str, Any], record: dict[str, Any]) -> dict[str, A
         metrics["judged_at_10"] = sum(place_id in judgments for place_id in returned[:10])
     metrics.update(score_retrieval(case, record))
     metrics.update(score_extraction(case, record))
-    return {"metrics": metrics, "issues": issues}
+    return {"metrics": mask_unobserved(metrics, record), "issues": issues}

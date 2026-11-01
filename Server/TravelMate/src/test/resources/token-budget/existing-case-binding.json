@@ -1,0 +1,7 @@
+{
+  "case_id": "PLR-TM-palaces-01",
+  "input_sha256": "13f07e1370f08c3962a159bbf18ff3ef60b7a5b2d03f1d550a34c96f70f9598b",
+  "query": "창경궁을 찾아줘.",
+  "conversationId": "fixture-PLR-TM-palaces-01",
+  "purpose": "Existing fixture reused only for MOCK trace conversion regression, not a model quality evaluation."
+}

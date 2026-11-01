@@ -175,7 +175,7 @@ def manifest(root: Path, cases: list[dict[str, Any]], views: dict[Path, list[dic
                          "source/persona/guide_v1.json", "source/judge_config.json", "generated/schemas/response_record.schema.json",
                          "rubrics/plan_quality.md", "rubrics/behavior.md")
         },
-        "view_sha256": {str(path.relative_to(root)): digest(path) for path in views},
+        "view_sha256": {path.relative_to(root).as_posix(): digest(path) for path in views},
         "all_views_generated_not_independently_authored": True,
         "new_role_expectations_human_reviewed": False,
         "source_human_review_preserved": True,

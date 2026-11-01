@@ -18,3 +18,6 @@ run.json의 latency_measurement는 현재 not_collected_by_this_runner다.
 --precheck-only는 GPT 호출과 실제 점수 산출을 하지 않으며 latest.json을 바꾸지 않는다.
 명시적 --output-dir도 데이터셋 내부나 기존 경로이면 거부한다.
 이 저장소에 예시를 실측으로 보이게 하는 가짜 점수를 넣지 않는다.
+
+[토큰 예산·서버 실행 관측 모의 검증](contextual/token-budget-observation-v1/20261101-01/REPORT.md)은
+실제 모델 평가와 구분해 보존한다. MOCK 실행의 품질 항목은 채점하지 않는다.
