@@ -17,6 +17,7 @@ from .pipeline import split_source
 from .input_format import InputVersion, explicit_chunks
 from .prompts import DEFAULT_PROMPT_VERSION, resolve_prompt
 from .validation import ValidationVersion, resolve_validation_version
+from .evidence_grounding import GroundingVersion, ground_relation_evidence
 
 PROMPT_VERSION = DEFAULT_PROMPT_VERSION
 INSTRUCTIONS = resolve_prompt(PROMPT_VERSION).instructions
@@ -69,8 +70,16 @@ _relation_schema["properties"].update({
 })
 
 
+SCHEMA_V8 = deepcopy(SCHEMA_V7)
+_evidence_schema = SCHEMA_V8["properties"]["chunks"]["items"]["properties"]["relations"]["items"]["properties"]["evidence"]
+_evidence_schema["required"] = ["quote"]
+_evidence_schema["properties"] = {"quote": _evidence_schema["properties"]["quote"]}
+
+
 def schema_for_prompt(prompt_version: str) -> dict[str, Any]:
     prompt = resolve_prompt(prompt_version)
+    if prompt.server_evidence:
+        return deepcopy(SCHEMA_V8)
     if prompt.independent_relations:
         return deepcopy(SCHEMA_V7)
     return deepcopy(SCHEMA_V6) if prompt.supports_relations else SCHEMA
@@ -209,7 +218,12 @@ def parse_chunks(
         source_order = {source.source_id: index for index, source in enumerate(sources)}
         ordered = sorted(ordered, key=lambda chunk: (source_order[chunk["source_id"]], chunk["start"], chunk["end"]))
     for chunk in ordered:
-        if validation in (ValidationVersion.OBSERVATIONS, ValidationVersion.RELATIONS):
+        if validation == ValidationVersion.SERVER_EVIDENCE:
+            grounded = ground_relation_evidence(chunk, by_id[chunk["source_id"]].text)
+            if grounded.error is not None:
+                continue
+            chunk = grounded.chunk
+        if validation in (ValidationVersion.OBSERVATIONS, ValidationVersion.RELATIONS, ValidationVersion.SERVER_EVIDENCE):
             if observation_error(chunk, places, by_id[chunk["source_id"]], independent=prompt.independent_relations) is not None:
                 continue
             if chunk["content_kind"] == ContentKind.MOVEMENT and not chunk["relations"]:
@@ -220,19 +234,19 @@ def parse_chunks(
             raise ValueError("Agent referenced an unknown place")
         if prompt.supports_relations:
             validate_observation(chunk, places, by_id[chunk["source_id"]], independent=prompt.independent_relations)
-        if validation in (ValidationVersion.SUBJECT_ONLY, ValidationVersion.OBSERVATIONS, ValidationVersion.RELATIONS):
+        if validation in (ValidationVersion.SUBJECT_ONLY, ValidationVersion.OBSERVATIONS, ValidationVersion.RELATIONS, ValidationVersion.SERVER_EVIDENCE):
             if len({ref["place_id"] for ref in chunk["place_refs"]}) != len(chunk["place_refs"]):
                 raise ValueError("Chunk place references must be present and unique")
             if not chunk["context_text"].strip():
                 raise ValueError("Chunk context must contain 1..600 characters")
         if not chunk["place_refs"]:
-            if (prompt.require_empty_unattributed_entities or validation in (ValidationVersion.SUBJECT_ONLY, ValidationVersion.OBSERVATIONS, ValidationVersion.RELATIONS)) and chunk["entities"]:
+            if (prompt.require_empty_unattributed_entities or validation in (ValidationVersion.SUBJECT_ONLY, ValidationVersion.OBSERVATIONS, ValidationVersion.RELATIONS, ValidationVersion.SERVER_EVIDENCE)) and chunk["entities"]:
                 raise ValueError("Unattributed spans require both place_refs and entities to be empty")
             continue
         for entity in chunk["entities"]:
             if {"place_id": entity["place_id"], "role": entity["role"]} not in chunk["place_refs"]:
                 raise ValueError("Entity roles must match explicit place references")
-        if validation in (ValidationVersion.SUBJECT_ONLY, ValidationVersion.OBSERVATIONS, ValidationVersion.RELATIONS):
+        if validation in (ValidationVersion.SUBJECT_ONLY, ValidationVersion.OBSERVATIONS, ValidationVersion.RELATIONS, ValidationVersion.SERVER_EVIDENCE):
             has_relation_target = prompt.independent_relations and bool(endpoint_ids(chunk["relations"]))
             if not has_relation_target and not any(ref["role"] == PlaceRole.SUBJECT for ref in chunk["place_refs"]):
                 continue
@@ -241,7 +255,9 @@ def parse_chunks(
                                   {"provider": "perplexity", "model": raw.get("model"),
                                    "response_id": raw.get("id"), "prompt_version": prompt.version.value,
                                    **({"request_profile_id": request_profile_id} if request_profile_id else {}),
-                                   **({"validation_version": validation_version} if validation_version else {})},
+                                   **({"validation_version": validation_version} if validation_version else {}),
+                                   **({"evidence_grounding_version": GroundingVersion.EXACT_UNIQUE.value}
+                                      if validation == ValidationVersion.SERVER_EVIDENCE else {})},
                                   chunk["entities"], chunk["hypothetical_questions"], splitter_version,
                                   chunk.get("content_kind"), chunk.get("relations", [])))
     return chunks

@@ -24,6 +24,7 @@ from .input_replay import InputFormatComparison
 from .repository import apply_bundle
 from .contracts import SplitterVersion, SPLITTER_VERSION
 from .review import approval_document, reviewed_chunks, selection_report
+from .validation import ValidationVersion
 from app.enrichment.artifacts import write_json
 
 
@@ -38,6 +39,8 @@ async def run(args: argparse.Namespace) -> int:
         return 0
     if args.command == "revalidate":
         if args.record.is_dir():
+            if getattr(args, "validation_version", None) is not None:
+                raise ValueError("검증 버전 지정은 단일 record.json 재검증에만 지원합니다")
             report_path = revalidate_batch(args.record, args.output, baseline_profile=args.baseline_profile,
                                           paired_only=args.paired_only)
             report = json.loads(report_path.read_text(encoding="utf-8"))
@@ -48,7 +51,8 @@ async def run(args: argparse.Namespace) -> int:
                               "missing_comparison_partners": len(report["missing_comparison_partners"]),
                               "comparison_errors": len(report["comparison_errors"])}, ensure_ascii=False))
             return int(report["failed"] != 0 or (args.paired_only and not report["comparison_complete"]))
-        path = revalidate_record(args.record, args.output, baseline_profile=args.baseline_profile)
+        path = revalidate_record(args.record, args.output, baseline_profile=args.baseline_profile,
+                                 validation_version=getattr(args, "validation_version", None))
         record = json.loads(path.read_text(encoding="utf-8"))
         print(json.dumps({"status": record["status"], "record": str(path), "api_calls": 0,
                           "validation_version": record["validation_version"],
@@ -159,6 +163,8 @@ def main() -> None:
     revalidation.add_argument("--record", type=Path, required=True, help="record.json 또는 일괄 재검증할 요청 아카이브 디렉터리")
     revalidation.add_argument("--output", type=Path, default=Path("LocationReview"))
     revalidation.add_argument("--baseline-profile", choices=[profile.value for profile in ExecutionProfileId])
+    revalidation.add_argument("--validation-version", choices=[version.value for version in ValidationVersion],
+                              help="단일 보존 응답에 적용할 검증 규칙. v7 위치 재계산에는 contextual-validation-v5 지정")
     revalidation.add_argument("--paired-only", action="store_true", help="기존 비교 보고서에 연결된 요청만 일괄 재검증")
     args = parser.parse_args()
     if args.env_file:

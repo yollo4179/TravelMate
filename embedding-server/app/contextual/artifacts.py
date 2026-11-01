@@ -24,6 +24,8 @@ from .input_format import InputVersion
 from .profiles import resolve_execution_profile
 from .validation import ExclusionReason, current_validation_version, ValidationVersion
 from .contracts import ContentKind
+from .evidence_grounding import GroundingVersion, ground_relation_evidence
+from .validation import resolve_validation_version
 
 
 @dataclass(frozen=True)
@@ -217,6 +219,9 @@ def load_record(
                                             validation_version=validation_version)
         if expected_excluded != record.get("excluded_chunks"):
             raise ValueError("Excluded chunks differ from preserved response")
+    if validation_version == ValidationVersion.SERVER_EVIDENCE:
+        if record.get("evidence_grounding_version") != GroundingVersion.EXACT_UNIQUE.value or record.get("evidence_grounding") != grounding_audit(raw, bundle):
+            raise ValueError("서버 인용 위치 계산 기록이 보존 응답과 다릅니다")
     return bundle, chunks, record
 
 
@@ -232,9 +237,13 @@ def excluded_chunks(raw: dict[str, Any], bundle: SourceBundle, chunks: list[Sear
             continue
         reason = ExclusionReason.NO_SUBJECT if chunk["place_refs"] else ExclusionReason.UNATTRIBUTED
         error = None
-        if validation_version in (ValidationVersion.OBSERVATIONS, ValidationVersion.RELATIONS):
-            error = observation_error(chunk, bundle.places, sources[chunk["source_id"]],
-                                      independent=validation_version == ValidationVersion.RELATIONS)
+        checked = chunk
+        if validation_version == ValidationVersion.SERVER_EVIDENCE:
+            grounded = ground_relation_evidence(chunk, sources[chunk["source_id"]].text)
+            checked, error = grounded.chunk, grounded.error
+        if validation_version in (ValidationVersion.OBSERVATIONS, ValidationVersion.RELATIONS, ValidationVersion.SERVER_EVIDENCE):
+            error = error or observation_error(checked, bundle.places, sources[chunk["source_id"]],
+                                      independent=validation_version in (ValidationVersion.RELATIONS, ValidationVersion.SERVER_EVIDENCE))
             if error:
                 reason = ExclusionReason.INVALID_ATTRIBUTION
             elif chunk["content_kind"] == ContentKind.MOVEMENT and not chunk["relations"]:
@@ -243,6 +252,14 @@ def excluded_chunks(raw: dict[str, Any], bundle: SourceBundle, chunks: list[Sear
              **({"splitter_version": splitter_version} if splitter_version != SplitterVersion.LEGACY else {}),
              "exclusion_reason": reason, **({"validation_error": error} if error else {})})
     return excluded
+
+
+def grounding_audit(raw: dict[str, Any], bundle: SourceBundle) -> list[dict[str, Any]]:
+    text = "".join(part["text"] for item in raw.get("output", []) if item.get("type") == "message"
+                   for part in item.get("content", []) if part.get("type") == "output_text")
+    sources = {source.source_id: source for source in bundle.sources}
+    return [entry for chunk in json.loads(text)["chunks"]
+            for entry in ground_relation_evidence(chunk, sources[chunk["source_id"]].text).audit]
 
 
 def response_fields(
@@ -267,10 +284,19 @@ def response_fields(
     )
     return {"chunks": [chunk.to_dict() for chunk in chunks], "actual_model": raw.get("model"),
             "excluded_chunks": excluded_chunks(raw, bundle, chunks, splitter_version=splitter_version,
-                                               validation_version=validation_version)}
+                                               validation_version=validation_version),
+            **({"evidence_grounding_version": GroundingVersion.EXACT_UNIQUE.value,
+                "evidence_grounding": grounding_audit(raw, bundle)}
+               if validation_version == ValidationVersion.SERVER_EVIDENCE else {})}
 
 
-def revalidate_record(path: Path, root: Path, *, baseline_profile: str | None = None) -> Path:
+def revalidate_record(
+    path: Path,
+    root: Path,
+    *,
+    baseline_profile: str | None = None,
+    validation_version: str | None = None,
+) -> Path:
     """API 호출 없이 새 검증 결과를 별도 아카이브에 보존한다."""
     originals = {name: path.with_name(name).read_bytes()
                  for name in ("record.json", "request.json", "sources.json", "raw_response.json")}
@@ -301,7 +327,7 @@ def revalidate_record(path: Path, root: Path, *, baseline_profile: str | None = 
     if "actual_model" in original and original["actual_model"] != raw.get("model"):
         raise ValueError("Recorded model differs from preserved response")
     profile_id = profile_id or baseline_profile
-    validation_version = current_validation_version(prompt_version)
+    validation_version = resolve_validation_version(validation_version or current_validation_version(prompt_version), prompt_version).value
     fields = response_fields(raw, bundle, payload, prompt_version, profile_id, validation_version,
                              splitter_version=splitter_version)
     request_hash = request_fingerprint(payload, prompt_version, profile_id, validation_version)

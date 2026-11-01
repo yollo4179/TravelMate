@@ -1,0 +1,83 @@
+{
+  "validation_version": "contextual-validation-v5",
+  "evidence_grounding_version": "relation-quote-exact-unique-v1",
+  "source_publication_sha256": "913359dfc16f07b59d87c720ca7b9f76320468a2e6e83fbafb7e3782f9548cf5",
+  "preserved_files_verified": 45,
+  "api_calls": 0,
+  "production_database_writes": 0,
+  "search_executions": 0,
+  "semantic_quality_evaluated": false,
+  "new_prompt_generation_evaluated": false,
+  "note": "동일한 저장 응답에 서버 규칙만 변경해 적용했다. 새 모델 판정·검색 개선을 의미하지 않는다.",
+  "results": [
+    {
+      "id": "CONTROL",
+      "original_file_sha256": {
+        "record.json": "96bda95fe4b08dae4dde9a2439efeffeea8d0771686337f1e26b2ad4591b6855",
+        "request.json": "64687283799f02b2c39dcb0705d9ddc123f0bf4083fab185ece204d3403a6629",
+        "sources.json": "45e63710b15ecf0c001090710ba92ce3d871235e12d2a83d5b2e8f3c645e6d95",
+        "raw_response.json": "1556cc3eef5f2ca82aa071e23b0cfc88ba492714022304f7477e8d15c452d3ae"
+      },
+      "processed_record_sha256": "74a05d2d7719db96f3b6d9ae432312f1da2e670c2d9814c6cf679a69adb701a2",
+      "old_candidates": 3,
+      "new_candidates": 4,
+      "newly_retained": 1,
+      "excluded": 0,
+      "exclusion_errors": {},
+      "regression_case": {
+        "chunk_span": {
+          "start": 0,
+          "end": 35
+        },
+        "quote": "관람 후 B공원으로 걸어갈 수 있다.",
+        "model_evidence": {
+          "end": 35,
+          "quote": "관람 후 B공원으로 걸어갈 수 있다.",
+          "start": 16
+        },
+        "server_span": {
+          "start": 15,
+          "end": 35
+        },
+        "parent_retained": true
+      }
+    },
+    {
+      "id": "P09",
+      "original_file_sha256": {
+        "record.json": "df8529d8b7f1539413ac93a3d40460a5c6472fe8faccf03d1006b40a1e9d7034",
+        "request.json": "1e9ffa55a55fed3a200b7c36353fb334784fa039dd73f37aa1ccd2b08e0edafe",
+        "sources.json": "5ea4a0e47b9e752235b9f9e0a4d3b70dd15fe92085ac28c7d74b8413fc54569a",
+        "raw_response.json": "025ad83e88bc9022b70166a314ec1ed0d0390b6ca103834750fec670e038d974"
+      },
+      "processed_record_sha256": "f2b1e6f04d336721a83cfc16827b06429c07414395db85c52f1eeb6d30248003",
+      "old_candidates": 15,
+      "new_candidates": 16,
+      "newly_retained": 1,
+      "excluded": 12,
+      "exclusion_errors": {
+        "unresolved_movement": 3,
+        "no_subject": 3,
+        "엔티티 역할과 장소 귀속 불일치": 4,
+        "중복 장소 귀속": 2
+      },
+      "regression_case": {
+        "chunk_span": {
+          "start": 241,
+          "end": 283
+        },
+        "quote": "이제부터 계단으로 올라가시면 돼요",
+        "model_evidence": {
+          "end": 283,
+          "quote": "이제부터 계단으로 올라가시면 돼요",
+          "start": 263
+        },
+        "server_span": {
+          "start": 264,
+          "end": 282
+        },
+        "parent_retained": true
+      }
+    }
+  ]
+}

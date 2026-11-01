@@ -1,0 +1,107 @@
+{
+  "server": {
+    "suite": "server-utf8",
+    "tests_run": 125,
+    "passed": 108,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 17,
+    "successful": true,
+    "skipped_cases": [
+      {
+        "test": "test_context_refresh_keeps_chunk_id_and_source_archive (test_contextual_chunks.ContextualDatabaseTests.test_context_refresh_keeps_chunk_id_and_source_archive)",
+        "reason": "Requires isolated PostgreSQL test database"
+      },
+      {
+        "test": "test_full_apply_index_retrieve_archives_all_and_enforces_twenty (test_contextual_chunks.ContextualDatabaseTests.test_full_apply_index_retrieve_archives_all_and_enforces_twenty)",
+        "reason": "Requires isolated PostgreSQL test database"
+      },
+      {
+        "test": "test_new_context_during_inference_cannot_overwrite_active_generation (test_contextual_chunks.ContextualDatabaseTests.test_new_context_during_inference_cannot_overwrite_active_generation)",
+        "reason": "Requires isolated PostgreSQL test database"
+      },
+      {
+        "test": "test_real_bge_models_index_context_and_rerank_original_evidence (test_contextual_chunks.ContextualDatabaseTests.test_real_bge_models_index_context_and_rerank_original_evidence)",
+        "reason": "Requires isolated PostgreSQL test database"
+      },
+      {
+        "test": "test_source_change_rejects_old_bundle_and_old_context_is_not_reused (test_contextual_chunks.ContextualDatabaseTests.test_source_change_rejects_old_bundle_and_old_context_is_not_reused)",
+        "reason": "Requires isolated PostgreSQL test database"
+      },
+      {
+        "test": "test_actual_direction_kind_and_importance_queries_and_evidence_expansion (test_contextual_supporting_postgres.SupportingPostgresTests.test_actual_direction_kind_and_importance_queries_and_evidence_expansion)",
+        "reason": "폐기용 DB를 명시해야 실행"
+      },
+      {
+        "test": "test_apply_roundtrip_uses_one_chunk_and_two_distinct_roles (test_contextual_supporting_postgres.SupportingPostgresTests.test_apply_roundtrip_uses_one_chunk_and_two_distinct_roles)",
+        "reason": "폐기용 DB를 명시해야 실행"
+      },
+      {
+        "test": "test_relation_only_chunk_remains_direction_searchable_but_has_no_landscape_owner (test_contextual_supporting_postgres.SupportingPostgresTests.test_relation_only_chunk_remains_direction_searchable_but_has_no_landscape_owner)",
+        "reason": "폐기용 DB를 명시해야 실행"
+      },
+      {
+        "test": "test_stale_endpoint_aborts_apply_without_partial_subject_write (test_contextual_supporting_postgres.SupportingPostgresTests.test_stale_endpoint_aborts_apply_without_partial_subject_write)",
+        "reason": "폐기용 DB를 명시해야 실행"
+      },
+      {
+        "test": "test_subject_only_constraint_migrates_without_deleting_existing_subject (test_contextual_supporting_postgres.SupportingPostgresTests.test_subject_only_constraint_migrates_without_deleting_existing_subject)",
+        "reason": "폐기용 DB를 명시해야 실행"
+      },
+      {
+        "test": "test_trigger_rejects_destination_subject_unrelated_endpoint_and_invalid_role (test_contextual_supporting_postgres.SupportingPostgresTests.test_trigger_rejects_destination_subject_unrelated_endpoint_and_invalid_role)",
+        "reason": "폐기용 DB를 명시해야 실행"
+      },
+      {
+        "test": "test_application_is_idempotent_and_preserves_basic_facts (test_place_enrichment.DatabaseTests.test_application_is_idempotent_and_preserves_basic_facts)",
+        "reason": "Requires an explicitly isolated PostgreSQL test database"
+      },
+      {
+        "test": "test_changed_deleted_and_pending_sources_reject_old_enrichment (test_place_enrichment.DatabaseTests.test_changed_deleted_and_pending_sources_reject_old_enrichment)",
+        "reason": "Requires an explicitly isolated PostgreSQL test database"
+      },
+      {
+        "test": "test_index_worker_uses_enrichment_and_preserves_reranker_path (test_place_enrichment.DatabaseTests.test_index_worker_uses_enrichment_and_preserves_reranker_path)",
+        "reason": "Requires an explicitly isolated PostgreSQL test database"
+      },
+      {
+        "test": "test_newer_enrichment_during_embedding_supersedes_the_old_job (test_place_enrichment.DatabaseTests.test_newer_enrichment_during_embedding_supersedes_the_old_job)",
+        "reason": "Requires an explicitly isolated PostgreSQL test database"
+      },
+      {
+        "test": "test_plain_place_index_keeps_original_and_adds_contextual_tourapi_chunk (test_place_enrichment.DatabaseTests.test_plain_place_index_keeps_original_and_adds_contextual_tourapi_chunk)",
+        "reason": "Requires an explicitly isolated PostgreSQL test database"
+      },
+      {
+        "test": "test_tampered_record_is_rejected_before_database_writes (test_place_enrichment.DatabaseTests.test_tampered_record_is_rejected_before_database_writes)",
+        "reason": "Requires an explicitly isolated PostgreSQL test database"
+      }
+    ],
+    "api_calls": 0,
+    "database_access": 0,
+    "real_model_search_executions": 0
+  },
+  "evaluation_preservation_linux": {
+    "tests_run": 9,
+    "passed": 9,
+    "errors": 0,
+    "failures": 0,
+    "skipped": 0,
+    "successful": true,
+    "network": "none",
+    "api_calls": 0,
+    "database_access": 0
+  },
+  "new_regression_tests": 15,
+  "initial_environment_failures": [
+    "샌드박스의 임시 폴더 쓰기 차단으로 기존 10개 검사 중 아카이브 검사 1개 실패. 허용된 환경에서 전체 재실행 후 통과.",
+    "Windows 기본 cp949에서 전체 서버 125개 중 20개 읽기 오류. python -X utf8 재실행: 108개 통과·환경 통합 17개 skip.",
+    "일반 평가 전체 27개는 Windows에서 21개 통과·실패 2개·오류 4개. 미설치 openai와 기존 자료의 줄바꿈·경로 차이가 원인이다. 일반 평가 전체군의 통과를 주장하지 않는다.",
+    "보존 평가 9개는 격리 스냅샷에서 기존 해시와 일치하는 메타데이터 5개 LF 복원 후에도 Windows 경로 표기로 2개 미통과. 네트워크 차단 Linux 재실행에서는 9개 모두 통과.",
+    "첫 Linux 컨테이너는 이미지 기본 진입점이 모델 로딩을 시도했다. network=none으로 다운로드가 차단됐고 해당 임시 컨테이너만 중지·자동 삭제했다. Python 진입점으로 재실행했다."
+  ],
+  "api_calls": 0,
+  "database_access": 0,
+  "real_model_search_executions": 0,
+  "full_general_evaluation_suite_passed": false
+}

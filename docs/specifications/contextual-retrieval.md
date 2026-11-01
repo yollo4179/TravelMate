@@ -1,6 +1,6 @@
 # 공통 장소 청크·문맥 생성·검색 DB 명세
 
-문서 버전: 10 · 갱신: 2026-11-01
+문서 버전: 11 · 갱신: 2026-11-01
 
 [계획서](../plans/contextual-retrieval.md) · [구조도](../architecture/contextual-retrieval.md) · [기존 웹 수집](place-review-enrichment.md)
 
@@ -223,6 +223,33 @@ apply의 상태·지문 검사와 재색인 대상은 승인 청크의 subject �
 운영 적용에는 해당 스키마 갱신·명시적 검수·재색인이 필요하며 기존 벡터가 자동 갱신되지 않는다.
 [코드 회귀·호환 검증 기록](../../Evaluation/runs/contextual/supporting-relations-v1/20261101-01/REPORT.md)에
 합성 A/B 사례와 실제 보존 파일 검증을 기록했다. 유료 호출·DB 조회/쓰기·실제 검색 성능 실행은 0회다.
+
+### 관계 인용의 서버 위치 계산: v8 선택 계약
+
+신규 `contextual-server-evidence-v8`은 v7의 역할·주체·핵심/보조 관계를 유지하면서 relation.evidence를 `{"quote": "정확한 원문"}`만 받는다.
+관계 위치의 start/end는 모델이 반환하지 않으며 출력 스키마도 이를 허용하지 않는다. 청크 자체의 source_id/start/end는 기존 서버 분할 좌표를 복사한다.
+서버는 **현재 청크 안에서** 인용을 정확히 검색한다. 한 곳이면 `source_start = chunk.start + local_start`, `source_end = source_start + len(quote)`로 계산한다.
+0곳은 `quote_not_found`, 여러 곳(겹친 중복 포함)은 `quote_ambiguous`, 공백만 있으면 `quote_empty`로 보류한다.
+공백·줄바꿈·Unicode를 정규화하지 않고, 다른 청크에서 찾거나 유사 문장으로 고치지 않으며, 모델의 옛 위치를 사용해 중복을 해소하지 않는다.
+
+검증은 `contextual-validation-v5`, 계산 규칙은 `relation-quote-exact-unique-v1`이다. 보존 원문 Unicode 코드포인트·끝 제외 기준이다.
+처리 record의 `evidence_grounding[]`에 출처·청크 범위·관계 순번·quote·status·계산 규칙·모델 원래 `model_evidence`·서버 `server_span`을 기록한다.
+저장·검색용 SearchChunk.relations에는 서버가 계산한 evidence.start/end/quote를 넣고 참가자·역할·조건 검증을 계속 수행한다.
+아카이브 재로딩은 계산 내역까지 보존 응답으로 재검증한다. 관계가 보류되면 현재는 부모 청크 전체를 제외하며 관찰만 살리는 정책은 추가하지 않았다.
+
+v1~v7 지시문·스키마와 v7 기본 검증 v4는 보존한다. 기존 v7은 다음처럼 **단일 응답에 v5를 명시**해야 재계산한다. 원본 4개 파일은 보존하고 새 폴더에 처리 record를 만든다.
+
+```powershell
+python -X utf8 -m app.contextual.cli revalidate --record "기존/record.json" --output "별도/재처리폴더" --validation-version contextual-validation-v5
+```
+
+`--validation-version`의 디렉터리 일괄 재처리는 지원하지 않으며 오류를 반환한다. v7→v8은 출력 스키마도 바뀌므로 프롬프트 전용 비교에서 거부한다.
+새 생성 요청 준비는 기존 generate에 `--prompt-version contextual-server-evidence-v8 --input-version source-explicit-chunks-v2 --splitter-version sentence-paragraph-v2`를 지정한다.
+기본값 v2는 유지한다. 이번에는 새 v8 유료 생성·DB 반영·검색을 실행하지 않았다.
+
+[서버 위치 계산·실제 두 응답 재처리 기록](../../Evaluation/runs/contextual/v8-server-evidence-v1/20261101-01/REPORT.md):
+CONTROL `[16:35]`→`[15:35]`, P09 `[263:283]`→`[264:282]`로 복구했다. 원본 45개 보존 해시를 확인했고 추가 호출은 0회다.
+이 결과는 정확한 인용의 위치 오류 방지이며, 의미 귀속·Top-30·활성 20개 제한·검색 성능 개선은 별도다.
 
 ### 역할에 따른 자동 보존·검색 제외
 

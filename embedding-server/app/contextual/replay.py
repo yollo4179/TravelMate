@@ -62,7 +62,7 @@ class GenerationBaseline:
         candidate = deepcopy(self.request)
         prompt = resolve_prompt(prompt_version)
         baseline_prompt = resolve_prompt(self.record["prompt_version"])
-        if (prompt.supports_relations, prompt.independent_relations) != (baseline_prompt.supports_relations, baseline_prompt.independent_relations):
+        if (prompt.supports_relations, prompt.independent_relations, prompt.server_evidence) != (baseline_prompt.supports_relations, baseline_prompt.independent_relations, baseline_prompt.server_evidence):
             raise ValueError("출력 스키마 변경은 프롬프트 전용 비교에 포함할 수 없습니다")
         if (prompt.requires_explicit_chunks
                 and self.record.get("input_version", InputVersion.OFFSETS) != InputVersion.EXPLICIT):

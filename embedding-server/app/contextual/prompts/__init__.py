@@ -6,7 +6,7 @@ from enum import StrEnum
 from types import MappingProxyType
 
 from . import v1_contextual_prompt, v2_contextual_prompt, v3_contextual_prompt, v4_contextual_prompt, v5_contextual_prompt
-from . import v6_contextual_prompt, v7_contextual_prompt
+from . import v6_contextual_prompt, v7_contextual_prompt, v8_contextual_prompt
 
 
 class PromptVersion(StrEnum):
@@ -17,6 +17,7 @@ class PromptVersion(StrEnum):
     V5 = v5_contextual_prompt.PROMPT_VERSION
     V6 = v6_contextual_prompt.PROMPT_VERSION
     V7 = v7_contextual_prompt.PROMPT_VERSION
+    V8 = v8_contextual_prompt.PROMPT_VERSION
 
 
 @dataclass(frozen=True)
@@ -28,6 +29,7 @@ class PromptDefinition:
     requires_explicit_chunks: bool = False
     supports_relations: bool = False
     independent_relations: bool = False
+    server_evidence: bool = False
 
 
 DEFAULT_PROMPT_VERSION = PromptVersion.V2.value
@@ -79,6 +81,16 @@ PROMPTS = MappingProxyType({
         requires_explicit_chunks=True,
         supports_relations=True,
         independent_relations=True,
+    ),
+    PromptVersion.V8: PromptDefinition(
+        version=PromptVersion.V8,
+        instructions=v8_contextual_prompt.INSTRUCTIONS,
+        require_empty_unattributed_entities=True,
+        allow_hypothetical_questions=False,
+        requires_explicit_chunks=True,
+        supports_relations=True,
+        independent_relations=True,
+        server_evidence=True,
     ),
 })
 
