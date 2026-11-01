@@ -85,19 +85,22 @@ class ObservationFilter:
             alternatives.append(f"(c.document->>'content_kind'=ANY(ARRAY(SELECT jsonb_array_elements_text({binding}->'content_kinds'))) "
                                 "AND c.document->>'content_kind'<>'movement' AND c.document->'place_refs' @> jsonb_build_array(jsonb_build_object('place_id',p.place_id,'role','subject')))")
         if self.includes_relations:
-            edges = ["(relation->>'type'='movement' OR (relation->>'type' IS NULL AND c.document->>'content_kind'='movement'))"]
-            for key, endpoint in (("origin_place_id", "origin"), ("destination_place_id", "destination")):
-                if getattr(self, key) is not None:
-                    edges.append(f"(relation->'{endpoint}'->>'place_id')::bigint=({binding}->>'{key}')::bigint")
-            if self.result_endpoint == EndpointSide.EITHER:
-                edges.append("((relation->'origin'->>'place_id')::bigint=p.place_id OR (relation->'destination'->>'place_id')::bigint=p.place_id)")
-            else:
-                edges.append(f"(relation->'{self.result_endpoint.value}'->>'place_id')::bigint=p.place_id")
-            if self.relation_importance:
-                edges.append(f"relation->>'importance'=ANY(ARRAY(SELECT jsonb_array_elements_text({binding}->'relation_importance')))")
             alternatives.append("EXISTS(SELECT 1 FROM jsonb_array_elements(COALESCE(c.document->'relations','[]'::jsonb)) relation WHERE "
-                                + " AND ".join(edges) + ")")
+                                + self.relation_predicate(binding) + ")")
         return " AND (" + " OR ".join(alternatives) + ")" if alternatives else ""
+
+    def relation_predicate(self, binding: str, relation: str = "relation") -> str:
+        edges = [f"({relation}->>'type'='movement' OR ({relation}->>'type' IS NULL AND c.document->>'content_kind'='movement'))"]
+        for key, endpoint in (("origin_place_id", "origin"), ("destination_place_id", "destination")):
+            if getattr(self, key) is not None:
+                edges.append(f"({relation}->'{endpoint}'->>'place_id')::bigint=({binding}->>'{key}')::bigint")
+        if self.result_endpoint == EndpointSide.EITHER:
+            edges.append(f"(({relation}->'origin'->>'place_id')::bigint=p.place_id OR ({relation}->'destination'->>'place_id')::bigint=p.place_id)")
+        else:
+            edges.append(f"({relation}->'{self.result_endpoint.value}'->>'place_id')::bigint=p.place_id")
+        if self.relation_importance:
+            edges.append(f"{relation}->>'importance'=ANY(ARRAY(SELECT jsonb_array_elements_text({binding}->'relation_importance')))")
+        return " AND ".join(edges)
 
     def matched_relations(self, place_id: int, document: dict[str, Any]) -> list[dict[str, Any]]:
         if not self.includes_relations:
@@ -129,9 +132,15 @@ class ObservationFilter:
         return bool(document and (self.matches_observation(place_id, document) or self.matched_relations(place_id, document)))
 
     def scope_evidence(self, place_id: int, document: dict[str, Any]) -> dict[str, Any]:
-        if self.matches_observation(place_id, document):
+        if self.matches_observation(place_id, document) and "retrieved_relation_index" not in document:
             return document
         relations = self.matched_relations(place_id, document)
+        if "retrieved_relation_index" in document:
+            index = document["retrieved_relation_index"]
+            original = document.get("relations", [])
+            if type(index) is not int or not 0 <= index < len(original) or original[index] not in relations:
+                raise ValueError("직접 검색한 관계와 방향·비중 조건이 일치하지 않습니다")
+            relations = [original[index]]
         if not relations:
             raise ValueError("선택한 장소와 일치하는 이동 근거가 없습니다")
         quotations = [

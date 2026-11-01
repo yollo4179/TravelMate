@@ -1,6 +1,6 @@
 # 장소별 공통 청크 검색 구조
 
-문서 버전: 1 · 갱신: 2026-11-01
+문서 버전: 2 · 갱신: 2026-11-01
 
 [계획](../plans/contextual-retrieval.md) · [상세 명세·DB 이행](../specifications/contextual-retrieval.md)
 
@@ -75,3 +75,25 @@ flowchart LR
 기존 v7 기록은 명시적인 검증 v5로 무료 재처리하며, 원래 v7 검증 v4와 원본 4개 파일을 바꾸지 않는다.
 v8은 출력 스키마 변경이므로 지시문 전용 비교와 구분한다. 기본값·DB·검색 후보 정책은 바뀌지 않는다.
 [실행 예시·결과와 한계](../../Evaluation/runs/contextual/v8-server-evidence-v1/20261101-01/REPORT.md)
+
+
+## 선택형 이동 근거 벡터 검색
+
+`chunk-only`가 기본값이다. `chunk-and-relation-v1`을 선택하면 같은 활성 청크의 실제 이동 인용을 별도 벡터로 보존한다.
+검색은 여전히 place_active_chunks를 통하며 장소별 20개를 유지한다. 관계 벡터 경로에서도 먼저 개별 관계의 방향·endpoint·비중을 검사한다.
+
+```mermaid
+flowchart TD
+    Active[같은 활성 청크·최대 20개] --> Whole[기존 문맥+원문 벡터]
+    Active --> Route[검증된 이동 인용 벡터]
+    Query[질의 벡터·명시적 이동 필터] --> Whole
+    Query --> Route
+    Whole --> Best[청크·장소별 최고 cosine·중복 제거]
+    Route --> Best
+    Best --> Top[최대 30개 장소 후보]
+    Top --> Rerank[원문 이동 근거로 리랭킹]
+```
+
+새 관계 벡터는 기존 색인 세대 CAS 성공 트랜잭션에서만 저장하며, 구간·인용 불일치는 SQL trigger로 거부한다.
+별도 벡터가 없는 자료는 기존 전체 벡터로 검색한다. 기본값·활성 상한 의미·장소 귀속·예상 질문 정책은 바꾸지 않았다.
+[고정 비교·결과·남은 한계](../../Evaluation/runs/contextual/relation-vector-retrieval-v1/20261101-01/REPORT.md)

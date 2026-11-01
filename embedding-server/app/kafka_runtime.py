@@ -22,7 +22,8 @@ from app.enrichment.evidence import search_description
 from app.enrichment.repository import latest_snapshot
 from app.contextual.pipeline import tourapi_chunks, legacy_evidence_chunks, select_active, index_embedding_inputs
 from app.contextual.observation_search import ObservationFilter
-from app.contextual.repository import desired_chunks, activate_chunks, preserve_chunks
+from app.contextual.repository import desired_chunks, activate_chunks, preserve_chunks, store_relation_embeddings
+from app.contextual.relation_vectors import RelationRetrievalMode, relation_embedding_inputs, relation_vector_sql
 from app.contextual.artifacts import archive_index_input
 from app.contextual.ranking import EvidenceCount, build_pairs, rank_places, validate_token_budget
 
@@ -44,6 +45,7 @@ class KafkaRuntime:
     def __init__(self, database_pool: Any) -> None:
         self.database_pool = database_pool
         self.evidence_count = EvidenceCount(int(os.environ.get("CONTEXTUAL_RERANK_EVIDENCE_PER_PLACE", "1")))
+        self.use_relation_vectors = RelationRetrievalMode(os.environ.get("CONTEXTUAL_RELATION_RETRIEVAL", RelationRetrievalMode.CHUNK_ONLY.value)) == RelationRetrievalMode.CHUNK_AND_RELATION
         self.bootstrap_servers = os.environ["KAFKA_BOOTSTRAP_SERVERS"]
         self.place_changes_topic = os.environ.get(
             "KAFKA_PLACE_CHANGES_TOPIC",
@@ -255,6 +257,10 @@ class KafkaRuntime:
         with tracer().start_as_current_span("embedding.model_inference") as span:
             span.set_attribute("embedding.device", embedder.device)
             texts, primary_index = index_embedding_inputs(place, active_chunks)
+            base_text_count = len(texts)
+            relation_inputs = relation_embedding_inputs(active_chunks) if getattr(self, "use_relation_vectors", False) is True else []
+            texts += [entry.text for entry in relation_inputs]
+            span.set_attribute("embedding.relation_text_count", len(relation_inputs))
             span.set_attribute("embedding.text_count", len(texts))
             vectors = await to_thread.run_sync(lambda: embedder.embed(texts))
             vector = vectors[primary_index]
@@ -301,6 +307,8 @@ class KafkaRuntime:
                 if status == "SUCCEEDED":
                     await preserve_chunks(connection, all_chunks)
                     await activate_chunks(connection, place.place_id, active_chunks, chunk_vectors)
+                    if relation_inputs:
+                        await store_relation_embeddings(connection, relation_inputs, vectors[base_text_count:])
                 await connection.execute(
                     "UPDATE place_index_jobs SET status = $2, updated_at = now() WHERE job_id = $1",
                     job["job_id"],
@@ -498,6 +506,11 @@ class KafkaRuntime:
 
         observation_sql = observation.sql_predicate(parameters) if observation else ""
         active_role_sql = observation.active_role_sql if observation else "a.role='subject'"
+        vector_join, evidence_extension = "", ""
+        chunk_embedding = "c.embedding"
+        if getattr(self, "use_relation_vectors", False) is True and observation is not None and observation.includes_relations:
+            vector_join, evidence_extension = relation_vector_sql(observation, parameters)
+            chunk_embedding = "selected_vector.embedding"
         if observation:
             conditions.append("evidence IS NOT NULL")
         parameters.extend([vector, RETRIEVE_TOP_K])
@@ -519,15 +532,16 @@ class KafkaRuntime:
                        COALESCE(matched.chunk_embedding, p.embedding) AS retrieval_embedding
                 FROM place_embeddings p
                 LEFT JOIN LATERAL (
-                    SELECT a.chunk_id, a.context_version, c.embedding AS chunk_embedding,
+                    SELECT a.chunk_id, a.context_version, {chunk_embedding} AS chunk_embedding,
                            c.document || jsonb_build_object('context_version', a.context_version,
-                               'metadata', s.document->'metadata') AS evidence
+                               'metadata', s.document->'metadata'){evidence_extension} AS evidence
                     FROM place_active_chunks a
                     JOIN retrieval_chunk_contexts c USING(chunk_id, context_version)
                     JOIN retrieval_chunks r USING(chunk_id)
                     JOIN retrieval_source_versions s USING(source_id, source_version)
-                    WHERE a.place_id = p.place_id AND {active_role_sql} AND c.embedding IS NOT NULL {observation_sql}
-                    ORDER BY c.embedding <=> $1::vector, a.slot LIMIT 1
+                    {vector_join}
+                    WHERE a.place_id = p.place_id AND {active_role_sql} AND {chunk_embedding} IS NOT NULL {observation_sql}
+                    ORDER BY {chunk_embedding} <=> $1::vector, a.slot LIMIT 1
                 ) matched ON true
             ) indexed_places
             WHERE {' AND '.join(conditions)}
@@ -564,6 +578,11 @@ class KafkaRuntime:
         parameters = [vector, [candidate["place_id"] for candidate in candidates], int(count)]
         observation_sql = observation.sql_predicate(parameters) if observation else ""
         active_role_sql = observation.active_role_sql if observation else "a.role='subject'"
+        vector_join, evidence_extension = "", ""
+        chunk_embedding = "c.embedding"
+        if getattr(self, "use_relation_vectors", False) is True and observation is not None and observation.includes_relations:
+            vector_join, evidence_extension = relation_vector_sql(observation, parameters)
+            chunk_embedding = "selected_vector.embedding"
         required_evidence_sql = "AND matched.evidence IS NOT NULL" if observation else ""
         query = f"""
             SELECT p.place_id, p.source_version, matched.evidence,
@@ -571,14 +590,15 @@ class KafkaRuntime:
             FROM place_embeddings p
             LEFT JOIN LATERAL (
                 SELECT c.document || jsonb_build_object('context_version', a.context_version,
-                           'metadata', s.document->'metadata') AS evidence,
-                       1 - (c.embedding <=> $1::vector) AS semantic_score, a.slot
+                           'metadata', s.document->'metadata'){evidence_extension} AS evidence,
+                       1 - ({chunk_embedding} <=> $1::vector) AS semantic_score, a.slot
                 FROM place_active_chunks a
                 JOIN retrieval_chunk_contexts c USING(chunk_id, context_version)
                 JOIN retrieval_chunks r USING(chunk_id)
                 JOIN retrieval_source_versions s USING(source_id, source_version)
-                WHERE a.place_id=p.place_id AND {active_role_sql} AND c.embedding IS NOT NULL {observation_sql}
-                ORDER BY c.embedding <=> $1::vector, a.slot LIMIT $3
+                {vector_join}
+                WHERE a.place_id=p.place_id AND {active_role_sql} AND {chunk_embedding} IS NOT NULL {observation_sql}
+                ORDER BY {chunk_embedding} <=> $1::vector, a.slot LIMIT $3
             ) matched ON true
             WHERE p.place_id=ANY($2::bigint[]) AND p.document_status='READY'
               AND p.source_version=p.latest_seen_version

@@ -1,0 +1,31 @@
+{
+  "server_with_isolated_postgres": {
+    "tests_run": 144,
+    "passed": 143,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 1,
+    "successful": true,
+    "skipped_cases": [
+      {
+        "test": "test_real_bge_models_index_context_and_rerank_original_evidence (test_contextual_chunks.ContextualDatabaseTests.test_real_bge_models_index_context_and_rerank_original_evidence)",
+        "reason": "Requires running unchanged BGE model service"
+      }
+    ]
+  },
+  "stack": {
+    "tests_run": 13,
+    "passed": 13,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "successful": true
+  },
+  "new_server_tests": 19,
+  "new_stack_tests": 1,
+  "new_postgres_tests": 7,
+  "database": "PostgreSQL 17.10 / pgvector 0.8.5",
+  "skipped_note": "기존 모델 통합 플래그 검사 1개는 미설정으로 건너뜀. 실제 기존 BGE는 별도 고정 비교에서 호출했다.",
+  "new_perplexity_calls": 0,
+  "production_database_writes": 0
+}

@@ -1,0 +1,24 @@
+{
+  "base_implementation": "acc5a267",
+  "model_container_image": "sha256:8819776872e7ede399c08e4a3694e5ce24836eb74022c72e5421e2d342ec0791",
+  "validation_image": "sha256:3a29b6293640ef802868aa855728e0d001b7224b2d16b5a5af0ddf4bbe835857",
+  "postgres_image": "sha256:d2ef61f42ef767baa5a1475393303cc235bcd92febd9d7014eddb48b41f3bad0",
+  "postgresql": "17.10",
+  "pgvector": "0.8.5",
+  "remaining_test_schemas_before_cleanup": 0,
+  "embedding_model": "BAAI/bge-m3",
+  "reranker_model": "BAAI/bge-reranker-v2-m3",
+  "health": {
+    "status": "ok",
+    "dim": 1024,
+    "embedding_device": "cuda",
+    "reranker_device": "cuda",
+    "cuda_available": true,
+    "gpu_name": "NVIDIA GeForce RTX 4050 Laptop GPU"
+  },
+  "model_identity_verification": "실행 전 기존 서비스 이미지 ID 및 app.config의 두 모델 이름을 확인했다. 기존 벡터 실행과 같은 이미지·모델이다.",
+  "isolation": "새 internal 네트워크·메모리 PostgreSQL. 비교 컨테이너만 기존 모델 네트워크에도 연결. PGHOST/PGDATABASE는 전용 접두어를 검증한다.",
+  "production_database_writes": 0,
+  "production_service_restarts": 0,
+  "cache_note": "기존 임베딩 58개와 기존 질의·리랭킹 텍스트 점수 캐시 65쌍을 준비했다. 65는 캐시 가용 항목 수이며 이번 실제 재사용 횟수가 아니다."
+}

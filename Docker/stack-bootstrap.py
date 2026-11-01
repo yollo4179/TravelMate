@@ -4,8 +4,14 @@ import os
 import secrets
 import shutil
 import socket
+from enum import StrEnum
 from pathlib import Path
 from urllib.parse import urlsplit
+
+
+class ContextualRelationRetrievalMode(StrEnum):
+    CHUNK_ONLY = "chunk-only"
+    CHUNK_AND_RELATION = "chunk-and-relation-v1"
 
 
 def prepare(state: Path) -> None:
@@ -40,6 +46,7 @@ def prepare(state: Path) -> None:
                 "RERANK_DIAGNOSTICS_ENABLED",
                 "RERANK_EXECUTION_STRATEGY",
                 "CONTEXTUAL_RERANK_EVIDENCE_PER_PLACE",
+                "CONTEXTUAL_RELATION_RETRIEVAL",
                 "PERPLEXITY_API_KEY",
                 "PERPLEXITY_AGENT_PRESET",
                 "PERPLEXITY_AGENT_MODEL",
@@ -70,6 +77,15 @@ def prepare(state: Path) -> None:
             runtime_values[evidence_count_key] = evidence_count
         else:
             runtime_values.pop(evidence_count_key, None)
+        relation_key = "CONTEXTUAL_RELATION_RETRIEVAL"
+        relation_mode = source_values.get(relation_key, "").strip().strip("\"'")
+        if relation_mode:
+            try:
+                runtime_values[relation_key] = ContextualRelationRetrievalMode(relation_mode).value
+            except ValueError:
+                raise ValueError("CONTEXTUAL_RELATION_RETRIEVAL는 chunk-only 또는 chunk-and-relation-v1이어야 합니다") from None
+        else:
+            runtime_values.pop(relation_key, None)
         for key in ("PERPLEXITY_API_KEY", "PERPLEXITY_AGENT_PRESET", "PERPLEXITY_AGENT_MODEL"):
             # Removing a credential/selector from .env must also remove its stale forwarded value.
             if key in source_values:

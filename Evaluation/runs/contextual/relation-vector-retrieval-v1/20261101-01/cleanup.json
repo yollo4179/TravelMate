@@ -1,0 +1,11 @@
+{
+  "temporary_database_container_removed": true,
+  "temporary_runners_removed": true,
+  "temporary_internal_network_removed": true,
+  "database_container_id": "e185d9491b89c4eee7a7b27d57204500df4d0f5872ceee76e465fcc26304437a",
+  "internal_network_id": "fb4f99d1e7940c51964fe29f303da36d7c2cccd69f44c2ee4ad92a93dede523b",
+  "remaining_test_schemas_before_removal": 0,
+  "production_database_writes": 0,
+  "production_service_restarts": 0,
+  "preserved_original_responses_and_vectors": true
+}

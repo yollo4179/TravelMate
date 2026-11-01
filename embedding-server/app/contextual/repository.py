@@ -10,6 +10,7 @@ from app.enrichment.contracts import ExistingPlace, fingerprint
 from .artifacts import load_record
 from .contracts import SearchChunk, SourceDocument
 from .review import reviewed_chunks
+from .relation_vectors import RelationVectorInput, VectorRepresentation
 
 
 async def ensure_schema(pool: Any) -> None:
@@ -109,3 +110,24 @@ async def activate_chunks(connection: Any, place_id: int, chunks: list[SearchChu
         await connection.execute(
             "INSERT INTO place_active_chunks(place_id,slot,chunk_id,context_version,role) VALUES($1,$2,$3,$4,$5)",
             place_id, slot, uuid.UUID(chunk.chunk_id), chunk.context_version, chunk.active_role(place_id))
+
+
+async def store_relation_embeddings(
+    connection: Any,
+    inputs: list[RelationVectorInput],
+    vectors: list[list[float]],
+) -> None:
+    if len(inputs) != len(vectors):
+        raise ValueError("관계 인용과 벡터 개수가 다릅니다")
+    if any(len(vector) != 1024 or not all(math.isfinite(value) for value in vector) for vector in vectors):
+        raise ValueError("관계 임베딩은 1024개의 유한한 값이어야 합니다")
+    for entry, vector in zip(inputs, vectors, strict=True):
+        await connection.execute(
+            """INSERT INTO retrieval_relation_embeddings(
+                chunk_id,context_version,relation_index,representation_version,evidence,embedding)
+            VALUES($1,$2,$3,$4,$5::jsonb,$6::vector)
+            ON CONFLICT (chunk_id,context_version,relation_index,representation_version)
+            DO UPDATE SET embedding=EXCLUDED.embedding""",
+            uuid.UUID(entry.chunk_id), entry.context_version, entry.relation_index,
+            VectorRepresentation.RELATION_QUOTE.value, json.dumps(entry.evidence, ensure_ascii=False),
+            "[" + ",".join(map(str, vector)) + "]")

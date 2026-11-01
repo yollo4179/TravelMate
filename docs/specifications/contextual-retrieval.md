@@ -1,6 +1,6 @@
 # 공통 장소 청크·문맥 생성·검색 DB 명세
 
-문서 버전: 11 · 갱신: 2026-11-01
+문서 버전: 12 · 갱신: 2026-11-01
 
 [계획서](../plans/contextual-retrieval.md) · [구조도](../architecture/contextual-retrieval.md) · [기존 웹 수집](place-review-enrichment.md)
 
@@ -510,6 +510,30 @@ LocationReview/<place_id>_<안전한 장소명>/
 Docker 작업자의 LOCATION_REVIEW_DIR는 `/enrichment-data/LocationReview`, 로컬 기본은 `LocationReview`이다.
 위치 이름에서 경로 구분자를 제거하며 실제 원문 아카이브는 Git에 자동 커밋하지 않는다.
 읽을 수 없는 원문/변조된 응답/보존 실패는 조용히 무시하지 않고 실패한다.
+
+### 이동 근거 직접 벡터 후보 검색: 선택 실험 v1
+
+`CONTEXTUAL_RELATION_RETRIEVAL=chunk-only`가 기본값이다. `chunk-and-relation-v1`을 명시하면 기존 활성 청크 전체 벡터와 별도로 독립 이동 관계의 **정확한 evidence.quote**를 BGE-M3로 임베딩한다.
+예상 질문을 생성하지 않고, 미선택 청크를 활성화하지 않는다. 기존 v6처럼 정확한 관계 인용이 없는 자료에는 별도 인용을 만들지 않으며 기존 전체 벡터 경로를 유지한다.
+
+추가 테이블 `retrieval_relation_embeddings`의 키는 `chunk_id + context_version + relation_index + representation_version`이다.
+`representation_version=relation-quote-vector-v1`, 원문 evidence JSON, `VECTOR(1024)`, embedding_model을 보존한다. context FK와 HNSW cosine 인덱스를 둔다.
+trigger는 해당 순번의 type=movement, importance=primary/supporting, evidence 동일성·청크 안 위치·실제 원문 substring 일치를 검사한다.
+색인 작업자는 기존 전체/대표 벡터와 함께 추가 벡터를 추론하고, 기존 버전·스냅샷·청크 세대 CAS 성공 트랜잭션 안에서만 저장한다. 선택되지 않은 청크의 관계 벡터는 추가 생성하지 않는다.
+
+추가 경로는 명시적 observation 필터에 이동 검색이 포함될 때만 사용한다. 참가자·방향·결과 endpoint·비중을 **개별 relation_index에도 먼저 적용**한다.
+같은 청크의 전체 벡터와 조건에 맞는 관계 벡터 중 최고 cosine, 같은 장소의 활성 청크 중 최고 cosine을 선택한다. 합산하지 않고 장소 중복 제거 후 Top-30을 유지한다.
+후보와 추가 근거 조회에 동일한 규칙을 사용한다. 관계 벡터가 선택되면 evidence에 `retrieval_path=relation`, `retrieved_relation_index`를 넣고 그 관계의 실제 인용으로만 리랭킹한다.
+다른 장소의 경관을 목적지에 공유하거나 예상 질문을 추천 인용으로 사용하지 않는다. 경관·시설·필터 없는 기존 검색은 그대로다.
+
+Compose/stack bootstrap은 이 설정을 전달하고 허용하지 않은 값은 거부한다. source.env에서 제거하면 이전 실행값도 제거해 chunk-only로 복귀한다.
+기존 데이터는 설정만 바꿔도 추가 벡터가 생성되지 않는다. 검수된 표본에 스키마 적용·기존 명세의 재색인 작업 등록이 필요하며, 번들 재적용의 ALREADY_APPLIED와 구분한다.
+이번 작업은 운영 DB 적용·운영 설정 변경·배포를 하지 않았다. 추가 벡터가 저장돼도 검색은 place_active_chunks를 통하므로 기존 장소별 20개 상한을 우회하지 않는다.
+
+[고정 비교 기록](../../Evaluation/runs/contextual/relation-vector-retrieval-v1/20261101-01/REPORT.md):
+같은 검수 자료·활성 슬롯·후보 30·근거 2에서 보조 이동 근거가 Top-30 탈락→후보 1위·리랭킹 1위로 바뀌었다. B의 선택 순서 44번째 근거는 활성 20개 밖이어서 두 방식 모두 검색되지 않았다.
+기존 임베딩 58개를 재사용하고 인용 4개만 추가 임베딩했다. 누락된 질의·원문 점수 9개만 추가 리랭킹했으며 Sonar 유료 호출은 0회다.
+작은 감독·합성 스트레스 실험이므로 일반 검색·전체 지연 개선을 입증하지 않는다. 기본값·활성 상한·귀속 정책은 유지한다. 활성 상한 의미 변경은 별도 결정이다.
 
 ## 검증 실행
 

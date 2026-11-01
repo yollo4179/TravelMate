@@ -77,3 +77,44 @@ $$;
 DROP TRIGGER IF EXISTS enforce_active_chunk_subject ON place_active_chunks;
 CREATE TRIGGER enforce_active_chunk_subject BEFORE INSERT OR UPDATE ON place_active_chunks
     FOR EACH ROW EXECUTE FUNCTION enforce_active_chunk_subject();
+
+
+-- 이동 근거 벡터도 활성 슬롯을 통해서만 검색한다. 보관된 모든 청크를 자동 활성화하지 않는다.
+CREATE TABLE IF NOT EXISTS retrieval_relation_embeddings (
+    chunk_id UUID NOT NULL,
+    context_version VARCHAR(64) NOT NULL,
+    relation_index INTEGER NOT NULL CHECK (relation_index >= 0),
+    representation_version TEXT NOT NULL,
+    evidence JSONB NOT NULL,
+    embedding VECTOR(1024) NOT NULL,
+    embedding_model TEXT NOT NULL DEFAULT 'BAAI/bge-m3',
+    PRIMARY KEY (chunk_id, context_version, relation_index, representation_version),
+    FOREIGN KEY (chunk_id, context_version) REFERENCES retrieval_chunk_contexts
+);
+CREATE INDEX IF NOT EXISTS idx_retrieval_relation_embedding ON retrieval_relation_embeddings
+    USING hnsw (embedding vector_cosine_ops);
+
+CREATE OR REPLACE FUNCTION enforce_relation_embedding_evidence() RETURNS trigger LANGUAGE plpgsql AS $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1 FROM retrieval_chunk_contexts c JOIN retrieval_chunks r USING(chunk_id)
+        CROSS JOIN LATERAL (SELECT c.document->'relations'->NEW.relation_index AS relation) selected
+        WHERE c.chunk_id=NEW.chunk_id AND c.context_version=NEW.context_version
+          AND selected.relation->>'type'='movement'
+          AND selected.relation->>'importance' IN ('primary','supporting')
+          AND selected.relation->'evidence'=NEW.evidence
+          AND length(btrim(NEW.evidence->>'quote'))>0
+          AND (NEW.evidence->>'start')::integer>=r.start_offset
+          AND (NEW.evidence->>'end')::integer<=r.end_offset
+          AND (NEW.evidence->>'end')::integer>(NEW.evidence->>'start')::integer
+          AND substring(r.chunk_text FROM ((NEW.evidence->>'start')::integer-r.start_offset+1)
+                        FOR ((NEW.evidence->>'end')::integer-(NEW.evidence->>'start')::integer))=NEW.evidence->>'quote'
+    ) THEN
+        RAISE EXCEPTION 'Relation vector must match exact source evidence and relation index' USING ERRCODE='23514';
+    END IF;
+    RETURN NEW;
+END;
+$$;
+DROP TRIGGER IF EXISTS enforce_relation_embedding_evidence ON retrieval_relation_embeddings;
+CREATE TRIGGER enforce_relation_embedding_evidence BEFORE INSERT OR UPDATE ON retrieval_relation_embeddings
+    FOR EACH ROW EXECUTE FUNCTION enforce_relation_embedding_evidence();
