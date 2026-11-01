@@ -1,0 +1,13 @@
+{
+  "tests_run": 164,
+  "passed": 163,
+  "failures": [],
+  "errors": [],
+  "skipped": [
+    {
+      "test": "test_real_bge_models_index_context_and_rerank_original_evidence (test_contextual_chunks.ContextualDatabaseTests.test_real_bge_models_index_context_and_rerank_original_evidence)",
+      "reason": "Requires running unchanged BGE model service"
+    }
+  ],
+  "successful": true
+}

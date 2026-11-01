@@ -1,4 +1,4 @@
-"""명시적인 이동 표현만 분류하고 불명확한 문장은 미판정으로 남긴다."""
+"""과거 이동 정규식 정책의 오프라인 실험. 서비스 검색에 연결하지 않는다."""
 from __future__ import annotations
 
 from dataclasses import dataclass

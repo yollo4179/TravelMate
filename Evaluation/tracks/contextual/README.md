@@ -1,14 +1,15 @@
 # 보존 응답 기반 문맥 검색 진단
 
-연결 검색의 대표 근거·보류 정책은 [저장 결과 재생 기록](../../runs/contextual/evidence-quality-policy-v1/20261101-01/REPORT.md)에 있다.
-아래 명령은 기존 전체 결과·동결 활성 목록·승인 원문을 로컬 아카이브에서 읽으며 검색·모델·DB를 호출하지 않는다.
-게시된 판정표는 출력의 별도 품질 집계에만 사용하고 런타임 정책 입력으로 전달하지 않는다.
+현재 일반 검색의 범위 복원은 [정책 분리·회귀 기록](../../runs/contextual/general-search-policy-isolation-v1/20261101-01/REPORT.md)에 있다.
+아래 명령은 저장된 리랭킹 결과의 실제 반환 포맷과 이전 구현을 비교한다. 검색·모델·DB를 호출하지 않는다.
 
 ```powershell
-python -X utf8 Evaluation/tracks/contextual/evidence_quality_replay.py --archive-root <로컬-contextual-아카이브> --output <새-재생-폴더>
+python -X utf8 Evaluation/tracks/contextual/general_search_scope_replay.py --archive-root <로컬-contextual-아카이브> --output <새-재생-폴더>
 ```
 
 전체 원문 아카이브가 없는 공개 체크아웃에서는 재생할 수 없다. 게시 결과·원본 해시와 합성 단위/DB 회귀를 구분한다.
+`87e06d3e`의 이동 정규식 보류·설명 교체는 [오프라인 실험](experiments/connection_quality/README.md)으로만 보존한다.
+과거 실행 기록은 당시 코드의 결과이며 현재 서비스 정책이나 의미 정확성 인증으로 해석하지 않는다.
 
 기존 v1_local·v2 응답을 재생하고 후속 프롬프트를 비교한다. 보존 응답 재생은 문맥 생성 API를 호출하지 않는다.
 실험 B의 `prompt_comparison.py generate`는 새 문맥을 실제 유료 생성한다. 계획 검증·내보내기·검색 실행은 이 호출과 분리한다.

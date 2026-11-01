@@ -1,8 +1,9 @@
-"""보존된 순위·점수·활성 목록으로 근거 품질 정책만 재생한다."""
+"""과거 이동 전용 정책을 오프라인 재생한다. 현재 서비스 경로의 검증 명령이 아니다."""
 from __future__ import annotations
 
 import argparse
 import ast
+from enum import StrEnum
 import hashlib
 import json
 from pathlib import Path, PureWindowsPath
@@ -13,12 +14,16 @@ ROOT = Path(__file__).resolve().parents[3]
 sys.path[:0] = [str(ROOT), str(ROOT / "embedding-server")]
 from app.contextual.artifacts import load_record
 from app.contextual.contracts import SearchChunk, SplitterVersion
-from app.contextual.evidence_quality import ContextCoverage, EvidenceContext, apply_connection_quality, question_requirement
+from Evaluation.tracks.contextual.experiments.connection_quality.evidence_quality import ContextCoverage, EvidenceContext, apply_connection_quality, question_requirement
 from app.contextual.observation_search import ObservationFilter
 from app.contextual.review import reviewed_chunks
 from app.contextual.pipeline import normalize_source
 from app.enrichment.contracts import ExistingPlace
 from Evaluation.common.metrics.ranking import ranking_metrics
+
+
+class ExperimentalPolicy(StrEnum):
+    MOVEMENT_REGEX = "movement-regex-v1"
 
 
 def sha256(path: Path) -> str:
@@ -68,6 +73,7 @@ def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--archive-root", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
+    parser.add_argument("--experimental-policy", type=ExperimentalPolicy, choices=list(ExperimentalPolicy), required=True)
     args = parser.parse_args()
     original = args.archive_root / "general-relation-retrieval-v1/20261101-01"
     manifest = json.loads((ROOT / "Evaluation/runs/contextual/general-relation-retrieval-v1/20261101-01/publication.json").read_text(encoding="utf-8"))
@@ -130,7 +136,8 @@ def main() -> None:
         results.append(result)
     if any(sha256(original / name) != digest for name, digest in preserved.items()):
         raise ValueError("재생 중 원본 결과가 변경됐습니다")
-    write_json(args.output / "replay.json", {"results": results, "new_searches": 0, "new_model_calls": 0,
+    write_json(args.output / "replay.json", {"results": results, "experimental_policy": args.experimental_policy,
+        "service_policy": False, "new_searches": 0, "new_model_calls": 0,
         "production_database_writes": 0, "input_sha256": preserved,
         "active_limit": 20, "candidate_limit": 30, "default_search_settings_changed": False})
     print(json.dumps([{key: value for key, value in result.items() if key not in ("retained", "withheld", "place_relevance_before", "place_relevance_after", "original_top_20", "retained_top_20")} for result in results], ensure_ascii=False, indent=2))

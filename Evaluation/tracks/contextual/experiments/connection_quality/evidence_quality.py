@@ -1,4 +1,4 @@
-"""장소 순위를 유지하며 연결 근거의 대표 선택·불확실성·보류를 처리한다."""
+"""과거 강제 보류·설명 교체의 오프라인 실험. 일반 의미 판정기로 사용하지 않는다."""
 from __future__ import annotations
 
 from copy import deepcopy
@@ -9,9 +9,9 @@ import re
 from typing import Any
 
 from .connection_statements import StatementAssessment, StatementStatus, TravelMode, assess_statement
-from .contracts import ContentKind
-from .observation_search import ObservationFilter
-from .relations import RelationType, RetrievalScope
+from app.contextual.contracts import ContentKind
+from app.contextual.observation_search import ObservationFilter
+from app.contextual.relations import RelationType, RetrievalScope
 
 
 class RequirementScope(StrEnum):

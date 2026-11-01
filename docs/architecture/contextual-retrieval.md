@@ -104,28 +104,25 @@ flowchart TD
 [고정 비교·결과·남은 한계](../../Evaluation/runs/contextual/relation-vector-retrieval-v1/20261101-01/REPORT.md)
 [일반 의미 검색 통합의 고정 비교](../../Evaluation/runs/contextual/general-relation-retrieval-v1/20261101-01/REPORT.md)
 
-## 연결 근거 품질의 후처리
+## 일반 의미 검색과 실험 정책의 분리
 
-`KafkaRuntime._complete_recommendation`은 기존 검색·리랭킹 뒤 연결 근거 품질 정책을 적용하고 최종 반환 개수를 제한한다.
-질문의 연결 조건 판별은 이 후처리 범위만 정한다. 일반 의미 검색에서 관계 벡터를 사용하는 경로를 이 판별에 묶지 않는다.
+서비스는 정규식으로 이동 의도를 확정하거나 결과를 강제 보류하지 않는다.
+관계 벡터 검색을 유지하고 기존 리랭킹의 설명·복합 근거를 그대로 반환한다.
 
 ```mermaid
 flowchart TD
-    Rank[기존 후보·리랭킹 순서] --> Policy[선택 원문 관계의 긍정·차단·미판정]
-    Active[후보별 기존 활성 슬롯·최대 20개] --> Conflict[동일 방향 관계의 차단 기록 대조]
-    Policy --> Supported{선택 근거가 연결 조건을 지지하는가}
-    Supported -->|아니오| Hold[추천 보류·원문과 사유 보존]
-    Supported -->|예| Representative[긍정 기록을 대표로 선택·장소 순서 유지]
-    Conflict --> Representative
-    Representative --> Limit[현재 통행 미확인 표시·최종 limit]
+    Query[자연어 질문·명시적 메타 조건] --> Search[장소·후기·선택형 관계 인용 검색]
+    Search --> Rank[질문과 선택 원문 근거 리랭킹]
+    Rank --> Return[기존 순위·설명·선택 근거·최종 limit]
+    Return --> Evidence[관찰 주체·관계 방향·제한·출처를 보존]
+    Return --> Unassessed[의미 적합성·성공·현재성 미판정]
 ```
 
-`connection_statements.py`는 원문 표현을 판정하는 교체 가능한 전략 레지스트리다.
-`evidence_quality.py`는 원문 위치 검사·대표 선택·충돌/보류 기록을 담당한다.
-`_retrieve_quality_context`는 기존 활성 문맥을 읽는 SQL만 실행하며, 새 임베딩·리랭킹·비활성 근거 검색은 하지 않는다.
-활성 슬롯/장소 버전 불일치가 발견되면 결과를 보류한다. DB 읽기 이후 변경까지 잠그는 트랜잭션은 추가하지 않았다.
-검색 기본값·후보 30개·활성 상한·거리 계산은 유지한다. 후처리는 기본 chunk-only 경로의 연결 질문에도 적용된다.
+`evidence_chunks`의 content_kind/place_refs는 관찰 주체를, relations/evidence/conditions는 관계와 제한 원문을 보존한다.
+별도 의미 판정 없이 차단·부정 인용을 성공으로 변환하지 않는다. `evidence_assessment.status=not_assessed`를 기록한다.
+선택 근거 수 기본 1·선택 2/3, 후보 30·활성 20·거리 정책을 유지한다. 모든 조건의 근거가 항상 선택된다는 보장은 없다.
 
-제한된 한국어 규칙이므로 모든 자연어 질문의 함의를 검증하지 않는다. 사실의 현재성·실제 거리·경로 안전성을 판정하지 않으며
-근거 인용과 이동 조건을 보존한 채 불확실성을 표시한다.
-[실제 예시·저장 결과 검증·남은 한계](../../Evaluation/runs/contextual/evidence-quality-policy-v1/20261101-01/REPORT.md)
+과거 이동 전용 정책은 `Evaluation/tracks/contextual/experiments/connection_quality`의 오프라인 실험으로만 존재한다.
+과거 재생 명령에는 `--experimental-policy movement-regex-v1`이 필요하다. 서비스 앱·배포 이미지·운영 설정에서 참조하지 않는다.
+원문 좌표 검증·귀속·관계 인용 검색과 범용 의미 평가의 책임을 분리한다.
+[범위 교정·회귀·남은 의미 평가 과제](../../Evaluation/runs/contextual/general-search-policy-isolation-v1/20261101-01/REPORT.md)

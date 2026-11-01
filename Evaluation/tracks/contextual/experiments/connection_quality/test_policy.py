@@ -4,14 +4,12 @@ from __future__ import annotations
 from copy import deepcopy
 from pathlib import Path
 import sys
-from typing import Any
 import unittest
 
-ROOT = Path(__file__).resolve().parents[1]
-sys.path[:0] = [str(ROOT), str(ROOT / "tests")]
-from app.contextual.connection_statements import StatementStatus, TravelMode, assess_statement
-from app.contextual.contracts import SearchChunk, SplitterVersion
-from app.contextual.evidence_quality import (
+ROOT = Path(__file__).resolve().parents[5]
+sys.path[:0] = [str(ROOT), str(ROOT / "embedding-server"), str(ROOT / "embedding-server/tests")]
+from Evaluation.tracks.contextual.experiments.connection_quality.connection_statements import StatementStatus, TravelMode, assess_statement
+from Evaluation.tracks.contextual.experiments.connection_quality.evidence_quality import (
     ContextCoverage,
     DecisionStatus,
     EvidenceContext,
@@ -21,67 +19,8 @@ from app.contextual.evidence_quality import (
     question_requirement,
 )
 from app.contextual.observation_search import ObservationFilter
-from app.contextual.pipeline import normalize_source
-from app.enrichment.contracts import fingerprint
 
-WALK = "출발공원에서 계단을 내려가 도착공원까지 걸어갔다."
-BLOCK = "출발공원에서 도착공원으로 이동하려 했지만 공사로 길이 막혀 돌아왔다."
-VEHICLE = "도착공원까지 차량으로만 이동할 수 있으며 도보 통행은 금지된다."
-
-
-def document(
-    quote: str,
-    *,
-    origin: int = 901,
-    destination: int = 902,
-    importance: str = "primary",
-    conditions: tuple[str, ...] = (),
-    relation: bool = True,
-) -> dict[str, Any]:
-    source = normalize_source({
-        "source_type": "review",
-        "title": "근거 품질 검사",
-        "text": quote,
-        "metadata": {"source_url": "https://example.org/quality/" + fingerprint([quote, origin, destination]), "capture_scope": "full_text"},
-    })
-    relations = [{
-        "type": "movement",
-        "importance": importance,
-        "origin": {"place_id": origin, "name": "출발공원"},
-        "destination": {"place_id": destination, "name": "도착공원"},
-        "conditions": [{"kind": "other", "quote": condition} for condition in conditions],
-        "evidence": {"start": 0, "end": len(quote), "quote": quote},
-    }] if relation else []
-    chunk = SearchChunk(
-        source=source,
-        start=0,
-        end=len(quote),
-        context_text="원문을 보존한 검사용 이동 기록이다.",
-        place_refs=[{"place_id": origin, "role": "subject"}, {"place_id": destination, "role": "mentioned"}],
-        generation={"provider": "synthetic-quality-test"},
-        splitter_version=SplitterVersion.SENTENCE,
-        content_kind="other",
-        relations=relations,
-    )
-    return {**chunk.to_dict(), "context_version": chunk.context_version}
-
-
-def candidate(
-    place_id: int,
-    documents: list[dict[str, Any]],
-    scores: list[float],
-) -> dict[str, Any]:
-    return {
-        "place_id": place_id,
-        "source_version": 7,
-        "semantic_score": 0.1,
-        "description": documents[0]["chunk_text"],
-        "evidence": documents[0],
-        "reranked_evidence_chunks": [
-            {**entry, "rerank_score": score, "semantic_score": 0.1}
-            for entry, score in zip(documents, scores, strict=True)
-        ],
-    }
+from contextual_search_fixtures import BLOCK, WALK, VEHICLE, candidate, document
 
 
 class EvidenceQualityTests(unittest.TestCase):

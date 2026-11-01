@@ -27,13 +27,6 @@ from app.contextual.relation_vectors import RelationRetrievalMode, relation_embe
 from app.contextual.retrieval import resolve_retrieval_strategy
 from app.contextual.artifacts import archive_index_input
 from app.contextual.ranking import EvidenceCount, build_pairs, rank_places, validate_token_budget
-from app.contextual.evidence_quality import (
-    ContextCoverage,
-    EvidenceContext,
-    RequirementScope,
-    apply_connection_quality,
-    question_requirement,
-)
 
 LOGGER = logging.getLogger(__name__)
 RETRIEVE_TOP_K = 30
@@ -47,6 +40,10 @@ class PlaceEventType(StrEnum):
 class RankingMode(StrEnum):
     RERANKED = "RERANKED"
     SEMANTIC_ONLY = "SEMANTIC_ONLY"
+
+
+class EvidenceAssessmentStatus(StrEnum):
+    NOT_ASSESSED = "not_assessed"
 
 
 class KafkaRuntime:
@@ -427,23 +424,15 @@ class KafkaRuntime:
                         reranking_span.set_attribute("reranking.score_max", max(scores))
                 ranked = (rank_places(candidates, pairs, scores) if evidence_count != EvidenceCount.ONE else
                           sorted(zip(candidates, scores, strict=True), key=lambda item: item[1], reverse=True))
+                items = [self._to_result_item(row, rank, score) for rank, (row, score) in enumerate(ranked[: payload["limit"]], 1)]
                 rerank_status = "APPLIED"
             else:
-                ranked = [(row, None) for row in candidates]
+                items = [
+                    self._to_result_item(row, rank, None)
+                    for rank, row in enumerate(candidates[: payload["limit"]], 1)
+                ]
                 rerank_status = "SKIPPED" if candidates else "EMPTY"
 
-            requirement = question_requirement(
-                query,
-                ObservationFilter.from_mapping(payload.get("filters", {}).get("observation")),
-            )
-            contexts = await self._retrieve_quality_context(ranked) if requirement.scope == RequirementScope.CONNECTION and ranked else {}
-            quality = apply_connection_quality(ranked, requirement, contexts)
-            items = [
-                self._to_result_item(row, rank, score)
-                for rank, (row, score) in enumerate(quality.accepted[: payload["limit"]], 1)
-            ]
-            warnings = [f"연결 근거를 확인하지 못한 {len(quality.withheld)}개 장소를 추천에서 보류했습니다."] if quality.withheld else []
-            pipeline_span.set_attribute("search.withheld_count", len(quality.withheld))
             pipeline_span.set_attribute("search.returned_count", len(items))
             pipeline_span.set_attribute("reranking.status", rerank_status)
             pipeline_span.set_attribute(
@@ -467,10 +456,7 @@ class KafkaRuntime:
                 "candidate_count": len(candidates),
                 "returned_count": len(items),
                 "items": items,
-                "warnings": warnings,
-                "withheld_count": len(quality.withheld),
-                "withheld_results": quality.withheld,
-                "evidence_quality_scope": requirement.scope,
+                "warnings": [],
             }
             output_preview = [
                 {
@@ -648,56 +634,8 @@ class KafkaRuntime:
             "index_config_version": candidate.get("index_config_version", "bge-m3-v1"),
             "enrichment_snapshot_id": str(candidate["enrichment_snapshot_id"]) if candidate.get("enrichment_snapshot_id") else None,
             "evidence_chunks": evidence_chunks,
-            **({"evidence_assessment": candidate["evidence_assessment"]} if "evidence_assessment" in candidate else {}),
+            "evidence_assessment": {"status": EvidenceAssessmentStatus.NOT_ASSESSED},
         }
-
-    async def _retrieve_quality_context(
-        self,
-        ranked: list[tuple[dict[str, Any], float | None]],
-    ) -> dict[int, EvidenceContext]:
-        if not ranked:
-            return {}
-        async with self.database_pool.acquire() as connection:
-            rows = await connection.fetch(
-                """SELECT p.place_id, p.source_version AS place_source_version,
-                       p.document_status='READY' AND p.source_version=p.latest_seen_version AS current,
-                       c.document || jsonb_build_object('context_version',a.context_version,
-                           'metadata',jsonb_strip_nulls(jsonb_build_object(
-                               'source_url',s.document->'metadata'->'source_url',
-                               'published_at',s.document->'metadata'->'published_at'))) AS evidence
-                FROM place_embeddings p
-                LEFT JOIN place_active_chunks a ON a.place_id=p.place_id
-                    AND a.role IN ('subject','relation_endpoint')
-                LEFT JOIN retrieval_chunk_contexts c USING(chunk_id,context_version)
-                LEFT JOIN retrieval_chunks r USING(chunk_id)
-                LEFT JOIN retrieval_source_versions s ON s.source_id=r.source_id AND s.source_version=r.source_version
-                WHERE p.place_id=ANY($1::bigint[])
-                ORDER BY p.place_id,a.slot""",
-                [row["place_id"] for row, _ in ranked],
-            )
-        grouped: dict[int, list[Any]] = {}
-        for row in rows:
-            grouped.setdefault(row["place_id"], []).append(row)
-        contexts = {}
-        for candidate, _ in ranked:
-            current = grouped.get(candidate["place_id"], [])
-            documents = tuple(
-                json.loads(row["evidence"]) if isinstance(row["evidence"], str) else row["evidence"]
-                for row in current if row["evidence"] is not None
-            )
-            selected = candidate.get("reranked_evidence_chunks")
-            primary = candidate.get("evidence")
-            primary = json.loads(primary) if isinstance(primary, str) else primary
-            selected = selected if selected is not None else [primary] if primary else []
-            active_keys = {(document["chunk_id"], document["context_version"]) for document in documents}
-            consistent = (bool(current)
-                and all(row["current"] and row["place_source_version"] == candidate["source_version"] for row in current)
-                and all((document["chunk_id"], document["context_version"]) in active_keys for document in selected))
-            contexts[candidate["place_id"]] = EvidenceContext(
-                documents=documents,
-                coverage=ContextCoverage.ACTIVE if consistent else ContextCoverage.CHANGED,
-            )
-        return contexts
 
     async def _save_recommendation_result(self, request: Any, result: dict[str, Any]) -> None:
         result_event_id = uuid.UUID(result["event_id"])
