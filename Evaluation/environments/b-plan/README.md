@@ -16,6 +16,20 @@ Spring은 **Windows 호스트**에서 실행한다. Spring이 검증된 Windows 
 
 아래 명령은 이 작업 브랜치 worktree의 루트에서 실행한다. 현재 PC 경로는 `C:/Users/SSAFY/AppData/Local/Temp/travelmate-general-relation-retrieval`이다. runtime에는 비밀번호·원문·벡터가 있으므로 Git에 추가하지 않는다. 기본 예제 경로는 이미 gitignore되는 `Server/TravelMate/build/b-evaluation`이다. 다른 PC에서는 검증한 Python·프로필·renderer 경로를 먼저 맞춰야 하며 현재 검증 범위를 일반화하지 않는다.
 
+## 현재 GPU 검색 구성
+
+2026-11-02에 평가 검색 서비스의 임베딩·리랭커를 CUDA로 전환했다. 아래 CPU 구성 설명과 이전 CPU 실행 기록은 당시 환경을 설명한다. 현재 구성을 재현할 때는 GPU overlay를 함께 사용한다. 기본 Compose만 적용하면 GPU 연결이 사라질 수 있다.
+
+```powershell
+docker compose --env-file Server/TravelMate/build/b-evaluation/runtime.env -f Evaluation/environments/b-plan/compose.yaml -f Evaluation/environments/b-plan/compose.reranker-gpu.yaml up -d --no-deps --pull never --no-build search
+```
+
+기존 진입점 `Docker/embedding-entrypoint.py`를 재사용한다. `/health`에서 실제 파라미터의 장치·dtype, 실행 전략·배치와 추론 횟수를 확인한다. Qwen은 미적재이며 GPU 전환 자체는 검색·추론을 실행하지 않는다. 소스 변경을 반영해 재시작할 때만 위 명령에 `--force-recreate`를 추가한다. 이전 CPU 보고서·관측 파일·DB를 덮어쓰지 않는다.
+
+현재 배치 설정 8을 세 predict 전략에 명시적으로 전달한다. 이전 구현은 이 인자를 전달하지 않아 라이브러리 기본값 32를 사용했으므로, 과거의 설정 기반 batch_count와 실제 predict 배치를 구분해야 한다. GPU 전환·배치 전달 수정의 처리 시간과 순위 영향은 다음 승인된 검색에서 관측한다. FP16 전략으로 임의 전환하지 않는다.
+
+OpenAI strict 서비스 구성 제안은 별도 `prepare_openai_service.py`로 생성한다. 이 도구는 실행 옵션이나 HTTP 호출을 제공하지 않으며, `approved=false`와 토큰 계산 과금 미확인 상태의 예산 파일을 만든다. 현재 `run_b.py`는 Qwen 프로필 전용이다. 이전 실행 runtime에 새 API 호출을 보내거나 기존 관측 파일을 재사용하지 않는다.
+
 ## 새 환경 준비 순서
 
 초기화 명령은 새 runtime과 빈 평가 DB에만 실행한다. 이미 준비된 DB에 `load`를 반복하면 덮어쓰지 않고 실패한다.

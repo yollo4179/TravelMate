@@ -1,0 +1,22 @@
+{
+  "java_mock_tests": {
+    "tests": 97,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "evaluation_adapter_mock_tests": 13,
+  "gpu_batch_mock_tests": 1,
+  "independent_json_schema_check": true,
+  "all_nested_provider_objects_are_strict": true,
+  "proposal_reproducible_without_http": true,
+  "budget_approved": false,
+  "input_count_billing_confirmed": false,
+  "actual_api_or_search_or_qwen_calls": 0,
+  "jar_built_not_deployed": {
+    "path": "Server\\TravelMate\\build\\libs\\TravelMate-0.0.1-SNAPSHOT.jar",
+    "sha256": "2965be779f2019fca57249afeb43e723d041b47703cc1ec72bca3264ffc59ce2"
+  },
+  "golden_inputs_prior_reports_and_server_search_schema_unchanged": true,
+  "local_uncommitted_collectors_unchanged": 4
+}

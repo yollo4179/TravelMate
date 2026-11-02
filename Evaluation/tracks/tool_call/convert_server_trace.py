@@ -207,6 +207,9 @@ def _convert(
     envelope = {name: native[name] for name in ("type", "message", "data", "conversationId")}
     providers = sorted({f'{_payload(event).get("provider")}:{_payload(event).get("model")}'
                         for event in finished_calls + linked_calls})
+    adaptations = [event for event in selected if event["event"] == "TOOL_ARGUMENT_ADAPTATION"]
+    provider_calls = [call for event in finished_calls
+                      for call in (_payload(event).get("receipt") or {}).get("nativeToolCalls", []) or []]
     return {
         "case_id": case_id, "input_sha256": expected_hash,
         "record_source": "spring_execution_mock" if mode == RecordMode.MOCK else "spring_execution_live",
@@ -215,6 +218,9 @@ def _convert(
         "model": ",".join(providers) if providers else "not_observed",
         "response": envelope, "native_response": native,
         "tool_calls": calls, "evaluation_tool_call_projections": projections, "tool_results": results, "primary_result_id": primary,
+        "tool_calls_representation": "server_contract",
+        "provider_tool_calls": provider_calls,
+        "argument_adaptations": adaptations,
         "termination": native["termination"], "model_calls": finished_calls,
         "usage_summary": _usage_summary(finished_calls),
         "observation_coverage": coverage,

@@ -1,0 +1,26 @@
+﻿{
+    "image":  "travelmate-contextual-validation:64bf5ef0",
+    "gpu":  [
+                {
+                    "Driver":  "",
+                    "Count":  -1,
+                    "DeviceIDs":  null,
+                    "Capabilities":  [
+                                         [
+                                             "gpu"
+                                         ]
+                                     ],
+                    "Options":  null
+                }
+            ],
+    "entrypoint":  [
+                       "python",
+                       "/workspace/Docker/embedding-entrypoint.py"
+                   ],
+    "command":  [
+
+                ],
+    "cpus":  2000000000,
+    "memory":  6442450944,
+    "created":  "2026-11-02T06:38:28.858403998Z"
+}

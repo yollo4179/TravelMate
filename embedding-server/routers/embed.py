@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Request
+from inspect import signature
 from app.schemas import EmbeddingRequest, EmbeddingResponse
 from app.embedder import embedder
 from app.observability import tracer
@@ -15,6 +16,15 @@ async def health(request: Request) -> dict[str, int | str | bool]:
         "reranker_device": reranker.device,
         "cuda_available": cuda_available,
         "gpu_name": gpu_name,
+        "embedding_parameter_device": str(next(embedder.model.parameters()).device),
+        "embedding_dtype": str(next(embedder.model.parameters()).dtype),
+        "reranker_parameter_device": str(next(reranker.model.model.parameters()).device),
+        "reranker_dtype": str(next(reranker.model.model.parameters()).dtype),
+        "reranker_execution_strategy": reranker.execution_mode,
+        "reranker_configured_batch_size": reranker.batch_size,
+        "reranker_effective_batch_size": reranker.batch_size,
+        "reranker_predict_default_batch_size": signature(reranker.model.predict).parameters["batch_size"].default,
+        "reranker_inference_count": reranker.inference_count,
     }
     database_pool = getattr(request.app.state, "database_pool", None)
     kafka_runtime = getattr(request.app.state, "kafka_runtime", None)

@@ -1,0 +1,14 @@
+﻿{
+    "health":  {
+                   "status":  "ok",
+                   "dim":  1024,
+                   "embedding_device":  "cpu",
+                   "reranker_device":  "cpu",
+                   "cuda_available":  false,
+                   "gpu_name":  "",
+                   "original_evidence_mode":  "post-retrieval-field-v1"
+               },
+    "pending_search":  0,
+    "pending_spring":  0,
+    "timestamp":  "2026-11-02T15:19:17.5931675+09:00"
+}

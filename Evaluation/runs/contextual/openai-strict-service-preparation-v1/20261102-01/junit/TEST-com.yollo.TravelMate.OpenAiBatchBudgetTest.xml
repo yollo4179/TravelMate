@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.yollo.TravelMate.OpenAiBatchBudgetTest" tests="9" skipped="0" failures="0" errors="0" timestamp="2026-11-02T09:48:50.910Z" hostname="DESKTOP-MS327CL" time="0.254">
+  <properties/>
+  <testcase name="usageIsRecordedWithoutRefundingReservationsAndMissingUsageHaltsTheBatch()" classname="com.yollo.TravelMate.OpenAiBatchBudgetTest" time="0.054"/>
+  <testcase name="realStrategyReservesBeforeCountAndPreservesReceiptOnStrictDecodeFailure()" classname="com.yollo.TravelMate.OpenAiBatchBudgetTest" time="0.049"/>
+  <testcase name="[1] missingConfirmation=approved" classname="com.yollo.TravelMate.OpenAiBatchBudgetTest" time="0.027"/>
+  <testcase name="[2] missingConfirmation=inputCountBillingConfirmed" classname="com.yollo.TravelMate.OpenAiBatchBudgetTest" time="0.022"/>
+  <testcase name="planGenerationCannotSpendTheSearchOnlyAllowance()" classname="com.yollo.TravelMate.OpenAiBatchBudgetTest" time="0.016"/>
+  <testcase name="reservesAllFourCallsAndCannotResetBudgetByRestarting()" classname="com.yollo.TravelMate.OpenAiBatchBudgetTest" time="0.025"/>
+  <testcase name="aCaseCannotBeRepeatedWithANewRequestId()" classname="com.yollo.TravelMate.OpenAiBatchBudgetTest" time="0.017"/>
+  <testcase name="strictModeWithoutAnExplicitBudgetCannotCallTheCountingEndpoint()" classname="com.yollo.TravelMate.OpenAiBatchBudgetTest" time="0.014"/>
+  <testcase name="spendLimitAndUnknownCountingCostBlockBeforeLedgerAndHttp()" classname="com.yollo.TravelMate.OpenAiBatchBudgetTest" time="0.019"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

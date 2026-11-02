@@ -65,7 +65,7 @@ class LlmStrategyTest {
         new ApplicationContextRunner()
                 .withBean(ObjectMapper.class, ObjectMapper::new)
                 .withUserConfiguration(StrategyLlmClient.class, OllamaLlmClient.class, OpenAiLlmClient.class,
-                        LlmCallGuard.class, ExecutionRecorder.class)
+                        LlmCallGuard.class, ExecutionRecorder.class, com.yollo.TravelMate.ai.llm.budget.OpenAiBatchBudget.class)
                 .withPropertyValues("llm.provider=" + provider.name(), "ollama.exact-counter-command=[]")
                 .run(context -> {
                     assertNull(context.getStartupFailure());

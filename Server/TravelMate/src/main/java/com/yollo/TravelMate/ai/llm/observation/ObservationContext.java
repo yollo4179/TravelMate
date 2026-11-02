@@ -15,7 +15,7 @@ public final class ObservationContext {
 
     public enum Mode { LIVE, MOCK, UNSCOPED }
     public enum Phase { REQUEST, CONVERSATION, PLAN_GENERATION }
-    public enum Event { API_REQUEST, API_RESPONSE, MODEL_CALL, MODEL_TURN, TOOL_RESULT, TURN_RESULT, JOB_STATUS }
+    public enum Event { API_REQUEST, API_RESPONSE, MODEL_CALL, MODEL_TURN, TOOL_ARGUMENT_ADAPTATION, TOOL_RESULT, TURN_RESULT, JOB_STATUS }
 
     @Builder(toBuilder = true)
     public record Context(

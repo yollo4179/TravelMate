@@ -1,0 +1,14 @@
+﻿{
+    "timestamp":  "2026-11-02T18:54:44.8458903+09:00",
+    "gpu_name":  "NVIDIA GeForce RTX 4050 Laptop GPU",
+    "total_mib":  6141,
+    "used_mib":  0,
+    "free_mib":  5924,
+    "ollama_loaded_models":  [
+
+                             ],
+    "reranker_real_inference_count":  0,
+    "search_requests_before":  1,
+    "search_requests_after":  1,
+    "pending_search_jobs":  0
+}

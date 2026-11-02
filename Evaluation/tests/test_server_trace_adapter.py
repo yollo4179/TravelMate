@@ -90,6 +90,36 @@ class ServerTraceAdapterTests(unittest.TestCase):
         self.assertIsNone(scores["observed_plan_state_preserved"])
         self.assertIsNone(scores["observed_commit_version_matches"])
 
+    def test_strict_provider_arguments_and_server_projection_are_preserved_separately(self) -> None:
+        events, bindings = self.fixture()
+        provider_arguments = json.dumps({"query": self.case["input"]["query"], "limit": None,
+            "region": None, "city": None, "category": None, "exclude_place_ids": None, "area": None})
+        server_arguments = json.dumps({**json.loads(provider_arguments), "limit": 10})
+        for event in events:
+            payload = event["payload"]
+            if event["event"] == "MODEL_TURN":
+                payload["toolCalls"][0]["arguments"] = server_arguments
+            if event["event"] == "TOOL_RESULT":
+                payload["result"]["arguments"] = server_arguments
+            if event["event"] == "TURN_RESULT":
+                payload["toolResults"][0]["arguments"] = server_arguments
+            if event["event"] == "API_RESPONSE":
+                payload["response"]["toolResults"][0]["arguments"] = server_arguments
+        native_call = {"type": "function_call", "call_id": "call-1", "name": "search_places", "arguments": provider_arguments}
+        provider_event = {**copy.deepcopy(events[0]), "eventId": "mock-provider", "event": "MODEL_CALL",
+            "payload": {"stage": "FINISHED", "provider": "OPENAI", "model": "MOCK", "status": "SUCCEEDED",
+                "dispatched": True, "receipt": {"nativeToolCalls": [native_call], "usage": {}}}}
+        adaptation = {**copy.deepcopy(events[0]), "eventId": "mock-adaptation", "event": "TOOL_ARGUMENT_ADAPTATION",
+            "payload": {"callId": "call-1", "originalArguments": provider_arguments,
+                "serverArguments": server_arguments, "status": "ADAPTED"}}
+        record = self.convert([*events, provider_event, adaptation], bindings)
+        self.assertEqual(provider_arguments, record["provider_tool_calls"][0]["arguments"])
+        self.assertEqual(server_arguments, record["tool_calls"][0]["function"]["arguments"])
+        self.assertEqual("server_contract", record["tool_calls_representation"])
+        self.assertEqual([adaptation], record["argument_adaptations"])
+        self.assertEqual("mock_regression_only", record["quality_status"])
+        self.assertFalse(record["observation_coverage"]["tool_call"])
+
     def test_mock_or_budget_blocked_calls_cannot_become_successful_quality_metrics(self) -> None:
         events, bindings = self.fixture()
         record = self.convert(events, bindings)

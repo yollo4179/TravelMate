@@ -24,6 +24,8 @@ public class OpenAiLlmClient implements LlmStrategy {
     private final int maxOutputTokens;
     private final TokenBudget.Limits limits;
     private final LlmCallGuard guard;
+    private final OpenAiToolContracts.Mode toolContractMode;
+    private final OpenAiBatchBudget batchBudget;
 
     @Autowired
     public OpenAiLlmClient(
@@ -35,11 +37,13 @@ public class OpenAiLlmClient implements LlmStrategy {
             @Value("${openai.model-output-limit:0}") long modelOutputLimit,
             @Value("${openai.limits-model:}") String limitsModel,
             @Value("${openai.limits-source:}") String limitsSource,
+            @Value("${openai.tool-contract-mode:CANONICAL}") OpenAiToolContracts.Mode toolContractMode,
+            OpenAiBatchBudget batchBudget,
             LlmCallGuard guard
     ) {
         this(LlmHttpClients.create(baseUrl), apiKey, TokenBudget.Limits.builder()
                 .provider(LlmProvider.OPENAI).model(model).contextTokens(contextTokens).outputReservation(maxOutputTokens)
-                .modelOutputLimit(modelOutputLimit).limitsModel(limitsModel).limitsSource(limitsSource).build(), guard);
+                .modelOutputLimit(modelOutputLimit).limitsModel(limitsModel).limitsSource(limitsSource).build(), guard, toolContractMode, batchBudget);
     }
 
     public OpenAiLlmClient(
@@ -59,12 +63,35 @@ public class OpenAiLlmClient implements LlmStrategy {
             TokenBudget.Limits limits,
             LlmCallGuard guard
     ) {
+        this(restClient, apiKey, limits, guard, OpenAiToolContracts.Mode.CANONICAL);
+    }
+
+    public OpenAiLlmClient(
+            RestClient restClient,
+            String apiKey,
+            TokenBudget.Limits limits,
+            LlmCallGuard guard,
+            OpenAiToolContracts.Mode toolContractMode
+    ) {
+        this(restClient, apiKey, limits, guard, toolContractMode, new OpenAiBatchBudget(""));
+    }
+
+    public OpenAiLlmClient(
+            RestClient restClient,
+            String apiKey,
+            TokenBudget.Limits limits,
+            LlmCallGuard guard,
+            OpenAiToolContracts.Mode toolContractMode,
+            OpenAiBatchBudget batchBudget
+    ) {
         this.restClient = restClient;
         this.model = limits.model();
         this.apiKey = apiKey;
         this.maxOutputTokens = Math.toIntExact(limits.outputReservation());
         this.limits = limits;
         this.guard = guard;
+        this.toolContractMode = toolContractMode;
+        this.batchBudget = batchBudget;
     }
 
     @Override
@@ -92,6 +119,7 @@ public class OpenAiLlmClient implements LlmStrategy {
             List<LlmTurn.ToolDefinition> tools,
             boolean jsonOutput
     ) {
+        var preparedTools = OpenAiToolContracts.prepare(tools, toolContractMode);
         Map<String, Object> request = new LinkedHashMap<>();
         request.put("model", model);
         request.put("input", messages.stream().flatMap(message -> wireItems(message).stream()).toList());
@@ -103,18 +131,35 @@ public class OpenAiLlmClient implements LlmStrategy {
         request.put("include", List.of("reasoning.encrypted_content"));
         if (jsonOutput) request.put("text", Map.of("format", Map.of("type", "json_object")));
         if (!tools.isEmpty()) {
-            request.put("tools", tools.stream().map(tool -> Map.of(
+            request.put("tools", preparedTools.stream().map(tool -> Map.of(
                     "type", "function",
-                    "name", tool.name(),
-                    "description", tool.description(),
+                    "name", tool.definition().name(),
+                    "description", tool.definition().description(),
                     "parameters", tool.parameters(),
-                    "strict", tool.schemaMode() == LlmTurn.SchemaMode.STRICT
+                    "strict", tool.strict()
             )).toList());
             request.put("parallel_tool_calls", false);
         }
         JsonNode wireRequest = JSON.valueToTree(request);
-        return guard.call(limits, wireRequest, () -> countInput(wireRequest),
-                () -> infer(request), this::receipt, this::decode);
+        var reservation = new java.util.concurrent.atomic.AtomicReference<OpenAiBatchBudget.Reservation>();
+        var countedInput = new java.util.concurrent.atomic.AtomicReference<TokenBudget.Count>();
+        try {
+            return guard.call(limits, wireRequest, () -> {
+                    if (toolContractMode == OpenAiToolContracts.Mode.STRICT_SEARCH_V1) batchBudget.requireConfigured();
+                    reservation.set(batchBudget.reserve(limits));
+                    var counted = countInput(wireRequest);
+                    countedInput.set(counted);
+                    return counted;
+                },
+                () -> infer(request), this::receipt, response -> {
+                    batchBudget.verifyProvider(reservation.get(), response);
+                    batchBudget.observe(reservation.get(), receipt(response), countedInput.get());
+                    return decode(response, preparedTools);
+                });
+        } catch (RuntimeException exception) {
+            batchBudget.halt(reservation.get());
+            throw exception;
+        }
     }
 
     private TokenBudget.Count countInput(JsonNode wireRequest) {
@@ -157,7 +202,7 @@ public class OpenAiLlmClient implements LlmStrategy {
         ), calls, response.path("status").asText(null));
     }
 
-    private LlmTurn decode(JsonNode response) {
+    private LlmTurn decode(JsonNode response, List<OpenAiToolContracts.PreparedTool> tools) {
         if (response == null || !"completed".equals(response.path("status").asText())
                 || !response.path("output").isArray()) {
             throw new IllegalStateException("OpenAI 응답이 비어 있거나 완료되지 않았습니다.");
@@ -168,11 +213,13 @@ public class OpenAiLlmClient implements LlmStrategy {
         response.get("output").forEach(item -> {
             continuation.add(item.deepCopy());
             if ("function_call".equals(item.path("type").asText())) {
-                calls.add(new LlmTurn.ToolCall(
+                var nativeCall = new LlmTurn.ToolCall(
                         item.path("call_id").asText(),
                         item.path("name").asText(),
                         item.path("arguments").asText()
-                ));
+                );
+                calls.add(tools.stream().filter(tool -> tool.definition().name().equals(nativeCall.name())).findFirst()
+                        .map(tool -> tool.adapt(nativeCall)).orElse(nativeCall));
             }
             if ("message".equals(item.path("type").asText())) {
                 item.path("content").forEach(part -> {
