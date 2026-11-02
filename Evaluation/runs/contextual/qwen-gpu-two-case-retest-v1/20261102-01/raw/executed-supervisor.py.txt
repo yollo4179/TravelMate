@@ -1,0 +1,93 @@
+from __future__ import annotations
+
+import asyncio
+from datetime import UTC, datetime
+import hashlib
+import json
+from pathlib import Path
+import subprocess
+import sys
+
+import httpx
+
+ROOT = Path(__file__).resolve().parents[3]
+sys.path.insert(0, str(ROOT / 'Evaluation/environments/b-plan'))
+import run_b
+
+RUNTIME = ROOT / 'Server/TravelMate/build/b-evaluation-gpu-retest'
+OUTPUT = ROOT / 'Server/TravelMate/build/b-gpu-retest-first'
+TELEMETRY = RUNTIME / 'diagnostic-telemetry'
+OLLAMA_LOG = Path('C:/Users/SSAFY/AppData/Local/Ollama/server.log')
+SEARCH_TRACE = ROOT / 'Server/TravelMate/build/b-evaluation/traces/runtime-traces.jsonl'
+
+
+def write_json(path: Path, document: dict) -> None:
+    path.write_text(json.dumps(document, ensure_ascii=False, indent=2) + '\n', encoding='utf-8', newline='\n')
+
+
+async def gpu_snapshot() -> str:
+    process = await asyncio.create_subprocess_exec(
+        'nvidia-smi', '--query-gpu=name,memory.total,memory.used,memory.free,utilization.gpu', '--format=csv',
+        stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE,
+        creationflags=subprocess.CREATE_NO_WINDOW,
+    )
+    stdout, stderr = await asyncio.wait_for(process.communicate(), timeout=10)
+    if process.returncode:
+        raise RuntimeError(stderr.decode('utf-8', errors='replace')[:500])
+    return stdout.decode('utf-8').strip()
+
+
+async def snapshot(client: httpx.AsyncClient) -> dict:
+    response, gpu = await asyncio.gather(client.get('http://127.0.0.1:11434/api/ps'), gpu_snapshot())
+    response.raise_for_status()
+    return {'captured_at': datetime.now(UTC).isoformat(), 'metadata_only': True,
+            'ollama_ps': response.json(), 'nvidia_smi': gpu}
+
+
+async def main() -> None:
+    if '--execute' not in sys.argv:
+        raise SystemExit('Explicit --execute is required; no requests sent')
+    if TELEMETRY.exists() or OUTPUT.exists():
+        raise SystemExit('Existing diagnostic attempt; never repeat or overwrite')
+    blockers = run_b.execution_blockers(RUNTIME)
+    if blockers:
+        raise SystemExit(f'Preflight blockers: {blockers}')
+    TELEMETRY.mkdir()
+    original_logs = {str(path): path.read_bytes() for path in (OLLAMA_LOG, SEARCH_TRACE)}
+    write_json(TELEMETRY / 'log-baseline.json', {name: {'bytes': len(content), 'sha256': hashlib.sha256(content).hexdigest()}
+                                                for name, content in original_logs.items()})
+    async with httpx.AsyncClient(timeout=10, transport=httpx.AsyncHTTPTransport(retries=0), trust_env=False) as client:
+        health = await client.get('http://127.0.0.1:18000/health')
+        health.raise_for_status()
+        observed_health = health.json()
+        if observed_health.get('embedding_device') != 'cpu' or observed_health.get('reranker_device') != 'cpu':
+            raise SystemExit('CPU search setting mismatch before execution')
+        write_json(TELEMETRY / 'health-before.json', observed_health)
+        before = await snapshot(client)
+        if before['ollama_ps'].get('models'):
+            raise SystemExit('Unexpected resident model before this cold diagnostic; no requests sent')
+        write_json(TELEMETRY / 'before.json', before)
+        task = asyncio.create_task(run_b.execute(RUNTIME, OUTPUT, run_b.BatchProfile.GPU_DIAGNOSTIC))
+        try:
+            while not task.done():
+                try:
+                    observed = await snapshot(client)
+                except Exception as exception:
+                    observed = {'captured_at': datetime.now(UTC).isoformat(), 'metadata_only': True,
+                                'error': f'{type(exception).__name__}: {exception}'}
+                with (TELEMETRY / 'samples.jsonl').open('a', encoding='utf-8', newline='\n') as destination:
+                    destination.write(json.dumps(observed, ensure_ascii=False) + '\n')
+                await asyncio.wait({task}, timeout=10)
+            await task
+        finally:
+            write_json(TELEMETRY / 'after.json', await snapshot(client))
+            for source, name in ((OLLAMA_LOG, 'ollama-delta.log'), (SEARCH_TRACE, 'search-trace-delta.jsonl')):
+                old = original_logs[str(source)]
+                current = source.read_bytes()
+                if not current.startswith(old):
+                    write_json(TELEMETRY / (name + '.rotation.json'), {'source': str(source), 'prefix_changed': True})
+                (TELEMETRY / name).write_bytes(current[len(old):] if current.startswith(old) else current)
+
+
+if __name__ == '__main__':
+    asyncio.run(main())

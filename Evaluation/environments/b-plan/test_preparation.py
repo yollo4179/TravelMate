@@ -14,6 +14,18 @@ import run_b
 
 
 class PreparationTests(unittest.TestCase):
+    def test_gpu_profile_only_selects_existing_two_cases_and_lower_caps(self) -> None:
+        case_ids, requests, model_cap, search_cap = run_b.batch_scope(run_b.BatchProfile.GPU_DIAGNOSTIC)
+        self.assertEqual(run_b.CASE_IDS[:2], case_ids)
+        self.assertEqual(list(case_ids), [request["case_id"] for request in requests])
+        self.assertEqual((4, 2), (model_cap, search_cap))
+        self.assertTrue(all(request["repeats"] == 1 for request in requests))
+
+    def test_failed_dispatched_model_call_is_not_omitted_from_actual_count(self) -> None:
+        events = [{"event": "MODEL_CALL", "payload": {"stage": "FINISHED", "dispatched": True, "status": "FAILED"}},
+                  {"event": "TOOL_RESULT", "payload": {"result": {"name": "search_places", "status": "FAILED"}}}]
+        self.assertEqual((1, 1), run_b.observed_attempts(events))
+
     def test_source_databases_never_accept_writes(self) -> None:
         for source in (prepare.SOURCE_SPRING, prepare.SOURCE_SEARCH):
             with self.subTest(source=source.container), self.assertRaises(ValueError):

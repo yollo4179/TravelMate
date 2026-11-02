@@ -28,6 +28,34 @@ SCOPE = ROOT / "Evaluation/runs/contextual/runtime-qwen-independent-search-v1/20
 ENDPOINT = "http://127.0.0.1:18080/api/v1/conversation/turns"
 
 
+class BatchProfile(StrEnum):
+    ORIGINAL = "original-four"
+    GPU_DIAGNOSTIC = "gpu-two"
+
+
+def batch_scope(profile: BatchProfile) -> tuple[tuple[str, ...], list[dict[str, Any]], int, int]:
+    scopes = {
+        BatchProfile.ORIGINAL: (SCOPE, CASE_IDS, 8, 4),
+        BatchProfile.GPU_DIAGNOSTIC: (
+            ROOT / "Evaluation/runs/contextual/search-tool-contract-output-v1/20261102-01/next-execution-proposal.json",
+            CASE_IDS[:2], 4, 2,
+        ),
+    }
+    scope_path, case_ids, model_cap, search_cap = scopes[profile]
+    requests = read_json(scope_path)["case_requests"]
+    if tuple(row["case_id"] for row in requests) != case_ids or any(row["repeats"] != 1 for row in requests):
+        raise ValueError("The approved fixed scope changed")
+    return case_ids, requests, model_cap, search_cap
+
+
+def observed_attempts(events: list[dict[str, Any]]) -> tuple[int, int]:
+    model_calls = sum(event["event"] == "MODEL_CALL" and event["payload"].get("stage") == "FINISHED"
+                      and event["payload"].get("dispatched") is True for event in events)
+    tool_attempts = sum(event["event"] == "TOOL_RESULT" and event["payload"]["result"]["name"] == "search_places"
+                        for event in events)
+    return model_calls, tool_attempts
+
+
 class RunStatus(StrEnum):
     STARTED = "STARTED"
     STOPPED = "STOPPED"
@@ -113,18 +141,15 @@ def validate_completed_turn(response: dict[str, Any], events: list[dict[str, Any
     return len(finished), len(tool_results)
 
 
-async def execute(runtime: Path, output: Path) -> None:
-    scope = read_json(SCOPE)
-    requests = scope["case_requests"]
-    if tuple(row["case_id"] for row in requests) != CASE_IDS or any(row["repeats"] != 1 for row in requests):
-        raise ValueError("The approved fixed scope changed")
+async def execute(runtime: Path, output: Path, profile: BatchProfile = BatchProfile.ORIGINAL) -> None:
+    case_ids, requests, model_cap, search_cap = batch_scope(profile)
     trace_path = runtime / "observations/execution.jsonl"
     if trace_path.exists() and trace_path.stat().st_size:
         raise ValueError("Runtime already contains request observations; do not repeat the batch")
     if output.exists():
         raise ValueError("Output exists; never overwrite/retry a batch")
     corpus = {place["id"]: place for place in read_json(ROOT / "Evaluation/datasets/v1.4.0/generated/corpus.json")}
-    cases = [case for case in read_jsonl(ROOT / "Evaluation/datasets/v1.4.0/generated/golden.jsonl") if case["case_id"] in CASE_IDS]
+    cases = [case for case in read_jsonl(ROOT / "Evaluation/datasets/v1.4.0/generated/golden.jsonl") if case["case_id"] in case_ids]
     exported = export_inputs(cases, corpus)
     by_case = {row["case_id"]: row for row in exported}
     if any(by_case[row["case_id"]]["input_sha256"] != row["input_sha256"] for row in requests):
@@ -139,6 +164,10 @@ async def execute(runtime: Path, output: Path) -> None:
     try:
         async with httpx.AsyncClient(timeout=httpx.Timeout(1800, connect=10), transport=httpx.AsyncHTTPTransport(retries=0), trust_env=False) as client:
             for case in requests:
+                existing = read_jsonl(trace_path) if trace_path.exists() else []
+                dispatched, search_attempts = observed_attempts(existing)
+                if dispatched + 2 > model_cap or search_attempts + 1 > search_cap or sent_requests >= len(case_ids):
+                    raise ValueError("Insufficient remaining batch budget; stop before next request")
                 case_id = case["case_id"]
                 turn_id = str(uuid.uuid4())
                 headers = {"Authorization": "Bearer " + access_token(secret), "Idempotency-Key": turn_id,
@@ -146,8 +175,17 @@ async def execute(runtime: Path, output: Path) -> None:
                            "X-Evaluation-Case-Id": case_id, "X-Evaluation-Input-Sha256": case["input_sha256"]}
                 sent_requests += 1
                 prepare.write_json(output / "attempt.json", {"sent_requests": sent_requests, "case_id": case_id, "turn_id": turn_id})
+                prepare.write_json(output / f"{case_id}.request.json", {
+                    "case_id": case_id, "input_sha256": case["input_sha256"], "turn_id": turn_id,
+                    "conversation_id": by_case[case_id]["model_input"]["conversationId"],
+                    "endpoint": ENDPOINT, "api_request": case["api_request"],
+                })
                 response = await client.post(ENDPOINT, headers=headers, json=case["api_request"])
                 (output / f"{case_id}.response.json").write_text(response.text, encoding="utf-8")
+                prepare.write_json(output / f"{case_id}.response-metadata.json", {
+                    "http_status": response.status_code, "request_id": response.headers.get("X-Request-Id"),
+                    "conversation_id": response.headers.get("X-Conversation-Id"),
+                })
                 response.raise_for_status()
                 native = response.json()
                 binding = {"case_id": case_id, "input_sha256": case["input_sha256"],
@@ -161,7 +199,7 @@ async def execute(runtime: Path, output: Path) -> None:
                 model_count, search_count = validate_completed_turn(native, selected)
                 completed_model_calls += model_count
                 completed_search_calls += search_count
-                if completed_model_calls > 8 or completed_search_calls > 4 or sent_requests > 4:
+                if completed_model_calls > model_cap or completed_search_calls > search_cap or sent_requests > len(case_ids):
                     raise ValueError("Batch budget exceeded")
                 records = convert_records(events, bindings, exported, mode=RecordMode.LIVE)
                 write_jsonl(output / "records.jsonl", records)
@@ -171,11 +209,16 @@ async def execute(runtime: Path, output: Path) -> None:
         failure = f"{type(exception).__name__}: {exception}"
         raise
     finally:
+        actual_models = actual_tools = 0
         if trace_path.exists():
             (output / "events.jsonl").write_bytes(trace_path.read_bytes())
+            actual_models, actual_tools = observed_attempts(read_jsonl(trace_path))
         prepare.write_json(output / "run.json", {"status": status, "failure": failure, "created_at": datetime.now(UTC).isoformat(),
+            "profile": profile, "case_ids": case_ids, "max_qwen_calls": model_cap, "max_search_calls": search_cap,
             "sent_requests": sent_requests, "completed_validated_model_calls": completed_model_calls,
             "completed_validated_search_calls": completed_search_calls, "retries": 0,
+            "observed_dispatched_model_calls": actual_models, "observed_search_tool_attempts": actual_tools,
+            "search_backend_dispatch_count_requires_database_audit": True,
             "actual_attempts_require_events_audit": True, "ranking_scores_comparable": False,
             "judge_calls": 0, "plan_jobs": 0})
 
@@ -185,18 +228,21 @@ async def main() -> None:
     parser.add_argument("--runtime", type=Path, required=True)
     parser.add_argument("--output", type=Path)
     parser.add_argument("--execute", action="store_true")
+    parser.add_argument("--profile", type=BatchProfile, choices=list(BatchProfile), default=BatchProfile.ORIGINAL)
     arguments = parser.parse_args()
     runtime = arguments.runtime.resolve()
+    case_ids, _, model_cap, search_cap = batch_scope(arguments.profile)
     blockers = execution_blockers(runtime)
     print(json.dumps({"mode": ExecutionMode.EXECUTE if arguments.execute else ExecutionMode.INSPECT,
-                      "case_ids": CASE_IDS, "blockers": blockers, "model_calls_made_by_inspection": 0}, ensure_ascii=False))
+                      "case_ids": case_ids, "max_qwen_calls": model_cap, "max_search_calls": search_cap,
+                      "blockers": blockers, "model_calls_made_by_inspection": 0}, ensure_ascii=False))
     if not arguments.execute:
         return
     if blockers:
         raise SystemExit("Live execution blocked before any API request")
     if arguments.output is None:
         parser.error("--execute requires a new --output directory")
-    await execute(runtime, arguments.output.resolve())
+    await execute(runtime, arguments.output.resolve(), arguments.profile)
 
 
 if __name__ == "__main__":

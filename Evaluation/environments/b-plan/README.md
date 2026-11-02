@@ -74,7 +74,16 @@ C:/ssafy/Travelmate/.venv-ragas/Scripts/python.exe -X utf8 Evaluation/environmen
 
 ## 관측과 호출 한도
 
-Qwen qwen3:8b·think=false·context 8192·출력 예약 1536을 유지한다. 검색 도구만 등록하며 요청당 모델 턴 2·도구 실행 1·실패 시 STOP이다. 고정 수집기는 기존 B안 네 문항만 각 1회, 직렬, 재시도 없이 보낸다. 전체 상한은 Qwen 8회·검색 4회다. 서버의 제한은 요청별이며 전역 4문항 상한은 이 수집기에만 있다. 서버에 별도 요청을 보내면 이 범위 보장을 받을 수 없다.
+`--profile gpu-two`는 계약·출력 지침 수정 후 기존 `PLR-TM-palaces-01`, `PLR-TM-palaces-03`만 각 1회 선택한다. 이 프로필은 Qwen 최대 4회·검색 최대 2회이며 원래 `original-four` 프로필의 8회·4회 상한과 구분한다. 두 프로필 모두 첫 실패에서 종료하고 기존 관측 파일·출력 디렉터리가 있으면 재실행을 거부한다. 새 JAR는 기존 runtime을 덮어쓰지 않고 별도 runtime의 `original-fields/deployment.json`에 연결한다.
+
+```powershell
+# 기본 동작은 추론·검색 없는 검사다. 이미 실행한 runtime을 재실행하는 명령이 아니다.
+C:/ssafy/Travelmate/.venv-ragas/Scripts/python.exe -X utf8 Evaluation/environments/b-plan/run_b.py --runtime Server/TravelMate/build/b-evaluation-gpu-retest --profile gpu-two
+```
+
+실제 dispatch 수는 실패한 모델 호출도 포함한다. `observed_search_tool_attempts`는 인자 검증에서 거부된 도구도 포함하므로 실제 검색 백엔드 요청 수와 같다고 간주하지 않는다. 후자는 DB 기록과 따로 대조한다. 준비 검사의 pending 수는 모든 과거 행 수가 아니라 unpublished outbox와 PENDING/RUNNING 작업 수다. 완료 행은 보존한다.
+
+Qwen qwen3:8b·think=false·context 8192·출력 예약 1536을 유지한다. 검색 도구만 등록하며 요청당 모델 턴 2·도구 실행 1·실패 시 STOP이다. 기본 `original-four` 프로필은 기존 B안 네 문항만 각 1회, 직렬, 재시도 없이 보낸다. 이 프로필의 전체 상한은 Qwen 8회·검색 4회다. 서버의 제한은 요청별이며 배치 상한은 선택한 수집 프로필에 있다. 서버에 별도 요청을 보내면 이 범위 보장을 받을 수 없다.
 
 Spring 원본 이벤트는 `observations/execution.jsonl`, 로컬 검색 span은 `traces/runtime-traces.jsonl`에 저장한다. 로컬 전송 검사 패킷은 별도 `traces/transport-probes.jsonl`에 저장하며 실제 문항·모델 기록으로 세지 않는다. 로컬 OTLP 연결을 활성화할 때만 사용하는 문자열은 외부 서비스 키가 아니다. 모든 exporter endpoint는 전용 로컬 수집기다.
 
