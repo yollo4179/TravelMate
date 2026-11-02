@@ -41,7 +41,8 @@ def search_body(case: dict[str, Any], mode: RankingMode, limit: int) -> dict[str
     area = conditions.get("area")
     if area is None:
         return body
-    allowed = {"type", "center", "radius_meters", "distance_method"}
+    # The center ID identifies coordinate provenance; only explicit coordinates reach the server.
+    allowed = {"type", "center", "center_place_id", "radius_meters", "distance_method"}
     if set(area) - allowed or str(area.get("type", "circle")).lower() != "circle":
         raise ValueError("Only the explicit frozen circular area is representable")
     if area.get("distance_method") not in (None, "haversine_straight_line"):

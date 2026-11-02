@@ -11,6 +11,9 @@
 원래 query·region·city·category·exclude_place_ids·area를 각각 query·region·city·category·excludePlaceIds·area로 전달한다.
 지역과 반경을 함께 전달할 수 있고, 계획 context나 현재 시각·이동수단을 생성하지 않는다.
 누락 검색어를 추정하거나 중복 제외 ID·범위 밖 반경을 자동 보정하지 않는다.
+`area.center_place_id`는 중심 좌표의 출처 ID로 허용하며, `selected_inputs.original_input`과
+`requested_conditions.area.center_place_id`에 보존한다. 서버에는 명시된 좌표와 미터 반경만 전달하고,
+이 ID로 좌표를 조회하거나 검색·제외 필터를 만들지 않는다.
 대화 이력 등 표현할 수 없는 조건은 `not_run`으로 보존하고 다음 외부 호출을 중단한다.
 
 `http_request.raw_body`와 SHA-256은 실제 전송 본문이며 인증 헤더는 기록하지 않는다.
