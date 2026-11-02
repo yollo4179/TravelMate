@@ -1,0 +1,33 @@
+{
+  "baseline": "5f9e1238",
+  "frozen_dataset_manifest_and_prior_reports_unchanged": true,
+  "actual_model_api_calls": 0,
+  "actual_search_calls": 0,
+  "actual_metadata_api_calls": 0,
+  "paid_calls": 0,
+  "production_db_updates": 0,
+  "deployments": 0,
+  "java": {
+    "tests": 94,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "python": {
+    "tests": 34,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "saved_requests": 8,
+  "offline_replay_passes": 2,
+  "successful_offline_count_checks": 16,
+  "same_previous_token_id_hashes": true,
+  "retained_measurement_initializations": 1,
+  "context_tokens": 8192,
+  "output_reservation": 1536,
+  "guard_disabled": false,
+  "source_truncated": false,
+  "B_live_evaluation_executed": false,
+  "actual_server_usage": null
+}

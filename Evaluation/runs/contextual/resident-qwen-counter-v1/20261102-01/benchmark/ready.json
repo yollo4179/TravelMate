@@ -1,0 +1,13 @@
+{
+  "requestId": "initialize",
+  "sessionId": "11498b14-f55f-43d7-aab2-7de5a29251b0",
+  "status": "READY",
+  "payload": {
+    "workerSessionId": "11498b14-f55f-43d7-aab2-7de5a29251b0",
+    "workerPid": 40884,
+    "initializationMs": 5571.745999972336,
+    "initializationCount": 1,
+    "modelDigest": "500a1f067a9f782620b40bee6f7b0c89e17ae61f686b92c24933e4ca4b2b8b41",
+    "templateSha256": "ae370d884f108d16e7cc8fd5259ebc5773a0afa6e078b11f4ed7e39a27e0dfc4"
+  }
+}

@@ -9,11 +9,15 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.yollo.TravelMate.ai.llm.base.*;
 import com.yollo.TravelMate.ai.llm.budget.*;
 import com.yollo.TravelMate.ai.llm.observation.ExecutionRecorder;
+import jakarta.annotation.PostConstruct;
+import jakarta.annotation.PreDestroy;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
 
+@Slf4j
 @Component
 public class OllamaLlmClient implements LlmStrategy {
     private static final com.fasterxml.jackson.databind.ObjectMapper JSON = new com.fasterxml.jackson.databind.ObjectMapper();
@@ -22,6 +26,7 @@ public class OllamaLlmClient implements LlmStrategy {
     private final TokenBudget.Limits limits;
     private final LlmCallGuard guard;
     private final QwenTokenCounter tokenCounter;
+    private final LlmProvider selectedProvider;
 
     @Autowired
     public OllamaLlmClient(
@@ -31,10 +36,25 @@ public class OllamaLlmClient implements LlmStrategy {
             @Value("${ollama.max-output-tokens:1536}") int outputTokens,
             LlmCallGuard guard,
             @Value("${ollama.exact-counter-command:[]}") String counterCommand,
-            @Value("${ollama.exact-counter-timeout-seconds:90}") long counterTimeout
+            @Value("${ollama.exact-counter-timeout-seconds:90}") long counterTimeout,
+            @Value("${ollama.exact-counter-queue-timeout-millis:5000}") long queueTimeoutMillis,
+            @Value("${ollama.exact-counter-queue-capacity:8}") int queueCapacity,
+            @Value("${llm.provider:QWEN}") LlmProvider selectedProvider
     ) {
-        this(LlmHttpClients.create(baseUrl), model, contextTokens, outputTokens, guard,
-                new QwenTokenCounter(new ExactQwenProcess(counterCommand, counterTimeout)));
+        this(
+                LlmHttpClients.create(baseUrl),
+                model,
+                contextTokens,
+                outputTokens,
+                guard,
+                new QwenTokenCounter(new ExactQwenProcess(
+                        counterCommand,
+                        counterTimeout,
+                        queueTimeoutMillis,
+                        queueCapacity
+                )),
+                selectedProvider
+        );
     }
 
     public OllamaLlmClient(RestClient restClient, String model) {
@@ -61,6 +81,19 @@ public class OllamaLlmClient implements LlmStrategy {
             LlmCallGuard guard,
             QwenTokenCounter tokenCounter
     ) {
+        this(restClient, model, contextTokens, outputTokens, guard, tokenCounter, LlmProvider.QWEN);
+    }
+
+    private OllamaLlmClient(
+            RestClient restClient,
+            String model,
+            int contextTokens,
+            int outputTokens,
+            LlmCallGuard guard,
+            QwenTokenCounter tokenCounter,
+            LlmProvider selectedProvider
+    ) {
+        this.selectedProvider = selectedProvider;
         this.tokenCounter = tokenCounter;
         this.restClient = restClient;
         this.model = model;
@@ -69,6 +102,20 @@ public class OllamaLlmClient implements LlmStrategy {
                 .contextTokens(contextTokens).outputReservation(outputTokens).modelOutputLimit(contextTokens)
                 .limitsModel(model).limitsSource("configured num_ctx/output; exact local full-input count with pinned model/template/tokenizer per call").build();
     }
+
+    @PostConstruct
+    public void initializeCounter() {
+        if (!supports(selectedProvider) || !tokenCounter.isConfigured()) return;
+        try {
+            JsonNode initialized = tokenCounter.initialize(restClient, limits);
+            log.info("Qwen tokenizer worker ready. initializationMs={}", initialized.path("initializationMs").asDouble());
+        } catch (RuntimeException exception) {
+            log.warn("Qwen tokenizer initialization failed; model calls remain blocked. reason={}", exception.getMessage());
+        }
+    }
+
+    @PreDestroy
+    public void closeCounter() { tokenCounter.close(); }
 
     @Override
     public boolean supports(LlmProvider provider) {

@@ -114,10 +114,24 @@ class ExactQwenGuardTest {
     }
 
     @Test
+    void aQueueRejectionDoesNotInvalidateAnotherCallsHealthyWorker() throws Exception {
+        var builder = RestClient.builder().baseUrl("http://mock.invalid");
+        var http = MockRestServiceServer.bindTo(builder).build();
+        metadata(http);
+        var process = mock(ExactQwenProcess.class);
+        when(process.count(any())).thenThrow(new QwenCounterException(QwenCounterException.Reason.QUEUE_TIMEOUT));
+        var counter = new QwenTokenCounter(process);
+        assertEquals(QwenCounterException.Reason.QUEUE_TIMEOUT,
+                assertThrows(QwenCounterException.class, () -> counter.count(builder.build(), mapper.createObjectNode().put("model", "qwen3:8b"))).reason());
+        verify(process, never()).invalidate();
+        http.verify();
+    }
+
+    @Test
     void timeoutNonzeroExitAndMalformedOutputAreCountingFailures() throws Exception {
         String java = Path.of(System.getProperty("java.home"), "bin", "java.exe").toString();
         String classpath = Path.of(CounterProcessFixture.class.getProtectionDomain().getCodeSource().getLocation().toURI()).toString();
-        for (var scenario : CounterProcessFixture.Scenario.values()) {
+        for (var scenario : List.of(CounterProcessFixture.Scenario.TIMEOUT, CounterProcessFixture.Scenario.FAILURE, CounterProcessFixture.Scenario.INVALID)) {
             String command = mapper.writeValueAsString(List.of(java, "-cp", classpath, CounterProcessFixture.class.getName(), scenario.name()));
             assertThrows(IllegalStateException.class, () -> new ExactQwenProcess(command, 1).count(mapper.createObjectNode()));
         }

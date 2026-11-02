@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.yollo.TravelMate.ModelInputBudgetPreparationTest" tests="1" skipped="0" failures="0" errors="0" timestamp="2026-11-02T00:56:40.582Z" hostname="DESKTOP-MS327CL" time="0.294">
+  <properties/>
+  <testcase name="inspectExistingInputsWithRealSerializationAndCapturedMetadataWithoutInference()" classname="com.yollo.TravelMate.ModelInputBudgetPreparationTest" time="0.294"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

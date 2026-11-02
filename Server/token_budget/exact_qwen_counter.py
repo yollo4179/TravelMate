@@ -1,10 +1,11 @@
-"""One-request vocabulary-only worker. Stdin is the complete captured native request."""
+"""Vocabulary-only token accounting with one-shot and resident JSONL worker modes."""
 from __future__ import annotations
 
 import argparse
 import hashlib
 import json
 import importlib.metadata
+from dataclasses import dataclass
 from pathlib import Path
 import struct
 import subprocess
@@ -55,8 +56,15 @@ def validate_identity(envelope: dict[str, Any]) -> dict[str, Any]:
     return request
 
 
-def count(envelope: dict[str, Any], profile: dict[str, str]) -> dict[str, Any]:
-    validate_identity(envelope)
+@dataclass(frozen=True)
+class VerifiedAssets:
+    model: Path
+    renderer: Path
+    libraries: Path
+    metadata: dict[str, Any]
+
+
+def load_verified_assets(profile: dict[str, str]) -> VerifiedAssets:
     if importlib.metadata.version("tokenizers") != "0.22.2":
         raise ValueError("Unsupported independent tokenizer version")
     model = Path(profile["model_path"])
@@ -73,6 +81,13 @@ def count(envelope: dict[str, Any], profile: dict[str, str]) -> dict[str, Any]:
     if (metadata.get("general.architecture") != "qwen3" or metadata.get("tokenizer.ggml.model") != "gpt2"
             or metadata.get("tokenizer.ggml.pre") != "qwen2" or metadata.get("qwen3.context_length") != 40960):
         raise ValueError("Unsupported local GGUF tokenizer")
+    return VerifiedAssets(model, renderer, libraries, metadata)
+
+
+def count(envelope: dict[str, Any], profile: dict[str, str]) -> dict[str, Any]:
+    validate_identity(envelope)
+    assets = load_verified_assets(profile)
+    model, renderer, libraries, metadata = assets.model, assets.renderer, assets.libraries, assets.metadata
     # Preserve the JVM's exact serialized wire bytes inside the renderer envelope.
     render_input = ('{"key":"runtime","wire":' + envelope["wire"] + ',"template":'
                     + json.dumps(envelope["show"]["template"], ensure_ascii=False)
@@ -107,11 +122,17 @@ def count(envelope: dict[str, Any], profile: dict[str, str]) -> dict[str, Any]:
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--profile", required=True, type=Path)
+    parser.add_argument("--serve", action="store_true")
     arguments = parser.parse_args()
     sys.stdin.reconfigure(encoding="utf-8")
     sys.stdout.reconfigure(encoding="utf-8")
-    envelope = json.load(sys.stdin)
     profile = json.loads(arguments.profile.read_text(encoding="utf-8"))
+    if arguments.serve:
+        from Server.token_budget.resident_qwen import serve
+        profile["profile_path"] = str(arguments.profile.absolute())
+        serve(profile, sys.stdin.buffer, sys.stdout.buffer)
+        return
+    envelope = json.load(sys.stdin)
     print(json.dumps(count(envelope, profile), ensure_ascii=False))
 
 

@@ -35,7 +35,7 @@ class LlmStrategyTest {
                 .withBean(ObjectMapper.class, ObjectMapper::new)
                 .withUserConfiguration(StrategyLlmClient.class, OllamaLlmClient.class, OpenAiLlmClient.class,
                         LlmCallGuard.class, ExecutionRecorder.class)
-                .withPropertyValues("llm.provider=" + provider.name())
+                .withPropertyValues("llm.provider=" + provider.name(), "ollama.exact-counter-command=[]")
                 .run(context -> {
                     assertNull(context.getStartupFailure());
                     assertInstanceOf(StrategyLlmClient.class, context.getBean(LlmClient.class));

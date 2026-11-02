@@ -30,3 +30,6 @@ run.json의 latency_measurement는 현재 not_collected_by_this_runner다.
 
 [Qwen 정확 가드·계획 없는 검색 구현](contextual/runtime-qwen-independent-search-v1/20261102-01/REPORT.md)은
 모의 회귀와 저장 메타데이터의 오프라인 토큰 검증이다. 실제 모델·검색 평가를 실행하지 않았다.
+
+[Qwen 계산기 상주·재사용](contextual/resident-qwen-counter-v1/20261102-01/REPORT.md)은
+초기화·반복 계산을 분리 측정하고 기존 토큰 ID 일치를 검증한 기록이다. 실제 추론은 계속 보류한다.
