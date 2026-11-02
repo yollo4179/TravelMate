@@ -1,0 +1,110 @@
+{
+  "review_method": "Codex review of captured LIVE records and existing frozen place judgments; no separate judge invocation",
+  "scope_completed": false,
+  "batch_status": "STOPPED_AT_FIRST_EXECUTION_ERROR",
+  "observed_counts": {
+    "api_requests": 2,
+    "qwen_dispatched_calls": 3,
+    "search_tool_invocation_attempts": 2,
+    "search_backend_requests": 1,
+    "search_backend_attempts": 1,
+    "retries": 0,
+    "paid_calls": 0,
+    "judge_calls": 0,
+    "planning_jobs": 0
+  },
+  "cases": [
+    {
+      "case_id": "PLR-TM-palaces-01",
+      "execution": "COMPLETED",
+      "termination": "COMPLETED",
+      "tool_selection": "CORRECT_SEARCH_TOOL",
+      "tool_arguments": {
+        "server_acceptance": "ACCEPTED_WITH_EXISTING_DEFAULTS",
+        "query_semantics_review": "The shorter query names the same requested place.",
+        "effective_hard_filters": "MATCH_EXISTING_CASE",
+        "advertised_schema_compliance": "FAIL_REQUIRED_FIELDS_OMITTED",
+        "omitted_required_fields": ["area", "category", "city", "exclude_place_ids"],
+        "unknown_fields": [],
+        "basis": "Executed source SearchPlacesTool.definition and ToolSchemas.object require all properties; PlaceSearchCriteriaResolver permits these omissions. This is not a provider-wire schema capture."
+      },
+      "search_relevance": {
+        "status": "RELEVANT_RETURNED_PLACE",
+        "returned_rank": 1,
+        "place_id": 378,
+        "existing_qrel_relevance": 3,
+        "existing_qrel_maximum": 3,
+        "candidate_count": 30,
+        "returned_count": 1,
+        "top5_top10_benchmark": "NOT_SCORED",
+        "all_candidate_ids_and_scores": "NOT_ARCHIVED_BY_CURRENT_RUNTIME"
+      },
+      "evidence_transport": {
+        "status": "EXACT_TEXT_AND_IDENTITY_PRESERVED",
+        "original_codepoints": 641,
+        "source_type": "tourapi",
+        "snapshot_version": "1.4.0",
+        "place_id": 378,
+        "tour_content_id": "126511",
+        "content_sha256": "12706ec5165ca2f48e2846d995b745959c1546a73a1511507ad2fe81adb97a72",
+        "generated_supplement": "EMPTY",
+        "provider_native_wire_body": "NOT_ARCHIVED; tool feedback and full-wire SHA256 are archived"
+      },
+      "explanation_grounding": {
+        "status": "SUPPORTED_IN_THIS_SINGLE_POSITIVE_CASE",
+        "citation_membership": "EXACT_SUBSTRING_AND_MATCHING_PLACE_EVIDENCE_SOURCE_IDS",
+        "citation_count": 1,
+        "citation_quote_codepoints": 632,
+        "observed_wrong_attribution": false,
+        "observed_added_place_facts": false,
+        "negative_or_conflicting_evidence_handling": "NOT_TESTED_BY_THIS_CASE",
+        "current_operating_status": "NOT_VERIFIED",
+        "response_length_limitation": "A simple place-name lookup produced a 567-codepoint explanation and a near-full original quote; second model call took about 240 seconds."
+      }
+    },
+    {
+      "case_id": "PLR-TM-palaces-03",
+      "execution": "FAILED_TOOL_ARGUMENT_VALIDATION",
+      "termination": "TOOL_FAILED",
+      "tool_selection": "CORRECT_SEARCH_TOOL",
+      "tool_arguments": {
+        "server_acceptance": "REJECTED_BEFORE_SEARCH",
+        "observed_error": "INVALID_TOOL_CALL: Search query required",
+        "advertised_schema_compliance": "FAIL",
+        "omitted_required_fields": ["exclude_place_ids", "limit", "query"],
+        "unknown_fields": ["excludePlaceIds"],
+        "additional_schema_findings": "The unknown camelCase key and other omissions were identified offline; only the missing-query failure was actually raised."
+      },
+      "search_relevance": {"status": "NOT_OBSERVED_NO_SEARCH_DISPATCH"},
+      "evidence_transport": {"status": "NOT_OBSERVED_NO_SEARCH_RESULT"},
+      "explanation_grounding": {"status": "NOT_OBSERVED_SERVER_FALLBACK_ONLY"},
+      "insufficient_evidence_response": false,
+      "infrastructure_transport_failure_observed": false,
+      "failure_category": "MODEL_TOOL_ARGUMENT_ERROR_WITH_SERVER_VALIDATION_REJECTION"
+    },
+    {
+      "case_id": "PLR-TM-palaces-04",
+      "execution": "NOT_RUN_STOP_POLICY",
+      "tool_selection_and_arguments": "NOT_OBSERVED",
+      "search_relevance": "NOT_OBSERVED",
+      "evidence_transport": "NOT_OBSERVED",
+      "explanation_grounding": "NOT_OBSERVED"
+    },
+    {
+      "case_id": "PLR-TM-family_parks-04",
+      "execution": "NOT_RUN_STOP_POLICY",
+      "tool_selection_and_arguments": "NOT_OBSERVED",
+      "search_relevance": "NOT_OBSERVED",
+      "evidence_transport": "NOT_OBSERVED",
+      "explanation_grounding": "NOT_OBSERVED"
+    }
+  ],
+  "remaining_limits": [
+    "No quality result exists for the exclusion/negation or 500m-radius cases.",
+    "No new embeddings or candidate-recall improvement were tested.",
+    "No automatic legacy tool/search score is claimed; native arguments and legacy projection remain separate.",
+    "Search embedding/reranking ran on CPU. Ollama metadata reports nonzero VRAM, so the whole request is not asserted to be CPU-only.",
+    "No direct comparison with prior GPU rankings or latency.",
+    "No application fixes or retry were performed after the first execution error."
+  ]
+}

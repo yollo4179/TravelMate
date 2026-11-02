@@ -1,0 +1,49 @@
+{
+  "mode": "OFFLINE_AUDIT_OF_LIVE_RECORDS",
+  "checks": {
+    "all_observations_live": true,
+    "actual_dispatched_model_calls_3": true,
+    "all_model_receipts_qwen": true,
+    "all_exact_counts_match_provider_usage": true,
+    "all_calls_fit_unchanged_budget": true,
+    "resident_worker_same_session": true,
+    "initialization_once": true,
+    "tool_attempts_two_then_stop": true,
+    "single_real_search_and_no_search_retry": true,
+    "no_plan_or_index_jobs": true,
+    "raw_text_preserved_end_to_end": true,
+    "content_hash_matches": true,
+    "subject_and_place_identity_preserved": true,
+    "no_generated_context_or_relation_added": true,
+    "citations_belong_to_delivered_evidence": true,
+    "first_completed_second_tool_failed": true,
+    "remaining_cases_not_observed": true
+  },
+  "raw_copies_byte_identical": {
+    "attempt.json": true,
+    "bindings.jsonl": true,
+    "events.jsonl": true,
+    "exported-inputs.jsonl": true,
+    "PLR-TM-palaces-01.response.json": true,
+    "PLR-TM-palaces-03.response.json": true,
+    "records.jsonl": true,
+    "records-all-observed.jsonl": true,
+    "run.json": true,
+    "database-audit.json": true,
+    "ollama-residency.json": true
+  },
+  "deployed_source_hashes_matched": 251,
+  "api_duration_ms": {
+    "PLR-TM-palaces-01": 375334.6442,
+    "PLR-TM-palaces-03": 7292.4882
+  },
+  "new_model_or_search_calls_in_audit": 0,
+  "all_exact_input_tokens": 4706,
+  "all_actual_output_tokens": 1091,
+  "frozen_original_codepoints": 641,
+  "citation_quote_codepoints": [
+    632
+  ],
+  "message_codepoints": 567,
+  "finished_event_count": 17
+}

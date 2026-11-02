@@ -1,0 +1,25 @@
+{
+  "valid_json_and_jsonl": true,
+  "no_private_credentials_or_jwt_in_archive": true,
+  "first_record_unchanged_by_offline_conversion": true,
+  "failed_record_has_no_false_coverage": true,
+  "tracked_application_datasets_and_prior_reports_unchanged": true,
+  "local_uncommitted_collectors": {
+    "Evaluation/tracks/search/collect_live.py": {
+      "sha256": "bca962f1c2ca2fe37993b582803dabc9aafcf251fe6ba5a68d2afd38fa489b12",
+      "matches_preparation_record": true
+    },
+    "Evaluation/tracks/search/collect_holdout.py": {
+      "sha256": "4fe15dc94e6ef25f24739a4d36f8eae593d97e70e3750ca886b3621a10cd8220",
+      "matches_preparation_record": true
+    },
+    "Evaluation/common/runs/runner.py": {
+      "sha256": "773649432d761a44f93cbbfd221fdcaf9aeafc585967ec399ab97466290f42de",
+      "matches_preparation_record": true
+    },
+    "Evaluation/common/dataset/build.py": {
+      "sha256": "a84d154445605c2923b1a54e8b67dcb8049a32b1a7e283ab6dfb52a79e9bf0ae",
+      "matches_preparation_record": true
+    }
+  }
+}
