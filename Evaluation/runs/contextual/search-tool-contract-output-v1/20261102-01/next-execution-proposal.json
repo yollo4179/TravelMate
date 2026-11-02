@@ -1,0 +1,85 @@
+{
+  "status": "PROPOSAL_ONLY_NOT_EXECUTED",
+  "execution_enabled": false,
+  "approval_required_before_inference": true,
+  "model": {
+    "provider": "QWEN",
+    "name": "qwen3:8b",
+    "context_tokens": 8192,
+    "output_reservation": 1536,
+    "change_gpu_or_context_settings": false
+  },
+  "case_requests": [
+    {
+      "case_id": "PLR-TM-palaces-01",
+      "input_sha256": "13f07e1370f08c3962a159bbf18ff3ef60b7a5b2d03f1d550a34c96f70f9598b",
+      "repeats": 1,
+      "area_provenance": null,
+      "api_request": {
+        "message": "창경궁을 찾아줘.",
+        "planningRequest": null,
+        "history": [],
+        "searchContext": {
+          "region": "서울",
+          "city": null,
+          "category": null,
+          "excludePlaceIds": [],
+          "area": null
+        }
+      }
+    },
+    {
+      "case_id": "PLR-TM-palaces-03",
+      "input_sha256": "42a6a1b0fb5c40e8be6c37f1cf5e685c982b4d927151646eb6b2467478d8246d",
+      "repeats": 1,
+      "area_provenance": null,
+      "api_request": {
+        "message": "종로에서 조선 왕실 가족이 생활했던 궁이나 거처를 둘러보고 싶어.",
+        "planningRequest": null,
+        "history": [],
+        "searchContext": {
+          "region": "서울",
+          "city": "종로",
+          "category": null,
+          "excludePlaceIds": [],
+          "area": null
+        }
+      }
+    }
+  ],
+  "execution_policy": {
+    "sequential": true,
+    "repeats_per_case": 1,
+    "retries": 0,
+    "max_api_requests": 2,
+    "max_qwen_dispatched_calls": 4,
+    "max_backend_search_requests": 2,
+    "max_tool_calls_per_request": 1,
+    "max_model_turns_per_request": 2,
+    "plan_calls": 0,
+    "judge_calls": 0,
+    "paid_calls": 0
+  },
+  "stop_conditions": [
+    "First execution error, missing query, invalid arguments, invalid final response or citations",
+    "Any context/output budget rejection or unavailable exact count/model identity",
+    "Any per-request or batch call-limit violation",
+    "Corpus/evidence lineage mismatch or observation recording failure"
+  ],
+  "evaluation_dimensions": [
+    "tool selection and native argument acceptance",
+    "retrieval relevance of actually returned places",
+    "full original evidence delivery and structural citation membership",
+    "conciseness and semantic grounding of actual explanation; not inferred from mock output"
+  ],
+  "unverified_cases_retained": [
+    "PLR-TM-palaces-04",
+    "PLR-TM-family_parks-04"
+  ],
+  "deployment_state": "New JAR built but not deployed. Existing server and 4-case-only collector unchanged; do not invoke the old collector to execute this 2-case proposal. Use a separately bound new run after scope review.",
+  "comparison_limits": [
+    "No claim that shorter output fixes prior 240-second generation",
+    "Record actual offload/device state; no direct prior-GPU comparison",
+    "This 2-case proposal does not finish the original B-plan 4-case evaluation"
+  ]
+}

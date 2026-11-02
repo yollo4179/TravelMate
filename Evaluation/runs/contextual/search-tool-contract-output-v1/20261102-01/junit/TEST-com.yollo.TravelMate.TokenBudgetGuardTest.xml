@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.yollo.TravelMate.TokenBudgetGuardTest" tests="11" skipped="0" failures="0" errors="0" timestamp="2026-11-02T04:54:18.205Z" hostname="DESKTOP-MS327CL" time="0.109">
+  <properties/>
+  <testcase name="unavailableCounterBlocksTheProviderAndRecordsASeparateFailure()" classname="com.yollo.TravelMate.TokenBudgetGuardTest" time="0.003"/>
+  <testcase name="[1] inputTokens=80, nativeContext=100, reservation=20, quality=CONFIRMED_API, accepted=true" classname="com.yollo.TravelMate.TokenBudgetGuardTest" time="0.027"/>
+  <testcase name="[2] inputTokens=81, nativeContext=100, reservation=20, quality=CONFIRMED_API, accepted=false" classname="com.yollo.TravelMate.TokenBudgetGuardTest" time="0.004"/>
+  <testcase name="[3] inputTokens=80, nativeContext=90, reservation=20, quality=CONFIRMED_API, accepted=false" classname="com.yollo.TravelMate.TokenBudgetGuardTest" time="0.004"/>
+  <testcase name="[4] inputTokens=80, nativeContext=100, reservation=20, quality=CONSERVATIVE_BOUND, accepted=true" classname="com.yollo.TravelMate.TokenBudgetGuardTest" time="0.003"/>
+  <testcase name="[5] inputTokens=80, nativeContext=100, reservation=20, quality=EXACT_LOCAL_CROSSCHECKED, accepted=true" classname="com.yollo.TravelMate.TokenBudgetGuardTest" time="0.004"/>
+  <testcase name="[6] inputTokens=81, nativeContext=100, reservation=20, quality=EXACT_LOCAL_CROSSCHECKED, accepted=false" classname="com.yollo.TravelMate.TokenBudgetGuardTest" time="0.004"/>
+  <testcase name="[7] inputTokens=10, nativeContext=100, reservation=20, quality=ESTIMATE, accepted=false" classname="com.yollo.TravelMate.TokenBudgetGuardTest" time="0.004"/>
+  <testcase name="[8] inputTokens=10, nativeContext=100, reservation=51, quality=CONFIRMED_API, accepted=false" classname="com.yollo.TravelMate.TokenBudgetGuardTest" time="0.004"/>
+  <testcase name="[9] inputTokens=10, nativeContext=0, reservation=20, quality=CONFIRMED_API, accepted=false" classname="com.yollo.TravelMate.TokenBudgetGuardTest" time="0.003"/>
+  <testcase name="[10] inputTokens=10, nativeContext=100, reservation=20, quality=null, accepted=false" classname="com.yollo.TravelMate.TokenBudgetGuardTest" time="0.003"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

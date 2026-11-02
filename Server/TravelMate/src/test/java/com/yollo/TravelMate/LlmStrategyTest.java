@@ -8,6 +8,7 @@ import com.yollo.TravelMate.ai.llm.derived.*;
 import com.yollo.TravelMate.ai.llm.budget.*;
 import com.yollo.TravelMate.ai.llm.observation.ExecutionRecorder;
 import com.yollo.TravelMate.domain.conversation.tool.ToolSchemas;
+import com.yollo.TravelMate.domain.conversation.tool.SearchPlacesContract;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
@@ -27,6 +28,36 @@ class LlmStrategyTest {
     private final List<LlmMessage> input = List.of(LlmMessage.text(LlmMessage.Role.USER, "검색해 줘"));
     private final List<LlmTurn.ToolDefinition> tools = List.of(new LlmTurn.ToolDefinition(
             "search_places", "검색", ToolSchemas.object(Map.of("query", ToolSchemas.text(2000)))));
+
+    @Test
+    void openAiPreservesOptionalSearchFieldsWithoutSilentlyRequiringThem() {
+        var builder = RestClient.builder().baseUrl("https://mock.invalid/v1");
+        var server = MockRestServiceServer.bindTo(builder).build();
+        var optionalSearch = new LlmTurn.ToolDefinition("search_places", "search", SearchPlacesContract.parameters(), LlmTurn.SchemaMode.OPTIONAL_FIELDS);
+        server.expect(requestTo("https://mock.invalid/v1/responses"))
+                .andExpect(jsonPath("$.tools[0].strict").value(false))
+                .andExpect(jsonPath("$.tools[0].parameters.required.length()").value(1))
+                .andExpect(jsonPath("$.tools[0].parameters.required[0]").value("query"))
+                .andExpect(jsonPath("$.tools[0].parameters.properties.limit.default").value(10))
+                .andExpect(jsonPath("$.tools[1].strict").value(true))
+                .andRespond(withSuccess("{\"status\":\"completed\",\"output\":[]}", MediaType.APPLICATION_JSON));
+        openAi(builder.build()).chat(input, List.of(optionalSearch, tools.get(0)));
+        server.verify();
+    }
+
+    @Test
+    void qwenReceivesTheSameOptionalSearchContractAsTheServer() {
+        var builder = RestClient.builder().baseUrl("http://mock.invalid");
+        var server = MockRestServiceServer.bindTo(builder).build();
+        var optionalSearch = new LlmTurn.ToolDefinition("search_places", "search", SearchPlacesContract.parameters(), LlmTurn.SchemaMode.OPTIONAL_FIELDS);
+        server.expect(requestTo("http://mock.invalid/api/chat"))
+                .andExpect(jsonPath("$.tools[0].function.parameters.required.length()").value(1))
+                .andExpect(jsonPath("$.tools[0].function.parameters.required[0]").value("query"))
+                .andExpect(jsonPath("$.tools[0].function.parameters.properties.limit.default").value(10))
+                .andRespond(withSuccess("{\"done\":true,\"message\":{\"role\":\"assistant\",\"content\":\"MOCK\"}}", MediaType.APPLICATION_JSON));
+        new OllamaLlmClient(builder.build(), "qwen3:8b", 8192, 1536, wireOnlyGuard()).chat(input, List.of(optionalSearch));
+        server.verify();
+    }
 
     @ParameterizedTest
     @EnumSource(LlmProvider.class)

@@ -19,5 +19,11 @@ public record LlmTurn(
     @Builder
     public record ToolCall(String id, String name, String arguments) {}
 
-    public record ToolDefinition(String name, String description, JsonNode parameters) {}
+    public enum SchemaMode { STRICT, OPTIONAL_FIELDS }
+
+    public record ToolDefinition(String name, String description, JsonNode parameters, SchemaMode schemaMode) {
+        public ToolDefinition(String name, String description, JsonNode parameters) {
+            this(name, description, parameters, SchemaMode.STRICT);
+        }
+    }
 }

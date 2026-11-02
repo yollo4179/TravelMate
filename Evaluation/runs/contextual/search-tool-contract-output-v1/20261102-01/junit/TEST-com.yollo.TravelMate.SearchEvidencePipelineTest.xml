@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.yollo.TravelMate.SearchEvidencePipelineTest" tests="7" skipped="0" failures="0" errors="0" timestamp="2026-11-02T04:54:17.876Z" hostname="DESKTOP-MS327CL" time="0.195">
+  <properties/>
+  <testcase name="kafkaToSearchDtoPreservesExactEvidenceAndScores()" classname="com.yollo.TravelMate.SearchEvidencePipelineTest" time="0.007"/>
+  <testcase name="actualPlanningServicePassesKafkaEvidenceToExistingLlmAndKeepsSavePayload()" classname="com.yollo.TravelMate.SearchEvidencePipelineTest" time="0.129"/>
+  <testcase name="legacyAndRequiredPlacesDoNotAcquireInventedEvidence()" classname="com.yollo.TravelMate.SearchEvidencePipelineTest" time="0.026"/>
+  <testcase name="malformedQuoteOffsetsAndForeignMatchedRelationAreRejected()" classname="com.yollo.TravelMate.SearchEvidencePipelineTest" time="0.004"/>
+  <testcase name="citationChecksMembershipNotSemanticTruth()" classname="com.yollo.TravelMate.SearchEvidencePipelineTest" time="0.014"/>
+  <testcase name="promptKeepsFullOriginalPastNegationAndConflictingRecordBeyondDescriptionLimit()" classname="com.yollo.TravelMate.SearchEvidencePipelineTest" time="0.012"/>
+  <testcase name="relationEndpointCannotCiteTheOriginsSceneryAsItsOwnObservation()" classname="com.yollo.TravelMate.SearchEvidencePipelineTest" time="0.001"/>
+  <system-out><![CDATA[13:54:17.965 [Test worker] INFO com.yollo.TravelMate.domain.plan.service.ContextPlanningService -- planning job=9120cd5f-0c46-4927-bad5-8cf4ed62f4c4 stage=SEARCHING radiusMeters=3000
+13:54:17.989 [Test worker] INFO com.yollo.TravelMate.domain.plan.service.ContextPlanningService -- planning job=9120cd5f-0c46-4927-bad5-8cf4ed62f4c4 stage=GENERATING candidateIds=[101] contextIncluded=true promptCharacters=4459
+13:54:17.989 [Test worker] INFO com.yollo.TravelMate.domain.plan.service.ContextPlanningService -- planning job=9120cd5f-0c46-4927-bad5-8cf4ed62f4c4 stage=VALIDATING_RESULT responseCharacters=242
+13:54:18.005 [Test worker] INFO com.yollo.TravelMate.domain.plan.service.ContextPlanningService -- planning job=9120cd5f-0c46-4927-bad5-8cf4ed62f4c4 stage=SUCCEEDED planId=77 pinCount=1
+13:54:18.005 [Test worker] INFO com.yollo.TravelMate.domain.plan.service.ContextPlanningService -- planning job=782a0ab5-fdc6-4343-bc26-b7e9be5993cb stage=SEARCHING radiusMeters=3000
+13:54:18.011 [Test worker] INFO com.yollo.TravelMate.domain.plan.service.ContextPlanningService -- planning job=782a0ab5-fdc6-4343-bc26-b7e9be5993cb stage=GENERATING candidateIds=[101] contextIncluded=true promptCharacters=4459
+13:54:18.011 [Test worker] INFO com.yollo.TravelMate.domain.plan.service.ContextPlanningService -- planning job=782a0ab5-fdc6-4343-bc26-b7e9be5993cb stage=VALIDATING_RESULT responseCharacters=211
+13:54:18.013 [Test worker] WARN com.yollo.TravelMate.domain.plan.service.ContextPlanningService -- planning job=782a0ab5-fdc6-4343-bc26-b7e9be5993cb stage=FAILED exception=java.lang.IllegalStateException: 인용이 해당 장소에 실제 전달한 원문 근거에 속하지 않습니다.
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

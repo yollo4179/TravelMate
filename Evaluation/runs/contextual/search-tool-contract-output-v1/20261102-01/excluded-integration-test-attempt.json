@@ -1,0 +1,14 @@
+{
+  "test_class": "com.yollo.TravelMate.PlaceSemanticSearchServiceTest",
+  "tests": 1,
+  "failures": 1,
+  "source_junit_sha256": "4a99342e253b3d166f1deb430349e2192c994c3143bfd1480eb4da88621bda49",
+  "stage": "APPLICATION_CONTEXT_INITIALIZATION_BEFORE_TEST_BODY",
+  "last_causes": [
+    "Caused by: org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'contextPlanningService': Invocation of init method failed",
+    "Caused by: org.springframework.jdbc.CannotGetJdbcConnectionException: Failed to obtain JDBC Connection",
+    "Caused by: org.postgresql.util.PSQLException: FATAL: password authentication failed for user \"__\""
+  ],
+  "reexecuted": false,
+  "scope_mistake": "Existing real DB integration test was mistakenly added to the test selection. Database authentication failed before the test method could call models or search. It is excluded from the final mock-only run."
+}

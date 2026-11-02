@@ -42,6 +42,11 @@ public class ConversationService {
             해당 장소에 실제 전달된 근거만 인용하라. 생성 보충 문맥은 원문 인용이 아니다.
             서버가 type과 장소·일정 data를 만든다. 최종 JSON에 type/data/ID/좌표/순번을 새로 만들지 마라.
             출처 표시는 citations만 사용하고 설명 문자열에 출처 ID를 별도로 만들어 쓰지 마라.
+            출력 분량과 입력 근거의 분량은 별개다. 전달된 전체 original을 검토하되 답변에 원문 전체를 옮기지 마라.
+            단순 장소명 조회는 찾은 장소와 구별되는 특징을 한두 문장으로 답하라. 묻지 않은 역사·연혁을 나열하지 마라.
+            복합 질문은 요청한 조건별 핵심과 제한·불확실성을 간결하게 설명하라. 사용자가 자세한 설명을 요청하면 필요한 내용을 더 설명할 수 있다.
+            citations.quote는 설명의 주장을 뒷받침하는 최소한의 연속 원문 구간을 그대로 인용하라. 원문 전체를 기본 인용으로 쓰지 마라.
+            부정·주체·조건·시점이 달라지지 않도록 필요한 앞뒤 문맥은 포함하라. 상충 근거를 짧게 만들기 위해 생략하지 마라.
             """;
     private static final Map<ResultType, Integer> PRIORITY = Map.of(
             ResultType.ERROR, 0, ResultType.TEXT, 0, ResultType.PLACES, 1, ResultType.PLANNING_JOB, 2, ResultType.DRAFT, 3

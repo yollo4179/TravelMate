@@ -7,12 +7,13 @@ import com.yollo.TravelMate.domain.place.service.PlaceSemanticSearchService.Rank
 import com.yollo.TravelMate.domain.plan.data.request.PlanContext;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.*;
+import org.hibernate.validator.constraints.CodePointLength;
 
 public record PlaceSearchRequest(
-        @NotBlank @Size(max = 2000) String query,
-        @Size(max = 200) @Pattern(regexp = "(?s).*\\S.*") String region,
-        @Size(max = 200) @Pattern(regexp = "(?s).*\\S.*") String city,
-        @Size(max = 200) @Pattern(regexp = "(?s).*\\S.*") String category,
+        @NotBlank @CodePointLength(max = 2000) String query,
+        @CodePointLength(max = 200) @Pattern(regexp = "(?s).*\\S.*") String region,
+        @CodePointLength(max = 200) @Pattern(regexp = "(?s).*\\S.*") String city,
+        @CodePointLength(max = 200) @Pattern(regexp = "(?s).*\\S.*") String category,
         List<@NotNull @Positive Long> excludePlaceIds,
         @Valid SearchArea area,
         @Min(1) @Max(20) Integer limit,

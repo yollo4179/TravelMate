@@ -2,7 +2,6 @@ package com.yollo.TravelMate.domain.conversation.tool;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -27,20 +26,9 @@ public class SearchPlacesTool implements ConversationTool {
     public LlmTurn.ToolDefinition definition() {
         return new LlmTurn.ToolDefinition(
                 Name.SEARCH_PLACES.wireName(),
-                "계획 없이 장소와 원문 근거를 검색한다. 명시한 지역·도시·제외 ID·반경은 searchContext와 함께 적용한다. 분위기·시설·조건·장소 관계를 함께 찾을 수 있다.",
-                ToolSchemas.object(Map.of(
-                        "query", ToolSchemas.text(2000),
-                        "limit", ToolSchemas.integer(1, 20),
-                        "region", ToolSchemas.nullable(ToolSchemas.text(200)),
-                        "city", ToolSchemas.nullable(ToolSchemas.text(200)),
-                        "category", ToolSchemas.nullable(ToolSchemas.text(200)),
-                        "exclude_place_ids", mapper.createObjectNode().put("type", "array").put("uniqueItems", true).set("items", ToolSchemas.integer(1, Long.MAX_VALUE)),
-                        "area", ToolSchemas.nullable(ToolSchemas.object(Map.of(
-                                "type", mapper.createObjectNode().put("type", "string").set("enum", mapper.createArrayNode().add("CIRCLE")),
-                                "center", ToolSchemas.object(Map.of(
-                                        "lat", ToolSchemas.number(-90, 90),
-                                        "lon", ToolSchemas.number(-180, 180))),
-                                "radius_meters", ToolSchemas.integer(500, 10000))))))
+                "계획 없이 장소와 원문 근거를 검색한다. query는 반드시 직접 작성한다. 선택 필터는 생략할 수 있으며 searchContext를 상속한다. exclude_place_ids는 snake_case다. limit 생략 시 10. 명시 필터와 context가 충돌하면 거부한다.",
+                SearchPlacesContract.parameters(),
+                LlmTurn.SchemaMode.OPTIONAL_FIELDS
         );
     }
 

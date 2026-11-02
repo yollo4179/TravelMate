@@ -107,7 +107,7 @@ public class OpenAiLlmClient implements LlmStrategy {
                     "name", tool.name(),
                     "description", tool.description(),
                     "parameters", tool.parameters(),
-                    "strict", true
+                    "strict", tool.schemaMode() == LlmTurn.SchemaMode.STRICT
             )).toList());
             request.put("parallel_tool_calls", false);
         }
