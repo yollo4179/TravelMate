@@ -121,6 +121,7 @@ class TourPlaceFrozenInputQualityTest {
                 coordinates.validate(candidate.item().mapY(), candidate.item().mapX()) == TourCoordinateStatus.VALID
         ));
         verify(repository).findUnprocessed(rows.size());
+        verify(repository).findUnprocessed(result.skippedInvalidCoordinates(), rows.size());
         verifyNoMoreInteractions(repository);
         assertArrayEquals(originalBytes, Files.readAllBytes(snapshot));
     }
@@ -192,6 +193,7 @@ class TourPlaceFrozenInputQualityTest {
         assertEquals(TourPlaceProcessingReason.INVALID_COORDINATES, record.reason());
         assertEquals(originalList, record.originalListJson());
         verify(repository).findUnprocessed(1);
+        verify(repository).findUnprocessed(1, 1);
         verifyNoMoreInteractions(repository);
         verifyNoInteractions(embeddings, persistence);
     }
@@ -208,6 +210,7 @@ class TourPlaceFrozenInputQualityTest {
         assertEquals(original.rawInfo(), record.originalInfoJson());
         assertNull(record.normalizedDescription());
         verify(repository).findUnprocessed(1);
+        verify(repository).findUnprocessed(1, 1);
         verifyNoMoreInteractions(repository);
         verifyNoInteractions(embeddings, persistence);
     }

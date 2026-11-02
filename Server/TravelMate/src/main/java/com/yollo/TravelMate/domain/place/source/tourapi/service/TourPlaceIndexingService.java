@@ -47,47 +47,56 @@ public class TourPlaceIndexingService {
         int skippedUnparseable = 0;
         int skippedInvalidCoordinates = 0;
 
-        for (RawRow rawRow : rawRows) {
-            Optional<TourPlaceCandidate> candidate = rawMapper.map(rawRow);
-            if (candidate.isEmpty()) {
-                skippedUnparseable++;
-                processingRecords.add(TourPlaceProcessingRecord.from(
-                        rawRow,
-                        null,
-                        null,
-                        TourPlaceProcessingReason.PARSE_FAILED
-                ));
-                continue;
-            }
-            TourPlaceCandidate mappedCandidate = candidate.get();
-            TourCoordinateStatus coordinateStatus = coordinateValidator.validate(
-                    mappedCandidate.item().mapY(),
-                    mappedCandidate.item().mapX()
-            );
-            if (coordinateStatus != TourCoordinateStatus.VALID) {
-                skippedInvalidCoordinates++;
+        int pageLimit = limit;
+        while (!rawRows.isEmpty()) {
+            for (RawRow rawRow : rawRows) {
+                Optional<TourPlaceCandidate> candidate = rawMapper.map(rawRow);
+                if (candidate.isEmpty()) {
+                    skippedUnparseable++;
+                    processingRecords.add(TourPlaceProcessingRecord.from(
+                            rawRow,
+                            null,
+                            null,
+                            TourPlaceProcessingReason.PARSE_FAILED
+                    ));
+                    continue;
+                }
+                TourPlaceCandidate mappedCandidate = candidate.get();
+                TourCoordinateStatus coordinateStatus = coordinateValidator.validate(
+                        mappedCandidate.item().mapY(),
+                        mappedCandidate.item().mapX()
+                );
+                if (coordinateStatus != TourCoordinateStatus.VALID) {
+                    skippedInvalidCoordinates++;
+                    processingRecords.add(TourPlaceProcessingRecord.from(
+                            rawRow,
+                            mappedCandidate,
+                            coordinateStatus,
+                            TourPlaceProcessingReason.INVALID_COORDINATES
+                    ));
+                    log.warn("좌표 검증 실패로 원본을 미처리 상태로 보존합니다: tourContentId={}, status={}",
+                            rawRow.tourContentId(), coordinateStatus);
+                    continue;
+                }
+                if (!mappedCandidate.hasSearchableContent()) {
+                    skippedWithoutOverview++;
+                }
                 processingRecords.add(TourPlaceProcessingRecord.from(
                         rawRow,
                         mappedCandidate,
                         coordinateStatus,
-                        TourPlaceProcessingReason.INVALID_COORDINATES
+                        mappedCandidate.hasSearchableContent()
+                                ? TourPlaceProcessingReason.INDEXED
+                                : TourPlaceProcessingReason.INDEXED_WITHOUT_SEARCHABLE_CONTENT
                 ));
-                log.warn("좌표 검증 실패로 원본을 미처리 상태로 보존합니다: tourContentId={}, status={}",
-                        rawRow.tourContentId(), coordinateStatus);
-                continue;
+                candidates.add(mappedCandidate);
             }
-            if (!mappedCandidate.hasSearchableContent()) {
-                skippedWithoutOverview++;
+            if (candidates.size() == limit || rawRows.size() < pageLimit) {
+                break;
             }
-            processingRecords.add(TourPlaceProcessingRecord.from(
-                    rawRow,
-                    mappedCandidate,
-                    coordinateStatus,
-                    mappedCandidate.hasSearchableContent()
-                            ? TourPlaceProcessingReason.INDEXED
-                            : TourPlaceProcessingReason.INDEXED_WITHOUT_SEARCHABLE_CONTENT
-            ));
-            candidates.add(mappedCandidate);
+            // 저장으로 미처리 목록이 바뀌기 전에 오류 행 뒤까지 조회해야 offset이 유지된다.
+            pageLimit = limit - candidates.size();
+            rawRows = rawRepository.findUnprocessed(pageLimit, processingRecords.size());
         }
 
         for (int startIndex = 0; startIndex < candidates.size(); startIndex += BATCH_SIZE) {
@@ -96,7 +105,7 @@ public class TourPlaceIndexingService {
         }
 
         return ProcessResult.builder()
-                .read(rawRows.size())
+                .read(processingRecords.size())
                 .indexed(candidates.size())
                 .skippedWithoutOverview(skippedWithoutOverview)
                 .skippedUnparseable(skippedUnparseable)

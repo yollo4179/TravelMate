@@ -43,13 +43,21 @@ public class TourPlaceRawRepository {
     }
 
     public List<RawRow> findUnprocessed(int limit) {
+        return findUnprocessed(limit, 0);
+    }
+
+    public List<RawRow> findUnprocessed(
+            int limit,
+            int offset
+    ) {
         String sql = """
                 select tour_content_id, tour_content_type_id,
                        raw_list::text as raw_list, raw_common::text as raw_common, raw_info::text as raw_info
                 from tour_api_raw
                 where processed_at is null
-                order by fetched_at
+                order by fetched_at, tour_content_id
                 limit ?
+                offset ?
                 """;
         return jdbc.query(sql, (rs, n) -> new RawRow(
                 rs.getString("tour_content_id"),
@@ -57,7 +65,7 @@ public class TourPlaceRawRepository {
                 rs.getString("raw_list"),
                 rs.getString("raw_common"),
                 rs.getString("raw_info")
-        ), limit);
+        ), limit, offset);
     }
 
     public void markProcessed(String tourContentId) {
