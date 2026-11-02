@@ -1,102 +1,80 @@
 package com.yollo.TravelMate.domain.place.source.tourapi.client;
 
-
-import java.util.ArrayList;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
-import org.springframework.web.client.RestClient;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.yollo.TravelMate.util.UrlUtil;
+import com.yollo.TravelMate.domain.place.source.tourapi.code.TourApiFailureReason;
 
-/**
- * TourAPI 지역기반 목록 조회(areaBasedList1) 클라이언트.
- * 한 페이지 결과를 items + totalCount + pageNo로 감싼 TourApiListPage로 반환한다.
- * Collector는 totalCount를 보고 총 페이지 수를 계산해 페이징 루프를 돈다.
- */
+import lombok.RequiredArgsConstructor;
+
 @Component
+@RequiredArgsConstructor
 public class TourApiPlaceListClient {
 
-    private static final Logger log = LoggerFactory.getLogger(TourApiPlaceListClient.class);
-    private static final Pattern HREF_PATTERN = Pattern.compile("href=\"([^\"]+)\"");
-
-    private final RestClient restClient;
-    private final ObjectMapper objectMapper;
+    private final TourApiResponseClient responseClient;
     private final TourApiUrlBuilder urlBuilder;
 
-    // RestClient는 이 클라이언트 전용으로 생성 (Kakao 등 다른 RestClient 빈과 설정이 섞이지 않도록 분리)
-    public TourApiPlaceListClient(ObjectMapper objectMapper, TourApiUrlBuilder urlBuilder) {
-        this.restClient = RestClient.create();
-        this.objectMapper = objectMapper;
-        this.urlBuilder = urlBuilder;
-    }
-
-    /**
-     * 특정 지역·타입의 한 페이지를 조회한다.
-     * 실패하거나 결과가 없으면 빈 페이지(items 비어있음, totalCount 0)를 반환한다.
-     */
     public TourApiListPage fetchPage(
             String areaCode,
             String contentTypeId,
             int numOfRows,
-            int pageNo) {
-        String url = urlBuilder.areaBasedList(areaCode, contentTypeId, numOfRows, pageNo);
-        return fetchPage(url, areaCode, contentTypeId, pageNo);
+            int pageNo
+    ) {
+        return fetchPage(
+                urlBuilder.areaBasedList(areaCode, contentTypeId, numOfRows, pageNo),
+                numOfRows,
+                pageNo
+        );
     }
 
-    /**
-     * 오버로드 - 시군구코드(sigunguCode)까지 넣어서 세부지역까지 검색.
-     * TourSigunguCode.getAreaCode()/getSigunguCode()로 뽑은 값을 그대로 넣으면 됨.
-     */
     public TourApiListPage fetchPage(
             String areaCode,
             String sigunguCode,
             String contentTypeId,
             int numOfRows,
-            int pageNo) {
-        String url = urlBuilder.areaBasedList(areaCode, sigunguCode, contentTypeId, numOfRows, pageNo);
-        return fetchPage(url, areaCode, contentTypeId, pageNo);
+            int pageNo
+    ) {
+        return fetchPage(
+                urlBuilder.areaBasedList(areaCode, sigunguCode, contentTypeId, numOfRows, pageNo),
+                numOfRows,
+                pageNo
+        );
     }
 
-    private TourApiListPage fetchPage(String url, String areaCode, String contentTypeId, int pageNo) {
-        List<TourApiListItem> items = new ArrayList<>();
-        int totalCount = 0;
-
-        try {
-            String rawResponse = restClient.get()
-                    .uri(url)
-                    .retrieve()
-                    .body(String.class);
-            JsonNode body = objectMapper.readTree(rawResponse)
-                    .path("response").path("body");
-
-            totalCount = body.path("totalCount").asInt(0);
-
-            JsonNode itemNode = body.path("items").path("item");
-            if (itemNode.isArray()) {
-                for (JsonNode node : itemNode) {
-                    items.add(toListItem(node));
-                }
-            } else if (itemNode.isObject() && !itemNode.isMissingNode()) {
-                items.add(toListItem(itemNode));
-            }
-        } catch (Exception e) {
-            log.error("areaBasedList1 호출/파싱 실패: areaCode={}, contentTypeId={}, pageNo={}",
-                    areaCode, contentTypeId, pageNo, e);
-            return new TourApiListPage(List.of(), 0, pageNo);
+    private TourApiListPage fetchPage(
+            String url,
+            int numOfRows,
+            int pageNo
+    ) {
+        var page = responseClient.fetch(url);
+        long expectedSize = Math.min(numOfRows, Math.max(0L, page.totalCount() - ((long) pageNo - 1) * numOfRows));
+        if (page.items().size() != expectedSize) {
+            throw TourApiCollectionException.builder()
+                    .reason(TourApiFailureReason.INCONSISTENT_PAGE)
+                    .rawResponse(page.rawResponse())
+                    .build();
         }
-
-        return new TourApiListPage(items, totalCount, pageNo);
+        List<TourApiListItem> items;
+        try {
+            items = page.items().stream().map(TourApiPlaceListClient::toListItem).toList();
+        } catch (IllegalArgumentException exception) {
+            throw TourApiCollectionException.builder()
+                    .reason(TourApiFailureReason.INVALID_RESPONSE)
+                    .rawResponse(page.rawResponse())
+                    .cause(exception)
+                    .build();
+        }
+        return new TourApiListPage(items, page.totalCount(), pageNo);
     }
 
     /** static - 스테이징된 raw JSON을 인덱싱할 때도 동일한 변환 규칙을 재사용합니다. */
     public static TourApiListItem toListItem(JsonNode node) {
+        if (!node.isObject() || !node.path("contentid").isTextual()
+                || node.path("contentid").asText().isBlank()) {
+            throw new IllegalArgumentException("TourAPI 목록 항목에 유효한 contentid가 필요합니다.");
+        }
         return new TourApiListItem(
                 node.path("contentid").asText(null),
                 node.path("contenttypeid").asText(null),
@@ -114,22 +92,15 @@ public class TourApiPlaceListClient {
         );
     }
 
-    /** homepage 필드는 <a href="URL">텍스트</a> 형태 → href 값(순수 URL)만 추출. 없으면 null. */
-
-
-    private static String blankToNull(String s) {
-        return (s == null || s.isBlank()) ? null : s.trim();
+    private static String blankToNull(String source) {
+        return (source == null || source.isBlank()) ? null : source.trim();
     }
 
-    private static Double parseDouble(String s) {
-        if (s == null || s.isBlank()) {
+    private static Double parseDouble(String source) {
+        if (source == null || source.isBlank()) {
             return null;
         }
-        try {
-            return Double.parseDouble(s.trim());
-        } catch (NumberFormatException e) {
-            return null;
-        }
+        return Double.parseDouble(source.trim());
     }
 
     public record TourApiListItem(
