@@ -8,6 +8,8 @@ from .settings import JudgeSettings
 from .structured_output import CRITERIA, JUDGE_SCHEMA
 from .citation_check import validate_judge_output
 from common.observability.server_trace import is_native_record
+from common.execution.control import ExecutionBlocked, RunControl
+from common.execution.judge_transport import bounded_completion, completion_document
 
 def text_evidence(value: Any) -> str:
     if isinstance(value, str):
@@ -54,16 +56,27 @@ async def score_message(
     settings: JudgeSettings,
     *,
     client: Any,
+    control: RunControl,
 ) -> dict[str, Any]:
+    if settings.model != control.settings.model:
+        raise ExecutionBlocked("The explicit judge model differs from the message-judge settings")
     messages, output_text, source_text = judge_prompt(case, record, model_input, rubric)
-    result = await client.chat.completions.create(
-        model=settings.model, messages=messages,
-        response_format={"type": "json_schema", "json_schema": {
+    request = {
+        "model": settings.model, "messages": messages,
+        "max_completion_tokens": control.settings.max_output_tokens,
+        "store": False,
+        "response_format": {"type": "json_schema", "json_schema": {
             "name": "travelmate_message_judgments", "strict": True, "schema": JUDGE_SCHEMA,
         }},
-    )
-    document = json.loads(result.choices[0].message.content)
-    validate_judge_output(document, output_text, source_text)
-    document["provider_model"] = getattr(result, "model", None)
-    document["usage"] = result.usage.model_dump() if getattr(result, "usage", None) is not None else None
+    }
+    result = await bounded_completion(control, case["case_id"], request, client=client)
+    document = completion_document(control, result)
+    try:
+        validate_judge_output(document, output_text, source_text)
+    except Exception as exception:
+        control.reject_result(type(exception).__name__)
+        raise
+    document["provider_model"] = result.get("model")
+    document["usage"] = result.get("usage")
+    document["provider_request_id"] = result.get("provider_http_request_id")
     return document

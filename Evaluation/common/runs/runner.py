@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import argparse
 import asyncio
+from contextlib import AsyncExitStack
 from collections import Counter, defaultdict
 import json
 from pathlib import Path
@@ -11,13 +12,16 @@ from typing import Any
 from common.dataset.build import check
 from common.dataset.contracts import ExecutionStatus, ResponseType
 from common.judge.runner import JudgeSettings, score_message
-from tracks.end_to_end.score import evaluate_record
 from common.dataset.io import digest, export_inputs, read_json, read_jsonl, write_json, write_jsonl
 
 from common.paths import DEFAULT_DATASET, EVALUATION_ROOT, rubric_path
 from .run_record import allocate_run, update_latest, write_run_record
 from .tracks import Track, matches_track, metric_is_selected
 from common.observability.server_trace import is_native_record, message_is_observed
+from common.observability.search_records import is_search_api_record, search_quality_observed
+from .record_scoring import scorer_for
+from common.execution.control import Operation, RunControl, RunMode, load_control
+from common.execution.judge_transport import judge_client
 
 ROOT = DEFAULT_DATASET
 
@@ -57,6 +61,7 @@ async def evaluate(
     settings: JudgeSettings,
     precheck_only: bool = False,
     track: Track = Track.END_TO_END,
+    judge_control: RunControl | None = None,
 ) -> int:
     if output.resolve().is_relative_to(root.resolve()) or output.resolve().is_relative_to((EVALUATION_ROOT / "datasets").resolve()):
         raise ValueError("Evaluation results must be outside the dataset directory")
@@ -83,11 +88,22 @@ async def evaluate(
             invalid[case["case_id"]] = "response_missing"
         elif record.get("input_sha256") != inputs[case["case_id"]]["input_sha256"]:
             invalid[case["case_id"]] = "input_hash_missing_or_mismatch"
-        elif not isinstance(record.get("tool_calls"), list) or "response" not in record:
-            invalid[case["case_id"]] = "record_requires_response_and_explicit_tool_calls_array"
+        elif error := scorer_for(record).validate(case, record, track):
+            invalid[case["case_id"]] = error
         else:
             valid.append((case, record))
     judge_needed = use_judge and any(message_is_observed(record) for _, record in valid)
+    judge_blocked_error: str | None = None
+    if judge_needed:
+        if judge_control is None:
+            judge_blocked_error = "explicit_judge_execution_configuration_required"
+        elif judge_control.settings.model != settings.model:
+            judge_blocked_error = "explicit_judge_model_mismatch"
+        elif judge_control.settings.mode == RunMode.LIVE and not settings.api_key:
+            judge_blocked_error = "judge_api_key_missing"
+        else:
+            judge_control.settings.require_scope([case["case_id"] for case in cases])
+            judge_control.settings.require_capacity(Operation.JUDGE, sum(message_is_observed(record) for _, record in valid))
     precheck = {
         "dataset_version": "1.4.0", "evaluation_group": group, "track": track.value,
         "selected_case_count": len(cases), "valid_response_count": len(valid),
@@ -100,34 +116,38 @@ async def evaluate(
         "reference_required": use_judge,
         "reference_available_count": sum(bool(case["reference"]) for case in cases),
         "judge_eligible_count": sum(message_is_observed(record) for _, record in valid) if use_judge else 0,
+        "judge_execution_blocked_reason": judge_blocked_error,
+        "judge_execution_configuration_sha256": judge_control.settings.configuration_sha256 if judge_control else None,
     }
     selected_ids = {case["case_id"] for case in cases}
     write_jsonl(output / "outputs/records.jsonl", [record for record in records if record["case_id"] in selected_ids])
     write_json(output / "precheck.json", precheck)
     if precheck_only:
-        return 0 if valid and (not judge_needed or settings.api_key) else 2
-    if not valid or (judge_needed and not settings.api_key):
+        return 0 if valid and not judge_blocked_error else 2
+    if not valid:
         write_json(output / "summary.json", {**precheck, "status": "not_run", "result_count": 0})
         return 2
     rubrics = {name: rubric_path(root, name).read_text(encoding="utf-8") for name in {case["evaluation_group"] for case in cases}}
     results = []
     client = None
-    judge_blocked_error: str | None = None
-    if judge_needed:
-        from openai import AsyncOpenAI
-        client = AsyncOpenAI(api_key=settings.api_key)
-    try:
+    async with AsyncExitStack() as clients:
+        if judge_needed and not judge_blocked_error:
+            try:
+                client = await clients.enter_async_context(judge_client(judge_control, api_key=settings.api_key))
+            except Exception as exception:
+                judge_blocked_error = type(exception).__name__
         for case, record in valid:
             row = {
                 "case_id": case["case_id"], "evaluation_tracks": case["evaluation_tracks"],
                 "evaluation_group": case["evaluation_group"],
                 "target_model": record.get("model", "not_recorded"),
-                "response": record["response"],
-                "tool_calls": record["tool_calls"],
+                "response": record.get("response"),
+                "tool_calls": record.get("tool_calls"),
                 "expected_response_type": case["expected_response_type"],
-                "actual_response_type": record["response"].get("type") if isinstance(record["response"], dict) else None,
+                "actual_response_type": record["response"].get("type") if isinstance(record.get("response"), dict) else None,
                 "input_sha256": record["input_sha256"],
-                "code": evaluate_record(case, record),
+                "record_source": record.get("record_source", "agent_response"),
+                "code": scorer_for(record).score(case, record),
             }
             row["code"]["metrics"] = {
                 name: value for name, value in row["code"]["metrics"].items()
@@ -137,43 +157,62 @@ async def evaluate(
                 row.update({name: record.get(name) for name in (
                     "execution_mode", "observation_coverage", "compatibility_gaps", "termination", "request_id", "turn_id"
                 )})
+            if is_search_api_record(record):
+                row.update({name: record.get(name) for name in (
+                    "execution_mode", "execution_status", "dispatched", "http_request", "http_response",
+                    "request_id", "turn_id", "job_ids", "evaluation_projection", "requested_conditions",
+                    "runtime_verification", "observation_coverage", "error_type", "duration_ms",
+                )})
             if use_judge:
                 if not message_is_observed(record):
                     row.update(judge_status=ExecutionStatus.NOT_EVALUATED.value,
-                               judge_error_type="native_message_observation_unavailable")
+                               judge_error_type="message_observation_unavailable")
                 elif judge_blocked_error:
                     row.update(judge_status=ExecutionStatus.NOT_RUN.value, judge_error_type=judge_blocked_error)
                 else:
                     try:
-                        row["judge"] = await score_message(case, record, inputs[case["case_id"]]["model_input"], rubrics[case["evaluation_group"]], settings, client=client)
-                        row["judge_status"] = ExecutionStatus.COMPLETED.value
+                        judged = await score_message(
+                            case,
+                            record,
+                            inputs[case["case_id"]]["model_input"],
+                            rubrics[case["evaluation_group"]],
+                            settings,
+                            client=client,
+                            control=judge_control,
+                        )
+                        if judge_control.settings.mode == RunMode.MOCK:
+                            row.update(judge_mock_result=judged, judge_status=ExecutionStatus.NOT_EVALUATED.value, judge_error_type="mock_judge_regression_only")
+                        else:
+                            row.update(judge=judged, judge_status=ExecutionStatus.COMPLETED.value)
                     except Exception as exception:
                         error_type = type(exception).__name__
                         row.update(judge_status=ExecutionStatus.FAILED.value, judge_error_type=error_type)
-                        if error_type in ("AuthenticationError", "PermissionDeniedError", "RateLimitError"):
-                            judge_blocked_error = error_type
+                        judge_blocked_error = error_type
+                        judge_control.reject_result(error_type)
             results.append(row)
             print(f"{track.value}: {case['case_id']} ({len(results)}/{len(valid)})", flush=True)
-    finally:
-        if client is not None:
-            await client.close()
     summary = {
         **precheck,
-        "status": "completed" if not invalid and all(row.get("judge_status", "completed") == "completed" for row in results) else "partial",
+        "status": "completed" if not invalid and all(row.get("judge_status", "completed") == "completed" for row in results)
+                  and all(search_quality_observed(record) for _, record in valid if is_search_api_record(record)) else "partial",
         "result_count": len(results),
         "code_metrics_and_gpt_scores": metric_summary(results),
         "by_response_type": {
             kind.value: metric_summary([row for row in results if row["expected_response_type"] == kind])
             for kind in ResponseType
         },
-        "type_confusion": dict(Counter(f"{row['expected_response_type']}->{row['actual_response_type']}" for row in results)),
+        "type_confusion": dict(Counter(f"{row['expected_response_type']}->{row['actual_response_type']}" for row in results if not is_search_api_record(row))),
+        "search_execution_counts": dict(Counter(f"{record.get('execution_mode')}:{record.get('execution_status')}" for _, record in valid if is_search_api_record(record))),
+        "search_quality_evaluated_count": sum(search_quality_observed(record) for _, record in valid if is_search_api_record(record)),
         "judge_rubric_sha256": {name: digest(rubric_path(root, name)) for name in rubrics} if use_judge else None,
         "judge_success_count": sum(row.get("judge_status") == "completed" for row in results),
         "llm_connection_verified": any(row.get("judge_status") == "completed" for row in results),
+        "judge_execution": judge_control.summary() if judge_control else None,
         "notes": [
             "Missing/invalid records are coverage failures, not silently converted into incorrect model answers.",
             "Unobserved backend state and unavailable route checks have null scores and separate denominators.",
             "Native MOCK quality and missing/incompatible runtime observations are excluded by explicit coverage masks.",
+            "Search-only HTTP observations do not synthesize agent messages or tool calls; legacy search records need explicit adaptation.",
             "Search and memory recall use their own query-specific relevant ID sets.",
             "GPT criteria use 0..3 scores and are not Ragas built-in AnswerCorrectness scores.",
         ],
@@ -202,6 +241,8 @@ def main(track_name: str) -> None:
     score.add_argument("--env-file", type=Path)
     score.add_argument("--judge", action="store_true")
     score.add_argument("--precheck-only", action="store_true")
+    score.add_argument("--execution-config", type=Path)
+    score.add_argument("--mock-responses", type=Path)
     args = parser.parse_args()
     report = check(args.root)
     if args.command == "check":
@@ -223,7 +264,12 @@ def main(track_name: str) -> None:
         print(f"Exported {len(cases)} inputs; references/judgments/expectations were not sent to the tested agent.")
         return
     settings = JudgeSettings.load(args.root, args.env_file)
+    if args.judge and args.execution_config is None:
+        parser.error("--judge requires an explicit --execution-config with judge model and call cap")
     run_id, output = allocate_run(track, args.root, args.output_dir)
+    judge_control = load_control(args.execution_config, output / "judge-execution", args.mock_responses) if args.judge else None
+    if judge_control is not None:
+        settings = JudgeSettings(judge_control.settings.model or "", settings.api_key)
     scope = {"split": args.split, "types": args.kinds, "tracks": args.tracks, "group": args.group, "selected_case_count": len(cases), "judge_requested": args.judge, "judge_model": settings.model}
     write_run_record(run_id=run_id, track=track, dataset=args.root, output=output, scope=scope, status="started")
     try:
@@ -231,6 +277,7 @@ def main(track_name: str) -> None:
             root=args.root, group=args.group, cases=cases, responses_path=args.responses,
             output=output, use_judge=args.judge, settings=settings, precheck_only=args.precheck_only,
             track=track,
+            judge_control=judge_control,
         ))
     except Exception:
         write_run_record(run_id=run_id, track=track, dataset=args.root, output=output, scope=scope, status="failed")

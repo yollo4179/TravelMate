@@ -1,5 +1,9 @@
 # TravelMate 평가
 
+검색 API 수집·홀드아웃 검수는 [검색 평가 도구 계약](tracks/search/README.md)을 따른다.
+명시적 case·대상·호출 상한과 원본 HTTP 관측을 보존하며 MOCK·실패·미실행을 품질 분모에서 구분한다.
+이는 기존 native 단일 LLM 도구 관측의 대체물이 아니며 계획·설명 품질 완료를 뜻하지 않는다.
+
 [Qwen 정확 계산·검색 계약 검토](runs/contextual/exact-qwen-and-search-contract-v1/20261102-01/REPORT.md)는
 동일 입력의 오프라인 토큰 검증과 계획 없는 검색 제안이다. 실제 추론·검색 품질 평가 완료가 아니다.
 
@@ -94,7 +98,9 @@ GPT는 .env의 OPENAI_API_KEY를 읽으며 기존 설정인 gpt-4.1-mini로 발�
 결과는 새로운 runs/<트랙>/v1.4.0/<실행ID>/에 쓴다. 기존 결과 디렉터리는 덮어쓰지 않는다.
 run.json에 Git SHA·데이터/페르소나 해시·명시한 범위를, outputs/에 채점 입력,
 scores/에 채점 결과를 기록한다. summary.json은 평균과 평가 건수, latest.json은 최신 실행 참조다.
-실제 API 호출·여러 턴 재생·지연 p50/p95·V1.4용 LangSmith 자동 게시는 아직 미구현이다.
+독립 검색 API 수집과 저장 span/지표의 명시적 조회·수동 게시 도구는 구현했다.
+MOCK와 미관측은 실제 검색 지연/품질로 집계하지 않는다. 여러 턴 평가 재생과 자동 게시는 미구현이다.
+실제 모델·검색·외부 게시 실행 범위는 별도로 확정해야 한다.
 
 ## 이전 버전
 

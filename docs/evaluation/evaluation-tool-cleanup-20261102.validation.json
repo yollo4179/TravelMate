@@ -1,0 +1,164 @@
+{
+  "base_commit": "b8e793c397f9eba547191692de814901946d059c",
+  "code_commit": "6f08c6228a6ccf05d536c64d5c850cb1a057209c",
+  "offline_tests": {
+    "checkout": "separate LF checkout; core.autocrlf=false for checkout only",
+    "command": "python -X utf8 -m unittest discover -s Evaluation/tests",
+    "tests": 125,
+    "failures": 0,
+    "errors": 0,
+    "seconds": 13.63,
+    "scope": "Offline unit/contract regressions, not search/model quality evaluation"
+  },
+  "earlier_windows_run": {
+    "tests": 124,
+    "failures": 1,
+    "failure": "archival preservation byte hash mismatch",
+    "path": "Evaluation/datasets/v1.1.0/.gitattributes",
+    "windows_sha256": "d4905cd0d9d15143a60ca186f8260aedf1633aa28ab742829611881127527319",
+    "expected_git_and_lf_sha256": "8fc8ae72e7c698ecf6f336b04fb706e38f709ae04906ed16a64aa529c1473188",
+    "normalized_windows_equals_git": true,
+    "lf_equals_git": true
+  },
+  "frozen_files": [
+    {
+      "path": "Evaluation/datasets/search-holdout-v1.0.0/README.md",
+      "sha256": "15be8710ce2f69d3f89b6976fdbc88c71d1a7b0ffd7b372168469c8aed034306",
+      "original_matches": true,
+      "backup_matches": true,
+      "branch_blob_matches": true,
+      "lf_checkout_matches": true
+    },
+    {
+      "path": "Evaluation/datasets/search-holdout-v1.0.0/manifest.json",
+      "sha256": "dbf243bbc242af940c5e38f4e14ef4e10d69810935f1dea6a0107f91152d3a11",
+      "original_matches": true,
+      "backup_matches": true,
+      "branch_blob_matches": true,
+      "lf_checkout_matches": true
+    },
+    {
+      "path": "Evaluation/datasets/search-holdout-v1.0.0/protocol.json",
+      "sha256": "f64138c4da979357ee11cf0cfa21083f142ea24d86d6609ce0ab9c6be7cad6dd",
+      "original_matches": true,
+      "backup_matches": true,
+      "branch_blob_matches": true,
+      "lf_checkout_matches": true
+    },
+    {
+      "path": "Evaluation/datasets/search-holdout-v1.0.0/rubric.md",
+      "sha256": "dae60b25c05584ee793cc500636cdc8602d014350e74bd276ee35feab947481a",
+      "original_matches": true,
+      "backup_matches": true,
+      "branch_blob_matches": true,
+      "lf_checkout_matches": true
+    },
+    {
+      "path": "Evaluation/datasets/search-holdout-v1.0.0/source/families.json",
+      "sha256": "92f25b228b07140f397c386de046bfebdd79fd5b0abe559103029c71ca349417",
+      "original_matches": true,
+      "backup_matches": true,
+      "branch_blob_matches": true,
+      "lf_checkout_matches": true
+    },
+    {
+      "path": "Evaluation/datasets/search-holdout-v1.0.0/source/questions.csv",
+      "sha256": "55cab95c4f0363b28cbc40b299733c62fce910db35c3684e5465b568a6bd46b3",
+      "original_matches": true,
+      "backup_matches": true,
+      "branch_blob_matches": true,
+      "lf_checkout_matches": true
+    },
+    {
+      "path": "Evaluation/datasets/search-holdout-v1.0.1/README.md",
+      "sha256": "9c17a4795f7c2b818a9bbc6fb1a705d48519355e2b36040ff87d2e8bf83becbc",
+      "original_matches": true,
+      "backup_matches": true,
+      "branch_blob_matches": true,
+      "lf_checkout_matches": true
+    },
+    {
+      "path": "Evaluation/datasets/search-holdout-v1.0.1/manifest.json",
+      "sha256": "8965c205cdb952cd671d9a2d061f44025acc2490cffefa7076d6e78e27e605df",
+      "original_matches": true,
+      "backup_matches": true,
+      "branch_blob_matches": true,
+      "lf_checkout_matches": true
+    },
+    {
+      "path": "Evaluation/datasets/search-holdout-v1.0.1/protocol.json",
+      "sha256": "bcc160613391dbd87ca474a1c99c1657cbecb2aee0b99e1da880d7e24bdda0b0",
+      "original_matches": true,
+      "backup_matches": true,
+      "branch_blob_matches": true,
+      "lf_checkout_matches": true
+    },
+    {
+      "path": "Evaluation/datasets/search-holdout-v1.0.1/rubric.md",
+      "sha256": "dae60b25c05584ee793cc500636cdc8602d014350e74bd276ee35feab947481a",
+      "original_matches": true,
+      "backup_matches": true,
+      "branch_blob_matches": true,
+      "lf_checkout_matches": true
+    },
+    {
+      "path": "Evaluation/datasets/search-holdout-v1.0.1/source/families.json",
+      "sha256": "510f792cb61e340b9e72117cdb5c8e587795a592d321c300bab1e01907cb6dbd",
+      "original_matches": true,
+      "backup_matches": true,
+      "branch_blob_matches": true,
+      "lf_checkout_matches": true
+    },
+    {
+      "path": "Evaluation/datasets/search-holdout-v1.0.1/source/original_question_review.csv",
+      "sha256": "3854dc20576ed7a81c9fb0c65a6a550d300ed74c220ae775eeba1950da08f18a",
+      "original_matches": true,
+      "backup_matches": true,
+      "branch_blob_matches": true,
+      "lf_checkout_matches": true
+    },
+    {
+      "path": "Evaluation/datasets/search-holdout-v1.0.1/source/question_review.csv",
+      "sha256": "5b36a407b22617ed9db5e5ad021123efb4b39efbe91a77df292d1285a5753494",
+      "original_matches": true,
+      "backup_matches": true,
+      "branch_blob_matches": true,
+      "lf_checkout_matches": true
+    },
+    {
+      "path": "Evaluation/datasets/search-holdout-v1.0.1/source/questions.csv",
+      "sha256": "912e0734461c527d39ccd532ab4e270260091ca6a6a1ddea8b5be4855450ee99",
+      "original_matches": true,
+      "backup_matches": true,
+      "branch_blob_matches": true,
+      "lf_checkout_matches": true
+    },
+    {
+      "path": "Evaluation/datasets/search-holdout-v1.0.1/source/review_changes.json",
+      "sha256": "fbe77ecce0466dfb9b810597c154739c3086b95e18daeba4caa36642f91d8101",
+      "original_matches": true,
+      "backup_matches": true,
+      "branch_blob_matches": true,
+      "lf_checkout_matches": true
+    }
+  ],
+  "external_execution": {
+    "model_calls": 0,
+    "search_calls": 0,
+    "langsmith_reads": 0,
+    "langsmith_publications": 0,
+    "docker_or_database_commands": 0
+  },
+  "original_83_verification": {
+    "files_verified": 83,
+    "original_and_backup_unchanged": true,
+    "status_unchanged": true,
+    "head": "c27a4666bab779b2cb4eacf0345266a0f86c9b19",
+    "branch": "wip/local-preserved-20261102-1922",
+    "secret_pattern_hits": 5,
+    "reviewed_environment_lookup_hits": 5,
+    "unresolved_credential_candidates": 0,
+    "python_parse_ok": 22,
+    "all_dataset_manifest_targets_match": true
+  }
+}
