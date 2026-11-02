@@ -114,7 +114,12 @@ def compare_runtime(
 
 async def docker_read(control: RunControl, case_id: str, arguments: list[str]) -> dict[str, Any]:
     async def invoke() -> dict[str, Any]:
-        process = await asyncio.create_subprocess_exec("docker", *arguments, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
+        process = await asyncio.create_subprocess_exec(
+            "docker",
+            *arguments,
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.PIPE,
+        )
         try:
             stdout, stderr = await asyncio.wait_for(process.communicate(), timeout=control.settings.timeout_seconds)
         except BaseException:
@@ -122,10 +127,21 @@ async def docker_read(control: RunControl, case_id: str, arguments: list[str]) -
                 process.kill()
                 await process.wait()
             raise
-        if process.returncode != 0:
-            raise RuntimeError("Read-only Docker capture failed; no fallback target is selected")
-        return {"stdout": stdout.decode("utf-8")}
-    return await control.execute(Operation.RUNTIME_READ, case_id, {"command": ["docker", *arguments]}, invoke)
+        return {
+            "returncode": process.returncode,
+            "stdout": stdout.decode("utf-8"),
+            "stderr": stderr.decode("utf-8"),
+        }
+    result = await control.execute(
+        Operation.RUNTIME_READ,
+        case_id,
+        {"command": ["docker", *arguments]},
+        invoke,
+    )
+    if result.get("returncode") != 0:
+        control.reject_result("RuntimeCaptureCommandFailed")
+        raise RuntimeError("Read-only Docker capture failed; original stdout/stderr are preserved")
+    return result
 
 
 async def capture_runtime(control: RunControl) -> dict[str, Any]:
@@ -137,7 +153,12 @@ async def capture_runtime(control: RunControl) -> dict[str, Any]:
         raise ValueError("Explicit Docker/database target names are required; flags and inferred targets are forbidden")
     control.settings.require_capacity(Operation.RUNTIME_READ, 2)
     identifier = control.settings.case_ids[0]
-    material = await docker_read(control, identifier, ["exec", targets["postgres_container"], "psql", "-X", "-U", targets["database_user"], "-d", targets["database"], "-At", "-v", "ON_ERROR_STOP=1", "-c", MATERIAL_SQL])
+    arguments = [
+        "exec", targets["postgres_container"], "psql", "-X",
+        "-U", targets["database_user"], "-d", targets["database"],
+        "-At", "-v", "ON_ERROR_STOP=1", "-c", MATERIAL_SQL,
+    ]
+    material = await docker_read(control, identifier, arguments)
     metadata = await docker_read(control, identifier, ["exec", targets["embedding_container"], "python", "-c", METADATA_SCRIPT])
     return {"execution_mode": control.settings.mode.value, "targets": targets, "search_material": json.loads(material["stdout"]), "metadata": json.loads(metadata["stdout"])}
 
@@ -161,8 +182,20 @@ async def inspect_runtime(arguments: argparse.Namespace) -> None:
     protocol = read_json(arguments.dataset / "protocol.json")
     corpus_path = arguments.dataset / protocol["corpus_path"]
     expected = read_json(arguments.expected_runtime)
-    report = compare_runtime(corpus=read_json(corpus_path), protocol=protocol, capture=capture, expected_material=read_json(arguments.expected_material), expected_configuration=expected["metadata"], expected_targets=expected["targets"], corpus_sha256=digest(corpus_path))
-    report.update(dataset_manifest_sha256=digest(arguments.dataset / "manifest.json"), expected_runtime_sha256=digest(arguments.expected_runtime), expected_material_file_sha256=digest(arguments.expected_material))
+    report = compare_runtime(
+        corpus=read_json(corpus_path),
+        protocol=protocol,
+        capture=capture,
+        expected_material=read_json(arguments.expected_material),
+        expected_configuration=expected["metadata"],
+        expected_targets=expected["targets"],
+        corpus_sha256=digest(corpus_path),
+    )
+    report.update(
+        dataset_manifest_sha256=digest(arguments.dataset / "manifest.json"),
+        expected_runtime_sha256=digest(arguments.expected_runtime),
+        expected_material_file_sha256=digest(arguments.expected_material),
+    )
     write_json(arguments.output_dir / "runtime.json", report)
 
 

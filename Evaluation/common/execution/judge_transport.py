@@ -18,7 +18,7 @@ async def judge_client(control: RunControl, *, api_key: str | None = None) -> As
     from openai import AsyncOpenAI
     endpoint = control.settings.parameter("judge_base_url")
     parsed = urlparse(endpoint)
-    if parsed.scheme != "https" or not parsed.hostname or parsed.username or parsed.password:
+    if parsed.scheme != "https" or not parsed.hostname or parsed.username or parsed.password or parsed.query or parsed.fragment:
         raise ExecutionBlocked("LIVE judge requires an explicit HTTPS endpoint without embedded credentials")
     async with AsyncOpenAI(
         api_key=api_key,
@@ -41,8 +41,21 @@ async def bounded_completion(
         raise ExecutionBlocked("Judge model and output reservation must match the explicit configuration")
     async def dispatch() -> dict[str, Any]:
         response = await client.chat.completions.create(**request)
-        return response.model_dump(mode="json")
-    return await control.execute(Operation.JUDGE, case_id, request, dispatch)
+        return {**response.model_dump(mode="json"), "provider_http_request_id": getattr(response, "_request_id", None)}
+    return await control.execute(
+        Operation.JUDGE,
+        case_id,
+        completion_observation_request(control, request),
+        dispatch,
+    )
+
+
+def completion_observation_request(control: RunControl, request: dict[str, Any]) -> dict[str, Any]:
+    return {
+        "provider": "openai",
+        "base_url": control.settings.parameters.get("judge_base_url"),
+        "arguments": request,
+    }
 
 
 def completion_document(control: RunControl, completion: dict[str, Any]) -> dict[str, Any]:

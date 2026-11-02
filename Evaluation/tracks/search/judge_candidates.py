@@ -18,7 +18,6 @@ from jsonschema import ValidationError
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 from common.dataset.io import canonical_digest, digest, read_json, read_jsonl, write_json, write_jsonl
-from common.paths import DEFAULT_DATASET, EVALUATION_ROOT
 from tracks.search.holdout import check_frozen, read_cases, write_review_csv
 from common.execution.control import Operation, RunControl, RunMode, load_control
 from common.execution.judge_transport import bounded_completion, completion_document, judge_client, usage_totals
@@ -257,7 +256,7 @@ async def assess_group(
     recorded = {
         "case_id": identifier, "pass": assessment_pass.value, "execution_mode": settings.control.settings.mode.value,
         "request_sha256": request_hash, "provider_model": completion.get("model"),
-        "usage": completion.get("usage"), "provider_request_id": completion.get("id"),
+        "usage": completion.get("usage"), "provider_request_id": completion.get("provider_http_request_id"), "completion_id": completion.get("id"),
         "created_at": datetime.now(timezone.utc).isoformat(), "result": document,
         "provider_raw_response": completion, "response_schema_sha256": canonical_digest(response_schema),
     }

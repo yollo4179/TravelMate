@@ -53,14 +53,28 @@ async def collect(arguments: argparse.Namespace) -> None:
     if digest(arguments.runtime_record) != control.settings.parameter("runtime_record_sha256"):
         raise ValueError("Runtime evidence differs from the configured evidence")
     if control.settings.mode == RunMode.MOCK:
-        await collect_cases(cases=cases, dataset=arguments.dataset, output=arguments.output_dir, control=control, runtime=runtime)
+        await collect_cases(
+            cases=cases,
+            dataset=arguments.dataset,
+            output=arguments.output_dir,
+            control=control,
+            runtime=runtime,
+        )
         if control.stopped:
             raise ExecutionBlocked("Collection stopped; partial records are preserved")
         return
     import httpx
     access_token = os.environ[arguments.token_env]
     async with httpx.AsyncClient(timeout=control.settings.timeout_seconds, follow_redirects=False, trust_env=False) as client:
-        await collect_cases(cases=cases, dataset=arguments.dataset, output=arguments.output_dir, control=control, runtime=runtime, client=client, access_token=access_token)
+        await collect_cases(
+            cases=cases,
+            dataset=arguments.dataset,
+            output=arguments.output_dir,
+            control=control,
+            runtime=runtime,
+            client=client,
+            access_token=access_token,
+        )
     if control.stopped:
         raise ExecutionBlocked("Collection stopped; partial records are preserved")
 

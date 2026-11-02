@@ -78,4 +78,5 @@ async def score_message(
         raise
     document["provider_model"] = result.get("model")
     document["usage"] = result.get("usage")
+    document["provider_request_id"] = result.get("provider_http_request_id")
     return document

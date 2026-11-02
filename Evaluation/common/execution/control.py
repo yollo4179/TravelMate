@@ -4,6 +4,7 @@ from __future__ import annotations
 from collections import Counter
 import asyncio
 from dataclasses import dataclass
+from datetime import datetime, timezone
 from enum import StrEnum
 import json
 import math
@@ -166,6 +167,7 @@ class RunControl:
             pass
 
     def record(self, event: dict[str, Any]) -> None:
+        event = {**event, "recorded_at_utc": datetime.now(timezone.utc).isoformat()}
         serialized = json.dumps(event, ensure_ascii=False, allow_nan=False) + "\n"
         with self.ledger_path.open("a", encoding="utf-8", newline="\n") as journal:
             journal.write(serialized)

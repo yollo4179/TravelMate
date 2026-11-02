@@ -23,7 +23,7 @@ from common.runs.tracks import Track
 from tracks.search.api_contract import RankingMode, search_body, unsupported_conditions
 from tracks.search.collect_live import collect_cases, latency_summary, request_search
 from tracks.search.holdout import check_frozen, read_cases
-from tracks.search.inspect_holdout_runtime import MATERIAL_SECTIONS, compare_runtime
+from tracks.search.inspect_holdout_runtime import MATERIAL_SECTIONS, compare_runtime, docker_read
 from tracks.search.score_ranking import score_search_api_record
 
 
@@ -156,6 +156,22 @@ class SearchToolCleanupTests(unittest.TestCase):
         legacy = {"record_source": "spring_search_api", "ranked_place_ids": [378], "http_status": 200}
         self.assertEqual(search_record_error(self.case, legacy), "legacy_search_record_requires_explicit_adaptation")
 
+    def test_mock_cannot_be_relabelled_live_without_its_attempt_receipt(self) -> None:
+        record = self.observe(self.control({"status_code": 200, "raw_body": "[]"}))
+        record.update(execution_mode="LIVE", dispatched=True)
+        self.assertEqual(search_record_error(self.case, record), "search_attempt_identity_or_mode_mismatch")
+
+    def test_explicit_trace_context_is_preserved_without_inventing_a_server_span(self) -> None:
+        parent = "00-" + "1" * 32 + "-" + "2" * 16 + "-01"
+        parameters = {"traceparents": {self.case["case_id"] + ":RERANKED": parent}}
+        settings = self.settings(parameters=parameters)
+        request = {**self.request(), "traceparent": parent}
+        control = RunControl(settings, self.directory / "attempts.jsonl", mock_responses={canonical_digest(request): {"response": {"status_code": 200, "raw_body": "[]"}}})
+        record = self.observe(control)
+        self.assertEqual(record["http_request"]["traceparent"], parent)
+        self.assertIsNone(record["http_response"].get("server_request_id"))
+        self.assertIsNone(record["turn_id"])
+
     def test_search_mock_and_failed_observations_never_construct_a_judge(self) -> None:
         record = self.observe(self.control({"status_code": 200, "raw_body": "[]"}))
         responses = self.directory / "records.jsonl"
@@ -190,6 +206,39 @@ class SearchToolCleanupTests(unittest.TestCase):
         self.assertEqual(read_jsonl(self.directory / "reranked_records.jsonl")[0]["execution_status"], "failed")
         self.assertEqual(read_jsonl(self.directory / "embedding_records.jsonl")[0]["execution_status"], "not_run")
         self.assertEqual(control.counts[Operation.SEARCH], 1)
+
+    def test_invalid_preflight_is_not_a_completed_collection(self) -> None:
+        parameters = {"ranking_modes": ["RERANKED"], "dataset_manifest_sha256": digest(DEFAULT_DATASET / "manifest.json"), "server_url": "http://evaluation.invalid", "response_limit": 20, "require_comparable_runtime": False}
+        control = RunControl(self.settings(cap=1, parameters=parameters), self.directory / "attempts.jsonl")
+        case = copy.deepcopy(self.case)
+        case["input"]["query"] = ""
+        case["input_sha256"] = self.exported["input_sha256"]
+        with self.assertRaises(ValueError):
+            asyncio.run(collect_cases(cases=[case], dataset=DEFAULT_DATASET, output=self.directory, control=control, runtime={"corpus_sha256": digest(DEFAULT_DATASET / "generated/corpus.json")}))
+        self.assertEqual(read_json(self.directory / "collection_summary.json")["status"], "partial")
+        self.assertEqual(control.counts[Operation.SEARCH], 0)
+        self.assertEqual(read_jsonl(self.directory / "selected_inputs.jsonl")[0]["original_input"]["query"], "")
+
+    def test_runtime_command_failure_preserves_stderr_without_running_docker(self) -> None:
+        settings = ExecutionSettings(
+            mode=RunMode.MOCK,
+            case_ids=(self.case["case_id"],),
+            max_calls={Operation.RUNTIME_READ: 1},
+            timeout_seconds=1,
+            model=None,
+            max_output_tokens=None,
+            parameters={},
+            configuration_sha256="synthetic-configuration",
+        )
+        arguments = ["exec", "synthetic-container", "read-only-fixture"]
+        request = {"command": ["docker", *arguments]}
+        response = {"returncode": 1, "stdout": "original stdout", "stderr": "original failure"}
+        control = RunControl(settings, self.directory / "attempts.jsonl", mock_responses={canonical_digest(request): {"response": response}})
+        with patch("asyncio.create_subprocess_exec", side_effect=AssertionError("No actual Docker command")):
+            with self.assertRaises(RuntimeError):
+                asyncio.run(docker_read(control, self.case["case_id"], arguments))
+        self.assertEqual(control.last_attempt["response"], response)
+        self.assertTrue(control.stopped)
 
 
 class RuntimeComparisonTests(unittest.TestCase):

@@ -15,7 +15,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from common.dataset.io import canonical_digest, digest, read_json, write_json
 from common.execution.control import ExecutionBlocked, ExecutionSettings, MockExecutionStrategy, Operation, RunControl, RunMode
-from common.execution.judge_transport import bounded_completion, completion_document, judge_client, usage_totals
+from common.execution.judge_transport import bounded_completion, completion_document, completion_observation_request, judge_client, usage_totals
 from common.paths import DEFAULT_DATASET
 from tracks.search.judge_candidates import AssessmentSettings, assess_case, run as run_candidate_judge
 from tracks.search.holdout import read_cases, write_review_csv
@@ -47,7 +47,7 @@ class BoundedJudgeTests(unittest.TestCase):
         async def respond(actual_control: RunControl, case_id: str, request: dict, *, client: object) -> dict:
             self.assertIs(actual_control, control)
             self.assertIsInstance(control.strategy, MockExecutionStrategy)
-            control.strategy.responses[canonical_digest(request)] = {"response": copy.deepcopy(response)}
+            control.strategy.responses[canonical_digest(completion_observation_request(control, request))] = {"response": copy.deepcopy(response)}
             return await bounded_completion(control, case_id, request, client=client)
         return respond
 
@@ -142,7 +142,7 @@ class BoundedJudgeTests(unittest.TestCase):
         write_json(fixtures, {})
         write_json(configuration, {"mode": "MOCK", "case_ids": [self.case["case_id"]], "max_calls": {"judge": 2}, "timeout_seconds": 1, "model": "explicit-mock-model", "max_output_tokens": 700, "parameters": {"judgment_passes": ["first", "independent"], "adjudicate_disagreements": False, "candidate_file_sha256": digest(review / "candidates.csv")}})
         async def respond(control: RunControl, case_id: str, request: dict, *, client: object) -> dict:
-            control.strategy.responses[canonical_digest(request)] = {"response": self.completion()}
+            control.strategy.responses[canonical_digest(completion_observation_request(control, request))] = {"response": self.completion()}
             return await bounded_completion(control, case_id, request, client=client)
         arguments = Namespace(dataset=dataset, review_dir=review, config=configuration, mock_responses=fixtures, output_dir=self.directory / "output")
         with patch("tracks.search.judge_candidates.bounded_completion", new=respond), patch("openai.AsyncOpenAI", side_effect=AssertionError("No paid SDK client")):

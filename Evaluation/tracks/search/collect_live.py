@@ -6,17 +6,17 @@ import asyncio
 import hashlib
 import json
 import os
+import re
 from pathlib import Path
 import statistics
 import sys
 from typing import Any
-import uuid
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 from common.dataset.io import digest, export_inputs, read_json, read_jsonl, write_json, write_jsonl
 from common.execution.control import AttemptStatus, ExecutionBlocked, Operation, RunControl, RunMode, load_control
-from common.observability.search_records import SEARCH_RECORD_VERSION, SEARCH_SOURCE, search_record_error
+from common.observability.search_records import SEARCH_RECORD_VERSION, SEARCH_SOURCE
 from common.paths import DEFAULT_DATASET
 from common.runs.run_record import evaluator_git_sha
 from tracks.search.api_contract import RankingMode, search_body, unsupported_conditions
@@ -52,6 +52,11 @@ async def request_search(
     body = search_body(case, mode, limit)
     raw_body = json.dumps(body, ensure_ascii=False, separators=(",", ":"))
     request = {"method": "POST", "url": server_url.rstrip("/") + "/api/places/search", "route": "/api/places/search", "raw_body": raw_body, "body_sha256": hashlib.sha256(raw_body.encode("utf-8")).hexdigest()}
+    traceparent = (control.settings.parameters.get("traceparents") or {}).get(case["case_id"] + ":" + mode.value)
+    if traceparent is not None:
+        if not isinstance(traceparent, str) or not re.fullmatch(r"00-(?!0{32}-)[0-9a-f]{32}-(?!0{16}-)[0-9a-f]{16}-0[01]", traceparent):
+            raise ValueError("An explicitly provided traceparent must be valid W3C context")
+        request["traceparent"] = traceparent
     missing = unsupported_conditions(case["input"]["conditions"])
     record: dict[str, Any] = {
         "schema_version": SEARCH_RECORD_VERSION, "record_source": SEARCH_SOURCE,
@@ -76,7 +81,14 @@ async def request_search(
         headers = {"Content-Type": "application/json"}
         if access_token:
             headers["Authorization"] = "Bearer " + access_token
-        response = await client.request("POST", request["url"], content=raw_body.encode("utf-8"), headers=headers)
+        if traceparent is not None:
+            headers["traceparent"] = traceparent
+        response = await client.request(
+            "POST",
+            request["url"],
+            content=raw_body.encode("utf-8"),
+            headers=headers,
+        )
         return {"status_code": response.status_code, "raw_body": response.text, "server_request_id": response.headers.get("x-request-id"), "traceparent": response.headers.get("traceparent")}
 
     try:
@@ -143,8 +155,12 @@ async def collect_cases(
     if require_comparable and (runtime.get("execution_mode") != RunMode.LIVE or not all(runtime.get(name) is True for name in ("corpus_verified", "configuration_verified", "search_material_verified"))):
         raise ExecutionBlocked("Comparable LIVE corpus, configuration and search-material evidence is required")
     records: dict[RankingMode, list[dict[str, Any]]] = {mode: [] for mode in modes}
+    write_jsonl(output / "selected_inputs.jsonl", [{"case_id": case["case_id"], "input_sha256": case["input_sha256"], "original_input": case["input"]} for case in cases])
     write_json(output / "collection_summary.json", {**control.summary(), "status": AttemptStatus.NOT_RUN.value})
     try:
+        for case in cases:
+            for mode in modes:
+                search_body(case, mode, control.settings.parameter("response_limit"))
         for case in cases:
             for mode in modes:
                 record = await request_search(
@@ -161,6 +177,9 @@ async def collect_cases(
                 records[mode].append(record)
                 filename = "embedding_records.jsonl" if mode == RankingMode.SEMANTIC_ONLY else "reranked_records.jsonl"
                 write_jsonl(output / filename, records[mode])
+    except BaseException:
+        control.stopped = True
+        raise
     finally:
         write_json(output / "collection_summary.json", {
             **control.summary(),
@@ -184,14 +203,28 @@ async def collect(arguments: argparse.Namespace) -> None:
     if digest(arguments.runtime_record) != control.settings.parameter("runtime_record_sha256"):
         raise ValueError("Runtime evidence differs from the explicit configuration")
     if control.settings.mode == RunMode.MOCK:
-        await collect_cases(cases=cases, dataset=arguments.dataset, output=arguments.output_dir, control=control, runtime=runtime)
+        await collect_cases(
+            cases=cases,
+            dataset=arguments.dataset,
+            output=arguments.output_dir,
+            control=control,
+            runtime=runtime,
+        )
         if control.stopped:
             raise ExecutionBlocked("Collection stopped; failed and unexecuted observations are preserved")
         return
     import httpx
     access_token = os.environ[arguments.token_env]
     async with httpx.AsyncClient(timeout=control.settings.timeout_seconds, follow_redirects=False, trust_env=False) as client:
-        await collect_cases(cases=cases, dataset=arguments.dataset, output=arguments.output_dir, control=control, runtime=runtime, client=client, access_token=access_token)
+        await collect_cases(
+            cases=cases,
+            dataset=arguments.dataset,
+            output=arguments.output_dir,
+            control=control,
+            runtime=runtime,
+            client=client,
+            access_token=access_token,
+        )
     if control.stopped:
         raise ExecutionBlocked("Collection stopped; failed and unexecuted observations are preserved")
 

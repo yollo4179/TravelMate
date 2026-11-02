@@ -20,7 +20,7 @@ from .tracks import Track, matches_track, metric_is_selected
 from common.observability.server_trace import is_native_record, message_is_observed
 from common.observability.search_records import is_search_api_record, search_quality_observed
 from .record_scoring import scorer_for
-from common.execution.control import ExecutionBlocked, Operation, RunControl, RunMode, load_control
+from common.execution.control import Operation, RunControl, RunMode, load_control
 from common.execution.judge_transport import judge_client
 
 ROOT = DEFAULT_DATASET
@@ -171,7 +171,15 @@ async def evaluate(
                     row.update(judge_status=ExecutionStatus.NOT_RUN.value, judge_error_type=judge_blocked_error)
                 else:
                     try:
-                        judged = await score_message(case, record, inputs[case["case_id"]]["model_input"], rubrics[case["evaluation_group"]], settings, client=client, control=judge_control)
+                        judged = await score_message(
+                            case,
+                            record,
+                            inputs[case["case_id"]]["model_input"],
+                            rubrics[case["evaluation_group"]],
+                            settings,
+                            client=client,
+                            control=judge_control,
+                        )
                         if judge_control.settings.mode == RunMode.MOCK:
                             row.update(judge_mock_result=judged, judge_status=ExecutionStatus.NOT_EVALUATED.value, judge_error_type="mock_judge_regression_only")
                         else:
