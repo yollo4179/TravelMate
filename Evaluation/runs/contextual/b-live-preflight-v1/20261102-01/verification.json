@@ -1,0 +1,83 @@
+{
+  "code_baseline": "642d45fb4c80bc0fa2f8ba32b958fb00fa351647",
+  "inspection_date": "2026-11-02",
+  "timezone": "Asia/Seoul",
+  "status": "BLOCKED_BEFORE_LIVE_REQUESTS",
+  "actual_inference_calls": 0,
+  "actual_search_tool_calls": 0,
+  "conversation_api_requests": 0,
+  "ollama_metadata_requests": 3,
+  "ollama_metadata_endpoints": ["/api/version", "/api/tags", "/api/ps"],
+  "paid_calls": 0,
+  "plan_jobs": 0,
+  "database_writes": 0,
+  "deployments": 0,
+  "test_suite_rerun": false,
+  "application_code_changed": false,
+  "ollama": {
+    "version": "0.40.13",
+    "model": "qwen3:8b",
+    "digest": "500a1f067a9f782620b40bee6f7b0c89e17ae61f686b92c24933e4ca4b2b8b41",
+    "version_and_tag_match_previous_profile": true,
+    "loaded_models_at_inspection": [],
+    "fresh_template_and_tokenizer_identity_validation": "NOT_RUN_AFTER_ENVIRONMENT_BLOCKERS",
+    "native_model_context_metadata": 40960,
+    "evaluation_context_proposal_unchanged": 8192,
+    "evaluation_output_reservation_proposal_unchanged": 1536
+  },
+  "running_server": {
+    "container": "travelmate-server",
+    "created": "2026-10-25T05:44:30.350499485Z",
+    "image": "sha256:53724b52a2bcbf70c4cc9a29e92ea1a18e75c08a3a5bee086cdbd99b88e4ca04",
+    "database_target": "jdbc:postgresql://postgres:5432/travel_db",
+    "compose_project": "docker",
+    "evaluation_isolation_verified": false,
+    "jar_required_class_presence": {
+      "ConversationController.class": false,
+      "ExactQwenProcess.class": false,
+      "ExecutionObservationFilter.class": false,
+      "PlaceSearchRequest.class": false
+    },
+    "exact_counter_and_search_only_caps_applied": false
+  },
+  "running_search": {
+    "container": "travelmate-embedding",
+    "created": "2026-10-25T18:18:45.935513073Z",
+    "image": "sha256:8819776872e7ede399c08e4a3694e5ce24836eb74022c72e5421e2d342ec0791",
+    "database_target": "searchdb:5432/travel_search_db",
+    "embedding_model_environment": "BAAI/bge-m3",
+    "rerank_strategy_environment": "autocast_fp16",
+    "rerank_batch_size_environment": 8,
+    "schema_tables": [
+      "place_embeddings", "place_index_jobs", "recommendation_requests", "recommendation_result_outbox"
+    ],
+    "required_evidence_tables_present": false
+  },
+  "database_comparison": {
+    "read_only_transactions_confirmed": true,
+    "frozen_corpus_count": 449,
+    "spring_place_count": 449,
+    "search_embedding_row_count": 449,
+    "anchors_matching_frozen_name_region_city_and_coordinates": [311, 378],
+    "full_corpus_content_comparison": "NOT_VERIFIED",
+    "source_relation_and_active_evidence_comparison": "BLOCKED_MISSING_TABLES",
+    "ranking_and_qrels_compatibility": "NOT_VERIFIED"
+  },
+  "fixed_scope_preserved": {
+    "case_ids": [
+      "PLR-TM-palaces-01", "PLR-TM-palaces-03", "PLR-TM-palaces-04", "PLR-TM-family_parks-04"
+    ],
+    "repeats": 1,
+    "concurrency": 1,
+    "retries": 0,
+    "maximum_conversation_requests": 4,
+    "maximum_qwen_inference_calls": 8,
+    "maximum_search_tool_executions": 4
+  },
+  "blockers": [
+    "Running server JAR lacks the required conversation, guard, observation and independent-search classes.",
+    "No verified evaluation-only server/database/topic configuration is active.",
+    "Running search database lacks original-evidence and relation retrieval tables.",
+    "Full corpus, evidence and retrieval configuration compatibility remains unverified."
+  ]
+}
