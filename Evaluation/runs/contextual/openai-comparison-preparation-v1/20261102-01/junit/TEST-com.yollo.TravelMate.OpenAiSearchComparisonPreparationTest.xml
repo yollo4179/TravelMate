@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.yollo.TravelMate.OpenAiSearchComparisonPreparationTest" tests="2" skipped="0" failures="0" errors="0" timestamp="2026-11-02T06:08:20.011Z" hostname="DESKTOP-MS327CL" time="2.468">
+  <properties/>
+  <testcase name="[1] fixtureRun=b-live-integration-v1" classname="com.yollo.TravelMate.OpenAiSearchComparisonPreparationTest" time="2.392"/>
+  <testcase name="[2] fixtureRun=qwen-gpu-two-case-retest-v1" classname="com.yollo.TravelMate.OpenAiSearchComparisonPreparationTest" time="0.066"/>
+  <system-out><![CDATA[15:08:20.964 [Test worker] INFO org.hibernate.validator.internal.util.Version -- HV000001: Hibernate Validator 8.0.3.Final
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

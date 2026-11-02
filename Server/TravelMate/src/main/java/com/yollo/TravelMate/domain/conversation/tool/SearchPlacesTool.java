@@ -26,7 +26,7 @@ public class SearchPlacesTool implements ConversationTool {
     public LlmTurn.ToolDefinition definition() {
         return new LlmTurn.ToolDefinition(
                 Name.SEARCH_PLACES.wireName(),
-                "계획 없이 장소와 원문 근거를 검색한다. query는 반드시 직접 작성한다. 선택 필터는 생략할 수 있으며 searchContext를 상속한다. exclude_place_ids는 snake_case다. limit 생략 시 10. 명시 필터와 context가 충돌하면 거부한다.",
+                "계획 없이 장소와 원문 근거를 검색한다. query는 반드시 직접 작성한다. arguments에는 스키마 필드만 직접 넣고 searchContext 객체는 넣지 않는다. 선택 필터를 생략하면 서버가 사용자 요청의 searchContext를 상속한다. exclude_place_ids는 snake_case다. limit 생략 시 10. 명시 필터와 context가 충돌하면 거부한다.",
                 SearchPlacesContract.parameters(),
                 LlmTurn.SchemaMode.OPTIONAL_FIELDS
         );

@@ -97,6 +97,7 @@ public class OpenAiLlmClient implements LlmStrategy {
         request.put("input", messages.stream().flatMap(message -> wireItems(message).stream()).toList());
         request.put("stream", false);
         request.put("store", false);
+        request.put("service_tier", "default");
         request.put("truncation", "disabled");
         request.put("max_output_tokens", maxOutputTokens);
         request.put("include", List.of("reasoning.encrypted_content"));
