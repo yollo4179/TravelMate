@@ -11,6 +11,22 @@ public record GeneratedPlan(
             Long placeId,
             Integer sequence,
             String activity,
-            String reason
-    ) {}
+            String reason,
+            List<SourceCitation> citations
+    ) {
+        public GeneratedPin {
+            citations = citations == null ? List.of() : List.copyOf(citations);
+        }
+
+        public GeneratedPin(
+                Long placeId,
+                Integer sequence,
+                String activity,
+                String reason
+        ) {
+            this(placeId, sequence, activity, reason, List.of());
+        }
+    }
+
+    public record SourceCitation(String evidenceId, String sourceId, String quote) {}
 }

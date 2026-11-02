@@ -1,0 +1,226 @@
+[
+  {
+    "trace_id": "vctxBMJ7ks3gTKgw7C29tQ==",
+    "span_id": "rADf3+ayXWw=",
+    "parent_span_id": null,
+    "name": "recommendation.worker_queue",
+    "duration_ms": 36.647887,
+    "attributes": {
+      "search.query": "창경궁",
+      "search.ranking_mode": "RERANKED",
+      "recommendation.worker_queue.elapsed_ms": 36.397,
+      "recommendation.kafka_to_database_ms": 301.917
+    }
+  },
+  {
+    "trace_id": "NQz+6TL9IOKLCKowVV+eng==",
+    "span_id": "AwylTQRNFMw=",
+    "parent_span_id": "XUxr3D9J67Q=",
+    "name": "embedding.model_inference",
+    "duration_ms": 4395.90848,
+    "attributes": {
+      "embedding.device": "cpu",
+      "embedding.text_count": "1",
+      "embedding.query": "창경궁",
+      "embedding.dimension": "1024",
+      "embedding.elapsed_ms": 4395.922288997099
+    }
+  },
+  {
+    "trace_id": "NQz+6TL9IOKLCKowVV+eng==",
+    "span_id": "Q4UrL7+C2Y8=",
+    "parent_span_id": "XUxr3D9J67Q=",
+    "name": "database.pgvector_search",
+    "duration_ms": 49.655072,
+    "attributes": {
+      "db.system": "postgresql",
+      "db.operation.name": "SELECT",
+      "db.collection.name": "place_embeddings",
+      "search.top_k": "30",
+      "search.candidate_count": "30",
+      "search.retrieval_elapsed_ms": 49.81227099779062
+    }
+  },
+  {
+    "trace_id": "NQz+6TL9IOKLCKowVV+eng==",
+    "span_id": "KgeAZ3ceivU=",
+    "parent_span_id": "XUxr3D9J67Q=",
+    "name": "database.contextual_evidence_search",
+    "duration_ms": 6.229739,
+    "attributes": {}
+  },
+  {
+    "trace_id": "XJMpike7utwHVUuYWDDHAw==",
+    "span_id": "Z3e0TcFF048=",
+    "parent_span_id": null,
+    "name": "recommendation.kafka_roundtrip",
+    "duration_ms": 117662.0701,
+    "attributes": {
+      "search.query": "창경궁",
+      "search.ranking_mode": "RERANKED",
+      "search.region": "서울",
+      "messaging.destination.name": "travelmate.b-eval.recommendation-requests.v1",
+      "reranking.applied_count": "1",
+      "search.limit": "1",
+      "messaging.system": "kafka",
+      "search.returned_count": "1",
+      "search.results_preview": "[{\"id\":378,\"name\":\"창경궁\",\"semantic_score\":0.6240623817406676,\"rerank_score\":0.99985945}]"
+    }
+  },
+  {
+    "trace_id": "NQz+6TL9IOKLCKowVV+eng==",
+    "span_id": "yrbrBk+pmm4=",
+    "parent_span_id": "XUxr3D9J67Q=",
+    "name": "reranking.model_inference",
+    "duration_ms": 112267.675343,
+    "attributes": {
+      "reranking.evidence_per_place": "2",
+      "reranking.place_count": "30",
+      "reranking.concurrent_max_active_calls": "1",
+      "reranking.query": "창경궁",
+      "reranking.model": "BAAI/bge-reranker-v2-m3",
+      "reranking.device": "cpu",
+      "reranking.candidate_count": "30",
+      "reranking.execution_strategy": "cross_encoder_predict",
+      "reranking.execution_wait_ms": 0.21465501049533486,
+      "reranking.inference_index_after_model_load": "1",
+      "reranking.first_inference_after_model_load": true,
+      "reranking.prior_real_inference_count": "0",
+      "reranking.warmup_request_configured": false,
+      "reranking.warmup_observation": "first_after_load",
+      "reranking.concurrent_calls_at_start": "1",
+      "reranking.concurrent_overlap": false,
+      "reranking.input_fingerprint": "83e8d0cd90c8fd767570c4f35606ba05d028ec620049185b42ada9fd8b12f424",
+      "reranking.same_input_prior_inference_count": "0",
+      "reranking.first_inference_for_input": true,
+      "reranking.input_fingerprint_elapsed_ms": 0.5359910137485713,
+      "reranking.model_loaded_at": "2026-11-02T03:34:52.010646+00:00",
+      "reranking.model_load_elapsed_ms": 1906.9941380003002,
+      "reranking.diagnostics.process_age_since_model_load_ms": 2223930.410970992,
+      "reranking.query_text_characters": "3",
+      "reranking.candidate_text_characters": {
+        "values": [
+          {
+            "int_value": "641"
+          },
+          {
+            "int_value": "680"
+          },
+          {
+            "int_value": "460"
+          },
+          {
+            "int_value": "1339"
+          },
+          {
+            "int_value": "586"
+          },
+          {
+            "int_value": "636"
+          },
+          {
+            "int_value": "378"
+          },
+          {
+            "int_value": "639"
+          },
+          {
+            "int_value": "405"
+          },
+          {
+            "int_value": "976"
+          },
+          {
+            "int_value": "450"
+          },
+          {
+            "int_value": "276"
+          },
+          {
+            "int_value": "339"
+          },
+          {
+            "int_value": "209"
+          },
+          {
+            "int_value": "331"
+          },
+          {
+            "int_value": "447"
+          },
+          {
+            "int_value": "743"
+          },
+          {
+            "int_value": "415"
+          },
+          {
+            "int_value": "319"
+          },
+          {
+            "int_value": "652"
+          },
+          {
+            "int_value": "376"
+          },
+          {
+            "int_value": "613"
+          },
+          {
+            "int_value": "857"
+          },
+          {
+            "int_value": "804"
+          },
+          {
+            "int_value": "593"
+          },
+          {
+            "int_value": "358"
+          },
+          {
+            "int_value": "686"
+          },
+          {
+            "int_value": "290"
+          },
+          {
+            "int_value": "375"
+          },
+          {
+            "int_value": "465"
+          }
+        ]
+      },
+      "reranking.parameter_dtype": "float32",
+      "reranking.predict_wall_ms": 112272.08960900316,
+      "reranking.score_count": "30",
+      "reranking.elapsed_ms": 112274.86003001104,
+      "reranking.batch_size": "8",
+      "reranking.batch_count": "4",
+      "reranking.execution_mode": "cross_encoder_predict",
+      "reranking.score_min": 0.0005637728609144688,
+      "reranking.score_max": 0.9998594522476196
+    }
+  },
+  {
+    "trace_id": "NQz+6TL9IOKLCKowVV+eng==",
+    "span_id": "XUxr3D9J67Q=",
+    "parent_span_id": null,
+    "name": "recommendation.pipeline",
+    "duration_ms": 116878.301149,
+    "attributes": {
+      "search.query": "창경궁",
+      "search.ranking_mode": "RERANKED",
+      "search.limit": "1",
+      "search.top_k": "30",
+      "search.filters": "{\"area\": null, \"city\": null, \"region\": \"서울\", \"category\": null, \"exclude_place_ids\": []}",
+      "search.candidate_count": "30",
+      "reranking.input_tokens": "10074",
+      "search.returned_count": "1",
+      "reranking.status": "APPLIED",
+      "search.total_elapsed_ms": 116875.0776629895,
+      "search.results_preview": "[{\"rank\": 1, \"place_id\": 378, \"name\": \"창경궁\", \"semantic_score\": 0.6240623817406676, \"rerank_score\": 0.9998594522476196}]"
+    }
+  }
+]

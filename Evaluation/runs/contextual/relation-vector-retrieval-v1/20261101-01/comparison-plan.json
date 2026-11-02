@@ -1,0 +1,255 @@
+{
+  "questions": [
+    {
+      "id": "mixed-landscape",
+      "query": "야경이 아름다운 공원",
+      "filters": {
+        "content_kinds": [
+          "landscape"
+        ]
+      },
+      "target_place": 101,
+      "target_chunk": "7ea8ad87-e493-59bc-b5fa-e59537dc853f"
+    },
+    {
+      "id": "supporting-to-b",
+      "query": "B공원으로 걸어서 갈 수 있는 곳",
+      "filters": {
+        "destination_place_id": 202,
+        "relation_importance": [
+          "supporting"
+        ]
+      },
+      "target_place": 101,
+      "target_chunk": "7ea8ad87-e493-59bc-b5fa-e59537dc853f"
+    },
+    {
+      "id": "supporting-from-a",
+      "query": "A공원에서 관람 후 걸어서 갈 수 있는 공원",
+      "filters": {
+        "origin_place_id": 101,
+        "relation_importance": [
+          "supporting"
+        ]
+      },
+      "target_place": 202,
+      "target_chunk": "7ea8ad87-e493-59bc-b5fa-e59537dc853f"
+    },
+    {
+      "id": "primary-stairs",
+      "query": "B공원으로 계단을 내려가 걸어갈 수 있는 곳",
+      "filters": {
+        "destination_place_id": 202,
+        "relation_importance": [
+          "primary"
+        ]
+      },
+      "target_place": 101,
+      "target_chunk": "4b5cc070-6010-519c-af1b-0f5111263807"
+    },
+    {
+      "id": "real-parking",
+      "query": "청담도로공원 주차장은 무료인가요",
+      "filters": {
+        "content_kinds": [
+          "facility"
+        ]
+      },
+      "target_place": 394,
+      "target_chunk": "f8aa24f2-d4a2-5e1a-bc32-4c3fb8534e32"
+    },
+    {
+      "id": "real-view-regression",
+      "query": "한강 야경이 아름다운 청담도로공원",
+      "filters": {
+        "content_kinds": [
+          "landscape"
+        ]
+      },
+      "target_place": 394,
+      "target_chunk": null
+    }
+  ],
+  "phases": [
+    "chunk-only",
+    "chunk-and-relation-v1"
+  ],
+  "candidate_limit": 30,
+  "evidence_per_place": 2,
+  "active_limit": 20,
+  "selected_chunk_ids": {
+    "101": [
+      "4b5cc070-6010-519c-af1b-0f5111263807",
+      "9c8e771b-2927-583c-be2f-f159415b1566",
+      "7ea8ad87-e493-59bc-b5fa-e59537dc853f"
+    ],
+    "202": [
+      "4b5cc070-6010-519c-af1b-0f5111263807",
+      "a625576f-64b0-5a30-9670-36b33c0e7048",
+      "9c8e771b-2927-583c-be2f-f159415b1566",
+      "64343591-1952-5d48-a6a6-7e5b303381bb",
+      "ab1a1daf-09d8-588c-9bdd-d1721fd1e028",
+      "5901c8ca-e895-5a6a-b2da-445f3a531b80",
+      "13e6eef8-7429-5138-93bd-e8e119f10e7f",
+      "867c5b1f-9894-5511-a95d-a0f447806a3f",
+      "24b8c01b-e51f-5de8-bca8-06cfdbf92c78",
+      "8bbdca03-470f-56d9-8d1e-d30e43378950",
+      "b486b9c6-8dea-534e-ab91-cdccd2cde37e",
+      "568639a3-df87-5009-8bfb-202b0122800b",
+      "380ef480-3686-5416-aa36-d2d472a7fdac",
+      "03f28b8b-d7ab-5b43-8a73-4dd38ea40252",
+      "47ddbfd9-33c6-56a3-93fb-bdb4817aea5f",
+      "e033433a-0119-5850-bdad-ba3b90833cfc",
+      "b9de82cc-0571-51bb-8781-4c3ba8131ed6",
+      "a0299fb8-01f1-51ec-8b9c-4fc73c318617",
+      "bd1cc862-f81e-5e2e-b700-d147a473d477",
+      "70bfab0e-c3d8-5de5-ab07-0ca3b41435ea"
+    ],
+    "394": [
+      "f8aa24f2-d4a2-5e1a-bc32-4c3fb8534e32",
+      "91e0be6a-1ef0-514f-b4ce-0bd98ac461f1",
+      "ae73f753-7be9-586e-8d2e-56ecf0a33dea",
+      "d50a91de-7241-5726-aa5a-09f8f4f96b03",
+      "da9d85a8-d80e-539e-ac25-020f712e6e6d",
+      "48d7e7f5-644b-595a-8713-ab006193f604",
+      "1c7db9c6-5199-5c74-a2e2-587d5ca826f0",
+      "4110444e-6eb8-5e18-a202-07888db0abfa"
+    ],
+    "1001": [
+      "64343591-1952-5d48-a6a6-7e5b303381bb"
+    ],
+    "1002": [
+      "ab1a1daf-09d8-588c-9bdd-d1721fd1e028"
+    ],
+    "1003": [
+      "5901c8ca-e895-5a6a-b2da-445f3a531b80"
+    ],
+    "1004": [
+      "13e6eef8-7429-5138-93bd-e8e119f10e7f"
+    ],
+    "1005": [
+      "867c5b1f-9894-5511-a95d-a0f447806a3f"
+    ],
+    "1006": [
+      "24b8c01b-e51f-5de8-bca8-06cfdbf92c78"
+    ],
+    "1007": [
+      "8bbdca03-470f-56d9-8d1e-d30e43378950"
+    ],
+    "1008": [
+      "b486b9c6-8dea-534e-ab91-cdccd2cde37e"
+    ],
+    "1009": [
+      "568639a3-df87-5009-8bfb-202b0122800b"
+    ],
+    "1010": [
+      "380ef480-3686-5416-aa36-d2d472a7fdac"
+    ],
+    "1011": [
+      "03f28b8b-d7ab-5b43-8a73-4dd38ea40252"
+    ],
+    "1012": [
+      "47ddbfd9-33c6-56a3-93fb-bdb4817aea5f"
+    ],
+    "1013": [
+      "e033433a-0119-5850-bdad-ba3b90833cfc"
+    ],
+    "1014": [
+      "b9de82cc-0571-51bb-8781-4c3ba8131ed6"
+    ],
+    "1015": [
+      "a0299fb8-01f1-51ec-8b9c-4fc73c318617"
+    ],
+    "1016": [
+      "bd1cc862-f81e-5e2e-b700-d147a473d477"
+    ],
+    "1017": [
+      "70bfab0e-c3d8-5de5-ab07-0ca3b41435ea"
+    ],
+    "1018": [
+      "457b8f2b-fdaa-5e94-a043-3a666c52bd85"
+    ],
+    "1019": [
+      "8d9e0c0f-1122-55e8-9707-c7c6d061a9e1"
+    ],
+    "1020": [
+      "ab15924e-f651-5c65-bbfc-67f679c170ff"
+    ],
+    "1021": [
+      "383b63b4-eca3-5836-a821-8b689515e81a"
+    ],
+    "1022": [
+      "4774fb27-63ca-5687-86dd-1e140ef57fe0"
+    ],
+    "1023": [
+      "a2dc3cd2-2b2a-5754-93cc-359a7ebd0743"
+    ],
+    "1024": [
+      "a03d96c8-5563-515d-a2e5-5c05e67fa2d9"
+    ],
+    "1025": [
+      "58c09655-998e-5535-b521-6e85178d126a"
+    ],
+    "1026": [
+      "c51adca8-0784-5a39-85cd-0df51d562c77"
+    ],
+    "1027": [
+      "d24ac0f1-2435-571e-b1fe-8c8eb322eaf3"
+    ],
+    "1028": [
+      "4b40d3bb-02f4-5d76-b46c-a795b60dc48c"
+    ],
+    "1029": [
+      "c4056614-13eb-597f-948f-818e5498eb1f"
+    ],
+    "1030": [
+      "e29aa693-ac7e-5642-a948-7bd143b28419"
+    ],
+    "1031": [
+      "4598c3d2-7358-5779-87bb-4f55d2f0c743"
+    ],
+    "1032": [
+      "3f3e3be9-1ffa-5974-88af-a4e68638b8b6"
+    ],
+    "1033": [
+      "3bba97ca-d1a9-5d86-bc8f-adae2e0b1178"
+    ],
+    "1034": [
+      "623f4c3b-9223-5fa0-a878-e71052b39c0c"
+    ],
+    "1035": [
+      "6b721a93-60b8-5209-b70e-db705627a10d"
+    ],
+    "1036": [
+      "46f1d6d7-e31e-5d24-8c84-daf07a106dd6"
+    ],
+    "1037": [
+      "ba3f3730-ce51-50d0-a0b3-6a649d315f77"
+    ],
+    "1038": [
+      "7b5eade9-4f33-5889-a7cd-6de26eeb1a0e"
+    ],
+    "1039": [
+      "1a383baa-2677-5e44-aba2-0ea8d7a1e399"
+    ],
+    "1040": [
+      "bc30d081-2fca-56c0-9e60-8998649fd6b1"
+    ]
+  },
+  "negative_fixtures": 40,
+  "reviewed_real_and_control_chunks": 12,
+  "b_eligible": 44,
+  "b_active": 20,
+  "b_target_eligible_position": 44,
+  "new_embedding_texts": [
+    "A공원에서 계단을 내려가 B공원까지 걸어갔다.",
+    "A공원에서 B공원으로 이동하려 했지만 공사로 길이 막혀 돌아왔다.",
+    "관람 후 B공원으로 걸어갈 수 있다.",
+    "B공원까지 차량으로만 이동할 수 있으며 도보 통행은 금지된다."
+  ],
+  "cached_query_text_scores": 65,
+  "fusion": "같은 활성 청크의 전체 벡터와 방향에 맞는 관계 인용 벡터 중 최대 cosine. 장소 중복 제거 후 Top-30. 합산 없음.",
+  "new_sonar_calls": 0,
+  "production_database_writes": 0,
+  "semantic_review": "합성 CONTROL 4개는 버전을 아는 에이전트 검수. 실제 P09는 기존 승인 8개만 재사용."
+}

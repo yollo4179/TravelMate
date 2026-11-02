@@ -1,0 +1,2 @@
+# Optional offline checker; no transformers model or inference dependencies.
+tokenizers==0.22.2

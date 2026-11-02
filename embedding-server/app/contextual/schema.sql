@@ -1,6 +1,13 @@
 -- Additive migration in the FastAPI-owned database, never the Spring database.
 ALTER TABLE place_embeddings ADD COLUMN IF NOT EXISTS chunk_generation BIGINT NOT NULL DEFAULT 0;
 
+CREATE TABLE IF NOT EXISTS place_original_field_evidence (
+    place_id BIGINT PRIMARY KEY REFERENCES place_embeddings(place_id),
+    place_source_version BIGINT NOT NULL,
+    place_fingerprint VARCHAR(64) NOT NULL,
+    document JSONB NOT NULL
+);
+
 CREATE TABLE IF NOT EXISTS retrieval_source_versions (
     source_id UUID NOT NULL,
     source_version VARCHAR(64) NOT NULL,
@@ -41,11 +48,15 @@ CREATE TABLE IF NOT EXISTS place_active_chunks (
     slot SMALLINT NOT NULL CHECK (slot BETWEEN 1 AND 20),
     chunk_id UUID NOT NULL,
     context_version VARCHAR(64) NOT NULL,
-    role TEXT NOT NULL DEFAULT 'subject' CHECK (role = 'subject'),
+    role TEXT NOT NULL DEFAULT 'subject' CHECK (role IN ('subject','relation_endpoint')),
     PRIMARY KEY (place_id, slot),
     UNIQUE (place_id, chunk_id),
     FOREIGN KEY (chunk_id, context_version) REFERENCES retrieval_chunk_contexts
 );
+-- 기존 subject를 승격하지 않고 관계 검색용 슬롯을 구분한다.
+ALTER TABLE place_active_chunks DROP CONSTRAINT IF EXISTS place_active_chunks_role_check;
+ALTER TABLE place_active_chunks ADD CONSTRAINT place_active_chunks_role_check
+    CHECK (role IN ('subject','relation_endpoint'));
 -- Slots enforce the per-place limit even for concurrent/direct SQL writers.
 CREATE INDEX IF NOT EXISTS idx_retrieval_chunk_embedding ON retrieval_chunk_contexts
     USING hnsw (embedding vector_cosine_ops);
@@ -55,10 +66,17 @@ BEGIN
     IF NOT EXISTS (
         SELECT 1 FROM retrieval_chunk_contexts c
         WHERE c.chunk_id=NEW.chunk_id AND c.context_version=NEW.context_version
-          AND c.document->'place_refs' @> jsonb_build_array(
-              jsonb_build_object('place_id', NEW.place_id, 'role', 'subject'))
+          AND ((NEW.role='subject' AND c.document->'place_refs' @> jsonb_build_array(
+              jsonb_build_object('place_id', NEW.place_id, 'role', 'subject')))
+            OR (NEW.role='relation_endpoint' AND c.document->'place_refs' @>
+                jsonb_build_array(jsonb_build_object('place_id', NEW.place_id)) AND EXISTS (
+                SELECT 1 FROM jsonb_array_elements(COALESCE(c.document->'relations','[]'::jsonb)) relation
+                WHERE relation->>'type'='movement' AND relation->>'importance' IN ('primary','supporting')
+                  AND relation ? 'evidence'
+                  AND ((relation->'origin'->>'place_id')::bigint=NEW.place_id
+                    OR (relation->'destination'->>'place_id')::bigint=NEW.place_id))))
     ) THEN
-        RAISE EXCEPTION 'Active chunk must explicitly describe the subject place' USING ERRCODE='23514';
+        RAISE EXCEPTION 'Active chunk must match its subject or relation endpoint role' USING ERRCODE='23514';
     END IF;
     RETURN NEW;
 END;
@@ -66,3 +84,44 @@ $$;
 DROP TRIGGER IF EXISTS enforce_active_chunk_subject ON place_active_chunks;
 CREATE TRIGGER enforce_active_chunk_subject BEFORE INSERT OR UPDATE ON place_active_chunks
     FOR EACH ROW EXECUTE FUNCTION enforce_active_chunk_subject();
+
+
+-- 이동 근거 벡터도 활성 슬롯을 통해서만 검색한다. 보관된 모든 청크를 자동 활성화하지 않는다.
+CREATE TABLE IF NOT EXISTS retrieval_relation_embeddings (
+    chunk_id UUID NOT NULL,
+    context_version VARCHAR(64) NOT NULL,
+    relation_index INTEGER NOT NULL CHECK (relation_index >= 0),
+    representation_version TEXT NOT NULL,
+    evidence JSONB NOT NULL,
+    embedding VECTOR(1024) NOT NULL,
+    embedding_model TEXT NOT NULL DEFAULT 'BAAI/bge-m3',
+    PRIMARY KEY (chunk_id, context_version, relation_index, representation_version),
+    FOREIGN KEY (chunk_id, context_version) REFERENCES retrieval_chunk_contexts
+);
+CREATE INDEX IF NOT EXISTS idx_retrieval_relation_embedding ON retrieval_relation_embeddings
+    USING hnsw (embedding vector_cosine_ops);
+
+CREATE OR REPLACE FUNCTION enforce_relation_embedding_evidence() RETURNS trigger LANGUAGE plpgsql AS $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1 FROM retrieval_chunk_contexts c JOIN retrieval_chunks r USING(chunk_id)
+        CROSS JOIN LATERAL (SELECT c.document->'relations'->NEW.relation_index AS relation) selected
+        WHERE c.chunk_id=NEW.chunk_id AND c.context_version=NEW.context_version
+          AND selected.relation->>'type'='movement'
+          AND selected.relation->>'importance' IN ('primary','supporting')
+          AND selected.relation->'evidence'=NEW.evidence
+          AND length(btrim(NEW.evidence->>'quote'))>0
+          AND (NEW.evidence->>'start')::integer>=r.start_offset
+          AND (NEW.evidence->>'end')::integer<=r.end_offset
+          AND (NEW.evidence->>'end')::integer>(NEW.evidence->>'start')::integer
+          AND substring(r.chunk_text FROM ((NEW.evidence->>'start')::integer-r.start_offset+1)
+                        FOR ((NEW.evidence->>'end')::integer-(NEW.evidence->>'start')::integer))=NEW.evidence->>'quote'
+    ) THEN
+        RAISE EXCEPTION 'Relation vector must match exact source evidence and relation index' USING ERRCODE='23514';
+    END IF;
+    RETURN NEW;
+END;
+$$;
+DROP TRIGGER IF EXISTS enforce_relation_embedding_evidence ON retrieval_relation_embeddings;
+CREATE TRIGGER enforce_relation_embedding_evidence BEFORE INSERT OR UPDATE ON retrieval_relation_embeddings
+    FOR EACH ROW EXECUTE FUNCTION enforce_relation_embedding_evidence();

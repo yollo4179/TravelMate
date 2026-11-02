@@ -3,6 +3,7 @@ from __future__ import annotations
 import argparse
 from contextlib import redirect_stdout
 from copy import deepcopy
+from dataclasses import replace
 import io
 import json
 from pathlib import Path
@@ -20,9 +21,11 @@ from app.contextual.agent import parse_chunks
 from app.contextual.artifacts import collect_bundle, load_record, revalidate_record, request_fingerprint
 from app.contextual.cli import run
 from app.contextual.prompts import PromptVersion, resolve_prompt
+from app.contextual.input_format import InputVersion
+from app.contextual.contracts import SplitterVersion
 from app.contextual.replay import GenerationBaseline, revalidate_batch
 from app.contextual.repository import apply_bundle
-from app.contextual.validation import ValidationVersion
+from app.contextual.validation import ValidationVersion, current_validation_version
 from test_contextual_chunks import SETTINGS, bundle, response_for
 from test_contextual_profiles import PROFILE_ID, legacy_archive
 
@@ -76,13 +79,23 @@ def legacy_candidate(baseline: GenerationBaseline, directory: Path) -> Path:
 class SubjectFilterTests(unittest.IsolatedAsyncioTestCase):
     async def test_mixed_roles_are_preserved_and_only_subject_chunks_are_indexable_for_all_prompts(self) -> None:
         value = bundle(3)
+        value = type(value)(value.places, [replace(source, text=source.text.replace('. ', '며 ')) for source in value.sources])
         raw = set_roles(response_for(value), 1, ['mentioned', 'view_target'])
         set_roles(raw, 2, [])
         before = deepcopy(raw)
         for version in PromptVersion:
             with self.subTest(prompt=version), tempfile.TemporaryDirectory() as directory:
-                async with httpx.AsyncClient(transport=httpx.MockTransport(lambda request: httpx.Response(200, json=raw))) as http:
-                    path = await collect_bundle(value, SETTINGS, Path(directory), http, prompt_version=version)
+                response = deepcopy(raw)
+                if resolve_prompt(version).supports_relations:
+                    document = json.loads(response['output'][0]['content'][0]['text'])
+                    for chunk in document['chunks']:
+                        chunk.update(content_kind='other', relations=[])
+                    response['output'][0]['content'][0]['text'] = json.dumps(document, ensure_ascii=False)
+                async with httpx.AsyncClient(transport=httpx.MockTransport(lambda request: httpx.Response(200, json=response))) as http:
+                    input_version = InputVersion.EXPLICIT if resolve_prompt(version).requires_explicit_chunks else InputVersion.OFFSETS
+                    path = await collect_bundle(value, SETTINGS, Path(directory), http,
+                        prompt_version=version, input_version=input_version,
+                        splitter_version=SplitterVersion.SENTENCE if resolve_prompt(version).supports_relations else SplitterVersion.LEGACY)
                 _, chunks, record = load_record(path)
                 self.assertEqual(len(chunks), 1)
                 self.assertEqual(len(record['excluded_chunks']), 2)
@@ -92,9 +105,9 @@ class SubjectFilterTests(unittest.IsolatedAsyncioTestCase):
                 self.assertEqual(mentioned['chunk_text'], value.sources[1].text)
                 self.assertTrue(mentioned['context_text'])
                 self.assertEqual(unattributed['exclusion_reason'], 'unattributed')
-                self.assertEqual(json.loads(path.with_name('raw_response.json').read_text(encoding='utf-8')), before)
-                self.assertEqual(record['validation_version'], ValidationVersion.SUBJECT_ONLY)
-                self.assertEqual(chunks[0].generation['validation_version'], ValidationVersion.SUBJECT_ONLY)
+                self.assertEqual(json.loads(path.with_name('raw_response.json').read_text(encoding='utf-8')), response)
+                self.assertEqual(record['validation_version'], current_validation_version(version))
+                self.assertEqual(chunks[0].generation['validation_version'], current_validation_version(version))
                 changed = {**record, 'excluded_chunks': []}
                 path.write_text(json.dumps(changed), encoding='utf-8')
                 with self.assertRaisesRegex(ValueError, 'Excluded chunks'):

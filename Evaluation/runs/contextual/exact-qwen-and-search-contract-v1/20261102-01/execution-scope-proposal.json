@@ -1,0 +1,99 @@
+{
+  "status": "PROPOSED_BLOCKED_NOT_APPROVED",
+  "approved": false,
+  "executed": false,
+  "inference_calls_authorized_now": 0,
+  "search_requests_authorized_now": 0,
+  "supersedes_prior_social_only_suggestion": true,
+  "social_cases_are_not_search_or_plan_completion": true,
+  "app_gpt_model": null,
+  "judge_calls_proposed": 0,
+  "phase_a_existing_direct_search": {
+    "case_ids": [
+      "PLR-TM-palaces-01",
+      "PLR-TM-palaces-03"
+    ],
+    "split": "development",
+    "repetitions_proposed": 1,
+    "ranking_modes": [
+      "SEMANTIC_ONLY",
+      "RERANKED"
+    ],
+    "maximum_application_search_requests": 4,
+    "conversation_llm_calls": 0,
+    "planning_llm_calls": 0,
+    "route": "existing GET /api/places/search",
+    "claim_scope": "region/city filter transport and ranked retrieval only; no tool selection, no plan quality",
+    "internal_embedding_reranking_call_count": "must be captured from approved evaluation backend; not measured or assumed zero",
+    "requirements": [
+      "user approval",
+      "evaluation-only server/DB with verified frozen corpus IDs/versions and configuration",
+      "persisted search traces and existing query-specific relevance labels",
+      "no external paid enrichment or automatic retry"
+    ]
+  },
+  "phase_b_plan_independent_search_tool": {
+    "case_ids": [
+      "PLR-TM-palaces-01",
+      "PLR-TM-palaces-03",
+      "PLR-TM-palaces-04",
+      "PLR-TM-family_parks-04"
+    ],
+    "split": "development",
+    "target_app_model": "qwen3:8b",
+    "repetitions_proposed": 1,
+    "concurrency": 1,
+    "ranking_mode": "RERANKED",
+    "maximum_conversation_llm_calls_per_case": 2,
+    "maximum_conversation_llm_calls_total": 8,
+    "maximum_search_tool_executions_per_case": 1,
+    "maximum_search_tool_executions_total": 4,
+    "maximum_planning_jobs": 0,
+    "maximum_planning_llm_calls": 0,
+    "judge_calls": 0,
+    "expected_tools": [
+      "search_places"
+    ],
+    "claim_scope": "only observed tool selection/effective filters, returned ranked places and explanation against actual selected evidence; not complete frozen persona/plan benchmark",
+    "blocked_by": [
+      "proposed plan-independent API/tool/evidence contract is not implemented",
+      "runtime guard is unchanged and still uses the conservative bound",
+      "expanded tool schema/new requests need their own exact preflight",
+      "new-contract argument scoring projection must be approved; frozen schema remains unchanged",
+      "stop-before-unexpected-tool and global physical call caps must be implemented and mock verified"
+    ],
+    "stop_conditions": [
+      "unapproved scope",
+      "unknown or excessive token budget",
+      "metadata/template/library drift",
+      "unexpected or repeated/multiple tool calls",
+      "missing evidence/corpus binding or source-membership validation failure",
+      "recording/usage missing",
+      "timeout or cap reached; no retry, no claim of server cancellation"
+    ]
+  },
+  "phase_c_plan_quality": {
+    "case_ids": [],
+    "inference_cap": 0,
+    "status": "NOT_SUPPORTED_BY_THIS_PROPOSAL",
+    "unimplemented_conditions": [
+      "trusted road travel times and route optimization",
+      "open hours/fixed appointments/visit cost enforcement",
+      "PLAN preview/applied contract, confirmation, modification, rollback and before-after observations"
+    ],
+    "existing_draft_checks_not_removed": [
+      "sum of stays",
+      "cafe minimum",
+      "required stops",
+      "duplicates",
+      "area"
+    ]
+  },
+  "latency_and_usage": {
+    "inference_latency_measured": false,
+    "usage_measured": null,
+    "paid_cost_measured": null,
+    "local_compute_cost_measured": null,
+    "no_new_latency_prediction_from_token_counts": true
+  }
+}

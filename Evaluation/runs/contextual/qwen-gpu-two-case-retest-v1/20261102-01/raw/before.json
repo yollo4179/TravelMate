@@ -1,0 +1,8 @@
+{
+  "captured_at": "2026-11-02T05:26:01.182775+00:00",
+  "metadata_only": true,
+  "ollama_ps": {
+    "models": []
+  },
+  "nvidia_smi": "name, memory.total [MiB], memory.used [MiB], memory.free [MiB], utilization.gpu [%]\r\nNVIDIA GeForce RTX 4050 Laptop GPU, 6141 MiB, 0 MiB, 5924 MiB, 0 %"
+}

@@ -6,6 +6,8 @@ from typing import Any, Protocol
 from app.enrichment.contracts import ExistingPlace, EvidenceStatus
 from app.enrichment.evidence import searchable_claims
 from .contracts import CaptureScope, MAX_ACTIVE_CHUNKS, PlaceRole, SearchChunk, SourceDocument, SourceType
+from .contracts import SPLITTER_VERSION
+from .splitting import split_document
 
 
 class SourceStrategy(Protocol):
@@ -39,21 +41,8 @@ def normalize_source(source: dict[str, Any]) -> SourceDocument:
     return matches[0].normalize(source)
 
 
-def split_source(source: SourceDocument, size: int = 800) -> list[tuple[int, int]]:
-    if size < 1:
-        raise ValueError("Chunk size must be positive")
-    spans = []
-    start = 0
-    while start < len(source.text):
-        end = min(start + size, len(source.text))
-        if end < len(source.text):
-            boundary = max(source.text.rfind("\n", start + size // 2, end), source.text.rfind(". ", start + size // 2, end))
-            if boundary > start:
-                end = boundary + 1
-        if source.text[start:end].strip():
-            spans.append((start, end))
-        start = end
-    return spans
+def split_source(source: SourceDocument, size: int = 800, *, splitter_version: str = SPLITTER_VERSION) -> list[tuple[int, int]]:
+    return split_document(source, size, splitter_version)
 
 
 def tourapi_chunks(place: ExistingPlace) -> list[SearchChunk]:
@@ -110,7 +99,7 @@ def select_active(place_id: int, chunks: list[SearchChunk]) -> list[SearchChunk]
     groups: dict[str, deque[SearchChunk]] = defaultdict(deque)
     seen = set()
     for chunk in chunks:
-        if not any(ref["place_id"] == place_id and ref["role"] == PlaceRole.SUBJECT for ref in chunk.place_refs):
+        if place_id not in chunk.index_place_ids:
             continue
         key = " ".join(chunk.chunk_text.split())
         if key in seen:
@@ -126,3 +115,13 @@ def select_active(place_id: int, chunks: list[SearchChunk]) -> list[SearchChunk]
             if len(active) == MAX_ACTIVE_CHUNKS:
                 break
     return active
+
+
+def index_embedding_inputs(place: ExistingPlace, chunks: list[SearchChunk]) -> tuple[list[str], int]:
+    """목적지의 기본 벡터가 출발지의 관찰 문장으로 바뀌지 않도록 한다."""
+    texts = [chunk.embedding_text for chunk in chunks]
+    subject_index = next((index for index, chunk in enumerate(chunks) if place.place_id in chunk.subject_place_ids), None)
+    if subject_index is not None:
+        return texts, subject_index
+    texts.append(f"{place.name}. {place.description or ''}".strip())
+    return texts, len(texts) - 1

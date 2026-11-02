@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.yollo.TravelMate.PlanContextContractTest" tests="2" skipped="0" failures="0" errors="0" timestamp="2026-11-01T08:46:12.676Z" hostname="DESKTOP-MS327CL" time="1.572">
+  <properties/>
+  <testcase name="rejectsInvalidNestedCoordinatesRadiusAndTime()" classname="com.yollo.TravelMate.PlanContextContractTest" time="1.429"/>
+  <testcase name="acceptsPdfFieldsAndPreservesCoordinateAndTimezone()" classname="com.yollo.TravelMate.PlanContextContractTest" time="0.141"/>
+  <system-out><![CDATA[17:46:12.963 [Test worker] INFO org.hibernate.validator.internal.util.Version -- HV000001: Hibernate Validator 8.0.3.Final
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

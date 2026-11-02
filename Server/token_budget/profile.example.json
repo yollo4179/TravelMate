@@ -1,0 +1,6 @@
+{
+  "model_path": "C:/verified-models/sha256-a3de86cd1c132c822487ededd47a324c50491393e6565cd14bafa40d0b8e686f",
+  "manifest_path": "C:/verified-models/manifests/registry.ollama.ai/library/qwen3/8b",
+  "library_directory": "C:/verified-ollama/lib/ollama",
+  "renderer_path": "C:/verified-tools/render-qwen.exe"
+}

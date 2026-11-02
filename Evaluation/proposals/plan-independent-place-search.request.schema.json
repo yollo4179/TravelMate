@@ -1,0 +1,35 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:travelmate:proposal:plan-independent-place-search:v1",
+  "title": "PROPOSAL ONLY: plan-independent place search request",
+  "type": "object",
+  "required": ["query"],
+  "additionalProperties": false,
+  "properties": {
+    "query": {"type": "string", "minLength": 1, "maxLength": 2000, "pattern": "\\S"},
+    "region": {"type": ["string", "null"]},
+    "city": {"type": ["string", "null"]},
+    "category": {"type": ["string", "null"]},
+    "excludePlaceIds": {"type": "array", "items": {"type": "integer", "minimum": 1}, "uniqueItems": true},
+    "area": {
+      "oneOf": [
+        {"type": "null"},
+        {
+          "type": "object", "additionalProperties": false,
+          "required": ["type", "center", "radiusMeters"],
+          "properties": {
+            "type": {"const": "CIRCLE"},
+            "center": {
+              "type": "object", "additionalProperties": false, "required": ["lat", "lon"],
+              "properties": {"lat": {"type": "number", "minimum": -90, "maximum": 90},
+                             "lon": {"type": "number", "minimum": -180, "maximum": 180}}
+            },
+            "radiusMeters": {"type": "integer", "minimum": 500, "maximum": 10000}
+          }
+        }
+      ]
+    },
+    "limit": {"type": "integer", "minimum": 1, "maximum": 20, "default": 10},
+    "rankingMode": {"enum": ["RERANKED", "SEMANTIC_ONLY"], "default": "RERANKED"}
+  }
+}

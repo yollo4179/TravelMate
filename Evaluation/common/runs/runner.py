@@ -17,6 +17,7 @@ from common.dataset.io import digest, export_inputs, read_json, read_jsonl, writ
 from common.paths import DEFAULT_DATASET, EVALUATION_ROOT, rubric_path
 from .run_record import allocate_run, update_latest, write_run_record
 from .tracks import Track, matches_track, metric_is_selected
+from common.observability.server_trace import is_native_record, message_is_observed
 
 ROOT = DEFAULT_DATASET
 
@@ -86,6 +87,7 @@ async def evaluate(
             invalid[case["case_id"]] = "record_requires_response_and_explicit_tool_calls_array"
         else:
             valid.append((case, record))
+    judge_needed = use_judge and any(message_is_observed(record) for _, record in valid)
     precheck = {
         "dataset_version": "1.4.0", "evaluation_group": group, "track": track.value,
         "selected_case_count": len(cases), "valid_response_count": len(valid),
@@ -97,20 +99,21 @@ async def evaluate(
         "responses_file": str(responses_path),
         "reference_required": use_judge,
         "reference_available_count": sum(bool(case["reference"]) for case in cases),
+        "judge_eligible_count": sum(message_is_observed(record) for _, record in valid) if use_judge else 0,
     }
     selected_ids = {case["case_id"] for case in cases}
     write_jsonl(output / "outputs/records.jsonl", [record for record in records if record["case_id"] in selected_ids])
     write_json(output / "precheck.json", precheck)
     if precheck_only:
-        return 0 if valid and (not use_judge or settings.api_key) else 2
-    if not valid or (use_judge and not settings.api_key):
+        return 0 if valid and (not judge_needed or settings.api_key) else 2
+    if not valid or (judge_needed and not settings.api_key):
         write_json(output / "summary.json", {**precheck, "status": "not_run", "result_count": 0})
         return 2
     rubrics = {name: rubric_path(root, name).read_text(encoding="utf-8") for name in {case["evaluation_group"] for case in cases}}
     results = []
     client = None
     judge_blocked_error: str | None = None
-    if use_judge:
+    if judge_needed:
         from openai import AsyncOpenAI
         client = AsyncOpenAI(api_key=settings.api_key)
     try:
@@ -130,8 +133,15 @@ async def evaluate(
                 name: value for name, value in row["code"]["metrics"].items()
                 if metric_is_selected(name, track)
             }
+            if is_native_record(record):
+                row.update({name: record.get(name) for name in (
+                    "execution_mode", "observation_coverage", "compatibility_gaps", "termination", "request_id", "turn_id"
+                )})
             if use_judge:
-                if judge_blocked_error:
+                if not message_is_observed(record):
+                    row.update(judge_status=ExecutionStatus.NOT_EVALUATED.value,
+                               judge_error_type="native_message_observation_unavailable")
+                elif judge_blocked_error:
                     row.update(judge_status=ExecutionStatus.NOT_RUN.value, judge_error_type=judge_blocked_error)
                 else:
                     try:
@@ -163,6 +173,7 @@ async def evaluate(
         "notes": [
             "Missing/invalid records are coverage failures, not silently converted into incorrect model answers.",
             "Unobserved backend state and unavailable route checks have null scores and separate denominators.",
+            "Native MOCK quality and missing/incompatible runtime observations are excluded by explicit coverage masks.",
             "Search and memory recall use their own query-specific relevant ID sets.",
             "GPT criteria use 0..3 scores and are not Ragas built-in AnswerCorrectness scores.",
         ],

@@ -1,0 +1,23 @@
+{
+  "spring_rows_match_snapshot": true,
+  "search_original_columns_match_snapshot": true,
+  "spring_place_count": 449,
+  "search_place_count": 449,
+  "pending_spring_outbox": 0,
+  "pending_search_jobs": 0,
+  "source_versions": [
+    1
+  ],
+  "index_config_versions": [
+    "bge-m3-v1"
+  ],
+  "active_evidence": 8,
+  "ranking_scores_comparable": false,
+  "ranking_limitations": [
+    "Evidence availability depends on explicitly preserved records; original fields do not have chunk vectors.",
+    "CPU cross_encoder_predict differs from the old running autocast_fp16 service; no ranking equivalence evaluation was run.",
+    "The full frozen persona/context is not forwarded by this API contract."
+  ],
+  "inference_calls": 0,
+  "search_executions": 0
+}

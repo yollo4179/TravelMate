@@ -1,0 +1,35 @@
+{
+  "frozen_datasets_and_old_reports_modified": false,
+  "previous_live_report_manifest_files_unchanged": 21,
+  "local_uncommitted_collectors": {
+    "Evaluation/tracks/search/collect_live.py": {
+      "sha256": "bca962f1c2ca2fe37993b582803dabc9aafcf251fe6ba5a68d2afd38fa489b12",
+      "unchanged": true
+    },
+    "Evaluation/tracks/search/collect_holdout.py": {
+      "sha256": "4fe15dc94e6ef25f24739a4d36f8eae593d97e70e3750ca886b3621a10cd8220",
+      "unchanged": true
+    },
+    "Evaluation/common/runs/runner.py": {
+      "sha256": "773649432d761a44f93cbbfd221fdcaf9aeafc585967ec399ab97466290f42de",
+      "unchanged": true
+    },
+    "Evaluation/common/dataset/build.py": {
+      "sha256": "a84d154445605c2923b1a54e8b67dcb8049a32b1a7e283ab6dfb52a79e9bf0ae",
+      "unchanged": true
+    }
+  },
+  "credential_scan": "PASS",
+  "source_changes_only_under_spring_src": [
+    "Server/TravelMate/src/main/java/com/yollo/TravelMate/ai/llm/base/LlmTurn.java",
+    "Server/TravelMate/src/main/java/com/yollo/TravelMate/ai/llm/derived/OpenAiLlmClient.java",
+    "Server/TravelMate/src/main/java/com/yollo/TravelMate/domain/conversation/service/ConversationService.java",
+    "Server/TravelMate/src/main/java/com/yollo/TravelMate/domain/conversation/tool/PlaceSearchCriteriaResolver.java",
+    "Server/TravelMate/src/main/java/com/yollo/TravelMate/domain/conversation/tool/SearchPlacesTool.java",
+    "Server/TravelMate/src/main/java/com/yollo/TravelMate/domain/conversation/tool/ToolSchemas.java",
+    "Server/TravelMate/src/main/java/com/yollo/TravelMate/domain/place/data/request/PlaceSearchRequest.java",
+    "Server/TravelMate/src/test/java/com/yollo/TravelMate/LlmStrategyTest.java"
+  ],
+  "no_new_live_B_events": true,
+  "running_evaluation_jar_replaced": false
+}

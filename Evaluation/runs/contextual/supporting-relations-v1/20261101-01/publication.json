@@ -1,0 +1,50 @@
+{
+  "implementation_base": "1b62e0062a8215b5d913d1f6d45a805911aa1d38",
+  "branch": "fix/contextual-supporting-relations",
+  "hash_scope": "Git blob 바이트. Windows 작업 사본의 줄바꿈과 다를 수 있다.",
+  "verification_kind": "합성 응답·모의 DB 연결·실제 기존 기록의 읽기/해시 검증",
+  "server_tests": {
+    "passed": 90,
+    "skipped": 11
+  },
+  "evaluation_tests_passed": 9,
+  "api_calls": 0,
+  "database_queries": 0,
+  "database_writes": 0,
+  "model_search_executions": 0,
+  "published_file_sha256": {
+    "REPORT.md": "21710e3ec246370c9ae7bb1fbb1824d35e4ae6303d507440346ee36f9f3a383c",
+    "regression-check.json": "90fe01c4609e3dcfaf38166a8a576f4046e5822dee95740f0743e7c916b05f7b",
+    "compatibility.json": "73451fd8db75133eb3ea215c0e6d4df1c4cf54912286d434a92cdcd14f4dfca2"
+  },
+  "changed_file_sha256": {
+    "Docker/search-init/03-contextual-chunks.sql": "5c72751acd9d29b429877f12529e5bedd69a3645f947834a9c6ad0c293454806",
+    "Evaluation/README.md": "1f44b7713fcc34dec69cfac68200ae8684d7518d41187d0e4d05c6e51267ad52",
+    "Evaluation/runs/contextual/supporting-relations-v1/20261101-01/REPORT.md": "21710e3ec246370c9ae7bb1fbb1824d35e4ae6303d507440346ee36f9f3a383c",
+    "Evaluation/runs/contextual/supporting-relations-v1/20261101-01/compatibility.json": "73451fd8db75133eb3ea215c0e6d4df1c4cf54912286d434a92cdcd14f4dfca2",
+    "Evaluation/runs/contextual/supporting-relations-v1/20261101-01/regression-check.json": "90fe01c4609e3dcfaf38166a8a576f4046e5822dee95740f0743e7c916b05f7b",
+    "Evaluation/tracks/contextual/PROBLEMS_AND_SOLUTIONS.md": "dee2ca2f4b9708431782b6dcdab1527b70a54fe4b446dec82a1936caeb52a0ef",
+    "Evaluation/tracks/contextual/README.md": "46811e1e86cde527d0de0ac05cf52e17c754e307d00bed52935c4a672fbf89cb",
+    "Evaluation/tracks/contextual/check_observation_sql.py": "6add41bb88a587917f8ec3248b753e98aa5100bbf718d68b7f39b2b2218856e9",
+    "Evaluation/tracks/contextual/supporting_relations.py": "5aeb98b41a2beaf0b9ada3d4a23e4b41d74439021f6f72f0bd5cb5ac6694e0c7",
+    "docs/specifications/contextual-retrieval.md": "a24b0cf18046c71874008f53323031792b1343cfef75b87c37f849d26f356a58",
+    "docs/specifications/fastapi-place-recommendation.md": "ec47706f868594a6b030f5bc91e873b929464d3d1614f6cd091a260166cd3aab",
+    "docs/worklog/2026-11-01/be-llm.md": "d71f7f58f091df738aea41e8176e71807e5055befbbc60ef919d1ab723a83363",
+    "embedding-server/app/contextual/agent.py": "3df176aa562da4ec7662137afe59c159924d3fb8da6dc716404a07e5273102ad",
+    "embedding-server/app/contextual/artifacts.py": "7b2bbbd62b276364462691f01e181d5eb8152e735228e7a81245b7ade525cba4",
+    "embedding-server/app/contextual/contracts.py": "d8e353f4d3c871d8603334c7031d2552a9c4c4c6edbff14060b68948195d766b",
+    "embedding-server/app/contextual/observation_search.py": "09d38ab36dd7e202b5fb809f42f01f6ff849e83d6436196f2e93d9513d1203f4",
+    "embedding-server/app/contextual/pipeline.py": "69a92ad2c8d2e26a3b194b8ef9b747bb6d3a0006cc5cf5bcfe963a6b75260de7",
+    "embedding-server/app/contextual/prompts/__init__.py": "2489bfb94bb495fb1c78d0c519eda869d5dd075b143b901d8063d55e9f63e44d",
+    "embedding-server/app/contextual/prompts/v7_contextual_prompt.py": "591e5ff11f7d5710e381421e2c5931c4330f8fe6b793e881ceee92110f02f8b1",
+    "embedding-server/app/contextual/ranking.py": "17b5b9f905ab9cf00be01bdd8ddc738cdcdc7ba5ddf26fd0e006a442cb585ace",
+    "embedding-server/app/contextual/relations.py": "2900a569d91a8327afc62304de3b501efee115988d2119dd59a198015f7a55d5",
+    "embedding-server/app/contextual/replay.py": "0674db9107b3059cee15c6e63cee5f4228d270d43a215156b9fb91153d4a7cea",
+    "embedding-server/app/contextual/repository.py": "be0e20172d453a01ea9d5d572c76af8aff04927c6ef939edc648190954e6e45e",
+    "embedding-server/app/contextual/review.py": "a413fd2e65c178f7d305fdb6e63c93c69514cf8d2d1e00e2b5c99a6b7a1ede64",
+    "embedding-server/app/contextual/schema.sql": "5c72751acd9d29b429877f12529e5bedd69a3645f947834a9c6ad0c293454806",
+    "embedding-server/app/contextual/validation.py": "490f27c5e74e03a06256b2877a21ada7bd77430ba47379cb193e51266ee55e8c",
+    "embedding-server/app/kafka_runtime.py": "2907e7a41abca36e38249faf10d3e5610e10438cd7d14c2f7669f6fdf49ee9b0",
+    "embedding-server/tests/test_contextual_supporting_relations.py": "60c55f6d0932d87a5d61b57d22a9a68d05500723552bed24f679d57adfa8e20b"
+  }
+}

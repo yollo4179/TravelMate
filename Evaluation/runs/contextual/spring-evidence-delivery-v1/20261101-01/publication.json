@@ -1,0 +1,74 @@
+{
+  "base_commit": "15d3d740",
+  "code": {
+    "Server/TravelMate/src/main/java/com/yollo/TravelMate/domain/place/client/PlaceSemanticSearchClient.java": {
+      "raw_sha256": "319721f96d4f41e10e111b927ca043bce115172fbb32abc61c23e2e571614baa",
+      "lf_sha256": "b37e0c186f545f9501edc19e97da0b95069e97d12e09578d79ea5e293905a981"
+    },
+    "Server/TravelMate/src/main/java/com/yollo/TravelMate/domain/place/data/result/SearchEvidenceChunk.java": {
+      "raw_sha256": "32fa395aaaf3def91e7cdc37efcccc04679c2a0def6b5ca6342585926fb2507a",
+      "lf_sha256": "32fa395aaaf3def91e7cdc37efcccc04679c2a0def6b5ca6342585926fb2507a"
+    },
+    "Server/TravelMate/src/main/java/com/yollo/TravelMate/domain/place/data/result/PlaceSemanticSearchResult.java": {
+      "raw_sha256": "cb15bd9615f79e4f79a495db0bd6362425de7718728e3f334e3b734217cffa32",
+      "lf_sha256": "6ce58274808f71b295b285cee4a8c02522a1f58759e60cb7b408c256b27ab314"
+    },
+    "Server/TravelMate/src/main/java/com/yollo/TravelMate/domain/place/data/response/PlaceSearchResponseDto.java": {
+      "raw_sha256": "868d45ea9adb00c4230b20a43d902dd2024e35a140fd8560b94a3f10baf46c3d",
+      "lf_sha256": "32a528d0978771bb83c884ca8f5fb288d784ccdfbd131b9b249779d37829d6d3"
+    },
+    "Server/TravelMate/src/main/java/com/yollo/TravelMate/domain/plan/data/internal/GeneratedPlan.java": {
+      "raw_sha256": "bc625730bed562e7341171dd4230ff9c192eb430c82fe1b5211c3a643b9d9220",
+      "lf_sha256": "3a7a75b701615edd84e85c08eccbb8de0976a9cc432ce8556df26e5525e7d974"
+    },
+    "Server/TravelMate/src/main/java/com/yollo/TravelMate/domain/plan/prompts/ContextPlanPromptFactory.java": {
+      "raw_sha256": "547c3dc4b893cf7605ecad12d3cf82e12ce0c594a75e4f02f430a604ea1ac359",
+      "lf_sha256": "ebbe71fb77c38c1be4128e771633a2b0db8b840d0efabfc4e93f481150b9f65e"
+    },
+    "Server/TravelMate/src/main/java/com/yollo/TravelMate/domain/plan/service/ContextPlanningService.java": {
+      "raw_sha256": "e29b81000f31a03d5123872b9d7ec614f8b62bf2907b379003edf96c330f8772",
+      "lf_sha256": "ff1fc5c14a504182a4036181d2a63434e4763736034b958372a8a3c925be8c73"
+    },
+    "Server/TravelMate/src/main/java/com/yollo/TravelMate/domain/plan/validator/PlanEvidenceCitationValidator.java": {
+      "raw_sha256": "256193eea4907d2d16c5cb92c49c851d53be6dcf7e2182344758476f7bdcc6ff",
+      "lf_sha256": "256193eea4907d2d16c5cb92c49c851d53be6dcf7e2182344758476f7bdcc6ff"
+    },
+    "Server/TravelMate/src/test/java/com/yollo/TravelMate/SearchEvidenceFixtures.java": {
+      "raw_sha256": "16ac4d1092d6d44f8acf38854ad3dfa350f080544f539c3c1cb9ea2ae4d845d5",
+      "lf_sha256": "16ac4d1092d6d44f8acf38854ad3dfa350f080544f539c3c1cb9ea2ae4d845d5"
+    },
+    "Server/TravelMate/src/test/java/com/yollo/TravelMate/SearchEvidencePipelineTest.java": {
+      "raw_sha256": "377a143e87bf328f6851f0c0493236d0da376eefe50010a7ac458b851703c182",
+      "lf_sha256": "377a143e87bf328f6851f0c0493236d0da376eefe50010a7ac458b851703c182"
+    }
+  },
+  "docs": {
+    "docs/architecture/search-evidence-delivery.md": {
+      "raw_sha256": "d152c2d145a1e95635abc18e9c1b9e299d10ea21b5f263cb598d937a8b946ce0",
+      "lf_sha256": "d152c2d145a1e95635abc18e9c1b9e299d10ea21b5f263cb598d937a8b946ce0"
+    },
+    "docs/specifications/contextual-retrieval.md": {
+      "raw_sha256": "c740dcf5f73d76a274fc86ddf20f602348054b92d49fd5c6a6b757d25d081af9",
+      "lf_sha256": "830ca43dc0cf3cd34fb0c0a9d0da11b17decf4dd05edf8dca2338fccce7de4c4"
+    }
+  },
+  "files": {
+    "invariants.json": {
+      "raw_sha256": "6df66ce88e7d9801a8bd86aef61913aad65d002ae11282c576619ad85734699d",
+      "lf_sha256": "fb78a036d0c7ac3998c1222942dfa3a5f67df81437aec2477946e6b9ad36b69d"
+    },
+    "publish_validation.py": {
+      "raw_sha256": "5938b19c2abe7cde1fd49f71074450364abddb901b99224d21d8ec749be535cf",
+      "lf_sha256": "5938b19c2abe7cde1fd49f71074450364abddb901b99224d21d8ec749be535cf"
+    },
+    "REPORT.md": {
+      "raw_sha256": "d0dc290353486b957024321499fdbf77e6343335676eb69949d75581e2794ba2",
+      "lf_sha256": "d0dc290353486b957024321499fdbf77e6343335676eb69949d75581e2794ba2"
+    },
+    "tests.json": {
+      "raw_sha256": "a8e3859e2f1a391ba87962571a9f39584043d3b04413e8e85648fde3c7c501e2",
+      "lf_sha256": "a25860076c9a0a1ab1ebe6b434af7fae0695c418618e88f4d58dc87a9a8f904c"
+    }
+  },
+  "hash_basis": "raw_sha256 is local execution bytes; lf_sha256 normalizes CRLF to LF for Git publication."
+}

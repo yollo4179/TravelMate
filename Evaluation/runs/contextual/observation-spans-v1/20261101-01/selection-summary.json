@@ -1,0 +1,148 @@
+{
+  "generated_spans": 57,
+  "validated_candidates": 33,
+  "approved_generated_chunks": 20,
+  "manual_withheld_valid_candidates": 13,
+  "per_pair": [
+    {
+      "id": "P08",
+      "approved": 11,
+      "withheld_valid_candidates": 0
+    },
+    {
+      "id": "P09",
+      "approved": 9,
+      "withheld_valid_candidates": 13
+    }
+  ],
+  "tourapi_chunks_added": 1,
+  "eligible_with_tourapi": 21,
+  "selected_count": 20,
+  "selected_generated_chunks": 19,
+  "selected_chunk_ids": [
+    "c5fde3bb-f17b-5adf-92e5-8b1f340f74ce",
+    "ea870758-6f4a-520b-9b05-75f69e517969",
+    "53703906-d584-54c9-b438-7b62ef911b62",
+    "91e0be6a-1ef0-514f-b4ce-0bd98ac461f1",
+    "5ee668ac-841b-5b14-b14d-3b0ed14401dd",
+    "830a962e-e32f-53b4-86d7-dede0bd31f41",
+    "f8aa24f2-d4a2-5e1a-bc32-4c3fb8534e32",
+    "d50a91de-7241-5726-aa5a-09f8f4f96b03",
+    "7e20f17e-5a44-52c3-b277-eaccd7a2a229",
+    "ae73f753-7be9-586e-8d2e-56ecf0a33dea",
+    "48d7e7f5-644b-595a-8713-ab006193f604",
+    "1a52e2af-5f6e-5be3-8cdf-aca9dd4a5f22",
+    "da9d85a8-d80e-539e-ac25-020f712e6e6d",
+    "4110444e-6eb8-5e18-a202-07888db0abfa",
+    "88403455-9eb4-5cac-8f79-dd80d6fe2c40",
+    "1c7db9c6-5199-5c74-a2e2-587d5ca826f0",
+    "45438277-25cf-5fdc-ab64-1938ab2cee91",
+    "a636ef0f-6ba8-5b87-94f2-3beb7ae1f127",
+    "178ec37a-9912-5a3c-8637-a831fa070069",
+    "333a2203-271a-5351-90ae-db9bd94f1247"
+  ],
+  "omitted_due_to_limit": [
+    {
+      "chunk_id": "02f67a77-cf05-5c9f-8ed6-6bb4ecff499b"
+    }
+  ],
+  "fixed_regressions_before_review": [
+    {
+      "id": "P08-view-owner",
+      "passed": true,
+      "matched_rows": [
+        "P08-N016"
+      ],
+      "indexable_subject_ids": [],
+      "model_subject_ids": []
+    },
+    {
+      "id": "P08-transition",
+      "passed": true,
+      "matched_rows": [
+        "P08-N024"
+      ],
+      "indexable_subject_ids": [
+        394
+      ],
+      "model_subject_ids": [
+        394
+      ]
+    },
+    {
+      "id": "P08-weekend-parking",
+      "passed": true,
+      "matched_rows": [
+        "P08-N006"
+      ],
+      "indexable_subject_ids": [
+        394
+      ],
+      "model_subject_ids": [
+        394
+      ]
+    },
+    {
+      "id": "P09-parking",
+      "passed": true,
+      "matched_rows": [
+        "P09-N003"
+      ],
+      "indexable_subject_ids": [
+        394
+      ],
+      "model_subject_ids": [
+        394
+      ]
+    },
+    {
+      "id": "P09-view-owner",
+      "passed": false,
+      "matched_rows": [
+        "P09-N015"
+      ],
+      "indexable_subject_ids": [
+        394
+      ],
+      "model_subject_ids": [
+        394
+      ]
+    }
+  ],
+  "fixed_regressions_after_review": [
+    {
+      "id": "P08-view-owner",
+      "passed": true,
+      "selected_subject_ids": []
+    },
+    {
+      "id": "P08-transition",
+      "passed": true,
+      "selected_subject_ids": [
+        394
+      ]
+    },
+    {
+      "id": "P08-weekend-parking",
+      "passed": true,
+      "selected_subject_ids": [
+        394
+      ]
+    },
+    {
+      "id": "P09-parking",
+      "passed": true,
+      "selected_subject_ids": [
+        394
+      ]
+    },
+    {
+      "id": "P09-view-owner",
+      "passed": true,
+      "selected_subject_ids": []
+    }
+  ],
+  "database_writes": 0,
+  "search_executions": 0,
+  "note": "P08·P09 승인 구간과 TourAPI만 메모리에서 선택한 검사다. 운영 전체 출처 동시 색인은 아니다."
+}

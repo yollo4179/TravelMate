@@ -1,0 +1,47 @@
+{
+  "checked_files": 147,
+  "raw_byte_mismatch_count": 5,
+  "mismatches": [
+    {
+      "path": "Evaluation/datasets/v1.1.0/.gitattributes",
+      "expected_sha256": "8fc8ae72e7c698ecf6f336b04fb706e38f709ae04906ed16a64aa529c1473188",
+      "working_sha256": "d4905cd0d9d15143a60ca186f8260aedf1633aa28ab742829611881127527319",
+      "baseline_sha256": "8fc8ae72e7c698ecf6f336b04fb706e38f709ae04906ed16a64aa529c1473188",
+      "baseline_matches_expected": true,
+      "working_LF_equals_baseline": true
+    },
+    {
+      "path": "Evaluation/datasets/v1.2.0/.gitattributes",
+      "expected_sha256": "8fc8ae72e7c698ecf6f336b04fb706e38f709ae04906ed16a64aa529c1473188",
+      "working_sha256": "d4905cd0d9d15143a60ca186f8260aedf1633aa28ab742829611881127527319",
+      "baseline_sha256": "8fc8ae72e7c698ecf6f336b04fb706e38f709ae04906ed16a64aa529c1473188",
+      "baseline_matches_expected": true,
+      "working_LF_equals_baseline": true
+    },
+    {
+      "path": "Evaluation/datasets/v1.3.0/.gitattributes",
+      "expected_sha256": "4616d9e397ab3f9a0bb7fa3e8430556ddecbedfc6080e137385624cb2c9edce8",
+      "working_sha256": "3387c382be44e103d88a97fd71c275a354fd2175a1d27c17924f7398c0decc2a",
+      "baseline_sha256": "4616d9e397ab3f9a0bb7fa3e8430556ddecbedfc6080e137385624cb2c9edce8",
+      "baseline_matches_expected": true,
+      "working_LF_equals_baseline": true
+    },
+    {
+      "path": "Evaluation/datasets/v1.3.0/requirements-evaluation.txt",
+      "expected_sha256": "66cedce54a6831d3c663173a8cbdf3ccea8547d29d4121be24f749fce751a6b5",
+      "working_sha256": "92874b4204435891d859ddd144fffc5dbf5e68fca4e8f217be6a5e7168c1a8a9",
+      "baseline_sha256": "66cedce54a6831d3c663173a8cbdf3ccea8547d29d4121be24f749fce751a6b5",
+      "baseline_matches_expected": true,
+      "working_LF_equals_baseline": true
+    },
+    {
+      "path": "Evaluation/datasets/v1.3.0/requirements-langsmith-observability.txt",
+      "expected_sha256": "173c196889e649d08e135742ac54b50392b6a3c7e34f62593bc8b54459dba0b1",
+      "working_sha256": "5899ee63c73f48b0f73c7de1d7d5c924bb46ef86c8f07a82b68bf6fc15c0dd4a",
+      "baseline_sha256": "173c196889e649d08e135742ac54b50392b6a3c7e34f62593bc8b54459dba0b1",
+      "baseline_matches_expected": true,
+      "working_LF_equals_baseline": true
+    }
+  ],
+  "frozen_files_modified": false
+}

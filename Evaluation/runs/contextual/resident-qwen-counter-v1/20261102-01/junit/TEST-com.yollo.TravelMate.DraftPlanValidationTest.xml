@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.yollo.TravelMate.DraftPlanValidationTest" tests="18" skipped="0" failures="0" errors="0" timestamp="2026-11-02T00:56:36.515Z" hostname="DESKTOP-MS327CL" time="0.452">
+  <properties/>
+  <testcase name="nonexistentRequiredPlaceCannotBeSavedByEitherPath()" classname="com.yollo.TravelMate.DraftPlanValidationTest" time="0.024"/>
+  <testcase name="duplicateRequiredStopsAreRejectedBeforeEitherEntryPointStartsWork()" classname="com.yollo.TravelMate.DraftPlanValidationTest" time="0.011"/>
+  <testcase name="[1] pace=RELAXED, availableMinutes=100, accepted=false" classname="com.yollo.TravelMate.DraftPlanValidationTest" time="0.022"/>
+  <testcase name="[2] pace=RELAXED, availableMinutes=120, accepted=true" classname="com.yollo.TravelMate.DraftPlanValidationTest" time="0.008"/>
+  <testcase name="[3] pace=NORMAL, availableMinutes=100, accepted=true" classname="com.yollo.TravelMate.DraftPlanValidationTest" time="0.005"/>
+  <testcase name="parserRejectsEmptyOrMalformedModelOutputBeforeSaving()" classname="com.yollo.TravelMate.DraftPlanValidationTest" time="0.001"/>
+  <testcase name="selectedNonRequiredPlaceMustAlsoBeInsideTheCircle()" classname="com.yollo.TravelMate.DraftPlanValidationTest" time="0.005"/>
+  <testcase name="unknown_hours_allowed" classname="com.yollo.TravelMate.DraftPlanValidationTest" time="0.054"/>
+  <testcase name="stay_at_limit" classname="com.yollo.TravelMate.DraftPlanValidationTest" time="0.027"/>
+  <testcase name="stay_over_limit" classname="com.yollo.TravelMate.DraftPlanValidationTest" time="0.035"/>
+  <testcase name="stay_sum_at_limit" classname="com.yollo.TravelMate.DraftPlanValidationTest" time="0.033"/>
+  <testcase name="stay_sum_over_limit" classname="com.yollo.TravelMate.DraftPlanValidationTest" time="0.039"/>
+  <testcase name="missing_cafe" classname="com.yollo.TravelMate.DraftPlanValidationTest" time="0.026"/>
+  <testcase name="source_category_cafe" classname="com.yollo.TravelMate.DraftPlanValidationTest" time="0.02"/>
+  <testcase name="cafe_minimum_two" classname="com.yollo.TravelMate.DraftPlanValidationTest" time="0.018"/>
+  <testcase name="outside_circle" classname="com.yollo.TravelMate.DraftPlanValidationTest" time="0.012"/>
+  <testcase name="unknown_coordinates" classname="com.yollo.TravelMate.DraftPlanValidationTest" time="0.015"/>
+  <testcase name="unknown_hours_excluded" classname="com.yollo.TravelMate.DraftPlanValidationTest" time="0.022"/>
+  <system-out><![CDATA[09:56:36.532 [Test worker] WARN com.yollo.TravelMate.domain.plan.service.ContextPlanningService -- planning job=444a6772-8975-491a-a3a4-1456a7d7e4eb stage=FAILED exception=org.springframework.web.server.ResponseStatusException: 400 BAD_REQUEST "존재하지 않는 필수 장소가 있습니다."
+09:56:36.698 [Test worker] INFO com.yollo.TravelMate.domain.plan.service.ContextPlanningService -- planning job=61ec0fde-cf9e-44c1-9bd0-56cd2dee872f stage=SEARCHING radiusMeters=3000
+09:56:36.702 [Test worker] INFO com.yollo.TravelMate.domain.plan.service.ContextPlanningService -- planning job=61ec0fde-cf9e-44c1-9bd0-56cd2dee872f stage=GENERATING candidateIds=[101] contextIncluded=true promptCharacters=1053
+09:56:36.703 [Test worker] INFO com.yollo.TravelMate.domain.plan.service.ContextPlanningService -- planning job=61ec0fde-cf9e-44c1-9bd0-56cd2dee872f stage=VALIDATING_RESULT responseCharacters=143
+09:56:36.705 [Test worker] INFO com.yollo.TravelMate.domain.plan.service.ContextPlanningService -- planning job=61ec0fde-cf9e-44c1-9bd0-56cd2dee872f stage=SUCCEEDED planId=77 pinCount=1
+09:56:36.729 [Test worker] INFO com.yollo.TravelMate.domain.plan.service.ContextPlanningService -- planning job=5c5fa98e-15af-4bd7-b9f1-40d7777f91d5 stage=SEARCHING radiusMeters=3000
+09:56:36.730 [Test worker] INFO com.yollo.TravelMate.domain.plan.service.ContextPlanningService -- planning job=5c5fa98e-15af-4bd7-b9f1-40d7777f91d5 stage=GENERATING candidateIds=[101] contextIncluded=true promptCharacters=1053
+09:56:36.732 [Test worker] INFO com.yollo.TravelMate.domain.plan.service.ContextPlanningService -- planning job=5c5fa98e-15af-4bd7-b9f1-40d7777f91d5 stage=VALIDATING_RESULT responseCharacters=143
+09:56:36.732 [Test worker] INFO com.yollo.TravelMate.domain.plan.service.ContextPlanningService -- planning job=5c5fa98e-15af-4bd7-b9f1-40d7777f91d5 stage=SUCCEEDED planId=77 pinCount=1
+09:56:36.762 [Test worker] INFO com.yollo.TravelMate.domain.plan.service.ContextPlanningService -- planning job=f6d9c0b4-a2ec-4a63-a45e-99ed95f80049 stage=SEARCHING radiusMeters=3000
+09:56:36.766 [Test worker] INFO com.yollo.TravelMate.domain.plan.service.ContextPlanningService -- planning job=f6d9c0b4-a2ec-4a63-a45e-99ed95f80049 stage=GENERATING candidateIds=[101] contextIncluded=true promptCharacters=1053
+09:56:36.766 [Test worker] INFO com.yollo.TravelMate.domain.plan.service.ContextPlanningService -- planning job=f6d9c0b4-a2ec-4a63-a45e-99ed95f80049 stage=VALIDATING_RESULT responseCharacters=143
+09:56:36.769 [Test worker] WARN com.yollo.TravelMate.domain.plan.service.ContextPlanningService -- planning job=f6d9c0b4-a2ec-4a63-a45e-99ed95f80049 stage=FAILED exception=org.springframework.web.server.ResponseStatusException: 400 BAD_REQUEST "방문 체류시간이 여행 가능 시간을 초과합니다."
+09:56:36.790 [Test worker] INFO com.yollo.TravelMate.domain.plan.service.ContextPlanningService -- planning job=5f7dcdcf-1193-4fd2-ad2d-307bb4127e40 stage=SEARCHING radiusMeters=3000
+09:56:36.796 [Test worker] INFO com.yollo.TravelMate.domain.plan.service.ContextPlanningService -- planning job=5f7dcdcf-1193-4fd2-ad2d-307bb4127e40 stage=GENERATING candidateIds=[101, 102] contextIncluded=true promptCharacters=1254
+09:56:36.797 [Test worker] INFO com.yollo.TravelMate.domain.plan.service.ContextPlanningService -- planning job=5f7dcdcf-1193-4fd2-ad2d-307bb4127e40 stage=VALIDATING_RESULT responseCharacters=226
+09:56:36.803 [Test worker] INFO com.yollo.TravelMate.domain.plan.service.ContextPlanningService -- planning job=5f7dcdcf-1193-4fd2-ad2d-307bb4127e40 stage=SUCCEEDED planId=77 pinCount=2
+09:56:36.832 [Test worker] INFO com.yollo.TravelMate.domain.plan.service.ContextPlanningService -- planning job=47188897-8f93-486d-95fc-b04bc473962e stage=SEARCHING radiusMeters=3000
+09:56:36.839 [Test worker] INFO com.yollo.TravelMate.domain.plan.service.ContextPlanningService -- planning job=47188897-8f93-486d-95fc-b04bc473962e stage=GENERATING candidateIds=[101, 102] contextIncluded=true promptCharacters=1254
+09:56:36.839 [Test worker] INFO com.yollo.TravelMate.domain.plan.service.ContextPlanningService -- planning job=47188897-8f93-486d-95fc-b04bc473962e stage=VALIDATING_RESULT responseCharacters=226
+09:56:36.842 [Test worker] WARN com.yollo.TravelMate.domain.plan.service.ContextPlanningService -- planning job=47188897-8f93-486d-95fc-b04bc473962e stage=FAILED exception=org.springframework.web.server.ResponseStatusException: 400 BAD_REQUEST "방문 체류시간이 여행 가능 시간을 초과합니다."
+09:56:36.862 [Test worker] INFO com.yollo.TravelMate.domain.plan.service.ContextPlanningService -- planning job=a4a29d04-07a4-4054-b346-9026ca75b791 stage=SEARCHING radiusMeters=3000
+09:56:36.867 [Test worker] INFO com.yollo.TravelMate.domain.plan.service.ContextPlanningService -- planning job=a4a29d04-07a4-4054-b346-9026ca75b791 stage=GENERATING candidateIds=[101] contextIncluded=true promptCharacters=1053
+09:56:36.867 [Test worker] INFO com.yollo.TravelMate.domain.plan.service.ContextPlanningService -- planning job=a4a29d04-07a4-4054-b346-9026ca75b791 stage=VALIDATING_RESULT responseCharacters=143
+09:56:36.871 [Test worker] WARN com.yollo.TravelMate.domain.plan.service.ContextPlanningService -- planning job=a4a29d04-07a4-4054-b346-9026ca75b791 stage=FAILED exception=org.springframework.web.server.ResponseStatusException: 400 BAD_REQUEST "선택한 범위에서 필수 카페 조건을 충족하지 못했습니다."
+09:56:36.889 [Test worker] INFO com.yollo.TravelMate.domain.plan.service.ContextPlanningService -- planning job=04a229a3-b681-4bce-8c9a-bd1d3080b95f stage=SEARCHING radiusMeters=3000
+09:56:36.891 [Test worker] INFO com.yollo.TravelMate.domain.plan.service.ContextPlanningService -- planning job=04a229a3-b681-4bce-8c9a-bd1d3080b95f stage=GENERATING candidateIds=[101] contextIncluded=true promptCharacters=1053
+09:56:36.891 [Test worker] INFO com.yollo.TravelMate.domain.plan.service.ContextPlanningService -- planning job=04a229a3-b681-4bce-8c9a-bd1d3080b95f stage=VALIDATING_RESULT responseCharacters=143
+09:56:36.894 [Test worker] INFO com.yollo.TravelMate.domain.plan.service.ContextPlanningService -- planning job=04a229a3-b681-4bce-8c9a-bd1d3080b95f stage=SUCCEEDED planId=77 pinCount=1
+09:56:36.908 [Test worker] INFO com.yollo.TravelMate.domain.plan.service.ContextPlanningService -- planning job=cfac7fe5-32c3-45ff-9b57-2b477d49a9c8 stage=SEARCHING radiusMeters=3000
+09:56:36.908 [Test worker] INFO com.yollo.TravelMate.domain.plan.service.ContextPlanningService -- planning job=cfac7fe5-32c3-45ff-9b57-2b477d49a9c8 stage=GENERATING candidateIds=[101] contextIncluded=true promptCharacters=1053
+09:56:36.912 [Test worker] INFO com.yollo.TravelMate.domain.plan.service.ContextPlanningService -- planning job=cfac7fe5-32c3-45ff-9b57-2b477d49a9c8 stage=VALIDATING_RESULT responseCharacters=143
+09:56:36.912 [Test worker] WARN com.yollo.TravelMate.domain.plan.service.ContextPlanningService -- planning job=cfac7fe5-32c3-45ff-9b57-2b477d49a9c8 stage=FAILED exception=org.springframework.web.server.ResponseStatusException: 400 BAD_REQUEST "선택한 범위에서 필수 카페 조건을 충족하지 못했습니다."
+09:56:36.928 [Test worker] WARN com.yollo.TravelMate.domain.plan.service.ContextPlanningService -- planning job=1e650021-0320-4e9c-a34d-66f4d75138b0 stage=FAILED exception=org.springframework.web.server.ResponseStatusException: 400 BAD_REQUEST "필수 장소가 선택한 여행 범위를 벗어납니다."
+09:56:36.944 [Test worker] WARN com.yollo.TravelMate.domain.plan.service.ContextPlanningService -- planning job=d757e060-8b84-4c3b-9f4f-c83158d374a4 stage=FAILED exception=org.springframework.web.server.ResponseStatusException: 400 BAD_REQUEST "필수 장소가 선택한 여행 범위를 벗어납니다."
+09:56:36.962 [Test worker] WARN com.yollo.TravelMate.domain.plan.service.ContextPlanningService -- planning job=0e6822ac-6a15-4168-bd36-cb8df7d8d467 stage=FAILED exception=org.springframework.web.server.ResponseStatusException: 422 UNPROCESSABLE_ENTITY "현재 장소의 운영시간을 검증할 수 없습니다. 미확인 장소 포함을 선택하면 확인이 필요한 초안으로 저장할 수 있습니다."
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

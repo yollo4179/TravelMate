@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.yollo.TravelMate.OpenAiSearchComparisonPreparationTest" tests="2" skipped="0" failures="0" errors="0" timestamp="2026-11-02T09:48:51.169Z" hostname="DESKTOP-MS327CL" time="0.196">
+  <properties/>
+  <testcase name="[1] fixtureRun=b-live-integration-v1" classname="com.yollo.TravelMate.OpenAiSearchComparisonPreparationTest" time="0.136"/>
+  <testcase name="[2] fixtureRun=qwen-gpu-two-case-retest-v1" classname="com.yollo.TravelMate.OpenAiSearchComparisonPreparationTest" time="0.058"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

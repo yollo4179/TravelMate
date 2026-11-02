@@ -1,0 +1,380 @@
+{
+  "containers": [
+    {
+      "name": "travelmate-server",
+      "id": "8e090bbbe380d047ac54ae419e5786824f9e3125d704d4acffb60559dbfa0a5c",
+      "created": "2026-10-25T05:44:30.350499485Z",
+      "started_at": "2026-10-30T01:07:58.935518203Z",
+      "running": true,
+      "image_id": "sha256:53724b52a2bcbf70c4cc9a29e92ea1a18e75c08a3a5bee086cdbd99b88e4ca04",
+      "compose_project": "docker",
+      "ports": {
+        "8080/tcp": [
+          {
+            "HostIp": "127.0.0.1",
+            "HostPort": "8080"
+          }
+        ]
+      },
+      "mounts": []
+    },
+    {
+      "name": "travelmate-embedding",
+      "id": "d581a750cc49ea8fb4fac7caeadd9c31633a95fe28690cf8ae6cb3d118c0f9c0",
+      "created": "2026-10-25T18:18:45.935513073Z",
+      "started_at": "2026-10-30T01:07:58.930777332Z",
+      "running": true,
+      "image_id": "sha256:8819776872e7ede399c08e4a3694e5ce24836eb74022c72e5421e2d342ec0791",
+      "compose_project": "docker",
+      "ports": {
+        "8000/tcp": [
+          {
+            "HostIp": "127.0.0.1",
+            "HostPort": "8000"
+          }
+        ]
+      },
+      "mounts": [
+        {
+          "type": "volume",
+          "source": "docker_stack_models",
+          "destination": "/models",
+          "read_write": true
+        },
+        {
+          "type": "bind",
+          "source": "/run/desktop/mnt/host/c/ssafy/Travelmate/Docker/build/stack/ca-bundle.pem",
+          "destination": "/run/travelmate/ca-bundle.pem",
+          "read_write": false
+        }
+      ]
+    },
+    {
+      "name": "travelmate-search-postgres",
+      "id": "51d4adee36f70cbad5f98967b531cb864003397d5a3dc8b69bf736f094e53eb6",
+      "created": "2026-10-25T04:53:28.090309212Z",
+      "started_at": "2026-10-30T01:07:58.945545791Z",
+      "running": true,
+      "image_id": "sha256:d2ef61f42ef767baa5a1475393303cc235bcd92febd9d7014eddb48b41f3bad0",
+      "compose_project": "docker",
+      "ports": {
+        "5432/tcp": null
+      },
+      "mounts": [
+        {
+          "type": "bind",
+          "source": "/run/desktop/mnt/host/c/ssafy/Travelmate/Docker/search-init",
+          "destination": "/docker-entrypoint-initdb.d",
+          "read_write": false
+        },
+        {
+          "type": "volume",
+          "source": "docker_stack_search_pgdata",
+          "destination": "/var/lib/postgresql/data",
+          "read_write": true
+        }
+      ]
+    },
+    {
+      "name": "travel-postgres",
+      "id": "995c4a110c5d352dfd3e983c2333374b0dbe18633633996e8ba3d53a247b191f",
+      "created": "2026-10-24T01:38:36.371416637Z",
+      "started_at": "2026-10-30T01:07:58.955868888Z",
+      "running": true,
+      "image_id": "sha256:d2ef61f42ef767baa5a1475393303cc235bcd92febd9d7014eddb48b41f3bad0",
+      "compose_project": "docker",
+      "ports": {
+        "5432/tcp": [
+          {
+            "HostIp": "0.0.0.0",
+            "HostPort": "5432"
+          },
+          {
+            "HostIp": "::",
+            "HostPort": "5432"
+          }
+        ]
+      },
+      "mounts": [
+        {
+          "type": "bind",
+          "source": "/run/desktop/mnt/host/c/ssafy/Travelmate/Docker/build/stack/init",
+          "destination": "/docker-entrypoint-initdb.d",
+          "read_write": false
+        },
+        {
+          "type": "bind",
+          "source": "/run/desktop/mnt/host/c/ssafy/Travelmate/Docker/migrations/20261013_add_planning_context.sql",
+          "destination": "/docker-entrypoint-initdb.d/02-planning-context.sql",
+          "read_write": false
+        },
+        {
+          "type": "volume",
+          "source": "docker_pgdata",
+          "destination": "/var/lib/postgresql/data",
+          "read_write": true
+        }
+      ]
+    },
+    {
+      "name": "travelmate-kafka",
+      "id": "95f8e5469a127a244b4a45861d18238a70328fbcbdf6d5bb789fd9c1950871c9",
+      "created": "2026-10-25T04:53:28.087830505Z",
+      "started_at": "2026-10-30T01:07:58.886236417Z",
+      "running": true,
+      "image_id": "sha256:0bc1bb2478f45b6cea78864df86acdc11e8df2c5172477819a4d12942cbe5d40",
+      "compose_project": "docker",
+      "ports": {
+        "29092/tcp": [
+          {
+            "HostIp": "127.0.0.1",
+            "HostPort": "29092"
+          }
+        ]
+      },
+      "mounts": [
+        {
+          "type": "volume",
+          "source": "4c262ec4b5080d24ad0222f000d2b45d4966f301ddf18a3b8a2908942ab9ebb6",
+          "destination": "/etc/kafka/secrets",
+          "read_write": true
+        },
+        {
+          "type": "volume",
+          "source": "f77538c6a4a4ba95ff99d4fc6b82b8668e1b399c34f5fc2c5da3af10ff991b3b",
+          "destination": "/mnt/shared/config",
+          "read_write": true
+        },
+        {
+          "type": "volume",
+          "source": "docker_kafka_data",
+          "destination": "/var/lib/kafka/data",
+          "read_write": true
+        }
+      ]
+    },
+    {
+      "name": "travelmate-redis",
+      "id": "aa97fe836f0d8920e8a8de83f8c7e1ddc9ca909bf3359ecd5d1087ae002a0679",
+      "created": "2026-10-24T01:38:36.332832369Z",
+      "started_at": "2026-10-30T01:07:58.916340848Z",
+      "running": true,
+      "image_id": "sha256:858f009f9709ce576febc734aa78b8f6d624b82571f9ddb6bda4377c833b3499",
+      "compose_project": "docker",
+      "ports": {
+        "6379/tcp": null
+      },
+      "mounts": [
+        {
+          "type": "volume",
+          "source": "docker_stack_redis",
+          "destination": "/data",
+          "read_write": true
+        }
+      ]
+    },
+    {
+      "name": "tm-b-eval-springdb",
+      "id": "51ce45af0253b6127c8539dc0e925132507e52c288502e1c3f09f151985efbbf",
+      "created": "2026-11-02T01:57:11.199895426Z",
+      "started_at": "2026-11-02T01:57:11.602954059Z",
+      "running": true,
+      "image_id": "sha256:d2ef61f42ef767baa5a1475393303cc235bcd92febd9d7014eddb48b41f3bad0",
+      "compose_project": "travelmate-b-eval",
+      "ports": {
+        "5432/tcp": [
+          {
+            "HostIp": "127.0.0.1",
+            "HostPort": "55432"
+          }
+        ]
+      },
+      "mounts": [
+        {
+          "type": "volume",
+          "source": "travelmate-b-eval_springdata",
+          "destination": "/var/lib/postgresql/data",
+          "read_write": true
+        },
+        {
+          "type": "bind",
+          "source": "/run/desktop/mnt/host/c/Users/SSAFY/AppData/Local/Temp/travelmate-general-relation-retrieval/Docker/init",
+          "destination": "/docker-entrypoint-initdb.d",
+          "read_write": false
+        }
+      ]
+    },
+    {
+      "name": "tm-b-eval-searchdb",
+      "id": "f306acd06e4cf74397309e166c6d5436e3b22a04275d85cc5379da6820a54847",
+      "created": "2026-11-02T01:57:11.190844033Z",
+      "started_at": "2026-11-02T01:57:11.596149658Z",
+      "running": true,
+      "image_id": "sha256:d2ef61f42ef767baa5a1475393303cc235bcd92febd9d7014eddb48b41f3bad0",
+      "compose_project": "travelmate-b-eval",
+      "ports": {
+        "5432/tcp": [
+          {
+            "HostIp": "127.0.0.1",
+            "HostPort": "55433"
+          }
+        ]
+      },
+      "mounts": [
+        {
+          "type": "bind",
+          "source": "C:/Users/SSAFY/AppData/Local/Temp/travelmate-general-relation-retrieval/Docker/search-init",
+          "destination": "/docker-entrypoint-initdb.d",
+          "read_write": false
+        },
+        {
+          "type": "volume",
+          "source": "travelmate-b-eval_searchdata",
+          "destination": "/var/lib/postgresql/data",
+          "read_write": true
+        }
+      ]
+    },
+    {
+      "name": "tm-b-eval-kafka",
+      "id": "10a9f64a250be015b6ce8045b0b016f0b96a81bec10f56bff5ea47dae52a1ed2",
+      "created": "2026-11-02T01:57:11.188165829Z",
+      "started_at": "2026-11-02T01:57:11.555117576Z",
+      "running": true,
+      "image_id": "sha256:0bc1bb2478f45b6cea78864df86acdc11e8df2c5172477819a4d12942cbe5d40",
+      "compose_project": "travelmate-b-eval",
+      "ports": {
+        "29092/tcp": [
+          {
+            "HostIp": "127.0.0.1",
+            "HostPort": "39092"
+          }
+        ]
+      },
+      "mounts": [
+        {
+          "type": "volume",
+          "source": "travelmate-b-eval_kafkadata",
+          "destination": "/var/lib/kafka/data",
+          "read_write": true
+        },
+        {
+          "type": "volume",
+          "source": "457dd2fa9b27e5065a1d8c27b77b1fa4012e8e1fe49d8c7cf90fa2ab81908418",
+          "destination": "/etc/kafka/secrets",
+          "read_write": true
+        },
+        {
+          "type": "volume",
+          "source": "1535316e63ba0b1bb260b95f53c1726d8fa4de5623e9cf6d76789d841b90c7cf",
+          "destination": "/mnt/shared/config",
+          "read_write": true
+        }
+      ]
+    },
+    {
+      "name": "tm-b-eval-redis",
+      "id": "66c548827517e92b418126f0a3f4588ef7cb7217fc1dc9e71f82551e3e6783cd",
+      "created": "2026-11-02T01:57:11.193697723Z",
+      "started_at": "2026-11-02T01:57:11.564523352Z",
+      "running": true,
+      "image_id": "sha256:858f009f9709ce576febc734aa78b8f6d624b82571f9ddb6bda4377c833b3499",
+      "compose_project": "travelmate-b-eval",
+      "ports": {
+        "6379/tcp": [
+          {
+            "HostIp": "127.0.0.1",
+            "HostPort": "16379"
+          }
+        ]
+      },
+      "mounts": [
+        {
+          "type": "volume",
+          "source": "902b5daa77d9a70465929ec89010f35c16d661435004df28cc97ad276d816ee5",
+          "destination": "/data",
+          "read_write": true
+        }
+      ]
+    },
+    {
+      "name": "tm-b-eval-search",
+      "id": "9e993284e38a603fa668329280336670f97ef3eb149eb32f97681108e03c957b",
+      "created": "2026-11-02T02:31:11.237384949Z",
+      "started_at": "2026-11-02T02:31:13.995094365Z",
+      "running": true,
+      "image_id": "sha256:3a29b6293640ef802868aa855728e0d001b7224b2d16b5a5af0ddf4bbe835857",
+      "compose_project": "travelmate-b-eval",
+      "ports": {
+        "8000/tcp": [
+          {
+            "HostIp": "127.0.0.1",
+            "HostPort": "18000"
+          }
+        ]
+      },
+      "mounts": [
+        {
+          "type": "volume",
+          "source": "docker_stack_models",
+          "destination": "/models",
+          "read_write": false
+        },
+        {
+          "type": "volume",
+          "source": "travelmate-b-eval_indexinputs",
+          "destination": "/eval-inputs",
+          "read_write": true
+        },
+        {
+          "type": "bind",
+          "source": "/run/desktop/mnt/host/c/Users/SSAFY/AppData/Local/Temp/travelmate-general-relation-retrieval",
+          "destination": "/workspace",
+          "read_write": false
+        },
+        {
+          "type": "bind",
+          "source": "/run/desktop/mnt/host/c/Users/SSAFY/AppData/Local/Temp/travelmate-general-relation-retrieval/Server/TravelMate/build/b-evaluation",
+          "destination": "/eval-runtime",
+          "read_write": false
+        }
+      ]
+    },
+    {
+      "name": "tm-b-eval-traces",
+      "id": "7d5e0babf5322aab26ad0092ed097442926834bfa63a12f0bb9a67d4a1358631",
+      "created": "2026-11-02T02:54:00.307329955Z",
+      "started_at": "2026-11-02T02:54:10.869573072Z",
+      "running": true,
+      "image_id": "sha256:3a29b6293640ef802868aa855728e0d001b7224b2d16b5a5af0ddf4bbe835857",
+      "compose_project": "travelmate-b-eval",
+      "ports": {
+        "4318/tcp": [
+          {
+            "HostIp": "127.0.0.1",
+            "HostPort": "18318"
+          }
+        ]
+      },
+      "mounts": [
+        {
+          "type": "bind",
+          "source": "C:/Users/SSAFY/AppData/Local/Temp/travelmate-general-relation-retrieval/Server/TravelMate/build/b-evaluation/traces",
+          "destination": "/captures",
+          "read_write": true
+        },
+        {
+          "type": "bind",
+          "source": "C:/Users/SSAFY/AppData/Local/Temp/travelmate-general-relation-retrieval",
+          "destination": "/workspace",
+          "read_write": false
+        }
+      ]
+    }
+  ],
+  "evaluation_topic_offsets": [
+    "travelmate.b-eval.place-changes.v1:0:0",
+    "travelmate.b-eval.recommendation-requests.v1:0:0",
+    "travelmate.b-eval.recommendation-results.v1:0:0"
+  ]
+}

@@ -1,0 +1,22 @@
+{
+  "reviewed_commit": "b35afbab",
+  "local_input_sha256": {
+    "comparison.json": "4a92a668732141d558c459d19fa0eb47942dee8277bf4250698e79641c2161f4",
+    "comparison-plan.json": "f946933e6d0d28c3d522d32ddc64e521beb15526146e51c00cd5ba18de75779b"
+  },
+  "source_bundle_sha256": {
+    "v7-integration-v1/20261101-01/sonar/g/101_A공원/requests/f09e0fb658dc7671b97338f3342cb6050a0ac52afa1343a18ba394f5bdcddac8/7c387309-f7eb-41ad-9b39-03d12d5f0bb4/sources.json": "45e63710b15ecf0c001090710ba92ce3d871235e12d2a83d5b2e8f3c645e6d95",
+    "v7-integration-v1/20261101-01/sonar/g/394_청담도로공원/requests/9c35ad03ac164318b98f4eb22c3db0a6ec59665ee9fd241d1af92651eeec1a93/15c8008e-27c9-45f0-99a0-9e62c7228589/sources.json": "5ea4a0e47b9e752235b9f9e0a4d3b70dd15fe92085ac28c7d74b8413fc54569a",
+    "v8-server-evidence-v1/20261101-01/records/101_A공원/requests/28b0f9407a0cebf6f5378aa2493390f02411848604496781f57a484dd5df271d/7777084f-f32d-4fd3-898f-e95b07d26694/sources.json": "45e63710b15ecf0c001090710ba92ce3d871235e12d2a83d5b2e8f3c645e6d95",
+    "v8-server-evidence-v1/20261101-01/records/394_청담도로공원/requests/1601987a895bed38c860cd63867d30ef482f72e45fd3d0787d8cc3bb70b1293b/228c2d90-8ca7-46df-9d14-e808bf571b1c/sources.json": "5ea4a0e47b9e752235b9f9e0a4d3b70dd15fe92085ac28c7d74b8413fc54569a"
+  },
+  "fixture_code_path": "Evaluation/tracks/contextual/v7_search.py",
+  "fixture_code_sha256": "99ee7734e35e50b62467e687e69b60f8fd8d7ebf8304e39675cc04a9872c6bda",
+  "rubric_sha256": "3e3704bb81f057ec8c7081c25c3187700e3fa4faad21d10347363699294637e6",
+  "source_versions_checked": 46,
+  "unique_reviewed_chunks": 33,
+  "ranked_rows": 60,
+  "new_searches": 0,
+  "new_model_calls": 0,
+  "production_database_writes": 0
+}

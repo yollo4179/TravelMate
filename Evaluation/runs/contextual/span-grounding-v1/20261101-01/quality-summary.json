@@ -1,0 +1,57 @@
+{
+  "reviewed_spans": 22,
+  "comparison_kind": "explicit-input-and-instructions",
+  "reviewer": "Codex 에이전트; 버전을 아는 개발 표본 검수이며 독립적인 사람의 블라인드 검수가 아님",
+  "independent_blind_review": false,
+  "review_sha256": "030e4f2073520ab1f032b82aa50f2facc03341a92ae3dd0b8bad0bcbcf9ae0f8",
+  "review_inputs_sha256": "44b293d122d365977aa2f82fa6d2b0c24b575e22070b23bfab024812112679c7",
+  "prior_review_sha256": "60b06fb94a208a67f65a2bd280c05d907558c6d2d7c6077e2084f05d717988c9",
+  "flag_counts": {
+    "v4": {
+      "scope_caution": 3,
+      "span_topic_replaced": 2,
+      "safe_exclusion": 4,
+      "conservative_exclusion": 1
+    },
+    "v5": {
+      "scope_caution": 3,
+      "safe_exclusion": 4,
+      "wrong_place_attribution": 1,
+      "mixed_place_attribution_regression": 1
+    }
+  },
+  "span_topic_replaced": {
+    "v4": 2,
+    "v5": 0
+  },
+  "wrong_place_attribution": {
+    "v4": 0,
+    "v5": 1
+  },
+  "indexable_chunks": {
+    "v4": 17,
+    "v5": 18
+  },
+  "excluded_chunks": {
+    "v4": 5,
+    "v5": 4
+  },
+  "role_changes": [
+    {
+      "id": "P08-S01",
+      "v4": [
+        {
+          "place_id": 394,
+          "role": "mentioned"
+        }
+      ],
+      "v5": [
+        {
+          "place_id": 394,
+          "role": "subject"
+        }
+      ]
+    }
+  ],
+  "search_performance_evaluated": false
+}

@@ -1,5 +1,7 @@
 package com.yollo.TravelMate.domain.place.data.response;
 
+import java.util.List;
+import com.yollo.TravelMate.domain.place.data.result.SearchEvidenceChunk;
 import com.yollo.TravelMate.domain.place.data.result.PlaceResult;
 import com.yollo.TravelMate.domain.place.data.result.PlaceSemanticSearchResult;
 
@@ -16,7 +18,8 @@ public record PlaceSearchResponseDto(
         Float rerankScore,
         String tourContentId,
         String imageUrl,
-        String homepageUrl
+        String homepageUrl,
+        List<SearchEvidenceChunk> evidenceChunks
 ) {
 
     public static PlaceSearchResponseDto from(PlaceSemanticSearchResult searchResult) {
@@ -34,7 +37,8 @@ public record PlaceSearchResponseDto(
                 searchResult.rerankScore(),
                 place.tourContentId(),
                 place.imageUrl(),
-                place.homepageUrl()
+                place.homepageUrl(),
+                searchResult.evidenceChunks()
         );
     }
 }

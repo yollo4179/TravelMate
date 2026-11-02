@@ -1,0 +1,24 @@
+{
+  "basis": "actual tool execution results; no inference",
+  "java": {
+    "command": ".\\gradlew.bat --offline test --tests com.yollo.TravelMate.ModelInputBudgetPreparationTest --console=plain",
+    "tests": 1,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "xml": "junit/TEST-com.yollo.TravelMate.ModelInputBudgetPreparationTest.xml",
+    "budgeted_minimal_api_projections_unchanged_after_reason_annotation": true
+  },
+  "python_new": {
+    "command": "C:/ssafy/Travelmate/.venv-ragas/Scripts/python.exe -X utf8 -m unittest discover -s Evaluation/tests -p test_model_preparation.py -v",
+    "tests": 7,
+    "failures": 0,
+    "errors": 0,
+    "duration_seconds_reported_by_unittest": 0.158,
+    "checkout": "working branch based on b32486f2"
+  },
+  "runtime_application_queries": 0,
+  "searches": 0,
+  "production_db_operations": 0,
+  "deployments": 0
+}

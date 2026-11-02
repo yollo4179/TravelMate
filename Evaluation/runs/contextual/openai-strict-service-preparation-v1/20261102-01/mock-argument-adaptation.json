@@ -1,0 +1,9 @@
+{
+  "provider" : "OPENAI",
+  "contract" : "STRICT_SEARCH_V1",
+  "callId" : "mock-call",
+  "tool" : "search_places",
+  "originalArguments" : "{\"query\":\"창경궁\",\"limit\":null,\"region\":null,\"city\":null,\"category\":null,\"exclude_place_ids\":null,\"area\":null}",
+  "status" : "ADAPTED",
+  "serverArguments" : "{\"query\":\"창경궁\",\"limit\":10,\"region\":null,\"city\":null,\"category\":null,\"exclude_place_ids\":null,\"area\":null}"
+}

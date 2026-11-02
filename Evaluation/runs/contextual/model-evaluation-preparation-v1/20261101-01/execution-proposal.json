@@ -1,0 +1,50 @@
+{
+  "status": "PROPOSED_NOT_APPROVED",
+  "approved": false,
+  "executed": false,
+  "target_app_model": "qwen3:8b",
+  "app_gpt_model": null,
+  "judge_model_configured_only": "gpt-4.1-mini",
+  "judge_calls_proposed": 0,
+  "case_ids": [
+    "MGR-SOCIAL-aquariums",
+    "MGR-SOCIAL-architecture"
+  ],
+  "selection": "first two sorted development text-only candidates",
+  "repetitions_proposed": 1,
+  "concurrency_proposed": 1,
+  "current_budget_ready": false,
+  "inference_calls_authorized_now": 0,
+  "conditional_pilot_inference_cap": 2,
+  "conditional_pilot_expected_tools": [],
+  "conditional_pilot_job_calls": 0,
+  "default_server_max_chat_calls_per_request": 6,
+  "default_server_max_async_plan_calls_per_turn": 1,
+  "default_server_total_inference_cap_per_request_including_generate_plan": 7,
+  "server_default_is_not_the_proposed_global_cap": true,
+  "paid_api_cost_usd_proposed": 0,
+  "local_compute_cost": "not measured; local inference is not zero compute cost",
+  "inference_latency_observed_ms": null,
+  "latency_planning_assumption_seconds_per_case": [
+    30,
+    120
+  ],
+  "latency_assumption_not_a_measurement": true,
+  "job_timeout_is_not_cancellation": true,
+  "stop_conditions": [
+    "user approval absent",
+    "budget is EXCEEDED or UNVERIFIED",
+    "metadata model/template drift",
+    "unexpected tool call before any tool execution",
+    "global inference cap reached",
+    "recording failure or missing usage",
+    "timeout; do not retry or claim cancellation",
+    "any search, persistence, planning job or production side effect would be required"
+  ],
+  "required_before_execution": [
+    "approval of these explicit IDs/repetition/caps",
+    "budget blockers resolved without silently truncating evidence",
+    "one-call stop-before-tool runner and hard global cap must be verified",
+    "persona/frozen-input gaps excluded from claimed quality coverage"
+  ]
+}

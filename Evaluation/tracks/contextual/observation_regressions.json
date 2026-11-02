@@ -1,0 +1,70 @@
+{
+  "version": "observation-regressions-v1",
+  "scope": "생성 전 고정한 원문 위치의 귀속·내용 종류 검사. 이동 구간은 두 장소 이름이 있어도 나누지 않는다.",
+  "cases": [
+    {
+      "id": "P08-view-owner",
+      "pair_id": "P08",
+      "source_id": "75773c12-d04a-5091-9545-b3b94006c734",
+      "source_version": "851016fe4dca70442ca18c42f81f648fd67e1ad21cc78ed231327c51ddd1c442",
+      "start": 73,
+      "end": 94,
+      "anchor": "청담대교와 롯데타워가 모두 보이는 뷰가",
+      "forbidden_subject_ids": [
+        394
+      ],
+      "required_subject_id": null,
+      "required_kind": null
+    },
+    {
+      "id": "P08-transition",
+      "pair_id": "P08",
+      "source_id": "75773c12-d04a-5091-9545-b3b94006c734",
+      "source_version": "851016fe4dca70442ca18c42f81f648fd67e1ad21cc78ed231327c51ddd1c442",
+      "start": 383,
+      "end": 405,
+      "anchor": "청담도로공원에 가기위해 계단을 내려갑니다",
+      "forbidden_subject_ids": [],
+      "required_subject_id": 394,
+      "required_kind": "movement"
+    },
+    {
+      "id": "P08-weekend-parking",
+      "pair_id": "P08",
+      "source_id": "fb92830d-d7bf-54a5-90ed-eec33b890fe9",
+      "source_version": "6517e7859638834c39caa9b6da93d2b2c9e3197302a6601488878cd5daf217ac",
+      "start": 276,
+      "end": 305,
+      "anchor": "주말이나 공휴일에는 주차공간이 빠르게 차는 편입니다.",
+      "forbidden_subject_ids": [],
+      "required_subject_id": 394,
+      "required_kind": "facility"
+    },
+    {
+      "id": "P09-parking",
+      "pair_id": "P09",
+      "source_id": "68ef479e-6b88-5636-bfdf-c096fc287b89",
+      "source_version": "70e0805bb56390ed38cc8a1388a6a9283c6f28b723a117117ce817ef440a6a02",
+      "start": 109,
+      "end": 125,
+      "anchor": "청담도로 공원주차장은 무료라서",
+      "forbidden_subject_ids": [],
+      "required_subject_id": 394,
+      "required_kind": "facility"
+    },
+    {
+      "id": "P09-view-owner",
+      "pair_id": "P09",
+      "source_id": "68ef479e-6b88-5636-bfdf-c096fc287b89",
+      "source_version": "70e0805bb56390ed38cc8a1388a6a9283c6f28b723a117117ce817ef440a6a02",
+      "start": 573,
+      "end": 588,
+      "anchor": "한강뷰가 넓게 펼쳐져서 사진",
+      "forbidden_subject_ids": [
+        394
+      ],
+      "required_subject_id": null,
+      "required_kind": null
+    }
+  ]
+}

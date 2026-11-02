@@ -20,9 +20,15 @@ from app.reranker import reranker
 from app.enrichment.contracts import ExistingPlace
 from app.enrichment.evidence import search_description
 from app.enrichment.repository import latest_snapshot
-from app.contextual.pipeline import tourapi_chunks, legacy_evidence_chunks, select_active
-from app.contextual.repository import desired_chunks, activate_chunks, preserve_chunks
+from app.contextual.pipeline import tourapi_chunks, legacy_evidence_chunks, select_active, index_embedding_inputs
+from app.contextual.observation_search import ObservationFilter
+from app.contextual.repository import desired_chunks, activate_chunks, preserve_chunks, store_relation_embeddings
+from app.contextual.relation_vectors import RelationRetrievalMode, relation_embedding_inputs
+from app.contextual.retrieval import resolve_retrieval_strategy
 from app.contextual.artifacts import archive_index_input
+from app.contextual.original_fields import OriginalEvidenceMode, attach_original_fields
+from app.contextual.result_mapping import EvidenceAssessmentStatus, result_item
+from app.contextual.ranking import EvidenceCount, build_pairs, rank_places, validate_token_budget
 
 LOGGER = logging.getLogger(__name__)
 RETRIEVE_TOP_K = 30
@@ -41,6 +47,9 @@ class RankingMode(StrEnum):
 class KafkaRuntime:
     def __init__(self, database_pool: Any) -> None:
         self.database_pool = database_pool
+        self.evidence_count = EvidenceCount(int(os.environ.get("CONTEXTUAL_RERANK_EVIDENCE_PER_PLACE", "1")))
+        self.use_relation_vectors = RelationRetrievalMode(os.environ.get("CONTEXTUAL_RELATION_RETRIEVAL", RelationRetrievalMode.CHUNK_ONLY.value)) == RelationRetrievalMode.CHUNK_AND_RELATION
+        self.original_evidence_mode = OriginalEvidenceMode(os.environ.get("PRESERVED_ORIGINAL_EVIDENCE", OriginalEvidenceMode.DISABLED))
         self.bootstrap_servers = os.environ["KAFKA_BOOTSTRAP_SERVERS"]
         self.place_changes_topic = os.environ.get(
             "KAFKA_PLACE_CHANGES_TOPIC",
@@ -251,11 +260,15 @@ class KafkaRuntime:
         augmented_description = search_description(place, enrichment["document"]) if enrichment else None
         with tracer().start_as_current_span("embedding.model_inference") as span:
             span.set_attribute("embedding.device", embedder.device)
-            texts = [chunk.embedding_text for chunk in active_chunks] or [f"{place.name}. {place.description or ''}".strip()]
+            texts, primary_index = index_embedding_inputs(place, active_chunks)
+            base_text_count = len(texts)
+            relation_inputs = relation_embedding_inputs(active_chunks) if getattr(self, "use_relation_vectors", False) is True else []
+            texts += [entry.text for entry in relation_inputs]
+            span.set_attribute("embedding.relation_text_count", len(relation_inputs))
             span.set_attribute("embedding.text_count", len(texts))
             vectors = await to_thread.run_sync(lambda: embedder.embed(texts))
-            vector = vectors[0]
-            chunk_vectors = vectors if active_chunks else []
+            vector = vectors[primary_index]
+            chunk_vectors = vectors[:len(active_chunks)]
         vector_text = "[" + ",".join(map(str, vector)) + "]"
         async with self.database_pool.acquire() as connection:
             async with connection.transaction():
@@ -298,6 +311,8 @@ class KafkaRuntime:
                 if status == "SUCCEEDED":
                     await preserve_chunks(connection, all_chunks)
                     await activate_chunks(connection, place.place_id, active_chunks, chunk_vectors)
+                    if relation_inputs:
+                        await store_relation_embeddings(connection, relation_inputs, vectors[base_text_count:])
                 await connection.execute(
                     "UPDATE place_index_jobs SET status = $2, updated_at = now() WHERE job_id = $1",
                     job["job_id"],
@@ -371,13 +386,26 @@ class KafkaRuntime:
             pipeline_span.set_attribute("search.candidate_count", len(candidates))
 
             if candidates and ranking_mode == RankingMode.RERANKED:
-                texts = [candidate["description"] or candidate["name"] for candidate in candidates]
+                evidence_count = getattr(self, "evidence_count", EvidenceCount.ONE)
+                observation = ObservationFilter.from_mapping(payload.get("filters", {}).get("observation"))
+                if evidence_count != EvidenceCount.ONE and observation is not None:
+                    expanded = await self._retrieve_evidence(candidates, vector, evidence_count, observation=observation)
+                else:
+                    expanded = await self._retrieve_evidence(candidates, vector, evidence_count) if evidence_count != EvidenceCount.ONE else []
+                pairs = build_pairs(candidates, expanded, evidence_count)
+                texts = [pair.text for pair in pairs]
+                if evidence_count != EvidenceCount.ONE:
+                    lengths = await to_thread.run_sync(lambda: reranker.input_token_lengths(query, texts))
+                    validate_token_budget(pairs, lengths)
+                    pipeline_span.set_attribute("reranking.input_tokens", sum(lengths))
                 reranking_started_at = time.perf_counter()
                 with tracer().start_as_current_span("reranking.model_inference") as reranking_span:
                     reranking_span.set_attribute("reranking.device", reranker.device)
                     reranking_span.set_attribute("reranking.model", reranker.model_name)
                     reranking_span.set_attribute("reranking.query", query)
                     reranking_span.set_attribute("reranking.candidate_count", len(texts))
+                    reranking_span.set_attribute("reranking.evidence_per_place", int(evidence_count))
+                    reranking_span.set_attribute("reranking.place_count", len(candidates))
                     worker_dispatch_at = time.perf_counter()
 
                     def run_reranker() -> list[float]:
@@ -393,7 +421,8 @@ class KafkaRuntime:
                     if scores:
                         reranking_span.set_attribute("reranking.score_min", min(scores))
                         reranking_span.set_attribute("reranking.score_max", max(scores))
-                ranked = sorted(zip(candidates, scores, strict=True), key=lambda item: item[1], reverse=True)
+                ranked = (rank_places(candidates, pairs, scores) if evidence_count != EvidenceCount.ONE else
+                          sorted(zip(candidates, scores, strict=True), key=lambda item: item[1], reverse=True))
                 items = [self._to_result_item(row, rank, score) for rank, (row, score) in enumerate(ranked[: payload["limit"]], 1)]
                 rerank_status = "APPLIED"
             else:
@@ -443,6 +472,7 @@ class KafkaRuntime:
 
     async def _retrieve_candidates(self, payload: dict[str, Any], vector: str) -> list[dict[str, Any]]:
         filters = payload.get("filters", {})
+        observation = ObservationFilter.from_mapping(filters.get("observation"))
         conditions = [
             "document_status = 'READY'",
             "source_version = latest_seen_version",
@@ -478,6 +508,10 @@ class KafkaRuntime:
                     * power(sin(radians(longitude - ${longitude}) / 2), 2)))) <= ${radius}"""
             )
 
+        strategy = resolve_retrieval_strategy(observation, getattr(self, "use_relation_vectors", False) is True)
+        retrieval = strategy.build_sql(observation, parameters)
+        if observation:
+            conditions.append("evidence IS NOT NULL")
         parameters.extend([vector, RETRIEVE_TOP_K])
         vector_parameter, limit_parameter = len(parameters) - 1, len(parameters)
         query = f"""
@@ -497,15 +531,16 @@ class KafkaRuntime:
                        COALESCE(matched.chunk_embedding, p.embedding) AS retrieval_embedding
                 FROM place_embeddings p
                 LEFT JOIN LATERAL (
-                    SELECT a.chunk_id, a.context_version, c.embedding AS chunk_embedding,
+                    SELECT a.chunk_id, a.context_version, {retrieval.embedding} AS chunk_embedding,
                            c.document || jsonb_build_object('context_version', a.context_version,
-                               'metadata', s.document->'metadata') AS evidence
+                               'metadata', s.document->'metadata'){retrieval.evidence_extension} AS evidence
                     FROM place_active_chunks a
                     JOIN retrieval_chunk_contexts c USING(chunk_id, context_version)
                     JOIN retrieval_chunks r USING(chunk_id)
                     JOIN retrieval_source_versions s USING(source_id, source_version)
-                    WHERE a.place_id = p.place_id AND a.role = 'subject' AND c.embedding IS NOT NULL
-                    ORDER BY c.embedding <=> $1::vector, a.slot LIMIT 1
+                    {retrieval.vector_join}
+                    WHERE a.place_id = p.place_id AND {retrieval.active_role} AND {retrieval.embedding} IS NOT NULL {retrieval.observation}
+                    ORDER BY {retrieval.embedding} <=> $1::vector, a.slot, {retrieval.relation_index} NULLS FIRST LIMIT 1
                 ) matched ON true
             ) indexed_places
             WHERE {' AND '.join(conditions)}
@@ -525,32 +560,64 @@ class KafkaRuntime:
                 "search.retrieval_elapsed_ms",
                 (time.perf_counter() - retrieval_started_at) * 1000,
             )
-        return [dict(row) for row in rows]
+        documents = [dict(row) for row in rows]
+        return await self._attach_original_fields(strategy.scope_rows(documents, observation), observation)
+
+    async def _retrieve_evidence(
+        self,
+        candidates: list[dict[str, Any]],
+        vector: str,
+        count: EvidenceCount,
+        *,
+        observation: ObservationFilter | None = None,
+    ) -> list[dict[str, Any]]:
+        if not candidates:
+            return []
+        # 장소 후보를 다시 뽑지 않아 근거 수 비교에서 후보 집합이 바뀌지 않게 한다.
+        parameters = [vector, [candidate["place_id"] for candidate in candidates], int(count)]
+        strategy = resolve_retrieval_strategy(observation, getattr(self, "use_relation_vectors", False) is True)
+        retrieval = strategy.build_sql(observation, parameters)
+        required_evidence_sql = "AND matched.evidence IS NOT NULL" if observation else ""
+        query = f"""
+            SELECT p.place_id, p.source_version, matched.evidence,
+                   COALESCE(matched.semantic_score, 1 - (p.embedding <=> $1::vector)) AS semantic_score
+            FROM place_embeddings p
+            LEFT JOIN LATERAL (
+                SELECT c.document || jsonb_build_object('context_version', a.context_version,
+                           'metadata', s.document->'metadata'){retrieval.evidence_extension} AS evidence,
+                       1 - ({retrieval.embedding} <=> $1::vector) AS semantic_score, a.slot,
+                       {retrieval.relation_index} AS relation_index
+                FROM place_active_chunks a
+                JOIN retrieval_chunk_contexts c USING(chunk_id, context_version)
+                JOIN retrieval_chunks r USING(chunk_id)
+                JOIN retrieval_source_versions s USING(source_id, source_version)
+                {retrieval.vector_join}
+                WHERE a.place_id=p.place_id AND {retrieval.active_role} AND {retrieval.embedding} IS NOT NULL {retrieval.observation}
+                ORDER BY {retrieval.embedding} <=> $1::vector, a.slot, {retrieval.relation_index} NULLS FIRST LIMIT $3
+            ) matched ON true
+            WHERE p.place_id=ANY($2::bigint[]) AND p.document_status='READY'
+              AND p.source_version=p.latest_seen_version
+              {required_evidence_sql}
+            ORDER BY p.place_id, matched.semantic_score DESC, matched.slot, matched.relation_index NULLS FIRST
+        """
+        with tracer().start_as_current_span("database.contextual_evidence_search"):
+            async with self.database_pool.acquire() as connection:
+                rows = await connection.fetch(query, *parameters)
+        documents = [dict(row) for row in rows]
+        return await self._attach_original_fields(strategy.scope_rows(documents, observation), observation)
+
+    async def _attach_original_fields(
+        self,
+        candidates: list[dict[str, Any]],
+        observation: ObservationFilter | None,
+    ) -> list[dict[str, Any]]:
+        if observation is not None or getattr(self, "original_evidence_mode", OriginalEvidenceMode.DISABLED) != OriginalEvidenceMode.POST_RETRIEVAL:
+            return candidates
+        return await attach_original_fields(self.database_pool, candidates)
 
     @staticmethod
     def _to_result_item(candidate: dict[str, Any], rank: int, rerank_score: float | None) -> dict[str, Any]:
-        return {
-            "place_id": candidate["place_id"],
-            "rank": rank,
-            "name": candidate["name"],
-            "description": candidate["description"],
-            "region": candidate["region"],
-            "city": candidate["city"],
-            "category": candidate["category"],
-            "source_category": candidate["source_category"],
-            "latitude": candidate["latitude"],
-            "longitude": candidate["longitude"],
-            "tour_content_id": candidate["tour_content_id"],
-            "image_url": candidate["image_url"],
-            "homepage_url": candidate["homepage_url"],
-            "semantic_score": candidate["semantic_score"],
-            "rerank_score": rerank_score,
-            "source_version": candidate["source_version"],
-            "latest_seen_version": candidate["latest_seen_version"],
-            "index_config_version": candidate.get("index_config_version", "bge-m3-v1"),
-            "enrichment_snapshot_id": str(candidate["enrichment_snapshot_id"]) if candidate.get("enrichment_snapshot_id") else None,
-            "evidence_chunks": [json.loads(candidate["evidence"]) if isinstance(candidate["evidence"], str) else candidate["evidence"]] if candidate.get("evidence") else [],
-        }
+        return result_item(candidate, rank, rerank_score)
 
     async def _save_recommendation_result(self, request: Any, result: dict[str, Any]) -> None:
         result_event_id = uuid.UUID(result["event_id"])

@@ -1,5 +1,14 @@
 # TravelMate 평가
 
+[Qwen 정확 계산·검색 계약 검토](runs/contextual/exact-qwen-and-search-contract-v1/20261102-01/REPORT.md)는
+동일 입력의 오프라인 토큰 검증과 계획 없는 검색 제안이다. 실제 추론·검색 품질 평가 완료가 아니다.
+
+[실제 평가 직전 준비](runs/contextual/model-evaluation-preparation-v1/20261101-01/REPORT.md)에
+LF 보존 검사, 로컬 Qwen 메타데이터·예산 차단, 기존 case별 계약 차이와 미승인 실행 제안을 기록했다.
+
+[토큰 예산·실행 기록 연결 모의 검증](runs/contextual/token-budget-observation-v1/20261101-01/REPORT.md)은
+서버 native 관측과 기존 case_id/입력 해시를 연결한다. 실제 모델 품질 평가 결과는 아니다.
+
 대화·제어 LLM 하나가 장소 검색·일정 생성·수정·기억 조회 도구를 호출한다.
 데이터와 채점 기준은 버전별로, 코드는 공통/트랙별로, 실행 결과는 실행별로 관리한다.
 
@@ -30,6 +39,14 @@ Evaluation/
 현재 데이터는 [v1.4.0](datasets/v1.4.0/README.md)의 **200문항**이다.
 [도구 중심 평가 명세](datasets/v1.4.0/TOOL_EVALUATION.md),
 [경로 이동표와 보존 정책](MIGRATION.md), [트랙별 구현 상태](tracks/README.md)를 참고한다.
+보존 v1_local·v2 문맥 응답의 소규모 검색 진단은 [실행 방법](tracks/contextual/README.md)과
+[2026-10-31 실측 보고서](runs/contextual/stored-nine-pairs/20261031-01/REPORT.md)를 참고한다.
+[문제 정의와 해결 실험안](tracks/contextual/PROBLEMS_AND_SOLUTIONS.md)에 남은 오류와 개선안·평가 기준을 기록했다.
+[장소별 근거 1·2·3개 비교](runs/contextual/multi-evidence-v1/20261031-01/REPORT.md)에 실험 A의 구현·실측·보존 기록을 추가했다.
+[근거 2개 고정 v2·v4 비교](runs/contextual/prompt-grounding-v1/20261031-01/REPORT.md)에 실험 B의 문맥 검수·검색 결과·API 비용을 기록했다.
+[명시적 원문 입력·분할 후보 준비](runs/contextual/span-inputs-v1/20261101-01/REPORT.md)는 후속 구현·원문 보존 검사이며 새로운 품질 실측은 아니다.
+[새 입력+v5 실제 문맥 검수](runs/contextual/span-grounding-v1/20261101-01/REPORT.md)에 주제 대체 감소와 장소 귀속 회귀·호출 비용을 함께 기록했다. 검색은 재실행하지 않았다.
+[관찰 분할·이동 관계 검수](runs/contextual/observation-spans-v1/20261101-01/REPORT.md)는 P08·P09의 자동 판정 4/5와 검수 후 선택 5/5를 구분한다. 운영 적용이나 검색 성능 개선을 뜻하지 않는다.
 기존 100+100 묶음은 generated/by_group에 조회용으로 보존한다. 두 LLM을 뜻하지 않는다.
 기억·페르소나 시나리오는 source/cases.source.json의 해당 문항에 포함된다.
 같은 정답을 별도 source 파일에 중복 작성하지 않는다.
@@ -94,3 +111,7 @@ v1.1.0~v1.3.0은 파일 내용을 바꾸지 않고 datasets/로 옮긴 읽기용
 
 과거 평가의 환경변수를 확인할 때는 --env-file .env를 명시한다.
 아카이브에 쓰는 평가 실행은 피하고, 새 평가에는 tracks/의 실행기를 사용한다.
+
+- [v7 핵심·보조 관계 코드 회귀·호환 검증](runs/contextual/supporting-relations-v1/20261101-01/REPORT.md): 합성 응답·기존 기록만 확인, 유료/DB/실제 검색 실행 0회.
+
+- [v7 실제 PostgreSQL·Sonar·검색 검증](runs/contextual/v7-integration-v1/20261101-01/REPORT.md): SQL 통과, 위치·후보·활성 상한 손실 재현, 새 유료 2회/US$0.01287.

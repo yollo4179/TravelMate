@@ -1,0 +1,59 @@
+{
+  "mode": "LIVE_PARTIAL_STOPPED",
+  "captured_at": "2026-11-02T05:30:52.876528+00:00",
+  "application_commit": "c3cdba7b186179ef5ac24c35d3f16dac5486ea30",
+  "new_jar_sha256": "59093ddf4c46458a22aad0570be50c33106f6c41d9add97e893f122942ffd2f7",
+  "spring_pid": 10480,
+  "model_calls": 1,
+  "search_tool_attempts": 1,
+  "search_backend_requests": 0,
+  "retries": 0,
+  "plan_jobs": 0,
+  "judge_calls": 0,
+  "paid_calls": 0,
+  "input_exact_and_actual_tokens": 1385,
+  "output_actual_tokens": 62,
+  "tool_arguments_codepoints": 122,
+  "llm_explanation_generated": false,
+  "server_fallback_codepoints": 42,
+  "citation_quality": "NOT_OBSERVED",
+  "tool_schema_errors": [
+    {
+      "path": [],
+      "message": "Additional properties are not allowed ('searchContext' was unexpected)"
+    }
+  ],
+  "gpu_offloaded_layers": 24,
+  "model_total_layers": 37,
+  "gpu_model_buffer_mib": 3136.49,
+  "host_model_buffer_mib": 1841.14,
+  "gpu_kv_mib": 736.0,
+  "cpu_kv_mib": 416.0,
+  "native_prompt_eval_ms": 1435.79,
+  "native_prompt_tokens": 1385,
+  "native_prompt_tokens_per_second": 964.63,
+  "native_output_eval_ms": 3927.81,
+  "native_output_tokens": 62,
+  "native_output_tokens_per_second": 15.53,
+  "native_total_ms": 5363.6,
+  "native_server_start_seconds": 3.52,
+  "model_request_ms": 9923.841,
+  "token_budget_count_ms": 36.4325,
+  "tool_validation_ms": 3.4573,
+  "api_total_ms": 10401.8681,
+  "cpu_search_ms": null,
+  "cpu_search_status": "NOT_DISPATCHED",
+  "cases": [
+    {
+      "case_id": "PLR-TM-palaces-01",
+      "status": "TOOL_FAILED",
+      "reason": "Unknown tool argument: $.searchContext"
+    },
+    {
+      "case_id": "PLR-TM-palaces-03",
+      "status": "NOT_RUN_STOP_POLICY"
+    }
+  ],
+  "offline_preparation_tests": 15,
+  "causal_attribution": "GPU availability and contract/output prompt changed together; output type/length and cold-start state also differ. No isolated speedup or explanation quality claim."
+}

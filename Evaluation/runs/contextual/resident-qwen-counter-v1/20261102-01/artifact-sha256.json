@@ -1,0 +1,23 @@
+{
+  ".gitattributes": "a79691a93b46e49ce460c26ef22afcc03d6eca1e63bf2edbc20e96159510f6c9",
+  "benchmark/counts.jsonl": "38451d60735306cae7fc68602a88f585862bfd9591beb1948285e939241ad545",
+  "benchmark/ready.json": "0db21ca1e8ba4062e519d88ec3a5b9537cf597ecb547e05d3f7e569b41f43270",
+  "benchmark/summary.json": "9c5de64d839b715802cacb8f8d4d088e265b3ba2c4c6b3b5138843939abbaa2b",
+  "java-tests.json": "cc0a044af59bc2e28706aaa8cc754231e92e0e233cbc370280d75edcea4c1a36",
+  "junit/TEST-com.yollo.TravelMate.AsyncPlanObservationTest.xml": "3c2f8fad01b4458b047019fd239510621427eda7ab8aec7a61632fc25744a575",
+  "junit/TEST-com.yollo.TravelMate.BudgetedProviderTest.xml": "9ff5907fb80170fd12b7b719694ba8b5a40a7eb994fdcca51dfdac6d06500f2e",
+  "junit/TEST-com.yollo.TravelMate.ConversationToolLoopTest.xml": "9163daae534cc4d51402504f3505cb1f6f9cf3df6447c47cdb26530d1181fcaf",
+  "junit/TEST-com.yollo.TravelMate.DraftPlanValidationTest.xml": "3d35cc62170de9d2f1c2ffce1d84e35f9f0bba96fdec7e3e7e66088b84bfb000",
+  "junit/TEST-com.yollo.TravelMate.ExactQwenGuardTest.xml": "4f04cf24052e19da24cfed28ccb50bd3e760466b656f94c7ef6f7a55909a3609",
+  "junit/TEST-com.yollo.TravelMate.ExecutionObservationTest.xml": "90b4b103b3377efcfc955173e933132f36c009f4087b7f917e6c9a3f2ae7636a",
+  "junit/TEST-com.yollo.TravelMate.IndependentPlaceSearchTest.xml": "eded05d457594de2f15001b2d9f1c0b0a02e5b95caddb172ab363bafb996f5c5",
+  "junit/TEST-com.yollo.TravelMate.LlmStrategyTest.xml": "3fbbd7e1b054fc63b7fb07148c55343ad646240cc96ded3e5a5a4784d507648f",
+  "junit/TEST-com.yollo.TravelMate.ModelInputBudgetPreparationTest.xml": "f9eb0bfa3b1115d55fb567ecb55e7f433f731a6ba8abd7545ae84e1c1f026095",
+  "junit/TEST-com.yollo.TravelMate.ResidentQwenProcessTest.xml": "30edd5db9179ff9a3226938e13b0361f4796c6e19937827b94b37e99d78cc629",
+  "junit/TEST-com.yollo.TravelMate.SearchEvidencePipelineTest.xml": "593631dbf973751f2375d12b543189926fb9b953c2b0927bc99c9477ece0277f",
+  "junit/TEST-com.yollo.TravelMate.TokenBudgetGuardTest.xml": "b42ce27d09a236bb27a08325bf72823b9ba347ffb48998a8ad635fe6df4f6ef6",
+  "python-regressions.txt": "220d5f257a56d9945d9e70ddcde36cbf15b2740f1873e59c716c5a0b112a1134",
+  "python-tests.json": "2b16fd61a26853cbad130d7fec02b49bd26b71e250be2c429e3ff83df6ffc14a",
+  "REPORT.md": "613312abf8abb71148a2fab3c6a4b2ea44923fd05c73d35d82f93a9ea0989fef",
+  "verification.json": "ff6a80180ccbbc24747bf58dcad36e248c2b6d92ec21c1d008a657b0e799e020"
+}

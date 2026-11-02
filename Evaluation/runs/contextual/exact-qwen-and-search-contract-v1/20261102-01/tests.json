@@ -1,0 +1,28 @@
+{
+  "basis": "actual completed tool executions; no model inference",
+  "python": {
+    "command": "C:/ssafy/Travelmate/.venv-ragas/Scripts/python.exe -X utf8 -m unittest discover -s Evaluation/tests -p test_exact_qwen_and_search_contract.py -v",
+    "tests": 10,
+    "failures": 0,
+    "errors": 0,
+    "unittest_duration_seconds": 0.131
+  },
+  "go": {
+    "command": "go test -mod=readonly ./...",
+    "package": "travelmate.local/qwen-tokenizer-check",
+    "tests": 3,
+    "failures": 0,
+    "reported_duration_seconds": 0.388
+  },
+  "offline_native_crosscheck": {
+    "same_saved_native_requests": 201,
+    "token_id_sequence_agreements": 201,
+    "full_utf8_roundtrip_agreements": 201,
+    "inference_calls": 0
+  },
+  "search_contract_projections": {
+    "existing_cases": 85,
+    "new_application_adapter_implemented": false,
+    "searches_executed": 0
+  }
+}

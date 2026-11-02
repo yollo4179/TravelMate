@@ -1,0 +1,97 @@
+{
+  "generation_pairs_verified": 9,
+  "unique_provider_responses": 9,
+  "resumed_invocation_api_calls": 8,
+  "cached_response_reused": 1,
+  "total_v4_generation_responses": 9,
+  "baseline_generation_calls": 0,
+  "provider_reported_cost_usd": "0.01505",
+  "results": [
+    {
+      "id": "P01",
+      "actual_model": "perplexity/sonar",
+      "indexable": 3,
+      "excluded": 0,
+      "reported_cost_usd": 0.00231,
+      "response_sha256": "c5399e174e613b06cf3b74b8c013ccfc2cedff35e6663ca4531199997545f8d7",
+      "request_sha256": "d765dc6ad87707f66e29f63a8337f4c3b703faa1c45b9e64011dd25b34f22780"
+    },
+    {
+      "id": "P02",
+      "actual_model": "perplexity/sonar",
+      "indexable": 1,
+      "excluded": 2,
+      "reported_cost_usd": 0.00169,
+      "response_sha256": "a3b7783fd397394d41c1c595eccd88d819b67deb98b5668f7203873c1f9f1ab2",
+      "request_sha256": "2bbf299b66ab0111987b880f8b019b4f3dc04ca5a4ff27b42a4f38ea93f55b92"
+    },
+    {
+      "id": "P03",
+      "actual_model": "perplexity/sonar",
+      "indexable": 2,
+      "excluded": 1,
+      "reported_cost_usd": 0.00189,
+      "response_sha256": "fce8565ba5861b6651df07743fc3a0871916aa12e1c65dbcdb7c0ea86943c570",
+      "request_sha256": "4e660e9158bfbf3ac48c0630c9cb197e59f9d169d8a0fed3e9ecdd9632557360"
+    },
+    {
+      "id": "P04",
+      "actual_model": "perplexity/sonar",
+      "indexable": 2,
+      "excluded": 0,
+      "reported_cost_usd": 0.00124,
+      "response_sha256": "83d9cd0c3558e0e87b5e055f5961abdb2c188d9b8f11b930571e65257ec2e064",
+      "request_sha256": "9645d25ec7f7e987e63a19e9d612060ae49e7262499afc56e7fa4c1873f32202"
+    },
+    {
+      "id": "P05",
+      "actual_model": "perplexity/sonar",
+      "indexable": 3,
+      "excluded": 0,
+      "reported_cost_usd": 0.00239,
+      "response_sha256": "ddb8a69c82a74a1f424f79f2a34e267bf2f3b67df1fab427c24468711cd6f6d2",
+      "request_sha256": "114fcd2e4186ad46100c94b2489cca20e3b7c06ca2d7436e551d597e42c748cd"
+    },
+    {
+      "id": "P06",
+      "actual_model": "perplexity/sonar",
+      "indexable": 1,
+      "excluded": 1,
+      "reported_cost_usd": 0.00117,
+      "response_sha256": "dc28771eca795a3f6287951a5e0adcc3eff646223d4b88076c39f2ae1564ad43",
+      "request_sha256": "17aaa5dee3d93ff1b139e286b40edad107957b947d40b93102e532e67cc5c392"
+    },
+    {
+      "id": "P07",
+      "actual_model": "perplexity/sonar",
+      "indexable": 1,
+      "excluded": 0,
+      "reported_cost_usd": 0.00084,
+      "response_sha256": "45bec071c5ecd0e501e327053d5ce16cd4e67a422af735dbf68a63162941040c",
+      "request_sha256": "c6aa5fe5b773728edc1be176660c276516bbdaf7f9f2dfbc8d8afe4ba5ca7e0b"
+    },
+    {
+      "id": "P08",
+      "actual_model": "perplexity/sonar",
+      "indexable": 1,
+      "excluded": 1,
+      "reported_cost_usd": 0.00161,
+      "response_sha256": "8dc8222f7ab23e4989a304a9cdad4e11c3a7ea516d6066ae8b6aa9cfe0f75fcf",
+      "request_sha256": "6d268aee20ebf66cd2aa348d6a0d89ea2cbd1b382e071c8c13705e27009c3636"
+    },
+    {
+      "id": "P09",
+      "actual_model": "perplexity/sonar",
+      "indexable": 3,
+      "excluded": 0,
+      "reported_cost_usd": 0.00191,
+      "response_sha256": "72654edfe00ad91d7588b133339896c7800af2651abef9917044aa96ad4a684e",
+      "request_sha256": "306187e49b574439918fc54ca395e51ce218bbee9ebc918f868d06e75cff9dbf"
+    }
+  ],
+  "evidence_per_place": 2,
+  "retrieval_executions": 52,
+  "prior_baseline_queries_matched": 26,
+  "public_unchanged": true,
+  "schemas_remaining": 0
+}

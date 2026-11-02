@@ -1,0 +1,14 @@
+{
+  "basis": "actual completed unittest command output; summary transcribed from tool result",
+  "commit": "b32486f2",
+  "checkout": "separate detached LF checkout, core.autocrlf=false",
+  "command": "C:/ssafy/Travelmate/.venv-ragas/Scripts/python.exe -X utf8 -m unittest discover -s Evaluation/tests -v",
+  "tests": 39,
+  "failures": 0,
+  "errors": 0,
+  "duration_seconds_reported_by_unittest": 6.128,
+  "returncode": 0,
+  "real_model_inference_calls": 0,
+  "sdk_adapter_used_mock_transport": true,
+  "new_preparation_tests_included": false
+}

@@ -1,0 +1,8 @@
+{
+  "temporary_database_container_removed": true,
+  "temporary_search_and_audit_containers_removed": true,
+  "temporary_internal_network_removed": true,
+  "production_database_writes": 0,
+  "production_service_restarts": 0,
+  "raw_responses_and_vectors_preserved": true
+}

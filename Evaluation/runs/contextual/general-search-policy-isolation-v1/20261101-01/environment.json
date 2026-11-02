@@ -1,0 +1,23 @@
+{
+  "runner_image": "travelmate-contextual-validation:64bf5ef0",
+  "database_image": "pgvector/pgvector:pg17",
+  "network": "tm-v7-eval-search-scope",
+  "network_internal": true,
+  "database_name": "contextual_v7_eval_scope",
+  "database_tmpfs": "/var/lib/postgresql/data",
+  "code_mount_read_only": true,
+  "real_model_service_connected": false,
+  "new_real_searches": 0,
+  "new_real_model_calls": 0,
+  "paid_cost_usd": 0,
+  "production_database_writes": 0,
+  "non_system_schemas_after_tests": 0,
+  "cleanup": {
+    "removed_containers": ["tm-v7-eval-search-scope-runner", "tm-v7-eval-search-scope-db"],
+    "removed_network": "tm-v7-eval-search-scope",
+    "remaining_matching_containers": [],
+    "remaining_matching_networks": []
+  },
+  "validation_scope": "Stored ranked-output replay and synthetic SQL/mock-model regression; no real retrieval or semantic quality evaluation.",
+  "offline_experiment_compatibility_tests": {"passed": 11, "included_in_server_count": false}
+}

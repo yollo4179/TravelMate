@@ -17,6 +17,7 @@ from .artifacts import SourceBundle, load_record, revalidate_record
 from .profiles import resolve_execution_profile
 from .prompts import resolve_prompt
 from .validation import ValidationVersion
+from .input_format import InputVersion
 
 
 @dataclass(frozen=True)
@@ -59,14 +60,21 @@ class GenerationBaseline:
 
     def candidate_request(self, prompt_version: str) -> dict[str, Any]:
         candidate = deepcopy(self.request)
-        instructions = resolve_prompt(prompt_version).instructions
+        prompt = resolve_prompt(prompt_version)
+        baseline_prompt = resolve_prompt(self.record["prompt_version"])
+        if (prompt.supports_relations, prompt.independent_relations, prompt.server_evidence) != (baseline_prompt.supports_relations, baseline_prompt.independent_relations, baseline_prompt.server_evidence):
+            raise ValueError("출력 스키마 변경은 프롬프트 전용 비교에 포함할 수 없습니다")
+        if (prompt.requires_explicit_chunks
+                and self.record.get("input_version", InputVersion.OFFSETS) != InputVersion.EXPLICIT):
+            raise ValueError("지시문 비교에 필요한 명시적 청크 입력을 먼저 준비해야 합니다")
+        instructions = prompt.instructions
         if self.request_profile_id:
             instructions = resolve_execution_profile(self.request_profile_id).settings_for(prompt_version)["instructions"]
         candidate["instructions"] = instructions
         self.verify_request(candidate)
         return candidate
 
-    def write_report(self, result_path: Path) -> Path:
+    def write_report(self, result_path: Path, *, output_directory: Path | None = None) -> Path:
         result = json.loads(result_path.read_text(encoding="utf-8"))
         request = json.loads(result_path.with_name("request.json").read_text(encoding="utf-8"))
         self.verify_request(request)
@@ -104,7 +112,8 @@ class GenerationBaseline:
             report.update(baseline_validation_version=baseline_validation, candidate_validation_version=candidate_validation,
                           validation_versions_match=baseline_validation == candidate_validation,
                           indexable_chunks=len(result.get("chunks", [])), excluded_chunks=len(result.get("excluded_chunks", [])))
-        destination = result_path.parent / "comparisons" / f"{fingerprint(baseline)}.json"
+        directory = output_directory if output_directory is not None else result_path.parent / "comparisons"
+        destination = directory / f"{fingerprint(baseline)}.json"
         try:
             write_json(destination, report)
         except FileExistsError:

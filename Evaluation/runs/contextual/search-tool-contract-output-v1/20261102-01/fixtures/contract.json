@@ -1,0 +1,106 @@
+{
+  "type" : "object",
+  "additionalProperties" : false,
+  "properties" : {
+    "category" : {
+      "anyOf" : [ {
+        "type" : "string",
+        "minLength" : 1,
+        "maxLength" : 200,
+        "pattern" : "\\S"
+      }, {
+        "type" : "null"
+      } ],
+      "description" : "선택 필터. 생략 또는 null이면 searchContext 값을 사용한다. 둘 다 없으면 제한 없음."
+    },
+    "region" : {
+      "anyOf" : [ {
+        "type" : "string",
+        "minLength" : 1,
+        "maxLength" : 200,
+        "pattern" : "\\S"
+      }, {
+        "type" : "null"
+      } ],
+      "description" : "선택 필터. 생략 또는 null이면 searchContext 값을 사용한다. 둘 다 없으면 제한 없음."
+    },
+    "query" : {
+      "type" : "string",
+      "minLength" : 1,
+      "maxLength" : 2000,
+      "pattern" : "\\S",
+      "description" : "필수 검색어. 사용자 질문에 맞춰 직접 작성하며 서버가 대신 채우지 않는다."
+    },
+    "exclude_place_ids" : {
+      "anyOf" : [ {
+        "type" : "array",
+        "uniqueItems" : true,
+        "items" : {
+          "type" : "integer",
+          "minimum" : 1,
+          "maximum" : 9223372036854775807
+        }
+      }, {
+        "type" : "null"
+      } ],
+      "default" : [ ],
+      "description" : "생략 또는 null이면 빈 목록. searchContext의 제외 ID와 합친다."
+    },
+    "limit" : {
+      "type" : "integer",
+      "minimum" : 1,
+      "maximum" : 20,
+      "default" : 10
+    },
+    "area" : {
+      "anyOf" : [ {
+        "type" : "object",
+        "additionalProperties" : false,
+        "properties" : {
+          "center" : {
+            "type" : "object",
+            "additionalProperties" : false,
+            "properties" : {
+              "lon" : {
+                "type" : "number",
+                "minimum" : -180.0,
+                "maximum" : 180.0
+              },
+              "lat" : {
+                "type" : "number",
+                "minimum" : -90.0,
+                "maximum" : 90.0
+              }
+            },
+            "required" : [ "lat", "lon" ]
+          },
+          "type" : {
+            "type" : "string",
+            "enum" : [ "CIRCLE" ]
+          },
+          "radius_meters" : {
+            "type" : "integer",
+            "minimum" : 500,
+            "maximum" : 10000
+          }
+        },
+        "required" : [ "center", "radius_meters", "type" ]
+      }, {
+        "type" : "null"
+      } ],
+      "description" : "생략 또는 null이면 searchContext의 area를 사용한다. 둘 다 없으면 반경 제한 없음."
+    },
+    "city" : {
+      "anyOf" : [ {
+        "type" : "string",
+        "minLength" : 1,
+        "maxLength" : 200,
+        "pattern" : "\\S"
+      }, {
+        "type" : "null"
+      } ],
+      "description" : "선택 필터. 생략 또는 null이면 searchContext 값을 사용한다. 둘 다 없으면 제한 없음."
+    }
+  },
+  "required" : [ "query" ]
+}

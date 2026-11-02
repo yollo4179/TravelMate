@@ -1,0 +1,45 @@
+{
+  "api_calls": 2,
+  "provider_reported_cost_usd": "0.01287",
+  "results": [
+    {
+      "id": "CONTROL",
+      "provider_status": "completed",
+      "actual_model": "perplexity/sonar",
+      "generated_spans": 4,
+      "validated_candidates": 3,
+      "excluded": 1,
+      "approved": 3,
+      "excluded_reasons": {
+        "invalid_attribution": 1
+      },
+      "cost_usd": "0.00282",
+      "request_sha256": "64687283799f02b2c39dcb0705d9ddc123f0bf4083fab185ece204d3403a6629",
+      "response_sha256": "1556cc3eef5f2ca82aa071e23b0cfc88ba492714022304f7477e8d15c452d3ae"
+    },
+    {
+      "id": "P09",
+      "provider_status": "completed",
+      "actual_model": "perplexity/sonar",
+      "generated_spans": 28,
+      "validated_candidates": 15,
+      "excluded": 13,
+      "approved": 8,
+      "excluded_reasons": {
+        "unresolved_movement": 3,
+        "no_subject": 3,
+        "invalid_attribution": 7
+      },
+      "cost_usd": "0.01005",
+      "request_sha256": "1e9ffa55a55fed3a200b7c36353fb334784fa039dd73f37aa1ccd2b08e0edafe",
+      "response_sha256": "025ad83e88bc9022b70166a314ec1ed0d0390b6ca103834750fec670e038d974"
+    }
+  ],
+  "generated_spans": 32,
+  "validated_candidates": 18,
+  "excluded": 14,
+  "approved_after_agent_review": 11,
+  "agent_withheld_valid_candidates": 7,
+  "semantic_quality_fully_correct": false,
+  "production_database_writes": 0
+}

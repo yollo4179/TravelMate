@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.yollo.TravelMate.ContextPlanPipelineTest" tests="2" skipped="0" failures="0" errors="0" timestamp="2026-11-01T09:22:06.622Z" hostname="DESKTOP-MS327CL" time="0.43">
+  <properties/>
+  <testcase name="qwenInputContainsFullContextAndOnlyRetrievedCandidates()" classname="com.yollo.TravelMate.ContextPlanPipelineTest" time="0.363"/>
+  <testcase name="refusesHallucinatedDuplicateAndMissingRequiredStops()" classname="com.yollo.TravelMate.ContextPlanPipelineTest" time="0.064"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

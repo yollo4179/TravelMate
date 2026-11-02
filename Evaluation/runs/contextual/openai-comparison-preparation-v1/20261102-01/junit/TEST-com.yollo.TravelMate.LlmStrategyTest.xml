@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.yollo.TravelMate.LlmStrategyTest" tests="13" skipped="0" failures="0" errors="0" timestamp="2026-11-02T06:08:23.505Z" hostname="DESKTOP-MS327CL" time="0.748">
+  <properties/>
+  <testcase name="missingOrAmbiguousStrategyFailsInsteadOfFallingBackToAPaidProvider()" classname="com.yollo.TravelMate.LlmStrategyTest" time="0.051"/>
+  <testcase name="[1] response={&quot;status&quot;:&quot;incomplete&quot;,&quot;output&quot;:[]}" classname="com.yollo.TravelMate.LlmStrategyTest" time="0.05"/>
+  <testcase name="[2] response={&quot;status&quot;:&quot;completed&quot;,&quot;output&quot;:[{&quot;type&quot;:&quot;message&quot;,&quot;content&quot;:[{&quot;type&quot;:&quot;refusal&quot;,&quot;refusal&quot;:&quot;no&quot;}]}]}" classname="com.yollo.TravelMate.LlmStrategyTest" time="0.01"/>
+  <testcase name="[1] provider=QWEN" classname="com.yollo.TravelMate.LlmStrategyTest" time="0.508"/>
+  <testcase name="[2] provider=OPENAI" classname="com.yollo.TravelMate.LlmStrategyTest" time="0.031"/>
+  <testcase name="openAiPreservesOptionalSearchFieldsWithoutSilentlyRequiringThem()" classname="com.yollo.TravelMate.LlmStrategyTest" time="0.017"/>
+  <testcase name="openAiGenerationUsesConfiguredModelAndJsonWithoutChangingThePlannerContract()" classname="com.yollo.TravelMate.LlmStrategyTest" time="0.009"/>
+  <testcase name="qwenReplaysObjectArgumentsAndToolNameAndKeepsExistingGenerationOptions()" classname="com.yollo.TravelMate.LlmStrategyTest" time="0.017"/>
+  <testcase name="missingOpenAiConfigurationNeverMakesAnHttpRequest()" classname="com.yollo.TravelMate.LlmStrategyTest" time="0.011"/>
+  <testcase name="[1] provider=QWEN" classname="com.yollo.TravelMate.LlmStrategyTest" time="0.004"/>
+  <testcase name="[2] provider=OPENAI" classname="com.yollo.TravelMate.LlmStrategyTest" time="0.002"/>
+  <testcase name="openAiReplaysFunctionCallIdsAndEncryptedReasoningBeforeToolResults()" classname="com.yollo.TravelMate.LlmStrategyTest" time="0.011"/>
+  <testcase name="qwenReceivesTheSameOptionalSearchContractAsTheServer()" classname="com.yollo.TravelMate.LlmStrategyTest" time="0.009"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

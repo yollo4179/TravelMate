@@ -1,0 +1,11 @@
+{
+  "created_at": "2026-10-31T12:30:55.307802+00:00",
+  "source_query": "Q17",
+  "source_observations_sha256": "dadb37896a28812ad7b1b07d44f628fd54b8dea31b2575efac86e9133ae2d4f3",
+  "harness_sha256": "86a4b67741d82cff8f096445e1338ee3b11812dd715f32943b6800cb29d7491c",
+  "local_rerank_calls": 12,
+  "perplexity_calls": 0,
+  "scope": "load only; repeat real candidate texts; not distinct chunk retrieval or quality measurement",
+  "repetitions_per_size": 3,
+  "warmup_calls_excluded": 3
+}

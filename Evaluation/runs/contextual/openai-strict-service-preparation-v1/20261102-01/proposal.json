@@ -1,0 +1,169 @@
+{
+  "status": "PROPOSAL_ONLY_NOT_EXECUTED",
+  "execution_enabled": false,
+  "approval_required_before_any_openai_request": true,
+  "frozen_scope": "Evaluation/runs/contextual/search-tool-contract-output-v1/20261102-01/next-execution-proposal.json",
+  "frozen_scope_sha256": "00b7056760ed86638a603518131d674d888fae2dc3fcf808f77b4ce279a01083",
+  "case_requests": [
+    {
+      "case_id": "PLR-TM-palaces-01",
+      "input_sha256": "13f07e1370f08c3962a159bbf18ff3ef60b7a5b2d03f1d550a34c96f70f9598b",
+      "repeats": 1,
+      "area_provenance": null,
+      "api_request": {
+        "message": "창경궁을 찾아줘.",
+        "planningRequest": null,
+        "history": [],
+        "searchContext": {
+          "region": "서울",
+          "city": null,
+          "category": null,
+          "excludePlaceIds": [],
+          "area": null
+        }
+      }
+    },
+    {
+      "case_id": "PLR-TM-palaces-03",
+      "input_sha256": "42a6a1b0fb5c40e8be6c37f1cf5e685c982b4d927151646eb6b2467478d8246d",
+      "repeats": 1,
+      "area_provenance": null,
+      "api_request": {
+        "message": "종로에서 조선 왕실 가족이 생활했던 궁이나 거처를 둘러보고 싶어.",
+        "planningRequest": null,
+        "history": [],
+        "searchContext": {
+          "region": "서울",
+          "city": "종로",
+          "category": null,
+          "excludePlaceIds": [],
+          "area": null
+        }
+      }
+    }
+  ],
+  "model": {
+    "provider": "OPENAI",
+    "proposed_app_model": "gpt-5.4-mini-2026-03-17",
+    "selected_app_model": null,
+    "judge_model": null,
+    "endpoint": "https://api.openai.com/v1/responses",
+    "service_tier": "default",
+    "documented_context_tokens": 400000,
+    "documented_max_output_tokens": 128000,
+    "local_context_cap": 8192,
+    "output_reservation_including_reasoning": 1536,
+    "max_input_tokens_per_inference": 6656,
+    "reasoning_effort": "omitted; documented snapshot default none",
+    "source": "https://developers.openai.com/api/docs/models/gpt-5.4-mini"
+  },
+  "contract": {
+    "version": "place-search-v2",
+    "openai_search_strict": true,
+    "parallel_tool_calls": false,
+    "same_canonical_parameters_as_qwen": false,
+    "strict_schema_variant_in_scope": true,
+    "silent_argument_repair": false,
+    "prompt_change_from_historical_qwen": "Request-envelope versus flat tool-arguments clarification",
+    "mode": "STRICT_SEARCH_V1",
+    "server_contract_unchanged": true,
+    "provider_required_fields": [
+      "query",
+      "region",
+      "city",
+      "category",
+      "exclude_place_ids",
+      "area",
+      "limit"
+    ],
+    "provider_nullable_fields": [
+      "region",
+      "city",
+      "category",
+      "exclude_place_ids",
+      "area",
+      "limit"
+    ],
+    "explicit_default_adaptation": {
+      "limit_null": 10
+    },
+    "server_only_schema_constraints": [
+      "minLength",
+      "maxLength",
+      "uniqueItems",
+      "default"
+    ],
+    "native_replay": "Original provider function_call items, not adapted arguments"
+  },
+  "execution_policy": {
+    "sequential": true,
+    "repeats_per_case": 1,
+    "retries": 0,
+    "max_conversation_requests": 2,
+    "max_inference_dispatches_including_failures": 4,
+    "max_input_count_requests": 4,
+    "max_backend_search_requests": 2,
+    "max_model_turns_per_request": 2,
+    "max_tool_calls_per_request": 1,
+    "plan_calls": 0,
+    "judge_calls": 0,
+    "qwen_calls": 0
+  },
+  "cost": {
+    "checked_on": "2026-11-02",
+    "currency": "USD",
+    "input_per_million": "0.75",
+    "cached_input_per_million": "0.075",
+    "output_per_million": "4.50",
+    "cache_discount_assumed": false,
+    "max_inference_input_tokens": 26624,
+    "max_output_tokens_including_reasoning": 6144,
+    "inference_token_cost_bound_usd": "0.047616",
+    "proposed_batch_spend_limit_usd": "0.10",
+    "batch_spend_limit_implemented": true,
+    "total_billing_bound_confirmed": false,
+    "input_count_endpoint_billing": "UNCONFIRMED: no price statement found in checked official docs",
+    "tax_and_exchange_rate_included": false,
+    "source": "https://developers.openai.com/api/docs/models/gpt-5.4-mini",
+    "actual_api_requests_this_preparation": 0,
+    "actual_usage": null,
+    "batch_spend_limit_active": false,
+    "budget_reservation": "Full per-call input/output upper cost plus confirmed counting-request maximum; failures retain reservations"
+  },
+  "stop_conditions": [
+    "First execution error, missing query, invalid arguments, invalid final response or citations",
+    "Any context/output budget rejection or unavailable exact count/model identity",
+    "Any per-request or batch call-limit violation",
+    "Corpus/evidence lineage mismatch or observation recording failure",
+    "Before dispatch, a reservation would exceed the approved batch spend limit",
+    "Provider/model/tier/rate mismatch or unavailable usage/accounting",
+    "Timeout has an unknown outcome: preserve it and do not retry"
+  ],
+  "evaluation_dimensions": [
+    "tool selection and native argument acceptance",
+    "retrieval relevance of actually returned places",
+    "full original evidence delivery and structural citation membership",
+    "conciseness and semantic grounding of actual explanation; not inferred from mock output"
+  ],
+  "remaining_before_execution": [
+    "User confirms proposed app model and final batch spend ceiling",
+    "Confirm counting endpoint billing and record a verified per-request upper charge; unknown remains blocked",
+    "Bind a new Spring runtime/JAR/observation directory and the approved budget file; original Qwen collector stays Qwen-only",
+    "Verify the fixed two cases and per-request 2 model turns/1 search tool/STOP policy before dispatch",
+    "Record current GPU configuration and corpus/source manifests; do not compare CPU timing as GPU timing"
+  ],
+  "latency": {
+    "estimated_llm_latency_ms": null,
+    "reason": "No measured OpenAI receipt; throughput is not guaranteed by model documentation",
+    "cpu_search_record_separately": false,
+    "gpu_embedding_and_rerank_record_separately": true,
+    "historical_cpu_rerank_ms": 112268,
+    "current_gpu_latency_ms": null
+  },
+  "purpose": "SERVICE_CONFIGURATION_FIT_NOT_IDENTICAL_MODEL_COMPARISON",
+  "local_inference_target": {
+    "embedding": "cuda",
+    "reranker": "cuda",
+    "qwen": "not loaded; verify before execution"
+  }
+}

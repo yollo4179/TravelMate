@@ -1,0 +1,55 @@
+{
+  "reviewer": "현재 대화의 에이전트",
+  "method": "원문을 읽고 동일한 근거 문장 단위로 수동 등급을 정한 뒤 각 패킷에 명시적으로 연결. 순위·점수로 등급을 추론하지 않음.",
+  "blind": false,
+  "groups": [
+    {
+      "group_id": "vehicle-only-connection",
+      "match_quote": "B공원까지 차량으로만 이동할 수 있으며 도보 통행은 금지된다.",
+      "grade": 2,
+      "status": "positive-connection",
+      "travel_mode": "vehicle-only",
+      "rationale": "각 연결공원에서 B공원까지 차량 이동이 가능하다는 직접 근거다. 질문에 도보 조건이 없으므로 통행 금지를 보존한 차량 연결을 인정한다."
+    },
+    {
+      "group_id": "walking-after-visit",
+      "match_quote": "관람 후 B공원으로 걸어갈 수 있다.",
+      "grade": 2,
+      "status": "positive-connection",
+      "travel_mode": "walking",
+      "rationale": "A공원 관람 후 B공원으로 도보 이동이 가능하다는 직접 근거다. 이동수단을 이유로 차량 연결보다 높은 등급을 주지 않는다."
+    },
+    {
+      "group_id": "walking-down-stairs",
+      "match_quote": "A공원에서 계단을 내려가 B공원까지 걸어갔다.",
+      "grade": 2,
+      "status": "positive-connection",
+      "travel_mode": "walking-stairs",
+      "rationale": "A에서 계단을 내려가 B까지 걸어간 경험이 있어 A→B 연결을 뒷받침한다. B도 그 연결의 도착지지만 B→A 이동까지 증명하지는 않는다."
+    },
+    {
+      "group_id": "construction-blocked",
+      "match_quote": "A공원에서 B공원으로 이동하려 했지만 공사로 길이 막혀 돌아왔다.",
+      "grade": 1,
+      "status": "blocked-route",
+      "travel_mode": "unspecified",
+      "rationale": "A→B 경로에 관한 내용은 있으나 해당 기록에서는 이동에 실패했다. 부정 조건이 보존됐으므로 왜곡은 아니지만, 이용 가능한 연결의 긍정 대표 근거로는 부족하다. 현재 개방 여부는 확정하지 않는다."
+    },
+    {
+      "group_id": "soil-path-only",
+      "match_quote": "벚꽃나무쪽에 보면 흙길이 보여요\n",
+      "grade": 0,
+      "status": "no-connection-evidence",
+      "travel_mode": "unspecified",
+      "rationale": "흙길의 관찰만 있고 어느 다른 관광지로 이어지는지는 없다. 제목과 문서의 미선택 구간에 나온 이동 내용을 끌어와 보충하지 않는다."
+    },
+    {
+      "group_id": "place-existence-only",
+      "match_quote": "다행히도 청담도로공원이 있다.\n",
+      "grade": 0,
+      "status": "no-connection-evidence",
+      "travel_mode": "unspecified",
+      "rationale": "청담도로공원의 존재를 언급할 뿐 다른 관광지와의 연결을 설명하지 않는다."
+    }
+  ]
+}

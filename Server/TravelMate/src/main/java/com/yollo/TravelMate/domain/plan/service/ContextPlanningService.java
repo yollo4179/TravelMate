@@ -2,21 +2,20 @@ package com.yollo.TravelMate.domain.plan.service;
 
 import java.util.*;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.yollo.TravelMate.ai.llm.base.LlmClient;
+import com.yollo.TravelMate.ai.llm.observation.ObservationContext;
 import com.yollo.TravelMate.domain.place.data.result.PlaceResult;
-import com.yollo.TravelMate.domain.place.formatter.CandidateFormatter;
 import com.yollo.TravelMate.domain.place.service.PlaceSemanticSearchService;
 import com.yollo.TravelMate.domain.plan.data.internal.GeneratedPlan;
 import com.yollo.TravelMate.domain.plan.data.request.*;
 import com.yollo.TravelMate.domain.plan.data.response.PlanningResponse;
-import com.yollo.TravelMate.domain.plan.prompts.PlanPrompts;
 import com.yollo.TravelMate.domain.plan.repository.*;
-import com.yollo.TravelMate.domain.plan.validator.PlanValidator;
+import com.yollo.TravelMate.domain.plan.validator.DraftPlanValidator;
+import com.yollo.TravelMate.domain.plan.validator.PlanAreaValidator;
+import com.yollo.TravelMate.domain.plan.validator.PlanEvidenceCitationValidator;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
 import lombok.RequiredArgsConstructor;
@@ -28,6 +27,9 @@ import org.springframework.web.server.ResponseStatusException;
 @RequiredArgsConstructor
 @lombok.extern.slf4j.Slf4j
 public class ContextPlanningService {
+    private enum JobObservationOperation {
+        IDEMPOTENCY_READ, INSERT_ACKNOWLEDGED, QUEUE_REJECTED, OWNER_SCOPED_READ, UPDATE_ACKNOWLEDGED
+    }
     private final PlanningJobRepository jobs;
     private final ContextPlanRepository plans;
     private final PlaceSemanticSearchService searchService;
@@ -49,15 +51,27 @@ public class ContextPlanningService {
         validateRequest(request);
         String requestJson = encode(request);
         var previous = jobs.findExisting(userUid, PlanningJobRepository.Operation.GENERATE, key, requestJson);
-        if (previous.isPresent()) return previous.get();
+        if (previous.isPresent()) {
+            recordJob(previous.get().jobId(), previous.get().status(), previous.get().planId(), JobObservationOperation.IDEMPOTENCY_READ);
+            return previous.get();
+        }
         UUID jobId = UUID.randomUUID();
         if (!jobs.insert(jobId, userUid, PlanningJobRepository.Operation.GENERATE, key, requestJson)) {
-            return jobs.findExisting(userUid, PlanningJobRepository.Operation.GENERATE, key, requestJson).orElseThrow();
+            var existing = jobs.findExisting(userUid, PlanningJobRepository.Operation.GENERATE, key, requestJson).orElseThrow();
+            recordJob(existing.jobId(), existing.status(), existing.planId(), JobObservationOperation.IDEMPOTENCY_READ);
+            return existing;
         }
+        recordJob(jobId, PlanningResponse.JobStatus.QUEUED, null, JobObservationOperation.INSERT_ACKNOWLEDGED);
+        var generationContext = ObservationContext.child(ObservationContext.Phase.PLAN_GENERATION, jobId.toString(), null, null);
         try {
-            executor.submit(() -> runGeneration(jobId, userUid, request, requestJson));
+            executor.submit(() -> {
+                try (var scope = ObservationContext.open(generationContext)) {
+                    runGeneration(jobId, userUid, request, requestJson);
+                }
+            });
         } catch (java.util.concurrent.RejectedExecutionException exception) {
             jobs.update(jobId, PlanningResponse.JobStatus.FAILED, null, "생성 요청이 많습니다. 잠시 후 새 요청으로 시도해 주세요.");
+            recordJob(jobId, PlanningResponse.JobStatus.FAILED, null, JobObservationOperation.QUEUE_REJECTED);
         }
         return jobs.get(jobId, userUid);
     }
@@ -71,8 +85,8 @@ public class ContextPlanningService {
             if (existing.get().planId() == null) throw new ResponseStatusException(HttpStatus.CONFLICT, "이미 처리 중이거나 실패한 요청입니다. 조건을 확인해 주세요.");
             return plans.get(existing.get().planId(), userUid);
         }
-        var candidates = validatedRequiredPlaces(request);
         validateHoursPolicy(request);
+        var candidates = validatedRequiredPlaces(request);
         UUID jobId = UUID.randomUUID();
         if (!jobs.insert(jobId, userUid, PlanningJobRepository.Operation.MANUAL, key, requestJson)) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "이미 처리 중인 요청입니다.");
@@ -82,16 +96,23 @@ public class ContextPlanningService {
                     IntStream.range(0, request.requiredStops().size()).mapToObj(index ->
                             new GeneratedPlan.GeneratedPin(request.requiredStops().get(index).placeId(), index + 1, "직접 선택", "필수 방문 장소")
                     ).toList());
-            long planId = plans.save(userUid, request, generated, candidates, requestJson);
+            var validated = DraftPlanValidator.validate(generated, candidates, request);
+            long planId = plans.save(userUid, request, validated, candidates, requestJson);
             jobs.update(jobId, PlanningResponse.JobStatus.SUCCEEDED, planId, null);
             return plans.get(planId, userUid);
         } catch (RuntimeException exception) {
-            jobs.update(jobId, PlanningResponse.JobStatus.FAILED, null, "초안 저장에 실패했습니다.");
+            String message = exception instanceof ResponseStatusException status
+                    ? status.getReason() : "초안 저장에 실패했습니다.";
+            jobs.update(jobId, PlanningResponse.JobStatus.FAILED, null, message);
             throw exception;
         }
     }
 
-    public PlanningResponse.Job job(UUID jobId, String userUid) { return jobs.get(jobId, userUid); }
+    public PlanningResponse.Job job(UUID jobId, String userUid) {
+        var job = jobs.get(jobId, userUid);
+        recordJob(jobId, job.status(), job.planId(), JobObservationOperation.OWNER_SCOPED_READ);
+        return job;
+    }
     public PlanningResponse.Draft plan(long planId, String userUid) { return plans.get(planId, userUid); }
 
     public List<com.yollo.TravelMate.domain.place.data.result.PlaceSemanticSearchResult> search(
@@ -145,15 +166,23 @@ public class ContextPlanningService {
         var places = plans.requiredPlaces(request.requiredStops().stream().map(GeneratePlanRequest.RequiredStop::placeId).toList());
         if (places.size() != request.requiredStops().size()) throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "존재하지 않는 필수 장소가 있습니다.");
         var area = request.context().area();
-        if (places.stream().anyMatch(place -> distanceMeters(area.center(), place) > area.radiusMeters())) {
+        if (places.stream().anyMatch(place -> !PlanAreaValidator.contains(area, place))) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "필수 장소가 선택한 여행 범위를 벗어납니다.");
         }
         return places;
     }
 
     private void runGeneration(UUID jobId, String userUid, GeneratePlanRequest request, String requestJson) {
+        try (var scope = ObservationContext.open(ObservationContext.child(
+                ObservationContext.Phase.PLAN_GENERATION, jobId.toString(), null, null))) {
+            generateDraft(jobId, userUid, request, requestJson);
+        }
+    }
+
+    private void generateDraft(UUID jobId, String userUid, GeneratePlanRequest request, String requestJson) {
         try {
             jobs.update(jobId, PlanningResponse.JobStatus.RUNNING, null, null);
+            recordJob(jobId, PlanningResponse.JobStatus.RUNNING, null, JobObservationOperation.UPDATE_ACKNOWLEDGED);
             validateHoursPolicy(request);
             var required = validatedRequiredPlaces(request);
             log.info("planning job={} stage=SEARCHING radiusMeters={}", jobId, request.context().area().radiusMeters());
@@ -161,27 +190,26 @@ public class ContextPlanningService {
                     + Objects.toString(request.context().additionalRequest(), "");
             if (query.isBlank()) query = "여행 관광 산책";
             var candidatesById = new LinkedHashMap<Long, PlaceResult>();
-            searchService.search(query, null, null, null, 10 - required.size(), request.context().area())
-                    .forEach(result -> candidatesById.put(result.place().id(), result.place()));
+            var searchResults = searchService.search(
+                    query,
+                    null,
+                    null,
+                    null,
+                    10 - required.size(),
+                    request.context().area()
+            );
+            searchResults.forEach(result -> candidatesById.put(result.place().id(), result.place()));
             required.forEach(place -> candidatesById.put(place.id(), place));
             var candidates = List.copyOf(candidatesById.values());
             if (candidates.isEmpty()) throw new IllegalStateException("선택한 여행 범위에서 장소를 찾지 못했습니다.");
-            String prompt = promptFactory.create(request, candidates);
+            var preparedPrompt = promptFactory.prepare(request, candidates, searchResults);
+            String prompt = preparedPrompt.userPrompt();
             log.info("planning job={} stage=GENERATING candidateIds={} contextIncluded=true promptCharacters={}",
                     jobId, candidatesById.keySet(), prompt.length());
-            String output = llmClient.generate(PlanPrompts.PLANNER_SYSTEM, prompt);
+            String output = llmClient.generate(promptFactory.systemPrompt(), prompt);
             log.info("planning job={} stage=VALIDATING_RESULT responseCharacters={}", jobId, output == null ? 0 : output.length());
-            var generated = planValidator.validate(output, candidatesById.keySet(), request);
-            var selectedIds = generated.pins().stream().map(GeneratedPlan.GeneratedPin::placeId).collect(Collectors.toSet());
-            if (selectedIds.size() != generated.pins().size()) throw new IllegalStateException("생성 결과에 중복 장소가 있어 저장하지 않았습니다.");
-            if (!selectedIds.containsAll(required.stream().map(PlaceResult::id).toList())) throw new IllegalStateException("생성 결과에서 필수 장소가 누락되어 저장하지 않았습니다.");
-            for (var requirement : request.context().categoryRequirements()) {
-                long cafeCount = selectedIds.stream().map(candidatesById::get)
-                        .filter(place -> "카페".equals(place.category()) || "카페".equals(place.sourceCategory())).count();
-                if (requirement.category() == PlanContext.Category.CAFE && cafeCount < requirement.minCount()) {
-                    throw new IllegalStateException("선택한 범위에서 필수 카페 조건을 충족하지 못했습니다.");
-                }
-            }
+            var generated = DraftPlanValidator.validate(planValidator.parse(output), candidates, request);
+            PlanEvidenceCitationValidator.validate(generated, preparedPrompt);
             var normalized = new GeneratedPlan(generated.planTitle(), generated.planDescription(),
                     IntStream.range(0, generated.pins().size()).mapToObj(index -> {
                         var pin = generated.pins().get(index);
@@ -189,6 +217,7 @@ public class ContextPlanningService {
                     }).toList());
             long planId = plans.save(userUid, request, normalized, candidates, requestJson);
             jobs.update(jobId, PlanningResponse.JobStatus.SUCCEEDED, planId, null);
+            recordJob(jobId, PlanningResponse.JobStatus.SUCCEEDED, planId, JobObservationOperation.UPDATE_ACKNOWLEDGED);
             log.info("planning job={} stage=SUCCEEDED planId={} pinCount={}", jobId, planId, normalized.pins().size());
         } catch (Exception exception) {
             log.warn("planning job={} stage=FAILED exception={}", jobId, exception.toString());
@@ -197,6 +226,21 @@ public class ContextPlanningService {
                     : exception instanceof com.yollo.TravelMate.exceptions.cumtom.ErrorCodeException known ? known.getErrorCode().getMessage()
                     : "일정 생성 처리에 실패했습니다. 잠시 후 새 요청으로 시도해 주세요.";
             jobs.update(jobId, PlanningResponse.JobStatus.FAILED, null, message);
+            recordJob(jobId, PlanningResponse.JobStatus.FAILED, null, JobObservationOperation.UPDATE_ACKNOWLEDGED);
+        }
+    }
+
+    private void recordJob(
+            UUID jobId,
+            PlanningResponse.JobStatus status,
+            Long planId,
+            JobObservationOperation operation
+    ) {
+        try (var scope = ObservationContext.open(ObservationContext.child(
+                ObservationContext.Phase.PLAN_GENERATION, jobId.toString(), null, null))) {
+            var snapshot = objectMapper.createObjectNode().put("jobId", jobId.toString())
+                    .put("status", status.name()).put("planId", planId).put("operation", operation.name());
+            ObservationContext.record(ObservationContext.Event.JOB_STATUS, snapshot);
         }
     }
 
@@ -205,17 +249,4 @@ public class ContextPlanningService {
         catch (JsonProcessingException exception) { throw new IllegalStateException("여행 조건 직렬화 실패", exception); }
     }
 
-    private static double distanceMeters(PlanContext.Coordinate center, PlaceResult place) {
-        if (place.latitude() == null || place.longitude() == null
-                || !Double.isFinite(place.latitude()) || !Double.isFinite(place.longitude())
-                || Math.abs(place.latitude()) > 90 || Math.abs(place.longitude()) > 180) {
-            return Double.POSITIVE_INFINITY;
-        }
-        double latitudeDelta = Math.toRadians(place.latitude() - center.lat());
-        double longitudeDelta = Math.toRadians(place.longitude() - center.lon());
-        double haversine = Math.pow(Math.sin(latitudeDelta / 2), 2)
-                + Math.cos(Math.toRadians(center.lat())) * Math.cos(Math.toRadians(place.latitude()))
-                * Math.pow(Math.sin(longitudeDelta / 2), 2);
-        return 6371000 * 2 * Math.asin(Math.sqrt(Math.min(1, haversine)));
-    }
 }

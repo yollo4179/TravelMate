@@ -1,0 +1,633 @@
+{
+  "reviewer": "버전을 아는 에이전트의 개발 검수. 독립 사람·블라인드 검수가 아님",
+  "rows": [
+    {
+      "id": "CONTROL-N001",
+      "source_id": "f5066444-420f-542c-88eb-0b36811e8050",
+      "start": 0,
+      "end": 35,
+      "content_kind": "landscape",
+      "model_place_refs": [
+        {
+          "place_id": 101,
+          "role": "subject"
+        },
+        {
+          "place_id": 202,
+          "role": "mentioned"
+        }
+      ],
+      "model_relation_count": 1,
+      "indexable": false,
+      "approved": false,
+      "exclusion_reason": "invalid_attribution",
+      "validation_error": "관계 근거는 위치가 일치하는 정확한 원문이어야 합니다",
+      "review_note": "주체·언급·보조 관계·인용은 맞지만 start=16, 실제=15라 전체 제외"
+    },
+    {
+      "id": "CONTROL-N002",
+      "source_id": "772666e5-6384-59b2-9cd8-95b4e359bb97",
+      "start": 0,
+      "end": 25,
+      "content_kind": "movement",
+      "model_place_refs": [
+        {
+          "place_id": 101,
+          "role": "subject"
+        },
+        {
+          "place_id": 202,
+          "role": "mentioned"
+        }
+      ],
+      "model_relation_count": 1,
+      "indexable": true,
+      "approved": true,
+      "exclusion_reason": null,
+      "validation_error": null,
+      "review_note": "계단을 이용한 핵심 이동 관계와 조건 인용을 보존"
+    },
+    {
+      "id": "CONTROL-N003",
+      "source_id": "8afb5a1f-c08d-56be-ba35-6f6530e9356e",
+      "start": 0,
+      "end": 24,
+      "content_kind": "facility",
+      "model_place_refs": [
+        {
+          "place_id": 202,
+          "role": "subject"
+        }
+      ],
+      "model_relation_count": 0,
+      "indexable": true,
+      "approved": true,
+      "exclusion_reason": null,
+      "validation_error": null,
+      "review_note": "B의 시설 주체와 무료·주말 혼잡 조건을 보존"
+    },
+    {
+      "id": "CONTROL-N004",
+      "source_id": "b2a2445b-fced-5b73-bed6-1f8ce2ead0ef",
+      "start": 0,
+      "end": 36,
+      "content_kind": "movement",
+      "model_place_refs": [
+        {
+          "place_id": 101,
+          "role": "subject"
+        },
+        {
+          "place_id": 202,
+          "role": "mentioned"
+        }
+      ],
+      "model_relation_count": 1,
+      "indexable": true,
+      "approved": true,
+      "exclusion_reason": null,
+      "validation_error": null,
+      "review_note": "이동 시도와 공사·차단·되돌아옴을 보존. 이동 가능으로 확정하면 안 됨"
+    },
+    {
+      "id": "P09-N001",
+      "source_id": "68ef479e-6b88-5636-bfdf-c096fc287b89",
+      "start": 0,
+      "end": 66,
+      "content_kind": "movement",
+      "model_place_refs": [
+        {
+          "place_id": 394,
+          "role": "subject"
+        }
+      ],
+      "model_relation_count": 0,
+      "indexable": false,
+      "approved": false,
+      "exclusion_reason": "unresolved_movement",
+      "validation_error": null,
+      "review_note": "도착지 언급은 있으나 관계가 비어 있어 이동 검색에서 보류"
+    },
+    {
+      "id": "P09-N002",
+      "source_id": "68ef479e-6b88-5636-bfdf-c096fc287b89",
+      "start": 66,
+      "end": 109,
+      "content_kind": "other",
+      "model_place_refs": [
+        {
+          "place_id": 394,
+          "role": "mentioned"
+        }
+      ],
+      "model_relation_count": 0,
+      "indexable": false,
+      "approved": false,
+      "exclusion_reason": "no_subject",
+      "validation_error": null,
+      "review_note": "역 출구 안내를 mentioned로 보존"
+    },
+    {
+      "id": "P09-N003",
+      "source_id": "68ef479e-6b88-5636-bfdf-c096fc287b89",
+      "start": 109,
+      "end": 141,
+      "content_kind": "facility",
+      "model_place_refs": [
+        {
+          "place_id": 394,
+          "role": "subject"
+        }
+      ],
+      "model_relation_count": 0,
+      "indexable": true,
+      "approved": true,
+      "exclusion_reason": null,
+      "validation_error": null,
+      "review_note": "대상 주차장의 무료 주차 근거"
+    },
+    {
+      "id": "P09-N004",
+      "source_id": "68ef479e-6b88-5636-bfdf-c096fc287b89",
+      "start": 141,
+      "end": 166,
+      "content_kind": "facility",
+      "model_place_refs": [
+        {
+          "place_id": 394,
+          "role": "subject"
+        }
+      ],
+      "model_relation_count": 0,
+      "indexable": true,
+      "approved": true,
+      "exclusion_reason": null,
+      "validation_error": null,
+      "review_note": "주차장에 도착하면 보이는 정자 설명"
+    },
+    {
+      "id": "P09-N005",
+      "source_id": "68ef479e-6b88-5636-bfdf-c096fc287b89",
+      "start": 166,
+      "end": 184,
+      "content_kind": "landscape",
+      "model_place_refs": [
+        {
+          "place_id": 394,
+          "role": "subject"
+        }
+      ],
+      "model_relation_count": 0,
+      "indexable": true,
+      "approved": true,
+      "exclusion_reason": null,
+      "validation_error": null,
+      "review_note": "주차장 주변 흙길 관찰"
+    },
+    {
+      "id": "P09-N006",
+      "source_id": "68ef479e-6b88-5636-bfdf-c096fc287b89",
+      "start": 184,
+      "end": 202,
+      "content_kind": "movement",
+      "model_place_refs": [
+        {
+          "place_id": 394,
+          "role": "subject"
+        }
+      ],
+      "model_relation_count": 0,
+      "indexable": false,
+      "approved": false,
+      "exclusion_reason": "unresolved_movement",
+      "validation_error": null,
+      "review_note": "도착지가 없는 이동 표현을 보류"
+    },
+    {
+      "id": "P09-N007",
+      "source_id": "68ef479e-6b88-5636-bfdf-c096fc287b89",
+      "start": 202,
+      "end": 226,
+      "content_kind": "other",
+      "model_place_refs": [
+        {
+          "place_id": 394,
+          "role": "subject"
+        }
+      ],
+      "model_relation_count": 0,
+      "indexable": true,
+      "approved": false,
+      "exclusion_reason": null,
+      "validation_error": null,
+      "review_note": "관찰 위치 범위가 불명확해 미승인"
+    },
+    {
+      "id": "P09-N008",
+      "source_id": "68ef479e-6b88-5636-bfdf-c096fc287b89",
+      "start": 226,
+      "end": 241,
+      "content_kind": "other",
+      "model_place_refs": [
+        {
+          "place_id": 394,
+          "role": "subject"
+        }
+      ],
+      "model_relation_count": 0,
+      "indexable": true,
+      "approved": false,
+      "exclusion_reason": null,
+      "validation_error": null,
+      "review_note": "개인 감정의 장소 범위가 불명확해 미승인"
+    },
+    {
+      "id": "P09-N009",
+      "source_id": "68ef479e-6b88-5636-bfdf-c096fc287b89",
+      "start": 241,
+      "end": 283,
+      "content_kind": "movement",
+      "model_place_refs": [
+        {
+          "place_id": 394,
+          "role": "subject"
+        }
+      ],
+      "model_relation_count": 1,
+      "indexable": false,
+      "approved": false,
+      "exclusion_reason": "invalid_attribution",
+      "validation_error": "관계 근거는 위치가 일치하는 정확한 원문이어야 합니다",
+      "review_note": "위치 불일치로 제외. 청담도로공원 자기 이동으로 표현한 방향·범위도 부적절"
+    },
+    {
+      "id": "P09-N010",
+      "source_id": "68ef479e-6b88-5636-bfdf-c096fc287b89",
+      "start": 283,
+      "end": 343,
+      "content_kind": "facility",
+      "model_place_refs": [
+        {
+          "place_id": 394,
+          "role": "subject"
+        }
+      ],
+      "model_relation_count": 0,
+      "indexable": false,
+      "approved": false,
+      "exclusion_reason": "invalid_attribution",
+      "validation_error": "엔티티 역할과 장소 귀속 불일치",
+      "review_note": "다른 정원 설명에 대상 ID를 붙였고 엔티티 역할도 불일치"
+    },
+    {
+      "id": "P09-N011",
+      "source_id": "68ef479e-6b88-5636-bfdf-c096fc287b89",
+      "start": 343,
+      "end": 383,
+      "content_kind": "other",
+      "model_place_refs": [
+        {
+          "place_id": 394,
+          "role": "subject"
+        }
+      ],
+      "model_relation_count": 0,
+      "indexable": false,
+      "approved": false,
+      "exclusion_reason": "invalid_attribution",
+      "validation_error": "엔티티 역할과 장소 귀속 불일치",
+      "review_note": "다른 정원의 배경에 대상 ID를 붙였고 엔티티 역할도 불일치"
+    },
+    {
+      "id": "P09-N012",
+      "source_id": "68ef479e-6b88-5636-bfdf-c096fc287b89",
+      "start": 383,
+      "end": 428,
+      "content_kind": "landscape",
+      "model_place_refs": [
+        {
+          "place_id": 394,
+          "role": "mentioned"
+        }
+      ],
+      "model_relation_count": 0,
+      "indexable": false,
+      "approved": false,
+      "exclusion_reason": "no_subject",
+      "validation_error": null,
+      "review_note": "다른 공원으로 올라가는 경관을 대상의 mentioned로 보류"
+    },
+    {
+      "id": "P09-N013",
+      "source_id": "68ef479e-6b88-5636-bfdf-c096fc287b89",
+      "start": 428,
+      "end": 500,
+      "content_kind": "facility",
+      "model_place_refs": [
+        {
+          "place_id": 394,
+          "role": "subject"
+        }
+      ],
+      "model_relation_count": 0,
+      "indexable": true,
+      "approved": false,
+      "exclusion_reason": null,
+      "validation_error": null,
+      "review_note": "다른 공원으로 오르는 벤치의 소유 범위가 불명확해 미승인"
+    },
+    {
+      "id": "P09-N014",
+      "source_id": "68ef479e-6b88-5636-bfdf-c096fc287b89",
+      "start": 500,
+      "end": 569,
+      "content_kind": "facility",
+      "model_place_refs": [
+        {
+          "place_id": 394,
+          "role": "subject"
+        }
+      ],
+      "model_relation_count": 0,
+      "indexable": true,
+      "approved": false,
+      "exclusion_reason": null,
+      "validation_error": null,
+      "review_note": "올라온 곳의 테이블을 대상 시설로 연결해 미승인"
+    },
+    {
+      "id": "P09-N015",
+      "source_id": "68ef479e-6b88-5636-bfdf-c096fc287b89",
+      "start": 569,
+      "end": 607,
+      "content_kind": "landscape",
+      "model_place_refs": [
+        {
+          "place_id": 394,
+          "role": "subject"
+        },
+        {
+          "place_id": 394,
+          "role": "view_target"
+        }
+      ],
+      "model_relation_count": 0,
+      "indexable": false,
+      "approved": false,
+      "exclusion_reason": "invalid_attribution",
+      "validation_error": "중복 장소 귀속",
+      "review_note": "다른 공원의 한강 경관을 대상 subject로 생성. 같은 ID의 중복 역할 검증이 제외했을 뿐 의미 판정 성공 아님"
+    },
+    {
+      "id": "P09-N016",
+      "source_id": "68ef479e-6b88-5636-bfdf-c096fc287b89",
+      "start": 607,
+      "end": 626,
+      "content_kind": "other",
+      "model_place_refs": [
+        {
+          "place_id": 394,
+          "role": "subject"
+        }
+      ],
+      "model_relation_count": 0,
+      "indexable": true,
+      "approved": false,
+      "exclusion_reason": null,
+      "validation_error": null,
+      "review_note": "다른 공원 구간의 야경 평가를 대상 subject로 연결해 미승인"
+    },
+    {
+      "id": "P09-N017",
+      "source_id": "68ef479e-6b88-5636-bfdf-c096fc287b89",
+      "start": 626,
+      "end": 659,
+      "content_kind": "facility",
+      "model_place_refs": [
+        {
+          "place_id": 394,
+          "role": "subject"
+        }
+      ],
+      "model_relation_count": 0,
+      "indexable": false,
+      "approved": false,
+      "exclusion_reason": "invalid_attribution",
+      "validation_error": "엔티티 역할과 장소 귀속 불일치",
+      "review_note": "다른 공원의 삼성정을 대상에 연결하고 엔티티 역할도 불일치"
+    },
+    {
+      "id": "P09-N018",
+      "source_id": "68ef479e-6b88-5636-bfdf-c096fc287b89",
+      "start": 659,
+      "end": 723,
+      "content_kind": "facility",
+      "model_place_refs": [
+        {
+          "place_id": 394,
+          "role": "subject"
+        }
+      ],
+      "model_relation_count": 0,
+      "indexable": true,
+      "approved": false,
+      "exclusion_reason": null,
+      "validation_error": null,
+      "review_note": "다른 공원 구간의 관리·조경 평가를 대상에 연결해 미승인"
+    },
+    {
+      "id": "P09-N019",
+      "source_id": "68ef479e-6b88-5636-bfdf-c096fc287b89",
+      "start": 723,
+      "end": 748,
+      "content_kind": "landscape",
+      "model_place_refs": [
+        {
+          "place_id": 394,
+          "role": "subject"
+        },
+        {
+          "place_id": 394,
+          "role": "view_target"
+        }
+      ],
+      "model_relation_count": 0,
+      "indexable": false,
+      "approved": false,
+      "exclusion_reason": "invalid_attribution",
+      "validation_error": "중복 장소 귀속",
+      "review_note": "다른 공원의 조망과 같은 ID의 중복 역할로 제외"
+    },
+    {
+      "id": "P09-N020",
+      "source_id": "68ef479e-6b88-5636-bfdf-c096fc287b89",
+      "start": 748,
+      "end": 772,
+      "content_kind": "other",
+      "model_place_refs": [
+        {
+          "place_id": 394,
+          "role": "subject"
+        }
+      ],
+      "model_relation_count": 0,
+      "indexable": true,
+      "approved": false,
+      "exclusion_reason": null,
+      "validation_error": null,
+      "review_note": "먼지 관찰의 위치와 의미가 미완결이라 미승인"
+    },
+    {
+      "id": "P09-N021",
+      "source_id": "68ef479e-6b88-5636-bfdf-c096fc287b89",
+      "start": 772,
+      "end": 813,
+      "content_kind": "other",
+      "model_place_refs": [
+        {
+          "place_id": 394,
+          "role": "subject"
+        }
+      ],
+      "model_relation_count": 0,
+      "indexable": false,
+      "approved": false,
+      "exclusion_reason": "invalid_attribution",
+      "validation_error": "엔티티 역할과 장소 귀속 불일치",
+      "review_note": "다른 공원 구간의 방문 제안과 엔티티 역할 불일치"
+    },
+    {
+      "id": "P09-N022",
+      "source_id": "68ef479e-6b88-5636-bfdf-c096fc287b89",
+      "start": 813,
+      "end": 847,
+      "content_kind": "facility",
+      "model_place_refs": [
+        {
+          "place_id": 394,
+          "role": "subject"
+        }
+      ],
+      "model_relation_count": 0,
+      "indexable": true,
+      "approved": true,
+      "exclusion_reason": null,
+      "validation_error": null,
+      "review_note": "대상 주차장의 주소"
+    },
+    {
+      "id": "P09-N023",
+      "source_id": "79ae5e92-88c2-5ff5-89f2-722b24705cec",
+      "start": 0,
+      "end": 59,
+      "content_kind": "other",
+      "model_place_refs": [
+        {
+          "place_id": 394,
+          "role": "mentioned"
+        }
+      ],
+      "model_relation_count": 0,
+      "indexable": false,
+      "approved": false,
+      "exclusion_reason": "no_subject",
+      "validation_error": null,
+      "review_note": "이동 배경의 단순 언급 보존"
+    },
+    {
+      "id": "P09-N024",
+      "source_id": "79ae5e92-88c2-5ff5-89f2-722b24705cec",
+      "start": 59,
+      "end": 76,
+      "content_kind": "other",
+      "model_place_refs": [
+        {
+          "place_id": 394,
+          "role": "subject"
+        }
+      ],
+      "model_relation_count": 0,
+      "indexable": true,
+      "approved": true,
+      "exclusion_reason": null,
+      "validation_error": null,
+      "review_note": "대상 장소를 이용할 수 있다는 설명"
+    },
+    {
+      "id": "P09-N025",
+      "source_id": "79ae5e92-88c2-5ff5-89f2-722b24705cec",
+      "start": 76,
+      "end": 103,
+      "content_kind": "facility",
+      "model_place_refs": [
+        {
+          "place_id": 394,
+          "role": "subject"
+        }
+      ],
+      "model_relation_count": 0,
+      "indexable": true,
+      "approved": true,
+      "exclusion_reason": null,
+      "validation_error": null,
+      "review_note": "대상 주차 규모와 화장실"
+    },
+    {
+      "id": "P09-N026",
+      "source_id": "79ae5e92-88c2-5ff5-89f2-722b24705cec",
+      "start": 103,
+      "end": 124,
+      "content_kind": "facility",
+      "model_place_refs": [
+        {
+          "place_id": 394,
+          "role": "subject"
+        }
+      ],
+      "model_relation_count": 0,
+      "indexable": true,
+      "approved": true,
+      "exclusion_reason": null,
+      "validation_error": null,
+      "review_note": "낡음과 휴지 유무를 구분한 대상 화장실 후기"
+    },
+    {
+      "id": "P09-N027",
+      "source_id": "79ae5e92-88c2-5ff5-89f2-722b24705cec",
+      "start": 124,
+      "end": 142,
+      "content_kind": "other",
+      "model_place_refs": [
+        {
+          "place_id": 394,
+          "role": "subject"
+        }
+      ],
+      "model_relation_count": 0,
+      "indexable": true,
+      "approved": true,
+      "exclusion_reason": null,
+      "validation_error": null,
+      "review_note": "낡은 화장실에 대한 주관적 표현으로 보존"
+    },
+    {
+      "id": "P09-N028",
+      "source_id": "79ae5e92-88c2-5ff5-89f2-722b24705cec",
+      "start": 142,
+      "end": 219,
+      "content_kind": "movement",
+      "model_place_refs": [
+        {
+          "place_id": 394,
+          "role": "subject"
+        }
+      ],
+      "model_relation_count": 0,
+      "indexable": false,
+      "approved": false,
+      "exclusion_reason": "unresolved_movement",
+      "validation_error": null,
+      "review_note": "진입·출차 정보를 설명하지만 관계를 생성하지 않아 이동 검색에서 보류"
+    }
+  ]
+}

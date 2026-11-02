@@ -1,0 +1,23 @@
+{
+  "mode": "OFFLINE_AUDIT_OF_ONE_LIVE_FAILED_TURN",
+  "new_model_or_search_calls_in_audit": 0,
+  "application_source_still_exact_c3cdba7b": true,
+  "collector_matches_deployment_sha256": true,
+  "deployment_source_files_match": 253,
+  "raw_events_byte_identical": true,
+  "prior_live_observations_byte_unchanged": true,
+  "local_uncommitted_collectors_unchanged": 4,
+  "credential_scan": "PASS",
+  "preparation_tests": {
+    "tests": 15,
+    "failures": 0,
+    "errors": 0,
+    "mode": "OFFLINE_MOCK_ONLY",
+    "output_source": "Observed terminal execution; no JUnit XML generated"
+  },
+  "scope_completed": false,
+  "not_run": [
+    "PLR-TM-palaces-03"
+  ],
+  "extra_execution_after_error": false
+}

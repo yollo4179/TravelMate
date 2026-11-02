@@ -1,0 +1,19 @@
+{
+  "base_commit": "c5d0c7bdbaf3d216d06a862b295bbfdfc8e4d490",
+  "unchanged_method_ast": {
+    "_retrieve_candidates": true,
+    "_retrieve_evidence": true,
+    "_index_place_job": true
+  },
+  "unchanged_files": {
+    "embedding-server/app/contextual/pipeline.py": true,
+    "embedding-server/app/contextual/contracts.py": true,
+    "embedding-server/app/contextual/retrieval.py": true,
+    "embedding-server/app/contextual/ranking.py": true,
+    "embedding-server/app/contextual/relation_vectors.py": true,
+    "embedding-server/app/contextual/schema.sql": true
+  },
+  "candidate_limit": 30,
+  "distance_filter_unchanged": true,
+  "runtime_lf_sha256": "1aade05c17c79467dce917ac9175b24ec3f6c4c920d07d5d4f4b25c6f1becd56"
+}

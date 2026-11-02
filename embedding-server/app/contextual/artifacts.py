@@ -16,12 +16,16 @@ import httpx
 from app.enrichment.agent import AgentSettings
 from app.enrichment.artifacts import write_json
 from app.enrichment.contracts import CollectionStatus, ExistingPlace, fingerprint
-from .agent import PROMPT_VERSION, generate, parse_chunks, request_payload
-from .contracts import SearchChunk, SourceDocument, archive_directory
+from .agent import PROMPT_VERSION, generate, parse_chunks, request_payload, observation_error
+from .contracts import SearchChunk, SourceDocument, archive_directory, SPLITTER_VERSION, SplitterVersion
 from .pipeline import normalize_source
 from .pipeline import tourapi_chunks
+from .input_format import InputVersion
 from .profiles import resolve_execution_profile
-from .validation import ExclusionReason, current_validation_version
+from .validation import ExclusionReason, current_validation_version, ValidationVersion
+from .contracts import ContentKind
+from .evidence_grounding import GroundingVersion, ground_relation_evidence
+from .validation import resolve_validation_version
 
 
 @dataclass(frozen=True)
@@ -81,8 +85,13 @@ async def collect_bundle(
     prompt_version: str = PROMPT_VERSION,
     prepared_request: dict[str, Any] | None = None,
     request_profile_id: str | None = None,
+    input_version: str = InputVersion.OFFSETS,
+    splitter_version: str = SPLITTER_VERSION,
 ) -> Path:
-    canonical = request_payload(bundle.places, bundle.sources, settings, prompt_version=prompt_version)
+    input_version = InputVersion(input_version)
+    splitter_version = SplitterVersion(splitter_version)
+    canonical = request_payload(bundle.places, bundle.sources, settings,
+                                prompt_version=prompt_version, input_version=input_version, splitter_version=splitter_version)
     payload = deepcopy(prepared_request) if prepared_request is not None else canonical
     validate_request(payload, canonical, prompt_version, request_profile_id)
     validation_version = current_validation_version(prompt_version)
@@ -105,11 +114,16 @@ async def collect_bundle(
               "validation_version": validation_version}
     if request_profile_id:
         record["request_profile_id"] = request_profile_id
+    if input_version != InputVersion.OFFSETS:
+        record["input_version"] = input_version.value
+    if splitter_version != SplitterVersion.LEGACY:
+        record["splitter_version"] = splitter_version.value
     if http is not None:
         try:
             raw = await generate(http, settings, payload)
             write_json(run / "raw_response.json", raw)
-            record.update(response_fields(raw, bundle, payload, prompt_version, request_profile_id, validation_version))
+            record.update(response_fields(raw, bundle, payload, prompt_version, request_profile_id, validation_version,
+                                          splitter_version=splitter_version))
             record.update(status=CollectionStatus.COLLECTED.value, usage=raw.get("usage"))
         except Exception as exception:
             record.update(status=CollectionStatus.FAILED.value, error_type=type(exception).__name__)
@@ -177,7 +191,10 @@ def load_record(
     raw = json.loads(path.with_name("raw_response.json").read_text(encoding="utf-8"))
     payload = json.loads(path.with_name("request.json").read_text(encoding="utf-8"))
     selector = {"preset": payload["preset"]} if "preset" in payload else {"model": payload["model"]}
-    expected = request_payload(bundle.places, bundle.sources, AgentSettings(**selector), prompt_version=prompt_version)
+    expected = request_payload(bundle.places, bundle.sources, AgentSettings(**selector),
+                               prompt_version=prompt_version,
+                               input_version=record.get("input_version", InputVersion.OFFSETS),
+                               splitter_version=record.get("splitter_version", SPLITTER_VERSION))
     validate_request(payload, expected, prompt_version, recorded_profile or baseline_profile)
     # Legacy request hashes remain unchanged; only new profiled records bind the profile ID.
     validation_version = record.get("validation_version")
@@ -193,25 +210,56 @@ def load_record(
         response_schema=payload["response_format"]["json_schema"]["schema"],
         request_profile_id=recorded_profile,
         validation_version=validation_version,
+        splitter_version=record.get("splitter_version", SPLITTER_VERSION),
     )
     if [chunk.to_dict() for chunk in chunks] != record["chunks"]:
         raise ValueError("Contextual record differs from preserved response")
     if validation_version is not None:
-        expected_excluded = excluded_chunks(raw, bundle, chunks)
+        expected_excluded = excluded_chunks(raw, bundle, chunks, splitter_version=record.get("splitter_version", SPLITTER_VERSION),
+                                            validation_version=validation_version)
         if expected_excluded != record.get("excluded_chunks"):
             raise ValueError("Excluded chunks differ from preserved response")
+    if validation_version == ValidationVersion.SERVER_EVIDENCE:
+        if record.get("evidence_grounding_version") != GroundingVersion.EXACT_UNIQUE.value or record.get("evidence_grounding") != grounding_audit(raw, bundle):
+            raise ValueError("서버 인용 위치 계산 기록이 보존 응답과 다릅니다")
     return bundle, chunks, record
 
 
-def excluded_chunks(raw: dict[str, Any], bundle: SourceBundle, chunks: list[SearchChunk]) -> list[dict[str, Any]]:
+def excluded_chunks(raw: dict[str, Any], bundle: SourceBundle, chunks: list[SearchChunk], *,
+                    splitter_version: str = SPLITTER_VERSION, validation_version: str | None = None) -> list[dict[str, Any]]:
     text = "".join(part["text"] for item in raw.get("output", []) if item.get("type") == "message"
                    for part in item.get("content", []) if part.get("type") == "output_text")
     retained = {(chunk.source.source_id, chunk.start, chunk.end) for chunk in chunks}
     sources = {source.source_id: source for source in bundle.sources}
-    return [{**chunk, "chunk_text": sources[chunk["source_id"]].text[chunk["start"]:chunk["end"]],
-             "exclusion_reason": ExclusionReason.NO_SUBJECT if chunk["place_refs"] else ExclusionReason.UNATTRIBUTED}
-            for chunk in json.loads(text)["chunks"]
-            if (chunk["source_id"], chunk["start"], chunk["end"]) not in retained]
+    excluded = []
+    for chunk in json.loads(text)["chunks"]:
+        if (chunk["source_id"], chunk["start"], chunk["end"]) in retained:
+            continue
+        reason = ExclusionReason.NO_SUBJECT if chunk["place_refs"] else ExclusionReason.UNATTRIBUTED
+        error = None
+        checked = chunk
+        if validation_version == ValidationVersion.SERVER_EVIDENCE:
+            grounded = ground_relation_evidence(chunk, sources[chunk["source_id"]].text)
+            checked, error = grounded.chunk, grounded.error
+        if validation_version in (ValidationVersion.OBSERVATIONS, ValidationVersion.RELATIONS, ValidationVersion.SERVER_EVIDENCE):
+            error = error or observation_error(checked, bundle.places, sources[chunk["source_id"]],
+                                      independent=validation_version in (ValidationVersion.RELATIONS, ValidationVersion.SERVER_EVIDENCE))
+            if error:
+                reason = ExclusionReason.INVALID_ATTRIBUTION
+            elif chunk["content_kind"] == ContentKind.MOVEMENT and not chunk["relations"]:
+                reason = ExclusionReason.UNRESOLVED_MOVEMENT
+        excluded.append({**chunk, "chunk_text": sources[chunk["source_id"]].text[chunk["start"]:chunk["end"]],
+             **({"splitter_version": splitter_version} if splitter_version != SplitterVersion.LEGACY else {}),
+             "exclusion_reason": reason, **({"validation_error": error} if error else {})})
+    return excluded
+
+
+def grounding_audit(raw: dict[str, Any], bundle: SourceBundle) -> list[dict[str, Any]]:
+    text = "".join(part["text"] for item in raw.get("output", []) if item.get("type") == "message"
+                   for part in item.get("content", []) if part.get("type") == "output_text")
+    sources = {source.source_id: source for source in bundle.sources}
+    return [entry for chunk in json.loads(text)["chunks"]
+            for entry in ground_relation_evidence(chunk, sources[chunk["source_id"]].text).audit]
 
 
 def response_fields(
@@ -221,6 +269,8 @@ def response_fields(
     prompt_version: str,
     request_profile_id: str | None,
     validation_version: str,
+    *,
+    splitter_version: str = SPLITTER_VERSION,
 ) -> dict[str, Any]:
     chunks = parse_chunks(
         raw,
@@ -230,12 +280,23 @@ def response_fields(
         response_schema=payload["response_format"]["json_schema"]["schema"],
         request_profile_id=request_profile_id,
         validation_version=validation_version,
+        splitter_version=splitter_version,
     )
     return {"chunks": [chunk.to_dict() for chunk in chunks], "actual_model": raw.get("model"),
-            "excluded_chunks": excluded_chunks(raw, bundle, chunks)}
+            "excluded_chunks": excluded_chunks(raw, bundle, chunks, splitter_version=splitter_version,
+                                               validation_version=validation_version),
+            **({"evidence_grounding_version": GroundingVersion.EXACT_UNIQUE.value,
+                "evidence_grounding": grounding_audit(raw, bundle)}
+               if validation_version == ValidationVersion.SERVER_EVIDENCE else {})}
 
 
-def revalidate_record(path: Path, root: Path, *, baseline_profile: str | None = None) -> Path:
+def revalidate_record(
+    path: Path,
+    root: Path,
+    *,
+    baseline_profile: str | None = None,
+    validation_version: str | None = None,
+) -> Path:
     """API 호출 없이 새 검증 결과를 별도 아카이브에 보존한다."""
     originals = {name: path.with_name(name).read_bytes()
                  for name in ("record.json", "request.json", "sources.json", "raw_response.json")}
@@ -255,7 +316,10 @@ def revalidate_record(path: Path, root: Path, *, baseline_profile: str | None = 
     payload = json.loads(originals["request.json"])
     bundle = SourceBundle.from_mapping(json.loads(originals["sources.json"]))
     selector = {key: payload[key] for key in ("model", "preset") if key in payload}
-    canonical = request_payload(bundle.places, bundle.sources, AgentSettings(**selector), prompt_version=prompt_version)
+    input_version = InputVersion(original.get("input_version", InputVersion.OFFSETS))
+    splitter_version = SplitterVersion(original.get("splitter_version", SPLITTER_VERSION))
+    canonical = request_payload(bundle.places, bundle.sources, AgentSettings(**selector),
+                                prompt_version=prompt_version, input_version=input_version, splitter_version=splitter_version)
     validate_request(payload, canonical, prompt_version, profile_id or baseline_profile)
     if request_fingerprint(payload, prompt_version, profile_id, original.get("validation_version")) != original["request_hash"]:
         raise ValueError("Contextual request or source archive changed")
@@ -263,8 +327,9 @@ def revalidate_record(path: Path, root: Path, *, baseline_profile: str | None = 
     if "actual_model" in original and original["actual_model"] != raw.get("model"):
         raise ValueError("Recorded model differs from preserved response")
     profile_id = profile_id or baseline_profile
-    validation_version = current_validation_version(prompt_version)
-    fields = response_fields(raw, bundle, payload, prompt_version, profile_id, validation_version)
+    validation_version = resolve_validation_version(validation_version or current_validation_version(prompt_version), prompt_version).value
+    fields = response_fields(raw, bundle, payload, prompt_version, profile_id, validation_version,
+                             splitter_version=splitter_version)
     request_hash = request_fingerprint(payload, prompt_version, profile_id, validation_version)
     run = root / archive_directory(bundle.places[0]) / "requests" / request_hash / str(uuid.uuid4())
     record = {"schema_version": 1, "request_hash": request_hash, "prompt_version": prompt_version,
@@ -275,6 +340,10 @@ def revalidate_record(path: Path, root: Path, *, baseline_profile: str | None = 
                                                    for name, content in originals.items()}}, **fields}
     if profile_id:
         record["request_profile_id"] = profile_id
+    if input_version != InputVersion.OFFSETS:
+        record["input_version"] = input_version.value
+    if splitter_version != SplitterVersion.LEGACY:
+        record["splitter_version"] = splitter_version.value
     run.mkdir(parents=True)
     for name, content in originals.items():
         if name != "record.json":

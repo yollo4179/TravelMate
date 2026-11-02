@@ -8,7 +8,9 @@ import uuid
 
 from app.enrichment.contracts import ExistingPlace, fingerprint
 from .artifacts import load_record
-from .contracts import PlaceRole, SearchChunk, SourceDocument, SPLITTER_VERSION
+from .contracts import SearchChunk, SourceDocument
+from .review import reviewed_chunks
+from .relation_vectors import RelationVectorInput, VectorRepresentation
 
 
 async def ensure_schema(pool: Any) -> None:
@@ -24,24 +26,25 @@ async def preserve_chunks(connection: Any, chunks: list[SearchChunk]) -> None:
         await connection.execute(
             """INSERT INTO retrieval_chunks(chunk_id,source_id,source_version,start_offset,end_offset,chunk_text,splitter_version)
             VALUES($1,$2,$3,$4,$5,$6,$7) ON CONFLICT DO NOTHING""", uuid.UUID(chunk.chunk_id),
-            uuid.UUID(chunk.source.source_id), chunk.source.source_version, chunk.start, chunk.end, chunk.chunk_text, SPLITTER_VERSION)
+            uuid.UUID(chunk.source.source_id), chunk.source.source_version, chunk.start, chunk.end, chunk.chunk_text, chunk.splitter_version)
         await connection.execute(
             """INSERT INTO retrieval_chunk_contexts(chunk_id,context_version,document) VALUES($1,$2,$3::jsonb)
             ON CONFLICT DO NOTHING""", uuid.UUID(chunk.chunk_id), chunk.context_version,
             json.dumps(chunk.to_dict(), ensure_ascii=False))
 
 
-async def apply_bundle(pool: Any, path: Path) -> str:
+async def apply_bundle(pool: Any, path: Path, *, review_path: Path | None = None) -> str:
     bundle, chunks, record = load_record(path)
+    chunks = reviewed_chunks(path, review_path)
     if not chunks:
         return "NO_INDEXABLE_CHUNKS"
-    subject_ids = {ref["place_id"] for chunk in chunks for ref in chunk.place_refs if ref["role"] == PlaceRole.SUBJECT}
-    subject_places = sorted((place for place in bundle.places if place.place_id in subject_ids), key=lambda place: place.place_id)
+    target_place_ids = {place_id for chunk in chunks for place_id in chunk.index_place_ids}
+    target_places = sorted((place for place in bundle.places if place.place_id in target_place_ids), key=lambda place: place.place_id)
     manifest = {"sources": [source.to_dict() for source in bundle.sources], "chunks": [chunk.to_dict() for chunk in chunks]}
     async with pool.acquire() as connection:
         async with connection.transaction():
             # 참고 장소의 상태가 주체 적용을 막지 않도록 실제 쓰기 대상만 ID 순서로 잠근다.
-            for place in subject_places:
+            for place in target_places:
                 row = await connection.fetchrow("SELECT * FROM place_embeddings WHERE place_id=$1 FOR UPDATE", place.place_id)
                 if not row or row["document_status"] != "READY" or row["source_version"] != row["latest_seen_version"]:
                     raise ValueError("Place is unavailable or awaiting source indexing")
@@ -54,7 +57,7 @@ async def apply_bundle(pool: Any, path: Path) -> str:
                     VALUES($1,$2,$3::jsonb) ON CONFLICT DO NOTHING""",
                     uuid.UUID(source.source_id), source.source_version, json.dumps(source.to_dict(), ensure_ascii=False))
             changed = False
-            for place in subject_places:
+            for place in target_places:
                 identifier = fingerprint({"request_hash": record["request_hash"], "place": place.to_dict(), "manifest": manifest})
                 inserted = await connection.execute(
                     """INSERT INTO retrieval_chunk_bundles(bundle_id,place_id,place_fingerprint,manifest)
@@ -93,6 +96,8 @@ async def desired_chunks(pool: Any, place: ExistingPlace) -> tuple[int, list[Sea
 async def activate_chunks(connection: Any, place_id: int, chunks: list[SearchChunk], vectors: list[list[float]]) -> None:
     if len(chunks) != len(vectors):
         raise ValueError("Embedding count differs from chunk count")
+    if any(chunk.active_role(place_id) is None for chunk in chunks):
+        raise ValueError("활성 청크에 해당 장소의 관찰·관계 근거가 없습니다")
     for vector in vectors:
         if len(vector) != 1024 or not all(math.isfinite(value) for value in vector):
             raise ValueError("Contextual embeddings must be 1024 finite values")
@@ -103,5 +108,26 @@ async def activate_chunks(connection: Any, place_id: int, chunks: list[SearchChu
             "UPDATE retrieval_chunk_contexts SET embedding=$3::vector WHERE chunk_id=$1 AND context_version=$2",
             uuid.UUID(chunk.chunk_id), chunk.context_version, "[" + ",".join(map(str, vector)) + "]")
         await connection.execute(
-            "INSERT INTO place_active_chunks(place_id,slot,chunk_id,context_version) VALUES($1,$2,$3,$4)",
-            place_id, slot, uuid.UUID(chunk.chunk_id), chunk.context_version)
+            "INSERT INTO place_active_chunks(place_id,slot,chunk_id,context_version,role) VALUES($1,$2,$3,$4,$5)",
+            place_id, slot, uuid.UUID(chunk.chunk_id), chunk.context_version, chunk.active_role(place_id))
+
+
+async def store_relation_embeddings(
+    connection: Any,
+    inputs: list[RelationVectorInput],
+    vectors: list[list[float]],
+) -> None:
+    if len(inputs) != len(vectors):
+        raise ValueError("관계 인용과 벡터 개수가 다릅니다")
+    if any(len(vector) != 1024 or not all(math.isfinite(value) for value in vector) for vector in vectors):
+        raise ValueError("관계 임베딩은 1024개의 유한한 값이어야 합니다")
+    for entry, vector in zip(inputs, vectors, strict=True):
+        await connection.execute(
+            """INSERT INTO retrieval_relation_embeddings(
+                chunk_id,context_version,relation_index,representation_version,evidence,embedding)
+            VALUES($1,$2,$3,$4,$5::jsonb,$6::vector)
+            ON CONFLICT (chunk_id,context_version,relation_index,representation_version)
+            DO UPDATE SET embedding=EXCLUDED.embedding""",
+            uuid.UUID(entry.chunk_id), entry.context_version, entry.relation_index,
+            VectorRepresentation.RELATION_QUOTE.value, json.dumps(entry.evidence, ensure_ascii=False),
+            "[" + ",".join(map(str, vector)) + "]")

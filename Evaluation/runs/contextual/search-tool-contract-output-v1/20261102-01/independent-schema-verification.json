@@ -1,0 +1,231 @@
+{
+  "mode": "OFFLINE_TECHNICAL_REGRESSION",
+  "validator": "jsonschema Draft202012Validator",
+  "new_model_or_search_calls": 0,
+  "verdicts": [
+    {
+      "kind": "TECHNICAL_ARGUMENT_REGRESSION",
+      "server_accepted": true,
+      "arguments": {
+        "query": "x"
+      },
+      "independent_schema_accepted": true,
+      "matches": true
+    },
+    {
+      "kind": "TECHNICAL_ARGUMENT_REGRESSION",
+      "server_accepted": true,
+      "arguments": {
+        "query": "x",
+        "region": null,
+        "city": null,
+        "category": null,
+        "exclude_place_ids": null,
+        "area": null
+      },
+      "independent_schema_accepted": true,
+      "matches": true
+    },
+    {
+      "kind": "TECHNICAL_ARGUMENT_REGRESSION",
+      "server_accepted": true,
+      "arguments": {
+        "query": "x",
+        "limit": 1,
+        "exclude_place_ids": [
+          1,
+          9223372036854775807
+        ]
+      },
+      "independent_schema_accepted": true,
+      "matches": true
+    },
+    {
+      "kind": "TECHNICAL_ARGUMENT_REGRESSION",
+      "server_accepted": true,
+      "arguments": {
+        "query": "x",
+        "limit": 20,
+        "area": {
+          "type": "CIRCLE",
+          "center": {
+            "lat": -90,
+            "lon": 180
+          },
+          "radius_meters": 10000
+        }
+      },
+      "independent_schema_accepted": true,
+      "matches": true
+    },
+    {
+      "kind": "TECHNICAL_ARGUMENT_REGRESSION",
+      "server_accepted": false,
+      "arguments": {},
+      "independent_schema_accepted": false,
+      "matches": true
+    },
+    {
+      "kind": "TECHNICAL_ARGUMENT_REGRESSION",
+      "server_accepted": false,
+      "arguments": {
+        "query": null
+      },
+      "independent_schema_accepted": false,
+      "matches": true
+    },
+    {
+      "kind": "TECHNICAL_ARGUMENT_REGRESSION",
+      "server_accepted": false,
+      "arguments": {
+        "query": " "
+      },
+      "independent_schema_accepted": false,
+      "matches": true
+    },
+    {
+      "kind": "TECHNICAL_ARGUMENT_REGRESSION",
+      "server_accepted": false,
+      "arguments": {
+        "query": " "
+      },
+      "independent_schema_accepted": false,
+      "matches": true
+    },
+    {
+      "kind": "TECHNICAL_ARGUMENT_REGRESSION",
+      "server_accepted": false,
+      "arguments": {
+        "query": "x",
+        "excludePlaceIds": []
+      },
+      "independent_schema_accepted": false,
+      "matches": true
+    },
+    {
+      "kind": "TECHNICAL_ARGUMENT_REGRESSION",
+      "server_accepted": false,
+      "arguments": {
+        "query": "x",
+        "limit": null
+      },
+      "independent_schema_accepted": false,
+      "matches": true
+    },
+    {
+      "kind": "TECHNICAL_ARGUMENT_REGRESSION",
+      "server_accepted": false,
+      "arguments": {
+        "query": "x",
+        "limit": 0
+      },
+      "independent_schema_accepted": false,
+      "matches": true
+    },
+    {
+      "kind": "TECHNICAL_ARGUMENT_REGRESSION",
+      "server_accepted": false,
+      "arguments": {
+        "query": "x",
+        "limit": 21
+      },
+      "independent_schema_accepted": false,
+      "matches": true
+    },
+    {
+      "kind": "TECHNICAL_ARGUMENT_REGRESSION",
+      "server_accepted": false,
+      "arguments": {
+        "query": "x",
+        "exclude_place_ids": [
+          1,
+          1.0
+        ]
+      },
+      "independent_schema_accepted": false,
+      "matches": true
+    },
+    {
+      "kind": "TECHNICAL_ARGUMENT_REGRESSION",
+      "server_accepted": false,
+      "arguments": {
+        "query": "x",
+        "exclude_place_ids": [
+          1.5
+        ]
+      },
+      "independent_schema_accepted": false,
+      "matches": true
+    },
+    {
+      "kind": "TECHNICAL_ARGUMENT_REGRESSION",
+      "server_accepted": false,
+      "arguments": {
+        "query": "x",
+        "city": " "
+      },
+      "independent_schema_accepted": false,
+      "matches": true
+    },
+    {
+      "kind": "TECHNICAL_ARGUMENT_REGRESSION",
+      "server_accepted": false,
+      "arguments": {
+        "query": "x",
+        "area": {
+          "type": "CIRCLE",
+          "center": {
+            "lat": 91,
+            "lon": 0
+          },
+          "radius_meters": 500
+        }
+      },
+      "independent_schema_accepted": false,
+      "matches": true
+    },
+    {
+      "kind": "TECHNICAL_ARGUMENT_REGRESSION",
+      "server_accepted": false,
+      "arguments": {
+        "query": "x",
+        "area": {
+          "type": "CIRCLE",
+          "center": {
+            "lat": 0,
+            "lon": 0
+          },
+          "radius_meters": 499
+        }
+      },
+      "independent_schema_accepted": false,
+      "matches": true
+    },
+    {
+      "kind": "RECORDED_NATIVE_ARGUMENTS",
+      "case_id": "PLR-TM-palaces-01",
+      "server_accepted": true,
+      "arguments": {
+        "region": "서울",
+        "query": "창경궁",
+        "limit": 1
+      },
+      "independent_schema_accepted": true,
+      "matches": true
+    },
+    {
+      "kind": "RECORDED_NATIVE_ARGUMENTS",
+      "case_id": "PLR-TM-palaces-03",
+      "server_accepted": false,
+      "arguments": {
+        "excludePlaceIds": [],
+        "area": null,
+        "region": "서울",
+        "city": "종로",
+        "category": null
+      },
+      "independent_schema_accepted": false,
+      "matches": true
+    }
+  ]
+}

@@ -1,0 +1,24 @@
+{
+  "baseline": "794e7565",
+  "frozen_dataset_and_manifests_git_diff_empty": true,
+  "prior_reports_git_diff_empty": true,
+  "new_evaluation_cases": 0,
+  "actual_llm_calls": 0,
+  "actual_search_calls": 0,
+  "paid_calls": 0,
+  "production_db_updates": 0,
+  "deployments": 0,
+  "java": {
+    "tests": 88,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "python_regression_tests": 28,
+  "python_sql_mock_tests": 1,
+  "selected_saved_native_request_checks": 8,
+  "worker_protocol_smoke_checks": 1,
+  "count_quality": "EXACT_LOCAL_CROSSCHECKED",
+  "server_usage_observed": false,
+  "B_actual_execution_approved": false
+}

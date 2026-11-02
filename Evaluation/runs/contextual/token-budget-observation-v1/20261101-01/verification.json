@@ -1,0 +1,270 @@
+{
+  "baseline": "db38be73f5a8b3fae1b79115057106ea4657081f",
+  "kind": "MOCK implementation regression; not live model quality",
+  "real_model_calls": 0,
+  "paid_model_calls": 0,
+  "search_reruns": 0,
+  "production_db_operations": 0,
+  "deployments": 0,
+  "java": {
+    "tests": 82,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "python": {
+    "tests": 39,
+    "passed": 38,
+    "failures": 1,
+    "errors": 0,
+    "new_adapter_tests_passed": 12,
+    "failure": "pre-existing archived byte check; five CRLF files, baseline blobs match expected hashes"
+  },
+  "cli_conversion_matches_library": true,
+  "protected_paths_unchanged": {
+    "Evaluation/datasets": true,
+    "embedding-server": true,
+    "Docker": true,
+    "Server/TravelMate/src/main/java/com/yollo/TravelMate/domain/place": true,
+    "Server/TravelMate/src/main/java/com/yollo/TravelMate/domain/plan/validator": true,
+    "Server/TravelMate/src/main/java/com/yollo/TravelMate/domain/plan/repository": true,
+    "Server/TravelMate/src/main/java/com/yollo/TravelMate/domain/plan/prompts": true,
+    "Server/TravelMate/src/main/java/com/yollo/TravelMate/domain/plan/data/request": true
+  },
+  "original_collectors_unchanged_since_inventory": {
+    "Evaluation/tracks/search/collect_live.py": true,
+    "Evaluation/tracks/search/collect_holdout.py": true,
+    "Evaluation/common/runs/runner.py": true,
+    "Evaluation/common/dataset/build.py": true
+  },
+  "hash_format": "SHA-256 after LF normalization",
+  "changed_source_files": [
+    {
+      "path": "Evaluation/README.md",
+      "sha256_lf": "b03d10136caf7bb9628982d92cece65b76e87e2eb5735b1151ba88c4d801f018"
+    },
+    {
+      "path": "Evaluation/common/dataset/build.py",
+      "sha256_lf": "a84d154445605c2923b1a54e8b67dcb8049a32b1a7e283ab6dfb52a79e9bf0ae"
+    },
+    {
+      "path": "Evaluation/common/dataset/io.py",
+      "sha256_lf": "81b1f5ab6fec9f1d7e00c9299a40321fe77fa5f81449d93cdcd5050cb148ec0d"
+    },
+    {
+      "path": "Evaluation/common/judge/runner.py",
+      "sha256_lf": "d00f702fa4a6ad59c57b0773c9df110f51105dacdfba2689cb56a5eba33f74b8"
+    },
+    {
+      "path": "Evaluation/common/observability/README.md",
+      "sha256_lf": "9d7bdde95749d43da6682c289d5df72defa910d891e082275b20e0cdf5b3d164"
+    },
+    {
+      "path": "Evaluation/common/observability/server_trace.py",
+      "sha256_lf": "13e63cc64da67cffeaed8f01fc78197e7ceaf25897afb27afe8fff2ff36cae8a"
+    },
+    {
+      "path": "Evaluation/common/runs/runner.py",
+      "sha256_lf": "04ec691dbe902211dc07b6857cd09a8c7b411dc1d3f8e8d9a167829e95f7e434"
+    },
+    {
+      "path": "Evaluation/runs/README.md",
+      "sha256_lf": "97b5ee48b5e4412d1c11ff97a6a82f50938b3b9d4116feeaa8a24cde625e4868"
+    },
+    {
+      "path": "Evaluation/tests/test_server_trace_adapter.py",
+      "sha256_lf": "98438dc164904400674395b0d8d103502bd296dbfe8c776493f59ace3424cfd6"
+    },
+    {
+      "path": "Evaluation/tracks/end_to_end/score.py",
+      "sha256_lf": "4fdde79e8a20b7e94cc25323ac9059314cdd21449a6abd45c6c8fd3981568f46"
+    },
+    {
+      "path": "Evaluation/tracks/tool_call/convert_server_trace.py",
+      "sha256_lf": "4dd51c344ce3794d35c31088cba0dca2d1e9dd48fa6e051bdeea39b33ec086cb"
+    },
+    {
+      "path": "Server/TravelMate/src/main/java/com/yollo/TravelMate/ai/llm/budget/LlmCallGuard.java",
+      "sha256_lf": "5e52af146344afbfc0496f95bd4208a55880639821d078ab757e1dfaff5dcef1"
+    },
+    {
+      "path": "Server/TravelMate/src/main/java/com/yollo/TravelMate/ai/llm/budget/QwenTokenCounter.java",
+      "sha256_lf": "0171d716bddfdc04535dfa4db753e0a814e4c3e17bb420f604c951bdef90d615"
+    },
+    {
+      "path": "Server/TravelMate/src/main/java/com/yollo/TravelMate/ai/llm/budget/TokenBudget.java",
+      "sha256_lf": "eee3f181dfe9112c10a619a253efd088effe68311227a6b06afb755ae378c9f7"
+    },
+    {
+      "path": "Server/TravelMate/src/main/java/com/yollo/TravelMate/ai/llm/budget/TokenBudgetException.java",
+      "sha256_lf": "91f181da9772ed9775074f08169f30bcbd67a7021cbefa54ef1e4fbab9e13898"
+    },
+    {
+      "path": "Server/TravelMate/src/main/java/com/yollo/TravelMate/ai/llm/derived/OllamaLlmClient.java",
+      "sha256_lf": "1c1a047f4e4e61d2e435cfb6ff2aa1ef0ca005ddc15277632a126d7190d04c9c"
+    },
+    {
+      "path": "Server/TravelMate/src/main/java/com/yollo/TravelMate/ai/llm/derived/OpenAiLlmClient.java",
+      "sha256_lf": "d0c6c642ddcbf26792eeca04d46aab7faf3b3ccff25f5ef0e99af5221857d859"
+    },
+    {
+      "path": "Server/TravelMate/src/main/java/com/yollo/TravelMate/ai/llm/observation/ExecutionRecorder.java",
+      "sha256_lf": "ede3661ed90c74ea49dd76a4271fec4698e1d1e043cf7f3647776e17974eaa15"
+    },
+    {
+      "path": "Server/TravelMate/src/main/java/com/yollo/TravelMate/ai/llm/observation/ObservationContext.java",
+      "sha256_lf": "a822bda927db5c661043f95468b5ff70970053e86987ef6db22ec592758c1b36"
+    },
+    {
+      "path": "Server/TravelMate/src/main/java/com/yollo/TravelMate/config/observability/ExecutionObservationFilter.java",
+      "sha256_lf": "7e3dcd550d018891477969aa4b0e8e592bb6d0400dfc5eca961c55415b52dc49"
+    },
+    {
+      "path": "Server/TravelMate/src/main/java/com/yollo/TravelMate/domain/conversation/data/ConversationResponse.java",
+      "sha256_lf": "d4341b9050a7bb5de8533114963afac9eedf791865ab2c0b0db6b65ce79290b7"
+    },
+    {
+      "path": "Server/TravelMate/src/main/java/com/yollo/TravelMate/domain/conversation/service/ConversationAnswerRenderer.java",
+      "sha256_lf": "e23aab239c49e7045ce797da6eccf3189f09013b5377c060c651b40437e9dab1"
+    },
+    {
+      "path": "Server/TravelMate/src/main/java/com/yollo/TravelMate/domain/conversation/service/ConversationService.java",
+      "sha256_lf": "85f8ceb7a8e6de203d22b42d7788952a0b8413304d2836cb9016d2c72134c0f2"
+    },
+    {
+      "path": "Server/TravelMate/src/main/java/com/yollo/TravelMate/domain/plan/service/ContextPlanningService.java",
+      "sha256_lf": "1f35d76553f329445f37921dfc9541d1e595d32ca23fd8099291b71a8df73fa5"
+    },
+    {
+      "path": "Server/TravelMate/src/main/resources/application.properties",
+      "sha256_lf": "38229dbe7553b4724289e0817a129cf9bcebf0e33f77a850273f13b424be3645"
+    },
+    {
+      "path": "Server/TravelMate/src/test/java/com/yollo/TravelMate/AsyncPlanObservationTest.java",
+      "sha256_lf": "e2f7d3ce2bdd1111f28b0a9f45e6be98ccfbe1f694f39f3d9f6133b88d0b6734"
+    },
+    {
+      "path": "Server/TravelMate/src/test/java/com/yollo/TravelMate/BudgetedProviderTest.java",
+      "sha256_lf": "3dee44c1627294b157cf11d5de6df6ce23a30b71d1767835ab86c71a21aa3ea7"
+    },
+    {
+      "path": "Server/TravelMate/src/test/java/com/yollo/TravelMate/ExecutionObservationTest.java",
+      "sha256_lf": "dc211dcd64be5b74d88c1d5e32dfc4ea85164000384cf3727e1c50b781afffd6"
+    },
+    {
+      "path": "Server/TravelMate/src/test/java/com/yollo/TravelMate/LlmStrategyTest.java",
+      "sha256_lf": "9ecae0098a60ee3f780a3ad73845656b993ede74f99ffc923ac17c3fc3342b83"
+    },
+    {
+      "path": "Server/TravelMate/src/test/java/com/yollo/TravelMate/TokenBudgetGuardTest.java",
+      "sha256_lf": "8cd926885b1c3898bbfa11641c08f8e2334640088e1403103ecf093223c4b545"
+    },
+    {
+      "path": "Server/TravelMate/src/test/resources/token-budget/.gitattributes",
+      "sha256_lf": "2e73fac1db48fadae7b09c2cca0fea0f1b13575dc066a230e3124883e682385a"
+    },
+    {
+      "path": "Server/TravelMate/src/test/resources/token-budget/existing-case-binding.json",
+      "sha256_lf": "87b4a2ad4cd385f84d7389a69454db68d1459cea3f5547c0fe7470e2fc9f0ae0"
+    },
+    {
+      "path": "Server/TravelMate/src/test/resources/token-budget/qwen3-ollama-template.txt",
+      "sha256_lf": "ae370d884f108d16e7cc8fd5259ebc5773a0afa6e078b11f4ed7e39a27e0dfc4"
+    },
+    {
+      "path": "docs/architecture/token-budget-and-execution-observations.md",
+      "sha256_lf": "e1923ef52fbffc132b52ec6bf80ecdba76dd856674feebc57f1a9dbad049ac20"
+    }
+  ],
+  "artifacts": [
+    {
+      "path": ".gitattributes",
+      "sha256_lf": "a79691a93b46e49ce460c26ef22afcc03d6eca1e63bf2edbc20e96159510f6c9"
+    },
+    {
+      "path": "adapter-verification.json",
+      "sha256_lf": "dec6ea1a09ff45c5e73cb25da9fb7ae45d8ac5f7791b6724f3540330d00fefc8"
+    },
+    {
+      "path": "archive-byte-diagnostic.json",
+      "sha256_lf": "7340474f7e5fe7161cb9d91f2eab98db1243182f343790525d724763948f6d0c"
+    },
+    {
+      "path": "bindings.jsonl",
+      "sha256_lf": "cb30a72bfe3e032ac3aa079dcb16b0548c426e23c028c44756e76250ae29a9b8"
+    },
+    {
+      "path": "events.jsonl",
+      "sha256_lf": "44a3a1c3748f72a6c6c345af74f2ba5a1b593bb073e7781783d9320b2f903c08"
+    },
+    {
+      "path": "exported-inputs.jsonl",
+      "sha256_lf": "5f96f62e63c790652f1170432cfe9d343dce45901b7b38184ff9d37931f3eedc"
+    },
+    {
+      "path": "junit/TEST-com.yollo.TravelMate.AsyncPlanObservationTest.xml",
+      "sha256_lf": "ebf8ac3ffa47e9571acc57445189f8f1503a57055d475de0e4f3b2b1b26e4ab0"
+    },
+    {
+      "path": "junit/TEST-com.yollo.TravelMate.BudgetedProviderTest.xml",
+      "sha256_lf": "d9efb14593cafd181efdd69fdc8221324f31fc83f8bd6dcda65d4f3bc2b24ffd"
+    },
+    {
+      "path": "junit/TEST-com.yollo.TravelMate.ContextPlanPipelineTest.xml",
+      "sha256_lf": "db129b5963a31fff6eaa6a77fc5bf19e4cbb1b72a02712b58671e1d4536b1ac3"
+    },
+    {
+      "path": "junit/TEST-com.yollo.TravelMate.ConversationControllerTest.xml",
+      "sha256_lf": "8ab468eb91bf8c7357b3b07eba18e679001bdd2b8b17a521b17658aae0f2be34"
+    },
+    {
+      "path": "junit/TEST-com.yollo.TravelMate.ConversationToolLoopTest.xml",
+      "sha256_lf": "45e8f35fbe5cccac9592d6f1ca0427533adc1b98cef426f1079d00b9239463fb"
+    },
+    {
+      "path": "junit/TEST-com.yollo.TravelMate.DraftPlanValidationTest.xml",
+      "sha256_lf": "5a4d9d32aabe491e752bacfdf506671ae771ee8e343a95c0fca161149650ae13"
+    },
+    {
+      "path": "junit/TEST-com.yollo.TravelMate.ExecutionObservationTest.xml",
+      "sha256_lf": "d5b087e80bc627d19978b146c1980d8efa3c8a66b8bdb086211e38cf4018f404"
+    },
+    {
+      "path": "junit/TEST-com.yollo.TravelMate.LlmStrategyTest.xml",
+      "sha256_lf": "3513d25e56ba5168dd6fe964fd835a46e0b993a4299aa485a8355c42bcfeab83"
+    },
+    {
+      "path": "junit/TEST-com.yollo.TravelMate.PlanContextContractTest.xml",
+      "sha256_lf": "3954332e4e60ce530d5c2230bd1efac3be77bebd55a74451fcac7dbf9b30a8eb"
+    },
+    {
+      "path": "junit/TEST-com.yollo.TravelMate.SearchEvidencePipelineTest.xml",
+      "sha256_lf": "cadcc37fb9b282c7cf2fa27118e676a0be9d7bd22375e8253fd0285e026b499b"
+    },
+    {
+      "path": "junit/TEST-com.yollo.TravelMate.TokenBudgetGuardTest.xml",
+      "sha256_lf": "f73a4ba23741593743ddbdff9dd547c8e1a4eae07f66bc4fe0cd72f9d794dc8e"
+    },
+    {
+      "path": "junit-summary.json",
+      "sha256_lf": "c66b2cb5deb8283fa2c016076891be2597d12143f63d94622e8dee3d43e0bb83"
+    },
+    {
+      "path": "local-collector-inventory.json",
+      "sha256_lf": "e546be82bc0729072a47d59aea60455cc4ef86bfdccfc75b2ca55754f502ca3e"
+    },
+    {
+      "path": "python-tests.txt",
+      "sha256_lf": "aab91cdebcb2213d9da75757c67b404fcba169161464e06e0c3cf15cb64abd35"
+    },
+    {
+      "path": "records.jsonl",
+      "sha256_lf": "e819ab39fc9d85494bb23098407f17418e7629f1237dec18d7becc1cec221d03"
+    },
+    {
+      "path": "REPORT.md",
+      "sha256_lf": "a9346e643641710ab0966771e48193e87e8226c36232515f9c03c03c1198fca8"
+    }
+  ],
+  "python_log_format": "UTF-8/LF; trailing whitespace removed for publication"
+}

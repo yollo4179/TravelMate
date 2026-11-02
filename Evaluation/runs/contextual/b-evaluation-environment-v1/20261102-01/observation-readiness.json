@@ -1,0 +1,19 @@
+{
+  "spring_pid": 34736,
+  "tokenizer_ready": true,
+  "initialization_ms": 6603.987200011034,
+  "tokenizer_initializations_in_current_spring_start": 1,
+  "total_spring_starts_during_preparation": 2,
+  "first_spring_stopped_with_its_own_worker_tree_to_enable_local_tracing": true,
+  "observation_files_before_B": [],
+  "mock_transport_probe_batches": 1,
+  "captured_preparation_span_names": {
+    "fastapi.dependencies": 46,
+    "fastapi.endpoint": 46,
+    "fastapi.serialization": 46,
+    "GET /health": 92
+  },
+  "actual_B_requests": 0,
+  "actual_B_scores": null,
+  "startup_log_encoding": "Windows cp949; archived summary uses ASCII readiness fields only"
+}

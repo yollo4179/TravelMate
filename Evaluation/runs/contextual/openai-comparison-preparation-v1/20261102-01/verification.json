@@ -1,0 +1,41 @@
+{
+  "proposal_reproduces_from_preserved_scope": true,
+  "case_requests_unchanged": true,
+  "prior_reports_datasets_and_search_schema_unchanged": true,
+  "local_uncommitted_collectors": {
+    "Evaluation/tracks/search/collect_live.py": {
+      "sha256": "bca962f1c2ca2fe37993b582803dabc9aafcf251fe6ba5a68d2afd38fa489b12",
+      "unchanged": true
+    },
+    "Evaluation/tracks/search/collect_holdout.py": {
+      "sha256": "4fe15dc94e6ef25f24739a4d36f8eae593d97e70e3750ca886b3621a10cd8220",
+      "unchanged": true
+    },
+    "Evaluation/common/runs/runner.py": {
+      "sha256": "773649432d761a44f93cbbfd221fdcaf9aeafc585967ec399ab97466290f42de",
+      "unchanged": true
+    },
+    "Evaluation/common/dataset/build.py": {
+      "sha256": "a84d154445605c2923b1a54e8b67dcb8049a32b1a7e283ab6dfb52a79e9bf0ae",
+      "unchanged": true
+    }
+  },
+  "junit": {
+    "tests": 74,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "junit_sha256": {
+    "TEST-com.yollo.TravelMate.BudgetedProviderTest.xml": "c92d6849bd39628a0f11de4eba090a77e4f8e5420e6252c57967780068551856",
+    "TEST-com.yollo.TravelMate.ConversationToolLoopTest.xml": "1e4c3f5f6644f60e22c8deecd1bda49b0e0b06ba99850898b496388ca131caac",
+    "TEST-com.yollo.TravelMate.LlmStrategyTest.xml": "301f2cfabcfe1ff8d042c578d39937fea4448949dac601f993837eb32f03f3f3",
+    "TEST-com.yollo.TravelMate.OpenAiSearchComparisonPreparationTest.xml": "f9debb54a0cc73f5f107abee319f64ccf1ce21c32ff0f31401523a14eb5c1850",
+    "TEST-com.yollo.TravelMate.SearchToolContractRegressionTest.xml": "6c4a65a3bee9569f81f70ba19b72dbd125e3dbee21b2bd96ea24a3b64b56c63d",
+    "TEST-com.yollo.TravelMate.TokenBudgetGuardTest.xml": "f3b61fae70c924863ba2f9f659fb8c7fbf1f72dec080101d655d0a030fd1ee15"
+  },
+  "actual_openai_requests": 0,
+  "actual_search_requests": 0,
+  "actual_qwen_requests": 0,
+  "spend_guard_and_account_billing_unconfirmed": true
+}

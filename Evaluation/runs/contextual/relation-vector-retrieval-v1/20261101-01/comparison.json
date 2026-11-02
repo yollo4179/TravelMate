@@ -1,0 +1,1152 @@
+{
+  "health": {
+    "status": "ok",
+    "dim": 1024,
+    "embedding_device": "cuda",
+    "reranker_device": "cuda",
+    "cuda_available": true,
+    "gpu_name": "NVIDIA GeForce RTX 4050 Laptop GPU"
+  },
+  "search_executions": 12,
+  "evidence_per_place": 2,
+  "candidate_limit": 30,
+  "active_limit": 20,
+  "b_eligible": 44,
+  "b_active": 20,
+  "target_in_b_active": false,
+  "relation_vector_rows": 43,
+  "new_embedding_calls": 1,
+  "new_embedding_texts": 4,
+  "new_rerank_calls": 3,
+  "new_rerank_texts": 9,
+  "reused_embedding_texts": 58,
+  "new_sonar_calls": 0,
+  "production_database_writes": 0,
+  "note": "고정한 감독 검증과 합성 스트레스 자료다. 일반 검색 성능이나 운영 개선의 증거가 아니다.",
+  "latency_limit": "질의·청크 벡터와 기존 리랭킹 점수를 재사용했다. SQL 단회 시간만 기록하며 전체 지연 비교·성능 벤치마크로 해석하지 않는다.",
+  "available_saved_query_text_scores": 65,
+  "results": [
+    {
+      "phase": "chunk-only",
+      "id": "mixed-landscape",
+      "candidate_count": 2,
+      "rerank_pairs": 2,
+      "target_indexed": true,
+      "target_candidate_rank": 1,
+      "target_reached_reranker": true,
+      "target_final_rank": 1,
+      "target_representative_correct": true,
+      "target_retrieval_path": null,
+      "sql_candidate_ms": 2.546126997913234,
+      "sql_expansion_ms": 4.108027002075687,
+      "candidate_place_ids": [
+        101,
+        394
+      ],
+      "ranked_places": [
+        {
+          "place_id": 101,
+          "score": 0.9366336464881897,
+          "chunk_id": "7ea8ad87-e493-59bc-b5fa-e59537dc853f",
+          "retrieval_path": null
+        },
+        {
+          "place_id": 394,
+          "score": 0.0005378763889893889,
+          "chunk_id": "da9d85a8-d80e-539e-ac25-020f712e6e6d",
+          "retrieval_path": null
+        }
+      ]
+    },
+    {
+      "phase": "chunk-only",
+      "id": "supporting-to-b",
+      "candidate_count": 30,
+      "rerank_pairs": 30,
+      "target_indexed": true,
+      "target_candidate_rank": null,
+      "target_reached_reranker": false,
+      "target_final_rank": null,
+      "target_representative_correct": false,
+      "target_retrieval_path": null,
+      "sql_candidate_ms": 4.375977005111054,
+      "sql_expansion_ms": 2.5471819972153753,
+      "candidate_place_ids": [
+        1006,
+        1027,
+        1022,
+        1012,
+        1032,
+        1028,
+        1015,
+        1035,
+        1038,
+        1036,
+        1023,
+        1021,
+        1003,
+        1016,
+        1026,
+        1020,
+        1029,
+        1037,
+        1039,
+        1013,
+        1033,
+        1002,
+        1019,
+        1018,
+        1025,
+        1017,
+        1001,
+        1024,
+        1004,
+        1008
+      ],
+      "ranked_places": [
+        {
+          "place_id": 1025,
+          "score": 0.49108219146728516,
+          "chunk_id": "58c09655-998e-5535-b521-6e85178d126a",
+          "retrieval_path": null
+        },
+        {
+          "place_id": 1023,
+          "score": 0.4887637794017792,
+          "chunk_id": "a2dc3cd2-2b2a-5754-93cc-359a7ebd0743",
+          "retrieval_path": null
+        },
+        {
+          "place_id": 1024,
+          "score": 0.48418188095092773,
+          "chunk_id": "a03d96c8-5563-515d-a2e5-5c05e67fa2d9",
+          "retrieval_path": null
+        },
+        {
+          "place_id": 1022,
+          "score": 0.4838770031929016,
+          "chunk_id": "4774fb27-63ca-5687-86dd-1e140ef57fe0",
+          "retrieval_path": null
+        },
+        {
+          "place_id": 1028,
+          "score": 0.48291677236557007,
+          "chunk_id": "4b40d3bb-02f4-5d76-b46c-a795b60dc48c",
+          "retrieval_path": null
+        },
+        {
+          "place_id": 1029,
+          "score": 0.47183164954185486,
+          "chunk_id": "c4056614-13eb-597f-948f-818e5498eb1f",
+          "retrieval_path": null
+        },
+        {
+          "place_id": 1026,
+          "score": 0.47073665261268616,
+          "chunk_id": "c51adca8-0784-5a39-85cd-0df51d562c77",
+          "retrieval_path": null
+        },
+        {
+          "place_id": 1015,
+          "score": 0.4651445150375366,
+          "chunk_id": "a0299fb8-01f1-51ec-8b9c-4fc73c318617",
+          "retrieval_path": null
+        },
+        {
+          "place_id": 1035,
+          "score": 0.4651445150375366,
+          "chunk_id": "6b721a93-60b8-5209-b70e-db705627a10d",
+          "retrieval_path": null
+        },
+        {
+          "place_id": 1021,
+          "score": 0.46450677514076233,
+          "chunk_id": "383b63b4-eca3-5836-a821-8b689515e81a",
+          "retrieval_path": null
+        },
+        {
+          "place_id": 1016,
+          "score": 0.46077415347099304,
+          "chunk_id": "bd1cc862-f81e-5e2e-b700-d147a473d477",
+          "retrieval_path": null
+        },
+        {
+          "place_id": 1033,
+          "score": 0.4602585434913635,
+          "chunk_id": "3bba97ca-d1a9-5d86-bc8f-adae2e0b1178",
+          "retrieval_path": null
+        },
+        {
+          "place_id": 1036,
+          "score": 0.4590761363506317,
+          "chunk_id": "46f1d6d7-e31e-5d24-8c84-daf07a106dd6",
+          "retrieval_path": null
+        },
+        {
+          "place_id": 1018,
+          "score": 0.45504721999168396,
+          "chunk_id": "457b8f2b-fdaa-5e94-a043-3a666c52bd85",
+          "retrieval_path": null
+        },
+        {
+          "place_id": 1027,
+          "score": 0.45426031947135925,
+          "chunk_id": "d24ac0f1-2435-571e-b1fe-8c8eb322eaf3",
+          "retrieval_path": null
+        },
+        {
+          "place_id": 1013,
+          "score": 0.45262667536735535,
+          "chunk_id": "e033433a-0119-5850-bdad-ba3b90833cfc",
+          "retrieval_path": null
+        },
+        {
+          "place_id": 1019,
+          "score": 0.45057088136672974,
+          "chunk_id": "8d9e0c0f-1122-55e8-9707-c7c6d061a9e1",
+          "retrieval_path": null
+        },
+        {
+          "place_id": 1032,
+          "score": 0.4500270187854767,
+          "chunk_id": "3f3e3be9-1ffa-5974-88af-a4e68638b8b6",
+          "retrieval_path": null
+        },
+        {
+          "place_id": 1039,
+          "score": 0.44839605689048767,
+          "chunk_id": "1a383baa-2677-5e44-aba2-0ea8d7a1e399",
+          "retrieval_path": null
+        },
+        {
+          "place_id": 1020,
+          "score": 0.44782254099845886,
+          "chunk_id": "ab15924e-f651-5c65-bbfc-67f679c170ff",
+          "retrieval_path": null
+        },
+        {
+          "place_id": 1012,
+          "score": 0.44634386897087097,
+          "chunk_id": "47ddbfd9-33c6-56a3-93fb-bdb4817aea5f",
+          "retrieval_path": null
+        },
+        {
+          "place_id": 1017,
+          "score": 0.4441729784011841,
+          "chunk_id": "70bfab0e-c3d8-5de5-ab07-0ca3b41435ea",
+          "retrieval_path": null
+        },
+        {
+          "place_id": 1038,
+          "score": 0.4404091238975525,
+          "chunk_id": "7b5eade9-4f33-5889-a7cd-6de26eeb1a0e",
+          "retrieval_path": null
+        },
+        {
+          "place_id": 1001,
+          "score": 0.43986761569976807,
+          "chunk_id": "64343591-1952-5d48-a6a6-7e5b303381bb",
+          "retrieval_path": null
+        },
+        {
+          "place_id": 1003,
+          "score": 0.43164411187171936,
+          "chunk_id": "5901c8ca-e895-5a6a-b2da-445f3a531b80",
+          "retrieval_path": null
+        },
+        {
+          "place_id": 1037,
+          "score": 0.42919009923934937,
+          "chunk_id": "ba3f3730-ce51-50d0-a0b3-6a649d315f77",
+          "retrieval_path": null
+        },
+        {
+          "place_id": 1008,
+          "score": 0.41905349493026733,
+          "chunk_id": "b486b9c6-8dea-534e-ab91-cdccd2cde37e",
+          "retrieval_path": null
+        },
+        {
+          "place_id": 1004,
+          "score": 0.41685599088668823,
+          "chunk_id": "13e6eef8-7429-5138-93bd-e8e119f10e7f",
+          "retrieval_path": null
+        },
+        {
+          "place_id": 1002,
+          "score": 0.41673728823661804,
+          "chunk_id": "ab1a1daf-09d8-588c-9bdd-d1721fd1e028",
+          "retrieval_path": null
+        },
+        {
+          "place_id": 1006,
+          "score": 0.40786394476890564,
+          "chunk_id": "24b8c01b-e51f-5de8-bca8-06cfdbf92c78",
+          "retrieval_path": null
+        }
+      ]
+    },
+    {
+      "phase": "chunk-only",
+      "id": "supporting-from-a",
+      "candidate_count": 0,
+      "rerank_pairs": 0,
+      "target_indexed": false,
+      "target_candidate_rank": null,
+      "target_reached_reranker": false,
+      "target_final_rank": null,
+      "target_representative_correct": false,
+      "target_retrieval_path": null,
+      "sql_candidate_ms": 1.808258006349206,
+      "sql_expansion_ms": 0.001010994310490787,
+      "candidate_place_ids": [],
+      "ranked_places": []
+    },
+    {
+      "phase": "chunk-only",
+      "id": "primary-stairs",
+      "candidate_count": 1,
+      "rerank_pairs": 2,
+      "target_indexed": true,
+      "target_candidate_rank": 1,
+      "target_reached_reranker": true,
+      "target_final_rank": 1,
+      "target_representative_correct": true,
+      "target_retrieval_path": null,
+      "sql_candidate_ms": 1.55457500659395,
+      "sql_expansion_ms": 1.0627980082063004,
+      "candidate_place_ids": [
+        101
+      ],
+      "ranked_places": [
+        {
+          "place_id": 101,
+          "score": 0.8618873357772827,
+          "chunk_id": "4b5cc070-6010-519c-af1b-0f5111263807",
+          "retrieval_path": null
+        }
+      ]
+    },
+    {
+      "phase": "chunk-only",
+      "id": "real-parking",
+      "candidate_count": 30,
+      "rerank_pairs": 31,
+      "target_indexed": true,
+      "target_candidate_rank": 1,
+      "target_reached_reranker": true,
+      "target_final_rank": 1,
+      "target_representative_correct": true,
+      "target_retrieval_path": null,
+      "sql_candidate_ms": 3.4138139890274033,
+      "sql_expansion_ms": 2.4549570080125704,
+      "candidate_place_ids": [
+        394,
+        202,
+        1033,
+        1038,
+        1037,
+        1004,
+        1016,
+        1003,
+        1015,
+        1032,
+        1007,
+        1002,
+        1001,
+        1009,
+        1008,
+        1017,
+        1028,
+        1029,
+        1039,
+        1005,
+        1012,
+        1027,
+        1030,
+        1024,
+        1036,
+        1006,
+        1022,
+        1040,
+        1020,
+        1014
+      ],
+      "ranked_places": [
+        {
+          "place_id": 394,
+          "score": 0.999651312828064,
+          "chunk_id": "f8aa24f2-d4a2-5e1a-bc32-4c3fb8534e32",
+          "retrieval_path": null
+        },
+        {
+          "place_id": 202,
+          "score": 0.1212688684463501,
+          "chunk_id": "a625576f-64b0-5a30-9670-36b33c0e7048",
+          "retrieval_path": null
+        },
+        {
+          "place_id": 1027,
+          "score": 0.0008426423300988972,
+          "chunk_id": "d24ac0f1-2435-571e-b1fe-8c8eb322eaf3",
+          "retrieval_path": null
+        },
+        {
+          "place_id": 1003,
+          "score": 0.0008263576892204583,
+          "chunk_id": "5901c8ca-e895-5a6a-b2da-445f3a531b80",
+          "retrieval_path": null
+        },
+        {
+          "place_id": 1033,
+          "score": 0.0008231385727412999,
+          "chunk_id": "3bba97ca-d1a9-5d86-bc8f-adae2e0b1178",
+          "retrieval_path": null
+        },
+        {
+          "place_id": 1030,
+          "score": 0.0008167381165549159,
+          "chunk_id": "e29aa693-ac7e-5642-a948-7bd143b28419",
+          "retrieval_path": null
+        },
+        {
+          "place_id": 1029,
+          "score": 0.0008040859247557819,
+          "chunk_id": "c4056614-13eb-597f-948f-818e5498eb1f",
+          "retrieval_path": null
+        },
+        {
+          "place_id": 1017,
+          "score": 0.0008009536541067064,
+          "chunk_id": "70bfab0e-c3d8-5de5-ab07-0ca3b41435ea",
+          "retrieval_path": null
+        },
+        {
+          "place_id": 1028,
+          "score": 0.0008009536541067064,
+          "chunk_id": "4b40d3bb-02f4-5d76-b46c-a795b60dc48c",
+          "retrieval_path": null
+        },
+        {
+          "place_id": 1037,
+          "score": 0.00079783343244344,
+          "chunk_id": "ba3f3730-ce51-50d0-a0b3-6a649d315f77",
+          "retrieval_path": null
+        },
+        {
+          "place_id": 1032,
+          "score": 0.0007885457598604262,
+          "chunk_id": "3f3e3be9-1ffa-5974-88af-a4e68638b8b6",
+          "retrieval_path": null
+        },
+        {
+          "place_id": 1007,
+          "score": 0.0007854739669710398,
+          "chunk_id": "8bbdca03-470f-56d9-8d1e-d30e43378950",
+          "retrieval_path": null
+        },
+        {
+          "place_id": 1006,
+          "score": 0.0007763299508951604,
+          "chunk_id": "24b8c01b-e51f-5de8-bca8-06cfdbf92c78",
+          "retrieval_path": null
+        },
+        {
+          "place_id": 1004,
+          "score": 0.0007733057136647403,
+          "chunk_id": "13e6eef8-7429-5138-93bd-e8e119f10e7f",
+          "retrieval_path": null
+        },
+        {
+          "place_id": 1038,
+          "score": 0.0007702931761741638,
+          "chunk_id": "7b5eade9-4f33-5889-a7cd-6de26eeb1a0e",
+          "retrieval_path": null
+        },
+        {
+          "place_id": 1008,
+          "score": 0.0007554056355729699,
+          "chunk_id": "b486b9c6-8dea-534e-ab91-cdccd2cde37e",
+          "retrieval_path": null
+        },
+        {
+          "place_id": 1009,
+          "score": 0.0007524627726525068,
+          "chunk_id": "568639a3-df87-5009-8bfb-202b0122800b",
+          "retrieval_path": null
+        },
+        {
+          "place_id": 1040,
+          "score": 0.0007495314348489046,
+          "chunk_id": "bc30d081-2fca-56c0-9e60-8998649fd6b1",
+          "retrieval_path": null
+        },
+        {
+          "place_id": 1036,
+          "score": 0.0007408055826090276,
+          "chunk_id": "46f1d6d7-e31e-5d24-8c84-daf07a106dd6",
+          "retrieval_path": null
+        },
+        {
+          "place_id": 1001,
+          "score": 0.0007350447704084218,
+          "chunk_id": "64343591-1952-5d48-a6a6-7e5b303381bb",
+          "retrieval_path": null
+        },
+        {
+          "place_id": 1016,
+          "score": 0.0007321811863221228,
+          "chunk_id": "bd1cc862-f81e-5e2e-b700-d147a473d477",
+          "retrieval_path": null
+        },
+        {
+          "place_id": 1014,
+          "score": 0.0007321811863221228,
+          "chunk_id": "b9de82cc-0571-51bb-8781-4c3ba8131ed6",
+          "retrieval_path": null
+        },
+        {
+          "place_id": 1005,
+          "score": 0.0007293288363143802,
+          "chunk_id": "867c5b1f-9894-5511-a95d-a0f447806a3f",
+          "retrieval_path": null
+        },
+        {
+          "place_id": 1039,
+          "score": 0.0007264875457622111,
+          "chunk_id": "1a383baa-2677-5e44-aba2-0ea8d7a1e399",
+          "retrieval_path": null
+        },
+        {
+          "place_id": 1020,
+          "score": 0.0007208379684016109,
+          "chunk_id": "ab15924e-f651-5c65-bbfc-67f679c170ff",
+          "retrieval_path": null
+        },
+        {
+          "place_id": 1015,
+          "score": 0.0007014083093963563,
+          "chunk_id": "a0299fb8-01f1-51ec-8b9c-4fc73c318617",
+          "retrieval_path": null
+        },
+        {
+          "place_id": 1002,
+          "score": 0.0006986756343394518,
+          "chunk_id": "ab1a1daf-09d8-588c-9bdd-d1721fd1e028",
+          "retrieval_path": null
+        },
+        {
+          "place_id": 1022,
+          "score": 0.0006745558930560946,
+          "chunk_id": "4774fb27-63ca-5687-86dd-1e140ef57fe0",
+          "retrieval_path": null
+        },
+        {
+          "place_id": 1024,
+          "score": 0.0006693099858239293,
+          "chunk_id": "a03d96c8-5563-515d-a2e5-5c05e67fa2d9",
+          "retrieval_path": null
+        },
+        {
+          "place_id": 1012,
+          "score": 0.0006641048239544034,
+          "chunk_id": "47ddbfd9-33c6-56a3-93fb-bdb4817aea5f",
+          "retrieval_path": null
+        }
+      ]
+    },
+    {
+      "phase": "chunk-only",
+      "id": "real-view-regression",
+      "candidate_count": 2,
+      "rerank_pairs": 2,
+      "target_indexed": null,
+      "target_candidate_rank": 1,
+      "target_reached_reranker": null,
+      "target_final_rank": 1,
+      "target_representative_correct": null,
+      "target_retrieval_path": null,
+      "sql_candidate_ms": 2.5089420087169856,
+      "sql_expansion_ms": 1.2531050015240908,
+      "candidate_place_ids": [
+        394,
+        101
+      ],
+      "ranked_places": [
+        {
+          "place_id": 394,
+          "score": 0.022542964667081833,
+          "chunk_id": "da9d85a8-d80e-539e-ac25-020f712e6e6d",
+          "retrieval_path": null
+        },
+        {
+          "place_id": 101,
+          "score": 0.021532878279685974,
+          "chunk_id": "7ea8ad87-e493-59bc-b5fa-e59537dc853f",
+          "retrieval_path": null
+        }
+      ]
+    },
+    {
+      "phase": "chunk-and-relation-v1",
+      "id": "mixed-landscape",
+      "candidate_count": 2,
+      "rerank_pairs": 2,
+      "target_indexed": true,
+      "target_candidate_rank": 1,
+      "target_reached_reranker": true,
+      "target_final_rank": 1,
+      "target_representative_correct": true,
+      "target_retrieval_path": null,
+      "sql_candidate_ms": 1.695847007795237,
+      "sql_expansion_ms": 1.1610829969868064,
+      "candidate_place_ids": [
+        101,
+        394
+      ],
+      "ranked_places": [
+        {
+          "place_id": 101,
+          "score": 0.9366336464881897,
+          "chunk_id": "7ea8ad87-e493-59bc-b5fa-e59537dc853f",
+          "retrieval_path": null
+        },
+        {
+          "place_id": 394,
+          "score": 0.0005378763889893889,
+          "chunk_id": "da9d85a8-d80e-539e-ac25-020f712e6e6d",
+          "retrieval_path": null
+        }
+      ]
+    },
+    {
+      "phase": "chunk-and-relation-v1",
+      "id": "supporting-to-b",
+      "candidate_count": 30,
+      "rerank_pairs": 30,
+      "target_indexed": true,
+      "target_candidate_rank": 1,
+      "target_reached_reranker": true,
+      "target_final_rank": 1,
+      "target_representative_correct": true,
+      "target_retrieval_path": "relation",
+      "sql_candidate_ms": 4.31789799768012,
+      "sql_expansion_ms": 4.059966013301164,
+      "candidate_place_ids": [
+        101,
+        1001,
+        1002,
+        1003,
+        1004,
+        1005,
+        1006,
+        1007,
+        1008,
+        1009,
+        1010,
+        1011,
+        1012,
+        1013,
+        1014,
+        1015,
+        1016,
+        1017,
+        1018,
+        1019,
+        1020,
+        1021,
+        1022,
+        1023,
+        1024,
+        1025,
+        1026,
+        1027,
+        1028,
+        1029
+      ],
+      "ranked_places": [
+        {
+          "place_id": 101,
+          "score": 0.9121235609054565,
+          "chunk_id": "7ea8ad87-e493-59bc-b5fa-e59537dc853f",
+          "retrieval_path": "relation"
+        },
+        {
+          "place_id": 1025,
+          "score": 0.49108219146728516,
+          "chunk_id": "58c09655-998e-5535-b521-6e85178d126a",
+          "retrieval_path": "relation"
+        },
+        {
+          "place_id": 1023,
+          "score": 0.4887637794017792,
+          "chunk_id": "a2dc3cd2-2b2a-5754-93cc-359a7ebd0743",
+          "retrieval_path": "relation"
+        },
+        {
+          "place_id": 1024,
+          "score": 0.48418188095092773,
+          "chunk_id": "a03d96c8-5563-515d-a2e5-5c05e67fa2d9",
+          "retrieval_path": "relation"
+        },
+        {
+          "place_id": 1022,
+          "score": 0.4838770031929016,
+          "chunk_id": "4774fb27-63ca-5687-86dd-1e140ef57fe0",
+          "retrieval_path": "relation"
+        },
+        {
+          "place_id": 1028,
+          "score": 0.48291677236557007,
+          "chunk_id": "4b40d3bb-02f4-5d76-b46c-a795b60dc48c",
+          "retrieval_path": "relation"
+        },
+        {
+          "place_id": 1029,
+          "score": 0.47183164954185486,
+          "chunk_id": "c4056614-13eb-597f-948f-818e5498eb1f",
+          "retrieval_path": "relation"
+        },
+        {
+          "place_id": 1026,
+          "score": 0.47073665261268616,
+          "chunk_id": "c51adca8-0784-5a39-85cd-0df51d562c77",
+          "retrieval_path": "relation"
+        },
+        {
+          "place_id": 1015,
+          "score": 0.4651445150375366,
+          "chunk_id": "a0299fb8-01f1-51ec-8b9c-4fc73c318617",
+          "retrieval_path": "relation"
+        },
+        {
+          "place_id": 1021,
+          "score": 0.46450677514076233,
+          "chunk_id": "383b63b4-eca3-5836-a821-8b689515e81a",
+          "retrieval_path": "relation"
+        },
+        {
+          "place_id": 1016,
+          "score": 0.46077415347099304,
+          "chunk_id": "bd1cc862-f81e-5e2e-b700-d147a473d477",
+          "retrieval_path": "relation"
+        },
+        {
+          "place_id": 1018,
+          "score": 0.45504721999168396,
+          "chunk_id": "457b8f2b-fdaa-5e94-a043-3a666c52bd85",
+          "retrieval_path": "relation"
+        },
+        {
+          "place_id": 1027,
+          "score": 0.45426031947135925,
+          "chunk_id": "d24ac0f1-2435-571e-b1fe-8c8eb322eaf3",
+          "retrieval_path": "relation"
+        },
+        {
+          "place_id": 1014,
+          "score": 0.45368537306785583,
+          "chunk_id": "b9de82cc-0571-51bb-8781-4c3ba8131ed6",
+          "retrieval_path": "relation"
+        },
+        {
+          "place_id": 1011,
+          "score": 0.45283836126327515,
+          "chunk_id": "03f28b8b-d7ab-5b43-8a73-4dd38ea40252",
+          "retrieval_path": "relation"
+        },
+        {
+          "place_id": 1013,
+          "score": 0.45262667536735535,
+          "chunk_id": "e033433a-0119-5850-bdad-ba3b90833cfc",
+          "retrieval_path": "relation"
+        },
+        {
+          "place_id": 1019,
+          "score": 0.45057088136672974,
+          "chunk_id": "8d9e0c0f-1122-55e8-9707-c7c6d061a9e1",
+          "retrieval_path": "relation"
+        },
+        {
+          "place_id": 1020,
+          "score": 0.44782254099845886,
+          "chunk_id": "ab15924e-f651-5c65-bbfc-67f679c170ff",
+          "retrieval_path": "relation"
+        },
+        {
+          "place_id": 1012,
+          "score": 0.44634386897087097,
+          "chunk_id": "47ddbfd9-33c6-56a3-93fb-bdb4817aea5f",
+          "retrieval_path": "relation"
+        },
+        {
+          "place_id": 1017,
+          "score": 0.4441729784011841,
+          "chunk_id": "70bfab0e-c3d8-5de5-ab07-0ca3b41435ea",
+          "retrieval_path": "relation"
+        },
+        {
+          "place_id": 1001,
+          "score": 0.43986761569976807,
+          "chunk_id": "64343591-1952-5d48-a6a6-7e5b303381bb",
+          "retrieval_path": "relation"
+        },
+        {
+          "place_id": 1010,
+          "score": 0.4378235340118408,
+          "chunk_id": "380ef480-3686-5416-aa36-d2d472a7fdac",
+          "retrieval_path": "relation"
+        },
+        {
+          "place_id": 1003,
+          "score": 0.43164411187171936,
+          "chunk_id": "5901c8ca-e895-5a6a-b2da-445f3a531b80",
+          "retrieval_path": "relation"
+        },
+        {
+          "place_id": 1005,
+          "score": 0.4194101393222809,
+          "chunk_id": "867c5b1f-9894-5511-a95d-a0f447806a3f",
+          "retrieval_path": "relation"
+        },
+        {
+          "place_id": 1008,
+          "score": 0.41905349493026733,
+          "chunk_id": "b486b9c6-8dea-534e-ab91-cdccd2cde37e",
+          "retrieval_path": "relation"
+        },
+        {
+          "place_id": 1004,
+          "score": 0.41685599088668823,
+          "chunk_id": "13e6eef8-7429-5138-93bd-e8e119f10e7f",
+          "retrieval_path": "relation"
+        },
+        {
+          "place_id": 1002,
+          "score": 0.41673728823661804,
+          "chunk_id": "ab1a1daf-09d8-588c-9bdd-d1721fd1e028",
+          "retrieval_path": "relation"
+        },
+        {
+          "place_id": 1006,
+          "score": 0.40786394476890564,
+          "chunk_id": "24b8c01b-e51f-5de8-bca8-06cfdbf92c78",
+          "retrieval_path": "relation"
+        },
+        {
+          "place_id": 1009,
+          "score": 0.40474268794059753,
+          "chunk_id": "568639a3-df87-5009-8bfb-202b0122800b",
+          "retrieval_path": "relation"
+        },
+        {
+          "place_id": 1007,
+          "score": 0.39158040285110474,
+          "chunk_id": "8bbdca03-470f-56d9-8d1e-d30e43378950",
+          "retrieval_path": "relation"
+        }
+      ]
+    },
+    {
+      "phase": "chunk-and-relation-v1",
+      "id": "supporting-from-a",
+      "candidate_count": 0,
+      "rerank_pairs": 0,
+      "target_indexed": false,
+      "target_candidate_rank": null,
+      "target_reached_reranker": false,
+      "target_final_rank": null,
+      "target_representative_correct": false,
+      "target_retrieval_path": null,
+      "sql_candidate_ms": 2.971784007968381,
+      "sql_expansion_ms": 0.0015690020518377423,
+      "candidate_place_ids": [],
+      "ranked_places": []
+    },
+    {
+      "phase": "chunk-and-relation-v1",
+      "id": "primary-stairs",
+      "candidate_count": 1,
+      "rerank_pairs": 2,
+      "target_indexed": true,
+      "target_candidate_rank": 1,
+      "target_reached_reranker": true,
+      "target_final_rank": 1,
+      "target_representative_correct": true,
+      "target_retrieval_path": "relation",
+      "sql_candidate_ms": 1.9846000068355352,
+      "sql_expansion_ms": 1.6111459990497679,
+      "candidate_place_ids": [
+        101
+      ],
+      "ranked_places": [
+        {
+          "place_id": 101,
+          "score": 0.8618873357772827,
+          "chunk_id": "4b5cc070-6010-519c-af1b-0f5111263807",
+          "retrieval_path": "relation"
+        }
+      ]
+    },
+    {
+      "phase": "chunk-and-relation-v1",
+      "id": "real-parking",
+      "candidate_count": 30,
+      "rerank_pairs": 31,
+      "target_indexed": true,
+      "target_candidate_rank": 1,
+      "target_reached_reranker": true,
+      "target_final_rank": 1,
+      "target_representative_correct": true,
+      "target_retrieval_path": null,
+      "sql_candidate_ms": 2.953667994006537,
+      "sql_expansion_ms": 16.180728998733684,
+      "candidate_place_ids": [
+        394,
+        202,
+        1033,
+        1038,
+        1037,
+        1004,
+        1016,
+        1003,
+        1015,
+        1032,
+        1007,
+        1002,
+        1001,
+        1009,
+        1008,
+        1017,
+        1028,
+        1029,
+        1039,
+        1005,
+        1012,
+        1027,
+        1030,
+        1024,
+        1036,
+        1006,
+        1022,
+        1040,
+        1020,
+        1014
+      ],
+      "ranked_places": [
+        {
+          "place_id": 394,
+          "score": 0.999651312828064,
+          "chunk_id": "f8aa24f2-d4a2-5e1a-bc32-4c3fb8534e32",
+          "retrieval_path": null
+        },
+        {
+          "place_id": 202,
+          "score": 0.1212688684463501,
+          "chunk_id": "a625576f-64b0-5a30-9670-36b33c0e7048",
+          "retrieval_path": null
+        },
+        {
+          "place_id": 1027,
+          "score": 0.0008426423300988972,
+          "chunk_id": "d24ac0f1-2435-571e-b1fe-8c8eb322eaf3",
+          "retrieval_path": null
+        },
+        {
+          "place_id": 1003,
+          "score": 0.0008263576892204583,
+          "chunk_id": "5901c8ca-e895-5a6a-b2da-445f3a531b80",
+          "retrieval_path": null
+        },
+        {
+          "place_id": 1033,
+          "score": 0.0008231385727412999,
+          "chunk_id": "3bba97ca-d1a9-5d86-bc8f-adae2e0b1178",
+          "retrieval_path": null
+        },
+        {
+          "place_id": 1030,
+          "score": 0.0008167381165549159,
+          "chunk_id": "e29aa693-ac7e-5642-a948-7bd143b28419",
+          "retrieval_path": null
+        },
+        {
+          "place_id": 1029,
+          "score": 0.0008040859247557819,
+          "chunk_id": "c4056614-13eb-597f-948f-818e5498eb1f",
+          "retrieval_path": null
+        },
+        {
+          "place_id": 1017,
+          "score": 0.0008009536541067064,
+          "chunk_id": "70bfab0e-c3d8-5de5-ab07-0ca3b41435ea",
+          "retrieval_path": null
+        },
+        {
+          "place_id": 1028,
+          "score": 0.0008009536541067064,
+          "chunk_id": "4b40d3bb-02f4-5d76-b46c-a795b60dc48c",
+          "retrieval_path": null
+        },
+        {
+          "place_id": 1037,
+          "score": 0.00079783343244344,
+          "chunk_id": "ba3f3730-ce51-50d0-a0b3-6a649d315f77",
+          "retrieval_path": null
+        },
+        {
+          "place_id": 1032,
+          "score": 0.0007885457598604262,
+          "chunk_id": "3f3e3be9-1ffa-5974-88af-a4e68638b8b6",
+          "retrieval_path": null
+        },
+        {
+          "place_id": 1007,
+          "score": 0.0007854739669710398,
+          "chunk_id": "8bbdca03-470f-56d9-8d1e-d30e43378950",
+          "retrieval_path": null
+        },
+        {
+          "place_id": 1006,
+          "score": 0.0007763299508951604,
+          "chunk_id": "24b8c01b-e51f-5de8-bca8-06cfdbf92c78",
+          "retrieval_path": null
+        },
+        {
+          "place_id": 1004,
+          "score": 0.0007733057136647403,
+          "chunk_id": "13e6eef8-7429-5138-93bd-e8e119f10e7f",
+          "retrieval_path": null
+        },
+        {
+          "place_id": 1038,
+          "score": 0.0007702931761741638,
+          "chunk_id": "7b5eade9-4f33-5889-a7cd-6de26eeb1a0e",
+          "retrieval_path": null
+        },
+        {
+          "place_id": 1008,
+          "score": 0.0007554056355729699,
+          "chunk_id": "b486b9c6-8dea-534e-ab91-cdccd2cde37e",
+          "retrieval_path": null
+        },
+        {
+          "place_id": 1009,
+          "score": 0.0007524627726525068,
+          "chunk_id": "568639a3-df87-5009-8bfb-202b0122800b",
+          "retrieval_path": null
+        },
+        {
+          "place_id": 1040,
+          "score": 0.0007495314348489046,
+          "chunk_id": "bc30d081-2fca-56c0-9e60-8998649fd6b1",
+          "retrieval_path": null
+        },
+        {
+          "place_id": 1036,
+          "score": 0.0007408055826090276,
+          "chunk_id": "46f1d6d7-e31e-5d24-8c84-daf07a106dd6",
+          "retrieval_path": null
+        },
+        {
+          "place_id": 1001,
+          "score": 0.0007350447704084218,
+          "chunk_id": "64343591-1952-5d48-a6a6-7e5b303381bb",
+          "retrieval_path": null
+        },
+        {
+          "place_id": 1016,
+          "score": 0.0007321811863221228,
+          "chunk_id": "bd1cc862-f81e-5e2e-b700-d147a473d477",
+          "retrieval_path": null
+        },
+        {
+          "place_id": 1014,
+          "score": 0.0007321811863221228,
+          "chunk_id": "b9de82cc-0571-51bb-8781-4c3ba8131ed6",
+          "retrieval_path": null
+        },
+        {
+          "place_id": 1005,
+          "score": 0.0007293288363143802,
+          "chunk_id": "867c5b1f-9894-5511-a95d-a0f447806a3f",
+          "retrieval_path": null
+        },
+        {
+          "place_id": 1039,
+          "score": 0.0007264875457622111,
+          "chunk_id": "1a383baa-2677-5e44-aba2-0ea8d7a1e399",
+          "retrieval_path": null
+        },
+        {
+          "place_id": 1020,
+          "score": 0.0007208379684016109,
+          "chunk_id": "ab15924e-f651-5c65-bbfc-67f679c170ff",
+          "retrieval_path": null
+        },
+        {
+          "place_id": 1015,
+          "score": 0.0007014083093963563,
+          "chunk_id": "a0299fb8-01f1-51ec-8b9c-4fc73c318617",
+          "retrieval_path": null
+        },
+        {
+          "place_id": 1002,
+          "score": 0.0006986756343394518,
+          "chunk_id": "ab1a1daf-09d8-588c-9bdd-d1721fd1e028",
+          "retrieval_path": null
+        },
+        {
+          "place_id": 1022,
+          "score": 0.0006745558930560946,
+          "chunk_id": "4774fb27-63ca-5687-86dd-1e140ef57fe0",
+          "retrieval_path": null
+        },
+        {
+          "place_id": 1024,
+          "score": 0.0006693099858239293,
+          "chunk_id": "a03d96c8-5563-515d-a2e5-5c05e67fa2d9",
+          "retrieval_path": null
+        },
+        {
+          "place_id": 1012,
+          "score": 0.0006641048239544034,
+          "chunk_id": "47ddbfd9-33c6-56a3-93fb-bdb4817aea5f",
+          "retrieval_path": null
+        }
+      ]
+    },
+    {
+      "phase": "chunk-and-relation-v1",
+      "id": "real-view-regression",
+      "candidate_count": 2,
+      "rerank_pairs": 2,
+      "target_indexed": null,
+      "target_candidate_rank": 1,
+      "target_reached_reranker": null,
+      "target_final_rank": 1,
+      "target_representative_correct": null,
+      "target_retrieval_path": null,
+      "sql_candidate_ms": 2.065148000838235,
+      "sql_expansion_ms": 1.6322300070896745,
+      "candidate_place_ids": [
+        394,
+        101
+      ],
+      "ranked_places": [
+        {
+          "place_id": 394,
+          "score": 0.022542964667081833,
+          "chunk_id": "da9d85a8-d80e-539e-ac25-020f712e6e6d",
+          "retrieval_path": null
+        },
+        {
+          "place_id": 101,
+          "score": 0.021532878279685974,
+          "chunk_id": "7ea8ad87-e493-59bc-b5fa-e59537dc853f",
+          "retrieval_path": null
+        }
+      ]
+    }
+  ]
+}

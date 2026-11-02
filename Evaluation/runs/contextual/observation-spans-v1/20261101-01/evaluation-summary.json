@@ -1,0 +1,109 @@
+{
+  "api_calls": 2,
+  "free_revalidations": 1,
+  "provider_reported_cost_usd": "0.02041",
+  "original_responses": [
+    {
+      "id": "P08",
+      "original_status": "FAILED",
+      "provider_model": "perplexity/sonar",
+      "provider_response_id": "resp_eaf0eb8d-1e6b-4efa-91aa-f3e9683ca70c",
+      "reported_cost_usd": 0.01018
+    },
+    {
+      "id": "P09",
+      "original_status": "COLLECTED",
+      "provider_model": "perplexity/sonar",
+      "provider_response_id": "resp_86882abb-1f8b-48a2-86d5-d0b95dd7afe5",
+      "reported_cost_usd": 0.01023
+    }
+  ],
+  "records": [
+    {
+      "id": "P08",
+      "indexable": 11,
+      "excluded": 18,
+      "validation_version": "contextual-validation-v3",
+      "excluded_reasons": {
+        "invalid_attribution": 6,
+        "unresolved_movement": 3,
+        "unattributed": 9
+      }
+    },
+    {
+      "id": "P09",
+      "indexable": 22,
+      "excluded": 6,
+      "validation_version": "contextual-validation-v3",
+      "excluded_reasons": {
+        "invalid_attribution": 4,
+        "unattributed": 2
+      }
+    }
+  ],
+  "search_executions": 0,
+  "database_writes": 0,
+  "fixed_regressions": [
+    {
+      "id": "P08-view-owner",
+      "passed": true,
+      "matched_rows": [
+        "P08-N016"
+      ],
+      "indexable_subject_ids": [],
+      "model_subject_ids": []
+    },
+    {
+      "id": "P08-transition",
+      "passed": true,
+      "matched_rows": [
+        "P08-N024"
+      ],
+      "indexable_subject_ids": [
+        394
+      ],
+      "model_subject_ids": [
+        394
+      ]
+    },
+    {
+      "id": "P08-weekend-parking",
+      "passed": true,
+      "matched_rows": [
+        "P08-N006"
+      ],
+      "indexable_subject_ids": [
+        394
+      ],
+      "model_subject_ids": [
+        394
+      ]
+    },
+    {
+      "id": "P09-parking",
+      "passed": true,
+      "matched_rows": [
+        "P09-N003"
+      ],
+      "indexable_subject_ids": [
+        394
+      ],
+      "model_subject_ids": [
+        394
+      ]
+    },
+    {
+      "id": "P09-view-owner",
+      "passed": false,
+      "matched_rows": [
+        "P09-N015"
+      ],
+      "indexable_subject_ids": [
+        394
+      ],
+      "model_subject_ids": [
+        394
+      ]
+    }
+  ]
+}

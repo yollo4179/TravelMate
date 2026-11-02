@@ -1,0 +1,9 @@
+services:
+  search:
+    gpus: all
+    entrypoint: ["python", "/workspace/Docker/embedding-entrypoint.py"]
+    command: []
+    environment:
+      PYTHONPATH: /workspace/embedding-server
+      EMBEDDING_DEVICE: cuda
+      RERANKER_DEVICE: cuda

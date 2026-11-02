@@ -1,0 +1,72 @@
+{
+  "base_commit": "87e06d3e7685f252c2008c672343f58011b0123c",
+  "code": {
+    "embedding-server/app/kafka_runtime.py": {
+      "raw_sha256": "fbf78fa33acd6724ce87712160b81238224d186c305c89c5c456b776c465ae3b",
+      "lf_sha256": "fbf78fa33acd6724ce87712160b81238224d186c305c89c5c456b776c465ae3b"
+    },
+    "embedding-server/tests/contextual_search_fixtures.py": {
+      "raw_sha256": "221b0a300d92ec9857afede1ef108ba063ef594cc3cdbc61feb9569ff28e809e",
+      "lf_sha256": "221b0a300d92ec9857afede1ef108ba063ef594cc3cdbc61feb9569ff28e809e"
+    },
+    "embedding-server/tests/test_contextual_general_search_contract.py": {
+      "raw_sha256": "badd6144e1834c1cd8cea7c65369c542b0d422901c1cef6e234ad6b49bbbcd21",
+      "lf_sha256": "badd6144e1834c1cd8cea7c65369c542b0d422901c1cef6e234ad6b49bbbcd21"
+    },
+    "Evaluation/tracks/contextual/general_search_scope_replay.py": {
+      "raw_sha256": "ba30c2bef1b60dc3383a93fda06966709eec4b1db9cc3a4b017330b1f6e7715e",
+      "lf_sha256": "ba30c2bef1b60dc3383a93fda06966709eec4b1db9cc3a4b017330b1f6e7715e"
+    },
+    "Evaluation/tracks/contextual/evidence_quality_replay.py": {
+      "raw_sha256": "b08a6055893c99a61cf9450aa175afabcf31f17bdbd1bf6660b0741d339c9658",
+      "lf_sha256": "b08a6055893c99a61cf9450aa175afabcf31f17bdbd1bf6660b0741d339c9658"
+    },
+    "Evaluation/tracks/contextual/experiments/connection_quality/connection_statements.py": {
+      "raw_sha256": "6bff9f5abbbf903646b8e40b89a3ba0af9f6c5c7ac2f2eda00e40cef4d943cb8",
+      "lf_sha256": "6bff9f5abbbf903646b8e40b89a3ba0af9f6c5c7ac2f2eda00e40cef4d943cb8"
+    },
+    "Evaluation/tracks/contextual/experiments/connection_quality/evidence_quality.py": {
+      "raw_sha256": "e082bfdd4c1c0e049a1191921b03fe4575053438dc3cd88747d70d19848fb94a",
+      "lf_sha256": "e082bfdd4c1c0e049a1191921b03fe4575053438dc3cd88747d70d19848fb94a"
+    },
+    "Evaluation/tracks/contextual/experiments/connection_quality/test_policy.py": {
+      "raw_sha256": "578e4c563d76ad8cbf45562b17bc57928b96e600e3f04355455777e4d5fac041",
+      "lf_sha256": "ff4de937f6109d317865e13dbfdddff564af7cc1ed009635d691c31d29e8c276"
+    }
+  },
+  "files": {
+    "environment.json": {
+      "raw_sha256": "98379fbc1a8ad85c5ade41672930f363696f43d903cbe3f45c1f50ba6170a8d4",
+      "lf_sha256": "98379fbc1a8ad85c5ade41672930f363696f43d903cbe3f45c1f50ba6170a8d4"
+    },
+    "experiment-opt-in.json": {
+      "raw_sha256": "ee26c7f118884dba2381598dc51d527f0d02d95762de6722d2b948f7f643793e",
+      "lf_sha256": "a8f7ab6cc8422754a05f99d6e756c4ff11f587dec160a5d63019a3e44b75d64c"
+    },
+    "publish_manifest.py": {
+      "raw_sha256": "31ea94967984362d9d3964b84757a5a6dbd705453a3ec81c65efd0374b09ab5e",
+      "lf_sha256": "31ea94967984362d9d3964b84757a5a6dbd705453a3ec81c65efd0374b09ab5e"
+    },
+    "replay.json": {
+      "raw_sha256": "0f12d9a274c81d2056c248ee722f089b6b3b196f3931fc206428df2ae7c08d61",
+      "lf_sha256": "624736a65818abf0d2b21bf5577ae7352b4abbfd3f61ba46cfc462895bc4b80c"
+    },
+    "REPORT.md": {
+      "raw_sha256": "30fbd24607731866fdbca85b322a7bb82093699fb321e06ce8edc8d0a1f09c31",
+      "lf_sha256": "30fbd24607731866fdbca85b322a7bb82093699fb321e06ce8edc8d0a1f09c31"
+    },
+    "run-server-tests.py": {
+      "raw_sha256": "e2b39248f95205676ffe15b5879ed01976c842e2e96ca80434bd588f064321a4",
+      "lf_sha256": "e2b39248f95205676ffe15b5879ed01976c842e2e96ca80434bd588f064321a4"
+    },
+    "tests.json": {
+      "raw_sha256": "66ecd6ee474158bc05fc22a46281d62c8a55d6178797581daac7dcb3cb4901a1",
+      "lf_sha256": "66ecd6ee474158bc05fc22a46281d62c8a55d6178797581daac7dcb3cb4901a1"
+    }
+  },
+  "input_sha256": {
+    "comparison.json": "4a92a668732141d558c459d19fa0eb47942dee8277bf4250698e79641c2161f4",
+    "comparison-plan.json": "f946933e6d0d28c3d522d32ddc64e521beb15526146e51c00cd5ba18de75779b"
+  },
+  "hash_basis": "raw_sha256 is the execution bytes; lf_sha256 normalizes CRLF to LF for Git publication."
+}

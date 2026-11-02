@@ -1,0 +1,11 @@
+{
+  "tests_run": 110,
+  "failures": 0,
+  "errors": 0,
+  "skipped": 1,
+  "successful": true,
+  "scope": "full",
+  "production_database_writes": 0,
+  "api_calls": 0,
+  "model_search_executions": 0
+}

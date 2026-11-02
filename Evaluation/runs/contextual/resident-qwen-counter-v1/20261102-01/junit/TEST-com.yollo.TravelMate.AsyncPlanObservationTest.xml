@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.yollo.TravelMate.AsyncPlanObservationTest" tests="1" skipped="0" failures="0" errors="0" timestamp="2026-11-02T00:56:33.393Z" hostname="DESKTOP-MS327CL" time="2.173">
+  <properties/>
+  <testcase name="realExecutorPreservesParentTurnAndToolForTheAdditionalBudgetedModelCall()" classname="com.yollo.TravelMate.AsyncPlanObservationTest" time="2.173"/>
+  <system-out><![CDATA[09:56:34.901 [Test worker] INFO org.hibernate.validator.internal.util.Version -- HV000001: Hibernate Validator 8.0.3.Final
+09:56:35.493 [pool-1-thread-1] INFO com.yollo.TravelMate.domain.plan.service.ContextPlanningService -- planning job=221acd2d-ade0-46d5-9e45-f64bc366095d stage=SEARCHING radiusMeters=3000
+09:56:35.511 [pool-1-thread-1] INFO com.yollo.TravelMate.domain.plan.service.ContextPlanningService -- planning job=221acd2d-ade0-46d5-9e45-f64bc366095d stage=GENERATING candidateIds=[101] contextIncluded=true promptCharacters=1053
+09:56:35.524 [pool-1-thread-1] INFO com.yollo.TravelMate.domain.plan.service.ContextPlanningService -- planning job=221acd2d-ade0-46d5-9e45-f64bc366095d stage=VALIDATING_RESULT responseCharacters=130
+09:56:35.534 [pool-1-thread-1] INFO com.yollo.TravelMate.domain.plan.service.ContextPlanningService -- planning job=221acd2d-ade0-46d5-9e45-f64bc366095d stage=SUCCEEDED planId=77 pinCount=1
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

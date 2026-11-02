@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.yollo.TravelMate.ConversationToolLoopTest" tests="24" skipped="0" failures="0" errors="0" timestamp="2026-11-02T02:37:11.335Z" hostname="DESKTOP-MS327CL" time="1.58">
+  <properties/>
+  <testcase name="repeatedGenerationIsCachedAndAPlanningReceiptRemainsPrimaryAfterLaterSearch()" classname="com.yollo.TravelMate.ConversationToolLoopTest" time="0.619"/>
+  <testcase name="[1] defect=wrong-place" classname="com.yollo.TravelMate.ConversationToolLoopTest" time="0.079"/>
+  <testcase name="[2] defect=wrong-source" classname="com.yollo.TravelMate.ConversationToolLoopTest" time="0.05"/>
+  <testcase name="[3] defect=invented-id" classname="com.yollo.TravelMate.ConversationToolLoopTest" time="0.046"/>
+  <testcase name="[4] defect=supplement" classname="com.yollo.TravelMate.ConversationToolLoopTest" time="0.056"/>
+  <testcase name="[5] defect=negation-rewrite" classname="com.yollo.TravelMate.ConversationToolLoopTest" time="0.046"/>
+  <testcase name="duplicateCallIdsRejectTheWholeBatchBeforeAnySideEffects()" classname="com.yollo.TravelMate.ConversationToolLoopTest" time="0.024"/>
+  <testcase name="modelCannotReplaceServerPlaceOrPlanDataInFinalJson()" classname="com.yollo.TravelMate.ConversationToolLoopTest" time="0.039"/>
+  <testcase name="ownedSucceededJobReturnsOnlyTheDraftActuallyReadFromTheServer()" classname="com.yollo.TravelMate.ConversationToolLoopTest" time="0.04"/>
+  <testcase name="modelFailureAfterToolExecutionRetainsTheReceiptWithoutRetryingOrRegenerating()" classname="com.yollo.TravelMate.ConversationToolLoopTest" time="0.032"/>
+  <testcase name="modelAndToolLimitsStopLoopsAndPreserveAlreadyObservedServerResults()" classname="com.yollo.TravelMate.ConversationToolLoopTest" time="0.053"/>
+  <testcase name="ownershipFailureIsReturnedAsAToolErrorWithoutLoadingADraft()" classname="com.yollo.TravelMate.ConversationToolLoopTest" time="0.072"/>
+  <testcase name="[1] name=modify_plan" classname="com.yollo.TravelMate.ConversationToolLoopTest" time="0.022"/>
+  <testcase name="[2] name=rollback_plan" classname="com.yollo.TravelMate.ConversationToolLoopTest" time="0.031"/>
+  <testcase name="[3] name=not_registered" classname="com.yollo.TravelMate.ConversationToolLoopTest" time="0.024"/>
+  <testcase name="[1] status=QUEUED" classname="com.yollo.TravelMate.ConversationToolLoopTest" time="0.027"/>
+  <testcase name="[2] status=RUNNING" classname="com.yollo.TravelMate.ConversationToolLoopTest" time="0.024"/>
+  <testcase name="[3] status=FAILED" classname="com.yollo.TravelMate.ConversationToolLoopTest" time="0.021"/>
+  <testcase name="actualToolLoopReturnsExactServerDataAndGroundsExplanationInSelectedOriginals()" classname="com.yollo.TravelMate.ConversationToolLoopTest" time="0.044"/>
+  <testcase name="[1] arguments=[]" classname="com.yollo.TravelMate.ConversationToolLoopTest" time="0.018"/>
+  <testcase name="[2] arguments={" classname="com.yollo.TravelMate.ConversationToolLoopTest" time="0.02"/>
+  <testcase name="[3] arguments={&quot;query&quot;:&quot;야경&quot;,&quot;limit&quot;:5,&quot;userUid&quot;:&quot;victim&quot;}" classname="com.yollo.TravelMate.ConversationToolLoopTest" time="0.017"/>
+  <testcase name="[4] arguments={&quot;query&quot;:&quot;야경&quot;,&quot;limit&quot;:21}" classname="com.yollo.TravelMate.ConversationToolLoopTest" time="0.02"/>
+  <testcase name="[5] arguments={&quot;query&quot;:&quot;야경&quot;,&quot;limit&quot;:5} {}" classname="com.yollo.TravelMate.ConversationToolLoopTest" time="0.024"/>
+  <system-out><![CDATA[11:37:10.811 [Test worker] INFO org.hibernate.validator.internal.util.Version -- HV000001: Hibernate Validator 8.0.3.Final
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

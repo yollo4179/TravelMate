@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.yollo.TravelMate.SearchToolContractRegressionTest" tests="22" skipped="0" failures="0" errors="0" timestamp="2026-11-02T04:54:18.074Z" hostname="DESKTOP-MS327CL" time="0.128">
+  <properties/>
+  <testcase name="unicodeLengthUsesCodepointsInBothSchemaAndEffectiveCriteria()" classname="com.yollo.TravelMate.SearchToolContractRegressionTest" time="0.013"/>
+  <testcase name="[1] encoded={&quot;query&quot;:&quot;x&quot;}" classname="com.yollo.TravelMate.SearchToolContractRegressionTest" time="0.001"/>
+  <testcase name="[2] encoded={&quot;query&quot;:&quot;x&quot;,&quot;region&quot;:null,&quot;city&quot;:null,&quot;category&quot;:null,&quot;exclude_place_ids&quot;:null,&quot;area&quot;:null}" classname="com.yollo.TravelMate.SearchToolContractRegressionTest" time="0.002"/>
+  <testcase name="[3] encoded={&quot;query&quot;:&quot;x&quot;,&quot;limit&quot;:1,&quot;exclude_place_ids&quot;:[1,9223372036854775807]}" classname="com.yollo.TravelMate.SearchToolContractRegressionTest" time="0.002"/>
+  <testcase name="[4] encoded={&quot;query&quot;:&quot;x&quot;,&quot;limit&quot;:20,&quot;area&quot;:{&quot;type&quot;:&quot;CIRCLE&quot;,&quot;center&quot;:{&quot;lat&quot;:-90,&quot;lon&quot;:180},&quot;radius_meters&quot;:10000}}" classname="com.yollo.TravelMate.SearchToolContractRegressionTest" time="0.002"/>
+  <testcase name="[1] encoded={}" classname="com.yollo.TravelMate.SearchToolContractRegressionTest" time="0.002"/>
+  <testcase name="[2] encoded={&quot;query&quot;:null}" classname="com.yollo.TravelMate.SearchToolContractRegressionTest" time="0.001"/>
+  <testcase name="[3] encoded={&quot;query&quot;:&quot; &quot;}" classname="com.yollo.TravelMate.SearchToolContractRegressionTest" time="0.001"/>
+  <testcase name="[4] encoded={&quot;query&quot;:&quot;\u2003&quot;}" classname="com.yollo.TravelMate.SearchToolContractRegressionTest" time="0.001"/>
+  <testcase name="[5] encoded={&quot;query&quot;:&quot;x&quot;,&quot;excludePlaceIds&quot;:[]}" classname="com.yollo.TravelMate.SearchToolContractRegressionTest" time="0.001"/>
+  <testcase name="[6] encoded={&quot;query&quot;:&quot;x&quot;,&quot;limit&quot;:null}" classname="com.yollo.TravelMate.SearchToolContractRegressionTest" time="0.001"/>
+  <testcase name="[7] encoded={&quot;query&quot;:&quot;x&quot;,&quot;limit&quot;:0}" classname="com.yollo.TravelMate.SearchToolContractRegressionTest" time="0.0"/>
+  <testcase name="[8] encoded={&quot;query&quot;:&quot;x&quot;,&quot;limit&quot;:21}" classname="com.yollo.TravelMate.SearchToolContractRegressionTest" time="0.0"/>
+  <testcase name="[9] encoded={&quot;query&quot;:&quot;x&quot;,&quot;exclude_place_ids&quot;:[1,1.0]}" classname="com.yollo.TravelMate.SearchToolContractRegressionTest" time="0.001"/>
+  <testcase name="[10] encoded={&quot;query&quot;:&quot;x&quot;,&quot;exclude_place_ids&quot;:[1.5]}" classname="com.yollo.TravelMate.SearchToolContractRegressionTest" time="0.001"/>
+  <testcase name="[11] encoded={&quot;query&quot;:&quot;x&quot;,&quot;city&quot;:&quot; &quot;}" classname="com.yollo.TravelMate.SearchToolContractRegressionTest" time="0.0"/>
+  <testcase name="[12] encoded={&quot;query&quot;:&quot;x&quot;,&quot;area&quot;:{&quot;type&quot;:&quot;CIRCLE&quot;,&quot;center&quot;:{&quot;lat&quot;:91,&quot;lon&quot;:0},&quot;radius_meters&quot;:500}}" classname="com.yollo.TravelMate.SearchToolContractRegressionTest" time="0.001"/>
+  <testcase name="[13] encoded={&quot;query&quot;:&quot;x&quot;,&quot;area&quot;:{&quot;type&quot;:&quot;CIRCLE&quot;,&quot;center&quot;:{&quot;lat&quot;:0,&quot;lon&quot;:0},&quot;radius_meters&quot;:499}}" classname="com.yollo.TravelMate.SearchToolContractRegressionTest" time="0.001"/>
+  <testcase name="exportedSchemaCannotBeMutatedToRelaxRuntimeValidation()" classname="com.yollo.TravelMate.SearchToolContractRegressionTest" time="0.001"/>
+  <testcase name="PLR-TM-palaces-01" classname="com.yollo.TravelMate.SearchToolContractRegressionTest" time="0.05"/>
+  <testcase name="PLR-TM-palaces-03" classname="com.yollo.TravelMate.SearchToolContractRegressionTest" time="0.006"/>
+  <testcase name="exportContractAndTechnicalCasesForAnIndependentOfflineJsonSchemaCheck()" classname="com.yollo.TravelMate.SearchToolContractRegressionTest" time="0.008"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

@@ -1,0 +1,11 @@
+{
+  "remaining_test_schemas_before_removal": 0,
+  "removed_containers": [
+    "tm-v7-eval-general-relations-runner",
+    "tm-v7-eval-general-relations-db"
+  ],
+  "removed_network": "tm-v7-eval-general-relations",
+  "production_database_writes": 0,
+  "production_service_restarts": 0,
+  "worktree_preserved": "C:/Users/SSAFY/AppData/Local/Temp/travelmate-general-relation-retrieval"
+}

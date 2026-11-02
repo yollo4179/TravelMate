@@ -1,6 +1,6 @@
 # 공통 장소 청크·문맥 생성·검색 DB 명세
 
-문서 버전: 3 · 갱신: 2026-10-31
+문서 버전: 12 · 갱신: 2026-11-01
 
 [계획서](../plans/contextual-retrieval.md) · [구조도](../architecture/contextual-retrieval.md) · [기존 웹 수집](place-review-enrichment.md)
 
@@ -44,6 +44,10 @@ source_id는 출처 유형·URL 또는 TourAPI 콘텐츠 ID·필드명으로 결
 | [v1_contextual_prompt.py](../../embedding-server/app/contextual/prompts/v1_contextual_prompt.py) | `contextual-source-spans-v1`: 기존 지시문 그대로 보존 |
 | [v2_contextual_prompt.py](../../embedding-server/app/contextual/prompts/v2_contextual_prompt.py) | `contextual-source-spans-v2`: 새 생성의 기본값, 구간 중심 문맥·시설별 귀속·방문 조건 보존 |
 | [v3_contextual_prompt.py](../../embedding-server/app/contextual/prompts/v3_contextual_prompt.py) | `contextual-source-spans-v3`: 명시적으로 선택하는 후속 지시문. 단순 언급·조망 대상과 불명확한 귀속을 구분하며 이번 v1·v2 비교에는 사용하지 않음 |
+| [v4_contextual_prompt.py](../../embedding-server/app/contextual/prompts/v4_contextual_prompt.py) | `contextual-source-spans-v4`: 구간 주제 우선·인접 관찰 차용 금지·장소/시설 귀속을 강화한 실험 지시문. 기본값은 계속 v2 |
+| [v5_contextual_prompt.py](../../embedding-server/app/contextual/prompts/v5_contextual_prompt.py) | `contextual-source-spans-v5`: 코드가 추출한 `span.chunk_text`를 직접 읽는 선택 지시문. 명시적 청크 입력 필수. 22구간 검수에서 주제 대체 감소와 귀속 회귀가 함께 확인돼 기본값으로 채택하지 않음 |
+| [v6_contextual_prompt.py](../../embedding-server/app/contextual/prompts/v6_contextual_prompt.py) | `contextual-observation-relations-v6`: 관찰 종류와 장소 역할을 분리하고 출발지·도착지·이동 조건을 보존하는 선택 계약. 새 문장/문단 분할·명시적 입력·출력 스키마가 필요하며 기본값은 계속 v2 |
+| [v7_contextual_prompt.py](../../embedding-server/app/contextual/prompts/v7_contextual_prompt.py) | `contextual-independent-relations-v7`: 관찰 종류·subject와 독립적인 primary/supporting 관계 및 정확한 이동 근거를 보존하는 선택 계약. 실제 2건 검수에서 위치·귀속 오류가 남음, 기본값은 계속 v2 |
 
 v2는 보통 1~2문장을 권장하지만 필요한 구분·부정·조건을 생략하도록 강제하지 않는다. 600자 상한은 유지한다.
 **동일 문서의 청크 밖 배경도 장소 식별·지시 대상·배경 이해에 필요하면 허용한다.**
@@ -58,9 +62,200 @@ v2 검증기는 둘 중 entities만 남긴 응답과 비어 있지 않은 `hypot
 생성 지시문은 `prompt_version`, 응답 처리 규칙은 별도의 `validation_version`으로 구분한다.
 이 필드가 없는 기존 기록에는 이전의 엄격한 subject 필수 검증을 그대로 적용한다.
 
+v4 비교는 기존 v2 요청을 복사해 지시문만 바꾸고, 근거 수를 2개로 고정한 별도 실험 B다.
+원문·분할·모델 선택·effort·8192 출력 한도·스키마·도구·검증 규칙은 동일하다.
+v4의 mentioned·view_target·빈 귀속 처리도 기존 검증 버전 v2를 그대로 사용한다.
+[생성·검수·검색 실측 기록](../../Evaluation/runs/contextual/prompt-grounding-v1/20261031-01/REPORT.md)에서
+관측한 문맥 오류 감소와 검색 지표 불변을 구분한다. 프롬프트나 검색 기본값을 이 결과로 바꾸지 않는다.
+
+`GenerationBaseline.write_report(..., output_directory=...)`로 비교 보고서 저장 위치를 별도 지정할 수 있다.
+지정하지 않으면 기존 응답 폴더 아래 `comparisons/`를 사용한다. 요청·원본·해시·검증 내용은 바뀌지 않는다.
+Windows에서 원본 아카이브 아래의 깊은 경로가 파일 길이 제한을 넘으면 짧은 별도 위치를 사용한다.
+
+### 명시적 청크 입력과 후속 분할 준비
+
+입력 계약은 프롬프트·응답 스키마·검증 버전과 따로 구분한다.
+
+| `input_version` | 전달 형태 | 기본 여부 |
+|---|---|---|
+| `source-offsets-v1` | 문서 전체와 `source_id/start/end` | 기존 기본값, 과거 기록의 필드 생략도 이 버전 |
+| `source-explicit-chunks-v2` | 위 정보와 코드가 계산한 각 `span.chunk_text` | 명시적으로 선택 |
+
+청크 문자열은 보존 원문의 `source.text[start:end]`이며 정규화·공백 제거·모델 재작성 없이 전달한다.
+오프셋은 계속 Unicode 코드포인트 기준이며 emoji·CRLF·결합 문자도 그대로 유지한다.
+응답에 청크 원문을 다시 쓰게 하지 않고, 기존 응답 스키마·역할 검증·분할·청크 ID 계약을 유지한다.
+새 입력의 기록·캐시·무료 재검증에는 `input_version`을 보존한다. 기존 기록의 요청·해시는 바꾸지 않는다.
+
+비교는 다음처럼 나눈다. 한 번에 v4 위치 기반 입력→v5 명시적 입력으로 바꾸면 입력과 지시문이 함께 바뀐 비교다.
+
+1. **입력 형식만 비교:** 저장 v4 위치 입력→v4 명시적 입력. 지시문·모델·effort·한도·스키마·원문·분할을 고정한다.
+   `InputFormatComparison`은 청크 원문 추가만 허용하고 `comparison_kind=input-format-only`로 기록한다.
+   v4의 위치를 찾아 읽는 지시 자체는 이 단계에 남으므로, 명시적 원문을 우선 읽는 v5의 효과까지 검증한 것은 아니다.
+2. **명시적 입력에서 지시문만 비교:** 보존된 v4 명시적 입력 응답이 생긴 뒤 같은 입력을 v5에 사용한다.
+   기존 `GenerationBaseline`의 지시문 외 필드 동일 검증을 그대로 적용한다. v5에는 명시적 입력을 필수로 요구한다.
+3. **분할 비교:** 입력·선택 지시문을 고정한 별도 실험 C로 진행한다. 이전 청크의 문맥·장소 역할을 새 구간에 복사하지 않는다.
+
+입력 형식 비교의 대조군은 현재 응답 검증 버전이어야 한다. 과거 검증 버전 기록은 먼저 무료 재검증하고 비교한다.
+`--baseline-record`에 `--input-version source-explicit-chunks-v2`를 주면 입력 비교로 분리한다.
+`--comparison-output`으로 두 비교 방식 모두 짧은 보고서 폴더를 지정할 수 있다.
+실행 명령과 유료 호출 여부는 [평가 트랙 안내](../../Evaluation/tracks/contextual/README.md#명시적-원문-입력과-분할-후보-준비)에 적었다.
+
+`span_inputs.py`는 저장 v4 요청의 명시적 원문 입력과 구조 기반 분할 **후보**를 API·DB 호출 없이 별도 폴더에 준비한다.
+후보는 기존 청크 내부의 문단·생략 구분선·제목·문장 구분을 사용하고, 원문 offset·부모 구간·별도 후보 분할 버전을 보존한다.
+여러 장소를 의미적으로 판별한 운영 분할기가 아니며 모든 후보의 `indexable=false`다.
+기존 부모 경계에서 잘린 문장을 복원하지 않고, 매우 짧은 후보·주어 생략·장소당 활성 20개 상한의 누락도 해결하지 않는다.
+준비 단계에서 실제 9개 기록의 입력 22구간 보존·후보 136개·원본 36개 파일 해시를 확인했으며 생성·색인·검색 품질은 새로 측정하지 않았다.
+[준비·검증 기록](../../Evaluation/runs/contextual/span-inputs-v1/20261101-01/REPORT.md)에 범위를 구분했다.
+
+후속 실제 생성 검수는 **v4 위치 입력→v5 명시적 입력**의 두 필드 변경을
+`comparison_kind=explicit-input-and-instructions`로 별도 기록한다. 앞의 입력 형식 전용·지시문 전용 비교와 섞지 않는다.
+`span_generation.py prepare`는 기존 요청과 대조한 실행 계획을 쓰고, `generate --execute`만 최대 9회 유료 호출한다.
+요청·원본 해시 검증 후 지정 키 파일을 직접 읽으며, 실패·모델 불일치 시 뒤의 호출을 중단한다.
+기존 전송 시도나 완료/중단 요약이 있으면 자동 재실행하지 않는다. 오류 응답 진단에는 키를 제거한 제한된 본문만 남긴다.
+실제 요청·모델·검증 버전·비용을 감사하고, 문맥 의미 검수는 별도 파일에 기록한다.
+
+새 응답 9개·동일 22구간 검수에서 인접 청크 주제 대체는 2→0, 다른 장소 경관의 대상 subject 귀속 회귀는 0→1이었다.
+이는 한 번의 개발 표본 검수다. 입력 추가만의 효과나 이전 오류의 원인을 분리해 입증하지 않았고 검색은 재실행하지 않았다.
+분할·색인·기본값은 유지했다. [실제 문맥 검수 기록](../../Evaluation/runs/contextual/span-grounding-v1/20261101-01/REPORT.md)을 참고한다.
+
+### 관찰 단위 분할과 이동 관계: v6 보존 계약
+
+`source-span-v1`은 기존 800자·줄바꿈 분할이며 기본값을 유지한다.
+선택 버전 `sentence-paragraph-v2`는 보존 본문 전체의 문장 종결·문단·제목·구분선 경계를 사용한다.
+장소 이름의 개수는 분리 조건이 아니다. 한 문장에 있는 A→B 이동은 한 구간에 그대로 남긴다.
+블로그의 단순 시각적 줄바꿈을 모두 자르지 않으며, 800자보다 긴 구간에 경계가 없으면 임의 절단하지 않고 준비 단계에서 거부한다.
+이 휴리스틱이 모든 관찰·주제 경계를 정확히 찾는 것은 아니다. 같은 문장에 여러 관찰이 섞인 경우 귀속 보류·검수가 필요하다.
+
+새 구간은 정규화 없이 원문을 정확히 재현하며 `source_id/source_version/start/end/splitter_version`을 보존한다.
+`splitter_version`을 요청·기록·캐시·청크 UUID·DB 저장·무료 재검증까지 전달한다.
+경계가 우연히 같아도 분할 버전이 다르면 chunk_id가 다르며, 기존 버전의 ID와 해시는 그대로다.
+이전 청크의 문맥·역할을 새 구간에 복사하지 않고 Sonar에게 각 구간을 새로 판정하게 한다.
+
+v6는 기존 출력 필드에 다음을 **별도 스키마**로 추가한다. v1~v5 스키마는 바꾸지 않는다.
+
+- `content_kind`: `landscape | facility | movement | other`. 시설·이용, 경관, 이동 등 내용 종류다.
+- `place_refs[].role`: 기존 `subject | mentioned | view_target`. subject는 핵심 장소이며 내용 종류가 아니다.
+- `relations[]`: 이동의 `origin`, `destination`, `conditions`. 다른 내용은 빈 배열이다.
+- 각 endpoint의 `place_id`는 제공된 기존 ID 또는 `null`, `name`은 알려진 ID일 때 등록 이름과 일치해야 한다.
+- 이동 조건은 `stairs | distance | duration | other`와 현재 구간의 정확한 `quote`를 저장한다.
+  조건 인용이 원문에 있다는 검사가 의미 분류·방향까지 보증하지는 않는다.
+
+```json
+{
+  "content_kind": "movement",
+  "place_refs": [{"place_id": 101, "role": "subject"}, {"place_id": 202, "role": "subject"}],
+  "relations": [{"origin": {"place_id": 101, "name": "A공원"},
+                 "destination": {"place_id": 202, "name": "B공원"},
+                 "conditions": [{"kind": "stairs", "quote": "계단을 내려가"}]}]
+}
+```
+
+위 ID는 계약 설명용이다. 이동의 등록된 양끝은 핵심 참가자로서 subject가 될 수 있다.
+이는 경관·시설을 양쪽 장소에 귀속한다는 뜻이 아니다. 경관은 그 관찰 장소에, 주차는 해당 시설 장소에만 연결한다.
+등록되지 않은 출발지·도착지는 이름과 `null` ID로 보존하며 다른 장소의 ID를 대신 쓰지 않는다.
+알려진 endpoint가 하나도 없거나 구체적 이동 관계를 확정하지 못하면 원문·문맥은 남기고 검색을 보류한다.
+거리·시간·계단만으로 ‘쉽다·평탄하다·안전하다’를 만들지 않는다.
+
+v6 요청은 `fast`·8192 출력 한도·`tools=[]`로 별도 고정했다. 이번 검수에서 바뀐 것은 분할·지시문·출력 스키마·처리 버전이므로
+프롬프트만 바꾼 비교나 분할만의 효과로 표시하지 않는다.
+
+### 관찰 검증·검수 후 적용: v6 보존 계약
+
+v6의 새 기록은 `contextual-validation-v3`를 사용한다. v1~v5의 기존 처리 버전은 바꾸지 않는다.
+전체 출력 스키마와 source/span의 누락·중복·변조는 응답 검증 오류다.
+그 검사를 통과한 뒤 미등록 ID·관계 ID/명칭 불일치·현재 구간에 없는 조건 인용 등은 **해당 구간만**
+`invalid_attribution`으로 격리한다. `validation_error`·원래 역할·관계·문맥·원문을 보존하고 정상 구간은 처리한다.
+미등록 ID는 제공한 기존 장소 목록 밖의 ID를 뜻한다. 생성기가 운영 DB 전체를 조회한 결과로 해석하지 않는다.
+`content_kind=movement`이지만 구체적 관계가 없으면 `unresolved_movement`로 보존하고 검색에서 보류한다.
+스키마 통과와 의미 정확성은 별개다. v2 기록을 v3처럼 해석하지 않으며 받은 응답은 명시적 무료 재검증으로 새 기록을 만든다.
+
+새 분할 또는 관계 계약의 DB 적용에는 `contextual-approval-v1` 검수 목록이 필수다.
+요청 해시와 원본 4개 파일 해시에 묶인 `approved_chunk_ids`만 적용하며 오류·보류 구간은 승인할 수 없다.
+같은 이동 청크의 모든 핵심 참가자 귀속을 승인하는 의미다. 검수자는 에이전트일 수 있으며 사람 검수로 가장하지 않는다.
+승인 0개이면 기존 번들·활성 청크를 바꾸지 않고 종료한다. 승인된 청크에도 기존 장소별 20개·원문 중복 제거·출처 순회 선택을 적용한다.
+
+`generate --splitter-version sentence-paragraph-v2 --input-version source-explicit-chunks-v2 --prompt-version contextual-observation-relations-v6`
+는 새 계약의 선택 실행이다. `--execute` 없이는 미리보기다. 기존 `--baseline-record`의 프롬프트 전용 비교로 분할·스키마 변경을 통과시키지 않는다.
+`review`는 검수 후 명시한 ID 목록을 기록하고, `selection`은 DB 없이 선택·미선택 사유를 출력한다.
+`apply --review <검수파일>`은 기존대로 명시적 DB 적용이다. 이번 실험에서 apply는 실행하지 않았다.
+
+[실제 P08·P09 검수](../../Evaluation/runs/contextual/observation-spans-v1/20261101-01/REPORT.md)는 57구간·유료 2회·US$0.02041이다.
+자동 귀속은 고정 회귀 5개 중 4개 통과이며 P09 경관 오류가 남았다. 검수에서 승인하지 않은 뒤 선택 근거는 5개를 만족했다.
+이는 자동 판정 5/5나 검색 성능 개선을 뜻하지 않는다. 운영 기본값은 유지한다.
+
+### 핵심·보조 관계의 독립 보존: v7 선택 계약
+
+v6의 제한을 바꾸는 새 계약은 `contextual-independent-relations-v7`와 `contextual-validation-v4`다.
+기존 v1~v6 지시문·스키마·저장 기록은 그대로 읽으며 중요도를 임의로 채우지 않는다. 기본값은 계속 v2다.
+입력·분할은 명시적 원문과 `sentence-paragraph-v2`를 유지한다. 스키마 변경을 프롬프트 전용 비교로 통과시키지 않는다.
+
+`content_kind`는 주된 관찰의 종류이며 관계의 허용 조건이 아니다. 경관·시설·기타 청크에도 이동 관계를 둘 수 있다.
+각 관계에는 `type=movement`, `importance=primary|supporting`, `origin/destination/conditions`, `evidence`가 필요하다.
+primary는 핵심 관계, supporting은 주된 관찰에 덧붙은 보조 관계다. 둘 다 이동 검색에 사용하며 자동 점수 가중치는 없다.
+관계의 알려진 endpoint는 place_refs에 실제 역할로 보존하지만 subject와 같도록 강제하지 않는다.
+
+합성 예시 `A공원은 야경이 아름답고, 관람 후 B공원으로 걸어갈 수 있다.`는 한 청크로 보존한다.
+A=subject, B=mentioned, content_kind=landscape이며 A→B 관계는 supporting이다.
+관계의 `evidence={start,end,quote}`는 같은 원문 내 절대 Unicode 위치와 정확한 이동 절을 가리킨다.
+현재 청크 밖의 위치·변경된 인용·미등록 ID·등록 명칭 불일치·그 관계 근거 밖의 조건 인용은 해당 구간을 검증에서 격리한다.
+정확한 인용 검사만으로 모델이 이동 방향·주요도·의미 범위를 맞췄다고 보증하지 않으므로 검수 승인도 유지한다.
+
+DB의 `place_active_chunks.role`은 기존 `subject`와 새 `relation_endpoint`를 구분한다. 모델의 place_refs 역할을 바꾸지 않는다.
+A에는 subject 슬롯, B에는 relation_endpoint 슬롯이 같은 chunk/context를 참조한다. 원문·청크를 두 개로 나누거나 복제하지 않는다.
+DB trigger는 subject 슬롯에 명시적 subject를, relation_endpoint 슬롯에 독립 관계의 실제 참가자와 장소 참조를 요구한다.
+명확한 관계만 있고 subject가 없는 청크도 알려진 endpoint가 있으면 관계 전용 후보가 될 수 있다.
+알려진 endpoint도 subject도 없으면 귀속 보류로 보존한다.
+
+chunk-only의 일반 검색과 명시적 경관·시설 검색은 subject 슬롯과 해당 관찰의 주체만 사용한다.
+chunk-and-relation-v1의 필터 없는 일반 검색은 양쪽 활성 슬롯의 관계 인용도 조회한다. 전체 청크 벡터는 subject 슬롯에만 허용한다.
+명시적 이동 검색은 두 슬롯을 조회하고 관계 endpoint로 방향을 제한한다.
+관계 검색에는 청크의 content_kind가 movement일 필요가 없다. 후보와 복수 근거 확장에 같은 필터를 적용한다.
+이동 리랭킹 입력과 결과 description은 일치한 관계의 정확한 evidence.quote를 사용한다.
+응답 evidence에는 원문 전체·place_refs를 보존하고 `retrieval_scope=relation`, `matched_relations`, `search_text`로 사용 범위를 표시한다.
+따라서 보존용 전체 원문을 목적지의 경관·시설 근거로 해석하지 않아야 한다.
+목적지의 기본 장소 벡터도 출발지의 혼합 관찰을 재사용하지 않고 목적지 자체의 subject 근거 또는 기본 장소 설명에서 고른다.
+위 v7 초기 경로에서 관계 후보를 찾던 벡터는 전체 청크의 문맥+원문이었다. 후속 선택형 관계 인용 벡터와 일반 검색 통합은 아래 절에 구분해 기록한다.
+
+apply의 상태·지문 검사와 재색인 대상은 승인 청크의 subject 및 알려진 관계 endpoint의 합집합이다.
+단순 mentioned만 있는 장소는 계속 적용 대상이 아니다. 관계 endpoint는 실제 쓰기 대상이므로 삭제·재색인 대기 상태이면 원자 적용을 중단한다.
+검수 승인 0개는 기존 번들을 변경하지 않는다. 승인한 한 청크의 관찰·관계를 함께 승인하며 관계별 부분 승인은 지원하지 않는다.
+장소별 20개 상한을 관찰·관계 슬롯이 함께 사용한다. 최신 번들 교체 정책도 유지하므로 유지할 전체 자료를 함께 적용해야 한다.
+
+이 변경의 SQL 파일과 Docker 초기화 사본은 함께 수정했지만 이번에는 DB에 실행하지 않았다.
+운영 적용에는 해당 스키마 갱신·명시적 검수·재색인이 필요하며 기존 벡터가 자동 갱신되지 않는다.
+[코드 회귀·호환 검증 기록](../../Evaluation/runs/contextual/supporting-relations-v1/20261101-01/REPORT.md)에
+합성 A/B 사례와 실제 보존 파일 검증을 기록했다. 유료 호출·DB 조회/쓰기·실제 검색 성능 실행은 0회다.
+
+### 관계 인용의 서버 위치 계산: v8 선택 계약
+
+신규 `contextual-server-evidence-v8`은 v7의 역할·주체·핵심/보조 관계를 유지하면서 relation.evidence를 `{"quote": "정확한 원문"}`만 받는다.
+관계 위치의 start/end는 모델이 반환하지 않으며 출력 스키마도 이를 허용하지 않는다. 청크 자체의 source_id/start/end는 기존 서버 분할 좌표를 복사한다.
+서버는 **현재 청크 안에서** 인용을 정확히 검색한다. 한 곳이면 `source_start = chunk.start + local_start`, `source_end = source_start + len(quote)`로 계산한다.
+0곳은 `quote_not_found`, 여러 곳(겹친 중복 포함)은 `quote_ambiguous`, 공백만 있으면 `quote_empty`로 보류한다.
+공백·줄바꿈·Unicode를 정규화하지 않고, 다른 청크에서 찾거나 유사 문장으로 고치지 않으며, 모델의 옛 위치를 사용해 중복을 해소하지 않는다.
+
+검증은 `contextual-validation-v5`, 계산 규칙은 `relation-quote-exact-unique-v1`이다. 보존 원문 Unicode 코드포인트·끝 제외 기준이다.
+처리 record의 `evidence_grounding[]`에 출처·청크 범위·관계 순번·quote·status·계산 규칙·모델 원래 `model_evidence`·서버 `server_span`을 기록한다.
+저장·검색용 SearchChunk.relations에는 서버가 계산한 evidence.start/end/quote를 넣고 참가자·역할·조건 검증을 계속 수행한다.
+아카이브 재로딩은 계산 내역까지 보존 응답으로 재검증한다. 관계가 보류되면 현재는 부모 청크 전체를 제외하며 관찰만 살리는 정책은 추가하지 않았다.
+
+v1~v7 지시문·스키마와 v7 기본 검증 v4는 보존한다. 기존 v7은 다음처럼 **단일 응답에 v5를 명시**해야 재계산한다. 원본 4개 파일은 보존하고 새 폴더에 처리 record를 만든다.
+
+```powershell
+python -X utf8 -m app.contextual.cli revalidate --record "기존/record.json" --output "별도/재처리폴더" --validation-version contextual-validation-v5
+```
+
+`--validation-version`의 디렉터리 일괄 재처리는 지원하지 않으며 오류를 반환한다. v7→v8은 출력 스키마도 바뀌므로 프롬프트 전용 비교에서 거부한다.
+새 생성 요청 준비는 기존 generate에 `--prompt-version contextual-server-evidence-v8 --input-version source-explicit-chunks-v2 --splitter-version sentence-paragraph-v2`를 지정한다.
+기본값 v2는 유지한다. 이번에는 새 v8 유료 생성·DB 반영·검색을 실행하지 않았다.
+
+[서버 위치 계산·실제 두 응답 재처리 기록](../../Evaluation/runs/contextual/v8-server-evidence-v1/20261101-01/REPORT.md):
+CONTROL `[16:35]`→`[15:35]`, P09 `[263:283]`→`[264:282]`로 복구했다. 원본 45개 보존 해시를 확인했고 추가 호출은 0회다.
+이 결과는 정확한 인용의 위치 오류 방지이며, 의미 귀속·Top-30·활성 20개 제한·검색 성능 개선은 별도다.
+
 ### 역할에 따른 자동 보존·검색 제외
 
-새 응답 및 명시적으로 재검증한 응답은 `contextual-validation-v2`를 사용한다. 사람이 역할을 다시 분류하지 않는다.
+v1~v5의 새 응답 및 명시적으로 재검증한 응답은 `contextual-validation-v2`를 사용한다. 사람이 역할을 다시 분류하지 않는다.
 원문 구간·스키마·등록된 장소 ID·참조 중복·엔티티 역할 일치·문맥 길이를 먼저 검증한 뒤 다음처럼 분기한다.
 
 | 반환 역할 | 자동 처리 |
@@ -73,6 +268,7 @@ v2 검증기는 둘 중 entities만 남긴 응답과 비어 있지 않은 `hypot
 subject 없는 정상 구간 때문에 같은 응답의 유효한 구간까지 실패시키지 않는다.
 모든 구간이 검색 제외 대상이면 `status=COLLECTED`, `chunks=[]`로 처리 완료한다.
 `apply`는 이 경우 `NO_INDEXABLE_CHUNKS`를 반환하고 기존 번들·활성 청크·세대·재색인 작업을 변경하지 않는다.
+아래 적용 대상 설명은 v1~v6의 subject 전용 계약이다. v7의 독립 관계는 위 별도 계약을 따른다.
 여러 장소가 있는 응답에서도 해당 장소의 subject 근거가 없으면 그 장소의 번들을 교체하거나 재색인하지 않는다.
 DB 행 잠금·READY/최신 버전·기본정보 지문 검사도 실제 적용할 subject 장소에만 수행한다.
 참고 장소의 삭제·재색인 대기·기본정보 변경은 정상 subject의 적용을 막지 않으며,
@@ -128,11 +324,11 @@ python -m app.contextual.cli apply --record /path/to/LocationReview/394_테스�
 
 `--preset` 또는 `--model`로 교체할 수 있다. 둘을 같이 지정하지 않는다.
 최초 생성 모델·계정 지원·비용은 실제 계정으로 작은 표본을 실행해 확인한다.
-`apply`는 스키마/보존 응답/원문/offset을 재검증하고 적용할 subject 장소의 DB 기본정보를 확인한다.
+`apply`는 스키마/보존 응답/원문/offset을 재검증하고 적용할 subject 장소와 v7 독립 관계 endpoint의 DB 기본정보를 확인한다.
 여러 주체 장소 적용은 ID 순으로 잠그고 원자 저장한다.
 같은 번들 재적용은 `ALREADY_APPLIED`; 새 번들은 `REINDEX_QUEUED`. 후자는 검색 반영 완료를 의미하지 않는다.
 기존 장소별 imported bundle은 최신 적용본으로 교체되며 이전 원문/청크/문맥은 삭제하지 않는다.
-누적할 자료는 새 입력 번들에 기존 유지 자료도 함께 넣는다. 언급 장소는 그 번들의 청크로 활성화하지 않는다.
+누적할 자료는 새 입력 번들에 기존 유지 자료도 함께 넣는다. 단순 언급 장소는 활성화하지 않는다. v7의 명확한 관계 endpoint는 subject 승격 없이 관계 역할로 활성화한다.
 
 ## 같은 입력으로 프롬프트 비교
 
@@ -242,7 +438,7 @@ runtime `ensure_schema`도 같은 SQL을 멱등 적용한다. FastAPI 전용 DB�
 | retrieval_chunks | 전역 chunk_id PK, 원문 offset·원문 청크·source FK |
 | retrieval_chunk_contexts | chunk_id + context_version PK, 문맥·장소 역할·질문·생성 모델·BGE-M3 벡터 |
 | retrieval_chunk_bundles | 기존 장소별 불변 입력 manifest, 기본정보 지문·적용 순서 |
-| place_active_chunks | 장소별 1..20 slot, chunk/context FK, subject 역할 강제 trigger |
+| place_active_chunks | 장소별 1..20 slot, chunk/context FK, subject/독립 관계 endpoint 역할 구분 trigger |
 | place_embeddings.chunk_generation | 추론 중 새 번들 적용을 감지하는 optimistic version |
 
 활성 slot PK와 범위 CHECK가 동시 쓰기에도 20개를 보장한다. 같은 청크의 한 장소 내 중복 활성화는 UNIQUE로 막는다.
@@ -279,8 +475,29 @@ FROM (
 각 장소의 subject 활성 청크 중 쿼리와 가장 가까운 원문 근거 하나를 선택한다.
 장소 점수는 그 청크의 cosine score이며 청크 수나 리뷰 수로 합산하지 않는다. 기존 장소 Top-K와 반환 limit은 유지한다.
 리랭커에는 선택된 짧은 문맥+원문을 전달한다. BGE-M3 및 기존 BGE reranker의 모델·실행 전략·정밀도는 변경하지 않는다.
+
+`CONTEXTUAL_RERANK_EVIDENCE_PER_PLACE=1`이 기본값이며 위 단일 근거 경로를 유지한다.
+`2`·`3`을 명시하면 같은 Top-30 장소 후보에 한해서 subject 근거를 cosine 순으로 추가 조회한다.
+장소별 `chunk_id + context_version` 중복을 제거하고 각 문맥+원문을 별도 쌍으로 리랭킹한다.
+장소 점수는 최고 근거 점수이며 합산하지 않는다. 동점이면 기존 후보 순서를 유지한다.
+설정은 Docker Compose와 stack bootstrap이 전달한다. source.env에서 설정을 제거하면 이전 실행값도 제거해 기본값으로 돌아간다.
+이 값은 API 요청의 사용자 입력으로 받지 않는다. 범위 밖 설정은 시작 단계에서 거부한다.
+
+복수 근거 경로는 요청당 최대 90쌍·토크나이저가 실제로 절단한 뒤의 총 32,768토큰을 상한으로 둔다.
+한도를 넘으면 모델을 호출하기 전에 명시적으로 실패하며 근거를 몰래 삭제하거나 다른 검색 방식으로 바꾸지 않는다.
+모델별 입력 길이 제한·배치·정밀도는 기존 설정을 따른다. 후보 조회 이후 원본 버전·대표 활성 근거가 바뀌어도 실패 처리한다.
+`SEMANTIC_ONLY`에는 복수 근거 조회나 토큰 예산 검사를 적용하지 않는다.
+
+복수 근거의 반환 장소는 한 번만 나오며 `description`은 최고 점수 근거의 문맥+원문이다.
+장소의 `semantic_score`는 원래 장소 후보의 대표 cosine score를 유지한다.
+`evidence_chunks`는 리랭킹 점수 순이며 각 근거에 `rerank_score`·`semantic_score`를 추가한다.
+`rerank_score`는 사실 확률이 아니다. 추가된 근거에도 생성 오류가 있을 수 있으므로 복수 반환을 사실 검증으로 해석하지 않는다.
+Spring은 원본 완료 JSON을 보존한다. 후속 근거 전달 구현에서 검색 결과/응답 DTO에 `evidenceChunks`도 추가했다.
+
+[근거 1·2·3개 실측](../../Evaluation/runs/contextual/multi-evidence-v1/20261031-01/REPORT.md)은
+한 장소·고정 26문항에서 수행한 격리 실험이다. 이 결과로 기본값이나 운영 서버를 변경하지 않았다.
 Kafka 결과 각 장소의 `evidence_chunks`에 chunk_id·원문·문맥·source_span·버전·역할·생성 모델·출처 metadata가 추가된다.
-원시 벡터는 반환하지 않는다. Spring은 원본 완료 JSON을 보존하며, 앱용 DTO에 출처 카드가 추가된 것은 아니다.
+원시 벡터는 반환하지 않는다. Spring 검색 DTO와 기존 계획 LLM 입력에 선택 근거를 보존한다. 출처 카드 UI를 추가한 것은 아니다.
 BM25 결합과 가상 질문 벡터 색인은 이번 변경에 포함하지 않는다.
 
 ```text
@@ -295,6 +512,59 @@ LocationReview/<place_id>_<안전한 장소명>/
 Docker 작업자의 LOCATION_REVIEW_DIR는 `/enrichment-data/LocationReview`, 로컬 기본은 `LocationReview`이다.
 위치 이름에서 경로 구분자를 제거하며 실제 원문 아카이브는 Git에 자동 커밋하지 않는다.
 읽을 수 없는 원문/변조된 응답/보존 실패는 조용히 무시하지 않고 실패한다.
+
+### 이동 근거 직접 벡터 후보 검색: 선택 실험 v1
+
+`CONTEXTUAL_RELATION_RETRIEVAL=chunk-only`가 기본값이다. `chunk-and-relation-v1`을 명시하면 기존 활성 청크 전체 벡터와 별도로 독립 이동 관계의 **정확한 evidence.quote**를 BGE-M3로 임베딩한다.
+예상 질문을 생성하지 않고, 미선택 청크를 활성화하지 않는다. 기존 v6처럼 정확한 관계 인용이 없는 자료에는 별도 인용을 만들지 않으며 기존 전체 벡터 경로를 유지한다.
+
+추가 테이블 `retrieval_relation_embeddings`의 키는 `chunk_id + context_version + relation_index + representation_version`이다.
+`representation_version=relation-quote-vector-v1`, 원문 evidence JSON, `VECTOR(1024)`, embedding_model을 보존한다. context FK와 HNSW cosine 인덱스를 둔다.
+trigger는 해당 순번의 type=movement, importance=primary/supporting, evidence 동일성·청크 안 위치·실제 원문 substring 일치를 검사한다.
+색인 작업자는 기존 전체/대표 벡터와 함께 추가 벡터를 추론하고, 기존 버전·스냅샷·청크 세대 CAS 성공 트랜잭션 안에서만 저장한다. 선택되지 않은 청크의 관계 벡터는 추가 생성하지 않는다.
+
+추가 경로는 observation 필터가 없는 일반 의미 검색에서도 사용한다. 질의 임베딩을 추가 호출하지 않고 같은 벡터를 전체 청크와 관계 인용에 사용한다.
+일반 검색은 출발지·도착지·비중을 제한하지 않는다. 전체 청크 표현은 subject 슬롯만 사용하고 관계 인용은 일치하는 양쪽 endpoint 슬롯에서 사용할 수 있다.
+명시적 observation 필터가 있으면 기존 범위를 유지한다. 이동 조건의 참가자·방향·결과 endpoint·비중을 **개별 relation_index에도 먼저 적용**하고, 경관·시설 조건에 관계 후보를 섞지 않는다.
+같은 청크의 전체 벡터와 조건에 맞는 관계 벡터 중 최고 cosine, 같은 장소의 활성 청크 중 최고 cosine을 선택한다. 합산하지 않고 장소 중복 제거 후 Top-30을 유지한다.
+후보와 추가 근거 조회에 동일한 규칙을 사용한다. 관계 벡터가 선택되면 evidence에 `retrieval_path=relation`, `retrieved_relation_index`를 넣고 그 관계의 실제 인용으로만 리랭킹한다.
+일반 검색의 추가 근거에서는 같은 청크의 전체 표현과 관계별 인용을 별도 근거로 취급한다. 중복 키는 chunk_id/context_version/retrieval_path/relation_index이며 동일 표현만 제거한다.
+근거 수는 기존 설정(기본 1, 선택 2·3)과 전체 쌍·토큰 예산 안에서 제한한다. 복합 질문에 두 근거가 항상 보장되는 것은 아니다.
+같은 청크여도 후보 검색 뒤 선택 표현이 바뀌면 재검증에서 거부한다. 결과의 보존 원문·place_refs는 변경하지 않으며 relation 범위와 matched_relations로 실제 사용 범위를 표시한다.
+다른 장소의 경관을 목적지에 공유하거나 예상 질문을 추천 인용으로 사용하지 않는다. 경관·시설·필터 없는 기존 검색은 그대로다.
+
+Compose/stack bootstrap은 이 설정을 전달하고 허용하지 않은 값은 거부한다. source.env에서 제거하면 이전 실행값도 제거해 chunk-only로 복귀한다.
+기존 데이터는 설정만 바꿔도 추가 벡터가 생성되지 않는다. 검수된 표본에 스키마 적용·기존 명세의 재색인 작업 등록이 필요하며, 번들 재적용의 ALREADY_APPLIED와 구분한다.
+이번 작업은 운영 DB 적용·운영 설정 변경·배포를 하지 않았다. 추가 벡터가 저장돼도 검색은 place_active_chunks를 통하므로 기존 장소별 20개 상한을 우회하지 않는다.
+
+[고정 비교 기록](../../Evaluation/runs/contextual/relation-vector-retrieval-v1/20261101-01/REPORT.md):
+같은 검수 자료·활성 슬롯·후보 30·근거 2에서 보조 이동 근거가 Top-30 탈락→후보 1위·리랭킹 1위로 바뀌었다. B의 선택 순서 44번째 근거는 활성 20개 밖이어서 두 방식 모두 검색되지 않았다.
+기존 임베딩 58개를 재사용하고 인용 4개만 추가 임베딩했다. 누락된 질의·원문 점수 9개만 추가 리랭킹했으며 Sonar 유료 호출은 0회다.
+작은 감독·합성 스트레스 실험이므로 일반 검색·전체 지연 개선을 입증하지 않는다. 기본값·활성 상한·귀속 정책은 유지한다. 활성 상한 의미 변경은 별도 결정이다.
+
+### 검색 결과의 원문 보존과 의미 미판정
+
+`87e06d3e`의 이동 정규식 질문 분류·강제 보류·설명 교체를 서비스 기본 경로에서 제거했다.
+질문에 '연결'이 있다는 이유로 와이파이 등의 시설 질문을 이동 조건으로 바꾸지 않는다.
+명시적 observation·방향·거리·제외 조건과 기존 관계 벡터 검색·후보/활성 상한은 유지한다.
+
+대표 description은 기존 검색·리랭킹이 선택한 설명을 유지한다. 관계 인용을 근거로 선택하는 기존 검색 표현은 그대로이며,
+별도의 이동 성공 판정으로 관찰 설명을 덮어쓰지 않는다. 선택한 근거는 `evidence_chunks`에 함께 반환한다.
+각 청크의 `content_kind`, `place_refs`, `chunk_text`, `relations[].evidence`, `conditions`, 출처·버전·좌표를 보존한다.
+따라서 관찰의 주체와 관계의 참가자·방향·제한 기록을 구분해 읽을 수 있다. 차단 표현을 자동 성공 라벨로 바꾸지 않는다.
+선택되지 않은 근거를 추가 조회하거나 모든 상충 기록을 모으는 기능은 제공하지 않는다.
+
+각 장소의 `evidence_assessment.status=not_assessed`는 질문의 의미 적합성·성공·현재 통행 상태를 평가하지 않았다는 뜻이다.
+원문 위치·출처·ID의 형식 검증과 의미 판단은 다르다. 이 상태를 근거 부족 또는 장소 부적합으로 해석하지 않는다.
+과거의 `withheld_count`, `withheld_results`, `evidence_quality_scope`와 정규식 보류 경고는 반환하지 않는다.
+Spring은 원본 완료 JSON과 검색 DTO의 선택 근거를 보존한다. 기존 계획 LLM에는 원문/구조화 정보/생성 문맥을 나누어 전달한다.
+선택형 구조화 인용은 실제 전달된 근거와의 소속만 검사한다. 별도 UI 변경이나 설명의 의미 정확성 판정은 포함하지 않는다.
+[Spring·계획 입력 전달 계약과 한계](../architecture/search-evidence-delivery.md)
+
+과거 정책은 `Evaluation/tracks/contextual/experiments/connection_quality`로 이동했다.
+오프라인 재생에서 `--experimental-policy movement-regex-v1`을 명시해야 실행한다. 운영 환경 변수·요청 설정은 추가하지 않는다.
+B의 대표 근거 문제와 청담도로공원의 연결 근거 부족은 여전히 별도의 의미 평가 과제다.
+[적용 범위 교정·저장 결과 비교·한계](../../Evaluation/runs/contextual/general-search-policy-isolation-v1/20261101-01/REPORT.md)
 
 ## 검증 실행
 
@@ -341,3 +611,17 @@ DB 검사는 subject 장소로 한정하고, 일괄 비교에는 기대/완료 �
 비교 0쌍·파트너 재검증 실패·비교 보고서 생성 실패·파생 기록이 있는 폴더 재실행을 회귀 테스트로 확인했다.
 로컬 보존 응답 18건을 다시 처리한 결과 기대 9쌍·완료 9쌍·`comparison_complete=true`, 누락 상대·비교 오류는 0건이었다.
 원본 72개 파일 해시 불일치와 추가 API 호출은 모두 0이며, 실제 DB 반영·재색인·검색 성능 평가는 실행하지 않았다.
+
+
+## v7 실제 통합 검증 후속 결과
+
+[PostgreSQL·Sonar·검색 실행 기록](../../Evaluation/runs/contextual/v7-integration-v1/20261101-01/REPORT.md)에서
+새 역할·trigger·방향 SQL의 실제 PostgreSQL 통합을 통과했다. 최종 전체 회귀 109개 통과·1개 skip이다.
+실제 Sonar 2건은 US$0.01287이며 통제 원문의 supporting 판정·인용은 맞았지만 시작 위치 1자 오류로 청크가 제외됐다.
+P09의 다른 공원 귀속 오류도 남아 기본값을 유지한다.
+
+12개 고정 검색과 2개 감독 진단은 기존 BGE·리랭커와 격리 DB에서 실행했다. 위치만 맞춘 감독 사례는
+도보 금지 합성 방해 자료 40개 사이에서 벡터 41위로 Top-30 밖이었지만 41개를 리랭킹하면 1위였다.
+B에서는 입력 순서의 활성 후보 44개 중 해당 근거가 44번째여서 활성 20개에 들지 못했다.
+이는 단계별 손실 재현이며 감독 진단을 모델 자동 성공으로 세거나 운영 상한을 변경하지 않았다.
+운영 DB 적용·배포는 없었고, 관계 위치 계산·관계 후보 검색·활성 선택 개선은 다음 구현 대상이다.

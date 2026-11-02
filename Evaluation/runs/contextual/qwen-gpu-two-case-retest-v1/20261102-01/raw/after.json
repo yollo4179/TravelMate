@@ -1,0 +1,29 @@
+{
+  "captured_at": "2026-11-02T05:26:12.104536+00:00",
+  "metadata_only": true,
+  "ollama_ps": {
+    "models": [
+      {
+        "name": "qwen3:8b",
+        "model": "qwen3:8b",
+        "size": 6599978515,
+        "digest": "500a1f067a9f782620b40bee6f7b0c89e17ae61f686b92c24933e4ca4b2b8b41",
+        "details": {
+          "parent_model": "",
+          "format": "gguf",
+          "family": "qwen3",
+          "families": [
+            "qwen3"
+          ],
+          "parameter_size": "8.2B",
+          "quantization_level": "Q4_K_M"
+        },
+        "expires_at": "2026-11-02T14:31:11.8839284+09:00",
+        "size_vram": 4190623498,
+        "context_length": 8192,
+        "runner": "llamacpp"
+      }
+    ]
+  },
+  "nvidia_smi": "name, memory.total [MiB], memory.used [MiB], memory.free [MiB], utilization.gpu [%]\r\nNVIDIA GeForce RTX 4050 Laptop GPU, 6141 MiB, 4127 MiB, 1798 MiB, 30 %"
+}

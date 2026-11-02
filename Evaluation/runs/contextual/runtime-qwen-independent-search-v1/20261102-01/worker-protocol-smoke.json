@@ -1,0 +1,18 @@
+{
+  "inputTokens": 936,
+  "wireSha256": "05d604fbb777c416bfb00616c853470dc0a5ce5a8aa8a824f089703f12704c5c",
+  "templateSha256": "ae370d884f108d16e7cc8fd5259ebc5773a0afa6e078b11f4ed7e39a27e0dfc4",
+  "promptSha256": "dc554ac69b252ff5ac52c41ce23d73e3c794dfc1c95cf4a1e3bffe98b6697d6e",
+  "tokenIdsSha256": "c597a380e77333cd4344ca01a783f6eebad04f55acf233ca41cd79788835a408",
+  "modelDigest": "500a1f067a9f782620b40bee6f7b0c89e17ae61f686b92c24933e4ca4b2b8b41",
+  "modelSha256": "a3de86cd1c132c822487ededd47a324c50491393e6565cd14bafa40d0b8e686f",
+  "librarySha256": "a9ccb9ae84f200579d1103a6d7cb67eb2e79342961497a74dc35d9c87894d9d9",
+  "rendererSha256": "cec56cb03f8670a9b2e53b01cca20068b1cdad6f611bb7cb18663f8a2bfd5027",
+  "serverVersion": "0.40.13",
+  "nativeContextTokens": 40960,
+  "quality": "EXACT_LOCAL_CROSSCHECKED",
+  "tokenizer": "gpt2/qwen2;b11963;tokenizers=0.22.2",
+  "inferenceDispatched": false,
+  "mode": "OFFLINE_SAVED_METADATA",
+  "duration_ms": 5983.349200047087
+}

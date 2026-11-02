@@ -1,0 +1,58 @@
+{
+  "java": [
+    {
+      "name": "com.yollo.TravelMate.FrozenOriginalFieldPipelineTest",
+      "tests": "1",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0"
+    },
+    {
+      "name": "com.yollo.TravelMate.SearchEvidencePipelineTest",
+      "tests": "7",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0"
+    },
+    {
+      "name": "com.yollo.TravelMate.ConversationToolLoopTest",
+      "tests": "24",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0"
+    },
+    {
+      "name": "com.yollo.TravelMate.TokenBudgetGuardTest",
+      "tests": "11",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0"
+    }
+  ],
+  "python": {
+    "passed": 50,
+    "skipped": 11,
+    "failures": 0,
+    "errors": 0,
+    "suites": {
+      "original_fields": {
+        "passed": 5
+      },
+      "general_search_contract": {
+        "passed": 7
+      },
+      "contextual_chunks": {
+        "passed": 13,
+        "skipped": 5
+      },
+      "place_enrichment": {
+        "passed": 12,
+        "skipped": 6
+      },
+      "b_environment_preparation": {
+        "passed": 13
+      }
+    }
+  },
+  "scope": "offline unit/mock transport tests, not B evaluation cases"
+}

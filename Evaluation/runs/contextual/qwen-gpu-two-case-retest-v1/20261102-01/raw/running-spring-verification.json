@@ -1,0 +1,31 @@
+{
+  "ProcessId": 10480,
+  "ParentProcessId": 16840,
+  "CommandLine": "\"C:\\Program Files\\BellSoft\\LibericaJDK-21\\bin\\java.exe\" -Xmx768m -jar \"C:/Users/SSAFY/AppData/Local/Temp/travelmate-general-relation-retrieval/Server/TravelMate/build/b-evaluation-gpu-retest/original-fields/spring.jar\" \"--spring.config.additional-location=file:C:/Users/SSAFY/AppData/Local/Temp/travelmate-general-relation-retrieval/Server/TravelMate/build/b-evaluation-gpu-retest/spring.properties\" ",
+  "VerifiedProperties": [
+    "server.address=127.0.0.1",
+    "server.port=18080",
+    "spring.kafka.bootstrap-servers=127.0.0.1:39092",
+    "travelmate.kafka.place-changes-topic=travelmate.b-eval.place-changes.v1",
+    "travelmate.kafka.recommendation-requests-topic=travelmate.b-eval.recommendation-requests.v1",
+    "travelmate.kafka.recommendation-results-topic=travelmate.b-eval.recommendation-results.v1",
+    "embedding.server.url=http://127.0.0.1:18000",
+    "llm.provider=QWEN",
+    "ollama.base-url=http://127.0.0.1:11434",
+    "ollama.model=qwen3:8b",
+    "ollama.context-tokens=8192",
+    "ollama.max-output-tokens=1536",
+    "ollama.exact-counter-command=[\"C:/ssafy/Travelmate/embedding-server/.venv/Scripts/python.exe\", \"-X\", \"utf8\", \"C:/Users/SSAFY/AppData/Local/Temp/travelmate-general-relation-retrieval/Server/token_budget/exact_qwen_counter.py\", \"--profile\", \"C:/Users/SSAFY/AppData/Local/Temp/travelmate-general-relation-retrieval/Server/TravelMate/build/runtime-token-profile.json\"]",
+    "travelmate.conversation.allowed-tools=SEARCH_PLACES",
+    "travelmate.conversation.max-model-turns=2",
+    "travelmate.conversation.max-tool-calls=1",
+    "travelmate.conversation.tool-failure-policy=STOP",
+    "travelmate.observation.directory=C:/Users/SSAFY/AppData/Local/Temp/travelmate-general-relation-retrieval/Server/TravelMate/build/b-evaluation-gpu-retest/observations",
+    "travelmate.observation.mode=LIVE",
+    "openai.model=",
+    "openai.base-url=http://127.0.0.1:9",
+    "LANGSMITH_ENDPOINT=http://127.0.0.1:18318"
+  ],
+  "record_kind": "READ_ONLY_CIM_AND_SELECTED_PROPERTIES",
+  "powershell_extended_string_metadata_omitted": true
+}

@@ -1,0 +1,481 @@
+{
+  "source_path": "C:\\Users\\SSAFY\\AppData\\Local\\Ollama\\server.log",
+  "source_sha256": "f57c9774d74af373ea3808922dfa4a7c22b70d04acdbf996d3b023d8cef624f6",
+  "source_bytes": 45401,
+  "captured_at": "2026-11-02T04:53:13.984722+00:00",
+  "selection": "Existing B-run loading and timing lines only; no new inference and no process metrics obtained.",
+  "source_line_range": [
+    69,
+    489
+  ],
+  "lines": [
+    {
+      "source_line": 69,
+      "text": "time=2026-11-02T13:11:35.754+09:00 level=INFO source=sched.go:1183 msg=\"disabling mmap for llama-server load by default\" model=C:\\Users\\SSAFY\\.ollama\\models\\blobs\\sha256-a3de86cd1c132c822487ededd47a324c50491393e6565cd14bafa40d0b8e686f reason=windows_cuda"
+    },
+    {
+      "source_line": 70,
+      "text": "time=2026-11-02T13:11:35.755+09:00 level=INFO source=server.go:107 msg=\"using llama-server for model\" model=C:\\Users\\SSAFY\\.ollama\\models\\blobs\\sha256-a3de86cd1c132c822487ededd47a324c50491393e6565cd14bafa40d0b8e686f"
+    },
+    {
+      "source_line": 71,
+      "text": "time=2026-11-02T13:11:35.764+09:00 level=INFO source=llama_server.go:467 msg=\"starting llama-server\" cmd=\"C:\\\\Users\\\\SSAFY\\\\AppData\\\\Local\\\\Programs\\\\Ollama\\\\lib\\\\ollama\\\\llama-server.exe --model C:\\\\Users\\\\SSAFY\\\\.ollama\\\\models\\\\blobs\\\\sha256-a3de86cd1c132c822487ededd47a324c50491393e6565cd14bafa40d0b8e686f --port 50310 --host 127.0.0.1 --no-webui --offline -c 8192 -np 1 --log-verbosity 4 --no-log-prefix --no-log-timestamps --no-jinja --chat-template chatml --load-mode none --flash-attn auto -b 512 -ub 512 --context-shift --keep 4\""
+    },
+    {
+      "source_line": 72,
+      "text": "time=2026-11-02T13:11:35.775+09:00 level=INFO source=sched.go:658 msg=\"system memory\" total=\"31.5 GiB\" free=\"9.4 GiB\" free_swap=\"5.9 GiB\""
+    },
+    {
+      "source_line": 73,
+      "text": "time=2026-11-02T13:11:35.775+09:00 level=INFO source=sched.go:665 msg=\"gpu memory\" id=0 library=CUDA available=\"1.2 GiB\" free=\"1.7 GiB\" minimum=\"457.0 MiB\" overhead=\"0 B\""
+    },
+    {
+      "source_line": 74,
+      "text": "time=2026-11-02T13:11:35.775+09:00 level=INFO source=llama_server.go:1098 msg=\"loading model via llama-server\" model=C:\\Users\\SSAFY\\.ollama\\models\\blobs\\sha256-a3de86cd1c132c822487ededd47a324c50491393e6565cd14bafa40d0b8e686f"
+    },
+    {
+      "source_line": 85,
+      "text": "cmn  common_param:   - CPU     : Intel(R) Core(TM) Ultra 7 155H (32270 MiB, 9432 MiB free)"
+    },
+    {
+      "source_line": 86,
+      "text": "cmn  common_param:   - CUDA0   : NVIDIA GeForce RTX 4050 Laptop GPU (6140 MiB, 1700 MiB free)"
+    },
+    {
+      "source_line": 87,
+      "text": "cmn  common_param: system_info: n_threads = 11 (n_threads_batch = 11) / 22 | CPU : SSE3 = 1 | SSSE3 = 1 | AVX = 1 | AVX_VNNI = 1 | AVX2 = 1 | F16C = 1 | FMA = 1 | BMI2 = 1 | LLAMAFILE = 1 | OPENMP = 1 | REPACK = 1 | CUDA : ARCHS = 500,520,600,610,700,750,800,860,890,900,1200 | USE_GRAPHS = 1 | FA_QUANTS = q4_0-q4_0,q8_0-q8_0,f16-f16,bf16-bf16 | "
+    },
+    {
+      "source_line": 92,
+      "text": "srv    load_model: loading model 'C:\\Users\\SSAFY\\.ollama\\models\\blobs\\sha256-a3de86cd1c132c822487ededd47a324c50491393e6565cd14bafa40d0b8e686f'"
+    },
+    {
+      "source_line": 93,
+      "text": "srv    load_model: local path 'C:\\Users\\SSAFY\\.ollama\\models\\blobs\\sha256-a3de86cd1c132c822487ededd47a324c50491393e6565cd14bafa40d0b8e686f'"
+    },
+    {
+      "source_line": 101,
+      "text": "common_params_fit_impl: projected to use 5907 MiB of device memory vs. 1700 MiB of free device memory"
+    },
+    {
+      "source_line": 102,
+      "text": "common_params_fit_impl: cannot meet free memory target of 1024 MiB, need to reduce device memory by 5231 MiB"
+    },
+    {
+      "source_line": 135,
+      "text": "common_params_fit_impl:   - CUDA0 (NVIDIA GeForce RTX 4050 Laptop GPU):  1 layers,    610 MiB used,   1089 MiB free"
+    },
+    {
+      "source_line": 138,
+      "text": "llama_model_loader: loaded meta data with 28 key-value pairs and 399 tensors from C:\\Users\\SSAFY\\.ollama\\models\\blobs\\sha256-a3de86cd1c132c822487ededd47a324c50491393e6565cd14bafa40d0b8e686f (version GGUF V3 (latest))"
+    },
+    {
+      "source_line": 253,
+      "text": "load_tensors: offloading output layer to GPU"
+    },
+    {
+      "source_line": 254,
+      "text": "load_tensors: offloading 0 repeating layers to GPU"
+    },
+    {
+      "source_line": 255,
+      "text": "load_tensors: offloaded 1/37 layers to GPU"
+    },
+    {
+      "source_line": 256,
+      "text": "load_tensors:        CUDA0 model buffer size =   486.87 MiB"
+    },
+    {
+      "source_line": 257,
+      "text": "load_tensors:    CUDA_Host model buffer size =  4490.75 MiB"
+    },
+    {
+      "source_line": 266,
+      "text": "llama_context: n_ctx                 = 8192"
+    },
+    {
+      "source_line": 267,
+      "text": "llama_context: n_ctx_seq             = 8192"
+    },
+    {
+      "source_line": 280,
+      "text": "llama_kv_cache:        CPU KV buffer size =  1152.00 MiB"
+    },
+    {
+      "source_line": 290,
+      "text": "sched_reserve:      CUDA0 compute buffer size =   124.00 MiB"
+    },
+    {
+      "source_line": 291,
+      "text": "sched_reserve:  CUDA_Host compute buffer size =    40.02 MiB"
+    },
+    {
+      "source_line": 294,
+      "text": "cmn          init: llama threadpool init, n_threads = 11"
+    },
+    {
+      "source_line": 298,
+      "text": "slot   load_model: id  0 | task -1 | new slot, n_ctx = 8192"
+    },
+    {
+      "source_line": 343,
+      "text": "slot print_timing: id  0 | task 0 | prompt eval time =    3864.94 ms /   974 tokens (    3.97 ms per token,   252.01 tokens per second)"
+    },
+    {
+      "source_line": 344,
+      "text": "slot print_timing: id  0 | task 0 |        eval time =    4130.64 ms /    35 tokens (  121.49 ms per token,     8.23 tokens per second)"
+    },
+    {
+      "source_line": 345,
+      "text": "slot print_timing: id  0 | task 0 |       total time =    7995.58 ms /  1009 tokens"
+    },
+    {
+      "source_line": 346,
+      "text": "slot print_timing: id  0 | task 0 |    graphs reused =         34"
+    },
+    {
+      "source_line": 347,
+      "text": "slot print_timing: id  0 | task 0 |   graph reallocs =          1    /     0        (same size) / (changed size)"
+    },
+    {
+      "source_line": 350,
+      "text": "[GIN] 2026/11/02 - 13:11:50 | 200 |   16.86s |       127.0.0.1 | POST     \"/api/chat\""
+    },
+    {
+      "source_line": 368,
+      "text": "slot print_timing: id  0 | task 37 | prompt processing, n_tokens =   1024, progress = 0.73, t =   3.43 s / 298.81 tokens per second"
+    },
+    {
+      "source_line": 371,
+      "text": "slot print_timing: id  0 | task 37 | prompt processing, n_tokens =   1536, progress = 0.92, t =   4.17 s / 368.65 tokens per second"
+    },
+    {
+      "source_line": 376,
+      "text": "slot print_timing: id  0 | task 37 | n_gen =    100, tg =   5.75 t/s, tg_3s =   5.81 t/s"
+    },
+    {
+      "source_line": 377,
+      "text": "slot print_timing: id  0 | task 37 | n_gen =    118, tg =   5.74 t/s, tg_3s =   5.71 t/s"
+    },
+    {
+      "source_line": 378,
+      "text": "slot print_timing: id  0 | task 37 | n_gen =    132, tg =   5.55 t/s, tg_3s =   4.35 t/s"
+    },
+    {
+      "source_line": 379,
+      "text": "slot print_timing: id  0 | task 37 | n_gen =    144, tg =   5.36 t/s, tg_3s =   3.91 t/s"
+    },
+    {
+      "source_line": 380,
+      "text": "slot print_timing: id  0 | task 37 | n_gen =    157, tg =   5.21 t/s, tg_3s =   3.98 t/s"
+    },
+    {
+      "source_line": 381,
+      "text": "slot print_timing: id  0 | task 37 | n_gen =    173, tg =   5.20 t/s, tg_3s =   5.12 t/s"
+    },
+    {
+      "source_line": 382,
+      "text": "slot print_timing: id  0 | task 37 | n_gen =    193, tg =   5.31 t/s, tg_3s =   6.40 t/s"
+    },
+    {
+      "source_line": 383,
+      "text": "slot print_timing: id  0 | task 37 | n_gen =    212, tg =   5.37 t/s, tg_3s =   6.05 t/s"
+    },
+    {
+      "source_line": 384,
+      "text": "slot print_timing: id  0 | task 37 | n_gen =    227, tg =   5.33 t/s, tg_3s =   4.86 t/s"
+    },
+    {
+      "source_line": 385,
+      "text": "slot print_timing: id  0 | task 37 | n_gen =    243, tg =   5.31 t/s, tg_3s =   5.13 t/s"
+    },
+    {
+      "source_line": 386,
+      "text": "slot print_timing: id  0 | task 37 | n_gen =    261, tg =   5.35 t/s, tg_3s =   5.82 t/s"
+    },
+    {
+      "source_line": 387,
+      "text": "slot print_timing: id  0 | task 37 | n_gen =    278, tg =   5.36 t/s, tg_3s =   5.49 t/s"
+    },
+    {
+      "source_line": 388,
+      "text": "slot print_timing: id  0 | task 37 | n_gen =    291, tg =   5.30 t/s, tg_3s =   4.27 t/s"
+    },
+    {
+      "source_line": 389,
+      "text": "slot print_timing: id  0 | task 37 | n_gen =    309, tg =   5.33 t/s, tg_3s =   5.94 t/s"
+    },
+    {
+      "source_line": 390,
+      "text": "slot print_timing: id  0 | task 37 | n_gen =    328, tg =   5.38 t/s, tg_3s =   6.31 t/s"
+    },
+    {
+      "source_line": 392,
+      "text": "slot print_timing: id  0 | task 37 | n_gen =    345, tg =   5.39 t/s, tg_3s =   5.61 t/s"
+    },
+    {
+      "source_line": 393,
+      "text": "slot print_timing: id  0 | task 37 | n_gen =    359, tg =   5.35 t/s, tg_3s =   4.60 t/s"
+    },
+    {
+      "source_line": 394,
+      "text": "slot print_timing: id  0 | task 37 | n_gen =    371, tg =   5.29 t/s, tg_3s =   3.89 t/s"
+    },
+    {
+      "source_line": 395,
+      "text": "slot print_timing: id  0 | task 37 | n_gen =    383, tg =   5.23 t/s, tg_3s =   3.86 t/s"
+    },
+    {
+      "source_line": 396,
+      "text": "slot print_timing: id  0 | task 37 | n_gen =    395, tg =   5.17 t/s, tg_3s =   3.88 t/s"
+    },
+    {
+      "source_line": 397,
+      "text": "slot print_timing: id  0 | task 37 | n_gen =    406, tg =   5.11 t/s, tg_3s =   3.48 t/s"
+    },
+    {
+      "source_line": 398,
+      "text": "slot print_timing: id  0 | task 37 | n_gen =    425, tg =   5.14 t/s, tg_3s =   6.04 t/s"
+    },
+    {
+      "source_line": 399,
+      "text": "slot print_timing: id  0 | task 37 | n_gen =    443, tg =   5.17 t/s, tg_3s =   5.84 t/s"
+    },
+    {
+      "source_line": 400,
+      "text": "slot print_timing: id  0 | task 37 | n_gen =    460, tg =   5.17 t/s, tg_3s =   5.39 t/s"
+    },
+    {
+      "source_line": 401,
+      "text": "slot print_timing: id  0 | task 37 | n_gen =    473, tg =   5.14 t/s, tg_3s =   4.11 t/s"
+    },
+    {
+      "source_line": 402,
+      "text": "slot print_timing: id  0 | task 37 | n_gen =    485, tg =   5.10 t/s, tg_3s =   3.90 t/s"
+    },
+    {
+      "source_line": 403,
+      "text": "slot print_timing: id  0 | task 37 | n_gen =    497, tg =   5.06 t/s, tg_3s =   3.82 t/s"
+    },
+    {
+      "source_line": 404,
+      "text": "slot print_timing: id  0 | task 37 | n_gen =    509, tg =   5.02 t/s, tg_3s =   3.85 t/s"
+    },
+    {
+      "source_line": 405,
+      "text": "slot print_timing: id  0 | task 37 | n_gen =    521, tg =   4.99 t/s, tg_3s =   3.92 t/s"
+    },
+    {
+      "source_line": 406,
+      "text": "slot print_timing: id  0 | task 37 | n_gen =    533, tg =   4.95 t/s, tg_3s =   3.83 t/s"
+    },
+    {
+      "source_line": 407,
+      "text": "slot print_timing: id  0 | task 37 | n_gen =    545, tg =   4.92 t/s, tg_3s =   3.82 t/s"
+    },
+    {
+      "source_line": 408,
+      "text": "slot print_timing: id  0 | task 37 | n_gen =    557, tg =   4.89 t/s, tg_3s =   3.87 t/s"
+    },
+    {
+      "source_line": 410,
+      "text": "slot print_timing: id  0 | task 37 | n_gen =    569, tg =   4.86 t/s, tg_3s =   3.80 t/s"
+    },
+    {
+      "source_line": 411,
+      "text": "slot print_timing: id  0 | task 37 | n_gen =    581, tg =   4.84 t/s, tg_3s =   3.81 t/s"
+    },
+    {
+      "source_line": 412,
+      "text": "slot print_timing: id  0 | task 37 | n_gen =    592, tg =   4.80 t/s, tg_3s =   3.60 t/s"
+    },
+    {
+      "source_line": 414,
+      "text": "slot print_timing: id  0 | task 37 | n_gen =    604, tg =   4.78 t/s, tg_3s =   3.81 t/s"
+    },
+    {
+      "source_line": 415,
+      "text": "slot print_timing: id  0 | task 37 | n_gen =    616, tg =   4.75 t/s, tg_3s =   3.78 t/s"
+    },
+    {
+      "source_line": 416,
+      "text": "slot print_timing: id  0 | task 37 | n_gen =    628, tg =   4.73 t/s, tg_3s =   3.81 t/s"
+    },
+    {
+      "source_line": 417,
+      "text": "slot print_timing: id  0 | task 37 | n_gen =    640, tg =   4.71 t/s, tg_3s =   3.80 t/s"
+    },
+    {
+      "source_line": 418,
+      "text": "slot print_timing: id  0 | task 37 | n_gen =    652, tg =   4.69 t/s, tg_3s =   3.85 t/s"
+    },
+    {
+      "source_line": 419,
+      "text": "slot print_timing: id  0 | task 37 | n_gen =    664, tg =   4.67 t/s, tg_3s =   3.77 t/s"
+    },
+    {
+      "source_line": 420,
+      "text": "slot print_timing: id  0 | task 37 | n_gen =    675, tg =   4.65 t/s, tg_3s =   3.65 t/s"
+    },
+    {
+      "source_line": 421,
+      "text": "slot print_timing: id  0 | task 37 | n_gen =    687, tg =   4.63 t/s, tg_3s =   3.80 t/s"
+    },
+    {
+      "source_line": 422,
+      "text": "slot print_timing: id  0 | task 37 | n_gen =    699, tg =   4.61 t/s, tg_3s =   3.80 t/s"
+    },
+    {
+      "source_line": 423,
+      "text": "slot print_timing: id  0 | task 37 | n_gen =    711, tg =   4.60 t/s, tg_3s =   3.77 t/s"
+    },
+    {
+      "source_line": 424,
+      "text": "slot print_timing: id  0 | task 37 | n_gen =    723, tg =   4.58 t/s, tg_3s =   3.85 t/s"
+    },
+    {
+      "source_line": 425,
+      "text": "slot print_timing: id  0 | task 37 | n_gen =    735, tg =   4.57 t/s, tg_3s =   3.73 t/s"
+    },
+    {
+      "source_line": 426,
+      "text": "slot print_timing: id  0 | task 37 | n_gen =    747, tg =   4.55 t/s, tg_3s =   3.84 t/s"
+    },
+    {
+      "source_line": 427,
+      "text": "slot print_timing: id  0 | task 37 | n_gen =    759, tg =   4.54 t/s, tg_3s =   3.76 t/s"
+    },
+    {
+      "source_line": 428,
+      "text": "slot print_timing: id  0 | task 37 | n_gen =    771, tg =   4.52 t/s, tg_3s =   3.79 t/s"
+    },
+    {
+      "source_line": 429,
+      "text": "slot print_timing: id  0 | task 37 | n_gen =    783, tg =   4.51 t/s, tg_3s =   3.77 t/s"
+    },
+    {
+      "source_line": 430,
+      "text": "slot print_timing: id  0 | task 37 | n_gen =    795, tg =   4.50 t/s, tg_3s =   3.76 t/s"
+    },
+    {
+      "source_line": 431,
+      "text": "slot print_timing: id  0 | task 37 | n_gen =    807, tg =   4.48 t/s, tg_3s =   3.80 t/s"
+    },
+    {
+      "source_line": 432,
+      "text": "slot print_timing: id  0 | task 37 | n_gen =    819, tg =   4.47 t/s, tg_3s =   3.78 t/s"
+    },
+    {
+      "source_line": 433,
+      "text": "slot print_timing: id  0 | task 37 | n_gen =    831, tg =   4.46 t/s, tg_3s =   3.78 t/s"
+    },
+    {
+      "source_line": 434,
+      "text": "slot print_timing: id  0 | task 37 | n_gen =    843, tg =   4.45 t/s, tg_3s =   3.76 t/s"
+    },
+    {
+      "source_line": 436,
+      "text": "slot print_timing: id  0 | task 37 | n_gen =    855, tg =   4.44 t/s, tg_3s =   3.74 t/s"
+    },
+    {
+      "source_line": 437,
+      "text": "slot print_timing: id  0 | task 37 | n_gen =    866, tg =   4.42 t/s, tg_3s =   3.56 t/s"
+    },
+    {
+      "source_line": 438,
+      "text": "slot print_timing: id  0 | task 37 | n_gen =    877, tg =   4.41 t/s, tg_3s =   3.66 t/s"
+    },
+    {
+      "source_line": 439,
+      "text": "slot print_timing: id  0 | task 37 | n_gen =    889, tg =   4.40 t/s, tg_3s =   3.72 t/s"
+    },
+    {
+      "source_line": 440,
+      "text": "slot print_timing: id  0 | task 37 | n_gen =    900, tg =   4.39 t/s, tg_3s =   3.66 t/s"
+    },
+    {
+      "source_line": 441,
+      "text": "slot print_timing: id  0 | task 37 | n_gen =    911, tg =   4.38 t/s, tg_3s =   3.66 t/s"
+    },
+    {
+      "source_line": 442,
+      "text": "slot print_timing: id  0 | task 37 | n_gen =    922, tg =   4.37 t/s, tg_3s =   3.67 t/s"
+    },
+    {
+      "source_line": 443,
+      "text": "slot print_timing: id  0 | task 37 | n_gen =    934, tg =   4.36 t/s, tg_3s =   3.75 t/s"
+    },
+    {
+      "source_line": 444,
+      "text": "slot print_timing: id  0 | task 37 | n_gen =    946, tg =   4.35 t/s, tg_3s =   3.76 t/s"
+    },
+    {
+      "source_line": 445,
+      "text": "slot print_timing: id  0 | task 37 | n_gen =    958, tg =   4.34 t/s, tg_3s =   3.73 t/s"
+    },
+    {
+      "source_line": 446,
+      "text": "slot print_timing: id  0 | task 37 | n_gen =    970, tg =   4.33 t/s, tg_3s =   3.75 t/s"
+    },
+    {
+      "source_line": 447,
+      "text": "slot print_timing: id  0 | task 37 | n_gen =    982, tg =   4.32 t/s, tg_3s =   3.78 t/s"
+    },
+    {
+      "source_line": 448,
+      "text": "slot print_timing: id  0 | task 37 | n_gen =    994, tg =   4.32 t/s, tg_3s =   3.75 t/s"
+    },
+    {
+      "source_line": 449,
+      "text": "slot print_timing: id  0 | task 37 | n_gen =   1005, tg =   4.31 t/s, tg_3s =   3.53 t/s"
+    },
+    {
+      "source_line": 450,
+      "text": "slot print_timing: id  0 | task 37 | prompt eval time =    4765.45 ms /  1765 tokens (    2.70 ms per token,   370.37 tokens per second)"
+    },
+    {
+      "source_line": 451,
+      "text": "slot print_timing: id  0 | task 37 |        eval time =  235151.36 ms /  1012 tokens (  232.59 ms per token,     4.30 tokens per second)"
+    },
+    {
+      "source_line": 452,
+      "text": "slot print_timing: id  0 | task 37 |       total time =  239916.82 ms /  2777 tokens"
+    },
+    {
+      "source_line": 453,
+      "text": "slot print_timing: id  0 | task 37 |    graphs reused =       1040"
+    },
+    {
+      "source_line": 454,
+      "text": "slot print_timing: id  0 | task 37 |   graph reallocs =          8    /     0        (same size) / (changed size)"
+    },
+    {
+      "source_line": 457,
+      "text": "[GIN] 2026/11/02 - 13:17:48 | 200 |    3m50s |       127.0.0.1 | POST     \"/api/chat\""
+    },
+    {
+      "source_line": 482,
+      "text": "slot print_timing: id  0 | task 1053 | prompt eval time =     659.03 ms /    74 tokens (    8.91 ms per token,   112.29 tokens per second)"
+    },
+    {
+      "source_line": 483,
+      "text": "slot print_timing: id  0 | task 1053 |        eval time =    6312.60 ms /    44 tokens (  146.80 ms per token,     6.81 tokens per second)"
+    },
+    {
+      "source_line": 484,
+      "text": "slot print_timing: id  0 | task 1053 |       total time =    6971.63 ms /   118 tokens"
+    },
+    {
+      "source_line": 485,
+      "text": "slot print_timing: id  0 | task 1053 |    graphs reused =       1081"
+    },
+    {
+      "source_line": 486,
+      "text": "slot print_timing: id  0 | task 1053 |   graph reallocs =          9    /     0        (same size) / (changed size)"
+    },
+    {
+      "source_line": 489,
+      "text": "[GIN] 2026/11/02 - 13:17:56 | 200 |     7.2s |       127.0.0.1 | POST     \"/api/chat\""
+    }
+  ]
+}

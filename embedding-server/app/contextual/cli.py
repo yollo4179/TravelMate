@@ -19,12 +19,28 @@ from .artifacts import SourceBundle, collect_bundle, revalidate_record
 from .prompts import PromptVersion
 from .profiles import ExecutionProfileId
 from .replay import GenerationBaseline, revalidate_batch
+from .input_format import InputVersion
+from .input_replay import InputFormatComparison
 from .repository import apply_bundle
+from .contracts import SplitterVersion, SPLITTER_VERSION
+from .review import approval_document, reviewed_chunks, selection_report
+from .validation import ValidationVersion
+from app.enrichment.artifacts import write_json
 
 
 async def run(args: argparse.Namespace) -> int:
+    if args.command == "review":
+        write_json(args.output, approval_document(args.record, args.approve, args.reviewer))
+        print(args.output)
+        return 0
+    if args.command == "selection":
+        write_json(args.output, selection_report(args.record, args.review))
+        print(args.output)
+        return 0
     if args.command == "revalidate":
         if args.record.is_dir():
+            if getattr(args, "validation_version", None) is not None:
+                raise ValueError("검증 버전 지정은 단일 record.json 재검증에만 지원합니다")
             report_path = revalidate_batch(args.record, args.output, baseline_profile=args.baseline_profile,
                                           paired_only=args.paired_only)
             report = json.loads(report_path.read_text(encoding="utf-8"))
@@ -35,7 +51,8 @@ async def run(args: argparse.Namespace) -> int:
                               "missing_comparison_partners": len(report["missing_comparison_partners"]),
                               "comparison_errors": len(report["comparison_errors"])}, ensure_ascii=False))
             return int(report["failed"] != 0 or (args.paired_only and not report["comparison_complete"]))
-        path = revalidate_record(args.record, args.output, baseline_profile=args.baseline_profile)
+        path = revalidate_record(args.record, args.output, baseline_profile=args.baseline_profile,
+                                 validation_version=getattr(args, "validation_version", None))
         record = json.loads(path.read_text(encoding="utf-8"))
         print(json.dumps({"status": record["status"], "record": str(path), "api_calls": 0,
                           "validation_version": record["validation_version"],
@@ -43,21 +60,35 @@ async def run(args: argparse.Namespace) -> int:
                           "excluded_chunks": len(record["excluded_chunks"])}, ensure_ascii=False))
         return 0
     if args.command == "apply":
+        review_path = getattr(args, "review", None)
+        if not reviewed_chunks(args.record, review_path):
+            print("NO_INDEXABLE_CHUNKS")
+            return 0
         async with database_pool() as pool:
             await ensure_enrichment_schema(pool)
-            print(await apply_bundle(pool, args.record))
+            print(await apply_bundle(pool, args.record, review_path=review_path))
         return 0
     if args.baseline_profile and not args.baseline_record:
         raise ValueError("--baseline-profile requires --baseline-record")
     baseline = (GenerationBaseline.load(args.baseline_record, profile_id=args.baseline_profile)
                 if args.baseline_record else None)
     prepared_request = None
+    input_version = getattr(args, "input_version", None)
+    splitter_version = getattr(args, "splitter_version", None)
+    comparison = baseline
     if baseline is not None:
+        if splitter_version is not None and splitter_version != baseline.record.get("splitter_version", SPLITTER_VERSION):
+            raise ValueError("분할 변경은 별도 분할 비교 실행기를 사용해야 합니다")
+        splitter_version = splitter_version or baseline.record.get("splitter_version", SPLITTER_VERSION)
         if args.preset or args.model:
             raise ValueError("Baseline comparisons reuse the recorded model selection; omit --preset and --model")
         bundle = baseline.bundle
         settings = baseline.settings(os.environ.get("PERPLEXITY_API_KEY", ""), args.timeout)
-        prepared_request = baseline.candidate_request(args.prompt_version)
+        if (input_version == InputVersion.EXPLICIT
+                and baseline.record.get("input_version", InputVersion.OFFSETS) == InputVersion.OFFSETS):
+            comparison = InputFormatComparison(baseline)
+        input_version = input_version or baseline.record.get("input_version", InputVersion.OFFSETS)
+        prepared_request = comparison.candidate_request(args.prompt_version)
     else:
         bundle = (SourceBundle.from_enrichment_record(args.from_record) if args.from_record else
                   SourceBundle.from_mapping(json.loads(args.input.read_text(encoding="utf-8"))))
@@ -79,13 +110,16 @@ async def run(args: argparse.Namespace) -> int:
             prompt_version=args.prompt_version,
             prepared_request=prepared_request,
             request_profile_id=baseline.request_profile_id if baseline else None,
+            input_version=input_version or InputVersion.OFFSETS,
+            splitter_version=splitter_version or SPLITTER_VERSION,
         )
     record = json.loads(path.read_text(encoding="utf-8"))
     summary = {"status": record["status"], "record": str(path), "prompt_version": record["prompt_version"]}
     if record.get("request_profile_id"):
         summary["request_profile_id"] = record["request_profile_id"]
     if baseline is not None:
-        summary["comparison"] = str(baseline.write_report(path))
+        summary["comparison"] = str(comparison.write_report(
+            path, output_directory=getattr(args, "comparison_output", None)))
     print(json.dumps(summary, ensure_ascii=False))
     return int(record["status"] == CollectionStatus.FAILED)
 
@@ -109,12 +143,28 @@ def main() -> None:
     collection.add_argument("--refresh", action="store_true")
     collection.add_argument("--timeout", type=float, default=120)
     collection.add_argument("--prompt-version", choices=[version.value for version in PromptVersion], default=PROMPT_VERSION)
+    collection.add_argument("--input-version", choices=[version.value for version in InputVersion],
+                            help="명시적 청크 입력은 별도 입력 형식 비교로 기록합니다. 기본값은 기존 위치 기반 입력")
+    collection.add_argument("--comparison-output", type=Path, help="Windows의 긴 경로를 피할 별도 비교 보고서 폴더")
+    collection.add_argument("--splitter-version", choices=[version.value for version in SplitterVersion])
     application = commands.add_parser("apply")
     application.add_argument("--record", type=Path, required=True)
+    application.add_argument("--review", type=Path)
+    for command in ("review", "selection"):
+        operation = commands.add_parser(command)
+        operation.add_argument("--record", type=Path, required=True)
+        operation.add_argument("--output", type=Path, required=True)
+        if command == "review":
+            operation.add_argument("--approve", action="append", default=[], help="검수 후 승인한 청크 ID. 여러 번 지정 가능")
+            operation.add_argument("--reviewer", required=True)
+        else:
+            operation.add_argument("--review", type=Path, required=True)
     revalidation = commands.add_parser("revalidate", help="저장된 응답을 API 호출 없이 새 규칙으로 재검증")
     revalidation.add_argument("--record", type=Path, required=True, help="record.json 또는 일괄 재검증할 요청 아카이브 디렉터리")
     revalidation.add_argument("--output", type=Path, default=Path("LocationReview"))
     revalidation.add_argument("--baseline-profile", choices=[profile.value for profile in ExecutionProfileId])
+    revalidation.add_argument("--validation-version", choices=[version.value for version in ValidationVersion],
+                              help="단일 보존 응답에 적용할 검증 규칙. v7 위치 재계산에는 contextual-validation-v5 지정")
     revalidation.add_argument("--paired-only", action="store_true", help="기존 비교 보고서에 연결된 요청만 일괄 재검증")
     args = parser.parse_args()
     if args.env_file:
@@ -122,9 +172,12 @@ def main() -> None:
         if not args.env_file.is_file():
             parser.error("Explicit environment file does not exist")
         load_dotenv(args.env_file, override=False)
-    if args.command in ("generate", "revalidate"):
+    if args.command in ("generate", "revalidate", "review", "selection"):
         datasets = Path(__file__).resolve().parents[3] / "Evaluation/datasets"
-        if args.output.resolve().is_relative_to(datasets.resolve()):
+        destinations = [args.output]
+        if getattr(args, "comparison_output", None) is not None:
+            destinations.append(args.comparison_output)
+        if any(destination.resolve().is_relative_to(datasets.resolve()) for destination in destinations):
             parser.error("Do not write into frozen evaluation datasets")
     try:
         raise SystemExit(asyncio.run(run(args)))

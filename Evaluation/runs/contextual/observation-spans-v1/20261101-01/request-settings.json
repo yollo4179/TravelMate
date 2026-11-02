@@ -1,0 +1,51 @@
+{
+  "comparison_kind": "observation-splitting-and-relations-v6",
+  "input_version": "source-explicit-chunks-v2",
+  "splitter_version": "sentence-paragraph-v2",
+  "prompt_version": "contextual-observation-relations-v6",
+  "validation_version": "contextual-validation-v3",
+  "only_prompt_changed": false,
+  "pairs": [
+    {
+      "id": "P08",
+      "changed_request_fields": [
+        "input",
+        "instructions",
+        "response_format"
+      ],
+      "model": "perplexity/sonar",
+      "effort": "fast",
+      "max_output_tokens": 8192,
+      "tools": [],
+      "background": false,
+      "actual_model": "perplexity/sonar",
+      "baseline_spans": 2,
+      "generated_spans": 29,
+      "request_file_sha256": "8efb748b79ccfdf8ba88033fd3a385eb102fde9d11a870f44a256adba3d907d0",
+      "response_file_sha256": "634820b3ad09ff0cda18232785383cf49ea40569904a67b5c3c6587a38cc3b35",
+      "sources_file_sha256": "216bd3c4ce271320a2a767e202d6ec64161d273657a9172e5058b7395f09d520"
+    },
+    {
+      "id": "P09",
+      "changed_request_fields": [
+        "input",
+        "instructions",
+        "response_format"
+      ],
+      "model": "perplexity/sonar",
+      "effort": "fast",
+      "max_output_tokens": 8192,
+      "tools": [],
+      "background": false,
+      "actual_model": "perplexity/sonar",
+      "baseline_spans": 3,
+      "generated_spans": 28,
+      "request_file_sha256": "7455568fd17d2c64249346f59950534e6e8ddec548eb73e22dc0d67c077bc1bb",
+      "response_file_sha256": "6117e9f39c64eb12c32006a5856afeabde0380519b9a95922947195c24934a93",
+      "sources_file_sha256": "5ea4a0e47b9e752235b9f9e0a4d3b70dd15fe92085ac28c7d74b8413fc54569a"
+    }
+  ],
+  "baseline_regeneration_calls": 0,
+  "api_calls": 2,
+  "review_kind": "버전을 아는 에이전트의 개발 검수이며 독립 사람 블라인드 검수가 아님"
+}

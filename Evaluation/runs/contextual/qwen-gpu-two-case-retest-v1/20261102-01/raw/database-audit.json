@@ -1,0 +1,251 @@
+{
+  "captured_at": "2026-11-02T05:27:38.712110+00:00",
+  "read_only": true,
+  "spring": {
+    "requests": [
+      {
+        "status": "COMPLETED",
+        "created_at": "2026-11-02T13:11:50.907251+09:00",
+        "request_id": "90132657-52cf-4b07-8b10-2e46baf11482",
+        "updated_at": "2026-11-02T13:13:48.592892+09:00",
+        "result_payload": {
+          "items": [
+            {
+              "city": "종로",
+              "name": "창경궁",
+              "rank": 1,
+              "region": "서울",
+              "category": "관광지",
+              "latitude": 37.5789336838,
+              "place_id": 378,
+              "image_url": "http://tong.visitkorea.or.kr/cms/resource/94/3536794_image2_1.jpg",
+              "longitude": 126.9964634775,
+              "description": "관광지. 고궁. 창경궁(昌慶宮)은 성종이 세 명의 대비를 위해 옛 수강궁에 창건한 궁이다. 창경궁은 원래 1418년(세종 즉위) 세종이 상왕 태종을 위해 창건한 수강궁(壽康宮)이 있던 자리이다. 이후 1483년(성종 14) 성종이 세 명의 대비인 세조의 왕비 정희왕후, 덕종의 왕비 소혜왕후, 예종의 왕비 안순왕후를 위해 수강궁을 크게 확장하고 궁의 이름을 창경궁이라 하였다. \n창경궁은 창덕궁과 경계 없이 동궐(東闕)이라는 하나의 궁궐 영역이었으며,  주로 왕실 가족들의 생활공간으로 사용하였다. 창경궁은 1592년(선조 25) 임진왜란으로 소실된 것을 1616년(광해군 8) 중건하였으며, 1830년(순조 30) 대화재로 대부분의 건물들이 소실되었다가 4년 뒤에 중건하였다.\n그러나 1907년 순종이 황위에 오른 후 창경궁 내에 동물원과 식물원을 조성하면서 궁궐로서의 모습을 잃기 시작하였다. 1911년에는 일제에 의해 궁의 이름마저 창경원(昌慶苑)으로 격하되어 궁궐이 아닌 공원화가 되어 훼손이 심하였다. 광복 후 1983년에 다시 창경궁으로 명칭을 회복한 후 궁궐 경내에 있던 동물원을 이전하고 본래 궁궐의 모습으로 복원공사가 진행되어 현재의 모습이 되었다. 창경궁은 남향으로 있는 다른 궁궐과 달리 정문과 정전이 동향으로 배치되어 있다.",
+              "homepage_url": "https://royal.khs.go.kr/ROYAL/contents/menuInfo-cgg.do?grpCode=cgg",
+              "rerank_score": 0.9998594522476196,
+              "semantic_score": 0.6240623817406676,
+              "source_version": 1,
+              "evidence_chunks": [
+                {
+                  "title": "창경궁",
+                  "chunk_id": "bf9df996-8689-5216-80e3-0a315752721f",
+                  "metadata": {
+                    "field": "places.description",
+                    "origin": "frozen_corpus",
+                    "place_id": 378,
+                    "capture_scope": "field",
+                    "corpus_sha256": "c74e902620687cbe8b7ec61a24eb7932e95f8cf7a90762baef5e78ad0b134f9e",
+                    "content_sha256": "12706ec5165ca2f48e2846d995b745959c1546a73a1511507ad2fe81adb97a72",
+                    "snapshot_sha256": "410a9c3c46004cb30644455fe9d5ddb01a52a04a700ffe04159605cf94661218",
+                    "tour_content_id": "126511",
+                    "snapshot_version": "1.4.0",
+                    "place_fingerprint": "01f0d5ba085959aa505523cd98a3de5ea0a0a024ae02b25d71df3a8f581df625",
+                    "dataset_manifest_sha256": "42235cfe110d208f9f30656dc90a510951e1ec6dbb8d6b861efe8f4d1e460038"
+                  },
+                  "source_id": "f9778e87-11f5-5d07-83fa-33e8350a3a40",
+                  "chunk_text": "관광지. 고궁. 창경궁(昌慶宮)은 성종이 세 명의 대비를 위해 옛 수강궁에 창건한 궁이다. 창경궁은 원래 1418년(세종 즉위) 세종이 상왕 태종을 위해 창건한 수강궁(壽康宮)이 있던 자리이다. 이후 1483년(성종 14) 성종이 세 명의 대비인 세조의 왕비 정희왕후, 덕종의 왕비 소혜왕후, 예종의 왕비 안순왕후를 위해 수강궁을 크게 확장하고 궁의 이름을 창경궁이라 하였다. \n창경궁은 창덕궁과 경계 없이 동궐(東闕)이라는 하나의 궁궐 영역이었으며,  주로 왕실 가족들의 생활공간으로 사용하였다. 창경궁은 1592년(선조 25) 임진왜란으로 소실된 것을 1616년(광해군 8) 중건하였으며, 1830년(순조 30) 대화재로 대부분의 건물들이 소실되었다가 4년 뒤에 중건하였다.\n그러나 1907년 순종이 황위에 오른 후 창경궁 내에 동물원과 식물원을 조성하면서 궁궐로서의 모습을 잃기 시작하였다. 1911년에는 일제에 의해 궁의 이름마저 창경원(昌慶苑)으로 격하되어 궁궐이 아닌 공원화가 되어 훼손이 심하였다. 광복 후 1983년에 다시 창경궁으로 명칭을 회복한 후 궁궐 경내에 있던 동물원을 이전하고 본래 궁궐의 모습으로 복원공사가 진행되어 현재의 모습이 되었다. 창경궁은 남향으로 있는 다른 궁궐과 달리 정문과 정전이 동향으로 배치되어 있다.",
+                  "place_refs": [
+                    {
+                      "role": "subject",
+                      "place_id": 378
+                    }
+                  ],
+                  "search_text": "관광지. 고궁. 창경궁(昌慶宮)은 성종이 세 명의 대비를 위해 옛 수강궁에 창건한 궁이다. 창경궁은 원래 1418년(세종 즉위) 세종이 상왕 태종을 위해 창건한 수강궁(壽康宮)이 있던 자리이다. 이후 1483년(성종 14) 성종이 세 명의 대비인 세조의 왕비 정희왕후, 덕종의 왕비 소혜왕후, 예종의 왕비 안순왕후를 위해 수강궁을 크게 확장하고 궁의 이름을 창경궁이라 하였다. \n창경궁은 창덕궁과 경계 없이 동궐(東闕)이라는 하나의 궁궐 영역이었으며,  주로 왕실 가족들의 생활공간으로 사용하였다. 창경궁은 1592년(선조 25) 임진왜란으로 소실된 것을 1616년(광해군 8) 중건하였으며, 1830년(순조 30) 대화재로 대부분의 건물들이 소실되었다가 4년 뒤에 중건하였다.\n그러나 1907년 순종이 황위에 오른 후 창경궁 내에 동물원과 식물원을 조성하면서 궁궐로서의 모습을 잃기 시작하였다. 1911년에는 일제에 의해 궁의 이름마저 창경원(昌慶苑)으로 격하되어 궁궐이 아닌 공원화가 되어 훼손이 심하였다. 광복 후 1983년에 다시 창경궁으로 명칭을 회복한 후 궁궐 경내에 있던 동물원을 이전하고 본래 궁궐의 모습으로 복원공사가 진행되어 현재의 모습이 되었다. 창경궁은 남향으로 있는 다른 궁궐과 달리 정문과 정전이 동향으로 배치되어 있다.",
+                  "source_span": {
+                    "end": 641,
+                    "unit": "unicode_codepoint",
+                    "start": 0
+                  },
+                  "source_type": "tourapi",
+                  "rerank_score": 0.9998594522476196,
+                  "retrieval_path": "original_field",
+                  "semantic_score": 0.6240623817406676,
+                  "source_version": "584360f560922c2194641c1b365a263851cc0edf0a1170cc0d3c4da955cab3fe",
+                  "vector_binding": "NOT_EMBEDDED",
+                  "context_version": "fae6d0f75d804ad140de597b63b687ef924d1f94492aaa9dc60d259bab1c64a0",
+                  "semantic_score_scope": "place_candidate"
+                }
+              ],
+              "source_category": "고궁",
+              "tour_content_id": "126511",
+              "evidence_assessment": {
+                "status": "not_assessed"
+              },
+              "latest_seen_version": 1,
+              "index_config_version": "bge-m3-v1",
+              "enrichment_snapshot_id": null
+            }
+          ],
+          "query": "창경궁",
+          "status": "COMPLETED",
+          "event_id": "6fceb1fe-cec1-4d46-af74-726cc2604e25",
+          "warnings": [],
+          "event_type": "RECOMMENDATION_COMPLETED",
+          "request_id": "90132657-52cf-4b07-8b10-2e46baf11482",
+          "completed_at": "2026-11-02T04:13:48.077700+00:00",
+          "rerank_status": "APPLIED",
+          "returned_count": 1,
+          "schema_version": 1,
+          "applied_filters": {
+            "area": null,
+            "city": null,
+            "region": "서울",
+            "category": null,
+            "exclude_place_ids": []
+          },
+          "candidate_count": 30,
+          "context_version": 0,
+          "fallback_reason": null,
+          "ranking_mode_applied": "RERANKED",
+          "ranking_mode_requested": "RERANKED"
+        },
+        "context_version": 0,
+        "request_payload": {
+          "limit": 1,
+          "query": "창경궁",
+          "filters": {
+            "area": null,
+            "city": null,
+            "region": "서울",
+            "category": null,
+            "exclude_place_ids": []
+          },
+          "event_id": "d7a3c834-7b11-4278-89a2-5895846ac3eb",
+          "event_type": "RECOMMENDATION_REQUESTED",
+          "request_id": "90132657-52cf-4b07-8b10-2e46baf11482",
+          "deadline_at": null,
+          "ranking_mode": "RERANKED",
+          "requested_at": "2026-11-02T04:11:50.871386400Z",
+          "schema_version": 1,
+          "context_version": 0
+        }
+      }
+    ],
+    "planning_job_count": 0
+  },
+  "search": {
+    "requests": [
+      {
+        "status": "COMPLETED",
+        "payload": {
+          "limit": 1,
+          "query": "창경궁",
+          "filters": {
+            "area": null,
+            "city": null,
+            "region": "서울",
+            "category": null,
+            "exclude_place_ids": []
+          },
+          "event_id": "d7a3c834-7b11-4278-89a2-5895846ac3eb",
+          "event_type": "RECOMMENDATION_REQUESTED",
+          "request_id": "90132657-52cf-4b07-8b10-2e46baf11482",
+          "deadline_at": null,
+          "ranking_mode": "RERANKED",
+          "requested_at": "2026-11-02T04:11:50.871386400Z",
+          "schema_version": 1,
+          "context_version": 0
+        },
+        "event_id": "d7a3c834-7b11-4278-89a2-5895846ac3eb",
+        "created_at": "2026-11-02T13:11:51.173303+09:00",
+        "request_id": "90132657-52cf-4b07-8b10-2e46baf11482",
+        "updated_at": "2026-11-02T13:13:48.078109+09:00",
+        "attempt_count": 1,
+        "result_payload": {
+          "items": [
+            {
+              "city": "종로",
+              "name": "창경궁",
+              "rank": 1,
+              "region": "서울",
+              "category": "관광지",
+              "latitude": 37.5789336838,
+              "place_id": 378,
+              "image_url": "http://tong.visitkorea.or.kr/cms/resource/94/3536794_image2_1.jpg",
+              "longitude": 126.9964634775,
+              "description": "관광지. 고궁. 창경궁(昌慶宮)은 성종이 세 명의 대비를 위해 옛 수강궁에 창건한 궁이다. 창경궁은 원래 1418년(세종 즉위) 세종이 상왕 태종을 위해 창건한 수강궁(壽康宮)이 있던 자리이다. 이후 1483년(성종 14) 성종이 세 명의 대비인 세조의 왕비 정희왕후, 덕종의 왕비 소혜왕후, 예종의 왕비 안순왕후를 위해 수강궁을 크게 확장하고 궁의 이름을 창경궁이라 하였다. \n창경궁은 창덕궁과 경계 없이 동궐(東闕)이라는 하나의 궁궐 영역이었으며,  주로 왕실 가족들의 생활공간으로 사용하였다. 창경궁은 1592년(선조 25) 임진왜란으로 소실된 것을 1616년(광해군 8) 중건하였으며, 1830년(순조 30) 대화재로 대부분의 건물들이 소실되었다가 4년 뒤에 중건하였다.\n그러나 1907년 순종이 황위에 오른 후 창경궁 내에 동물원과 식물원을 조성하면서 궁궐로서의 모습을 잃기 시작하였다. 1911년에는 일제에 의해 궁의 이름마저 창경원(昌慶苑)으로 격하되어 궁궐이 아닌 공원화가 되어 훼손이 심하였다. 광복 후 1983년에 다시 창경궁으로 명칭을 회복한 후 궁궐 경내에 있던 동물원을 이전하고 본래 궁궐의 모습으로 복원공사가 진행되어 현재의 모습이 되었다. 창경궁은 남향으로 있는 다른 궁궐과 달리 정문과 정전이 동향으로 배치되어 있다.",
+              "homepage_url": "https://royal.khs.go.kr/ROYAL/contents/menuInfo-cgg.do?grpCode=cgg",
+              "rerank_score": 0.9998594522476196,
+              "semantic_score": 0.6240623817406676,
+              "source_version": 1,
+              "evidence_chunks": [
+                {
+                  "title": "창경궁",
+                  "chunk_id": "bf9df996-8689-5216-80e3-0a315752721f",
+                  "metadata": {
+                    "field": "places.description",
+                    "origin": "frozen_corpus",
+                    "place_id": 378,
+                    "capture_scope": "field",
+                    "corpus_sha256": "c74e902620687cbe8b7ec61a24eb7932e95f8cf7a90762baef5e78ad0b134f9e",
+                    "content_sha256": "12706ec5165ca2f48e2846d995b745959c1546a73a1511507ad2fe81adb97a72",
+                    "snapshot_sha256": "410a9c3c46004cb30644455fe9d5ddb01a52a04a700ffe04159605cf94661218",
+                    "tour_content_id": "126511",
+                    "snapshot_version": "1.4.0",
+                    "place_fingerprint": "01f0d5ba085959aa505523cd98a3de5ea0a0a024ae02b25d71df3a8f581df625",
+                    "dataset_manifest_sha256": "42235cfe110d208f9f30656dc90a510951e1ec6dbb8d6b861efe8f4d1e460038"
+                  },
+                  "source_id": "f9778e87-11f5-5d07-83fa-33e8350a3a40",
+                  "chunk_text": "관광지. 고궁. 창경궁(昌慶宮)은 성종이 세 명의 대비를 위해 옛 수강궁에 창건한 궁이다. 창경궁은 원래 1418년(세종 즉위) 세종이 상왕 태종을 위해 창건한 수강궁(壽康宮)이 있던 자리이다. 이후 1483년(성종 14) 성종이 세 명의 대비인 세조의 왕비 정희왕후, 덕종의 왕비 소혜왕후, 예종의 왕비 안순왕후를 위해 수강궁을 크게 확장하고 궁의 이름을 창경궁이라 하였다. \n창경궁은 창덕궁과 경계 없이 동궐(東闕)이라는 하나의 궁궐 영역이었으며,  주로 왕실 가족들의 생활공간으로 사용하였다. 창경궁은 1592년(선조 25) 임진왜란으로 소실된 것을 1616년(광해군 8) 중건하였으며, 1830년(순조 30) 대화재로 대부분의 건물들이 소실되었다가 4년 뒤에 중건하였다.\n그러나 1907년 순종이 황위에 오른 후 창경궁 내에 동물원과 식물원을 조성하면서 궁궐로서의 모습을 잃기 시작하였다. 1911년에는 일제에 의해 궁의 이름마저 창경원(昌慶苑)으로 격하되어 궁궐이 아닌 공원화가 되어 훼손이 심하였다. 광복 후 1983년에 다시 창경궁으로 명칭을 회복한 후 궁궐 경내에 있던 동물원을 이전하고 본래 궁궐의 모습으로 복원공사가 진행되어 현재의 모습이 되었다. 창경궁은 남향으로 있는 다른 궁궐과 달리 정문과 정전이 동향으로 배치되어 있다.",
+                  "place_refs": [
+                    {
+                      "role": "subject",
+                      "place_id": 378
+                    }
+                  ],
+                  "search_text": "관광지. 고궁. 창경궁(昌慶宮)은 성종이 세 명의 대비를 위해 옛 수강궁에 창건한 궁이다. 창경궁은 원래 1418년(세종 즉위) 세종이 상왕 태종을 위해 창건한 수강궁(壽康宮)이 있던 자리이다. 이후 1483년(성종 14) 성종이 세 명의 대비인 세조의 왕비 정희왕후, 덕종의 왕비 소혜왕후, 예종의 왕비 안순왕후를 위해 수강궁을 크게 확장하고 궁의 이름을 창경궁이라 하였다. \n창경궁은 창덕궁과 경계 없이 동궐(東闕)이라는 하나의 궁궐 영역이었으며,  주로 왕실 가족들의 생활공간으로 사용하였다. 창경궁은 1592년(선조 25) 임진왜란으로 소실된 것을 1616년(광해군 8) 중건하였으며, 1830년(순조 30) 대화재로 대부분의 건물들이 소실되었다가 4년 뒤에 중건하였다.\n그러나 1907년 순종이 황위에 오른 후 창경궁 내에 동물원과 식물원을 조성하면서 궁궐로서의 모습을 잃기 시작하였다. 1911년에는 일제에 의해 궁의 이름마저 창경원(昌慶苑)으로 격하되어 궁궐이 아닌 공원화가 되어 훼손이 심하였다. 광복 후 1983년에 다시 창경궁으로 명칭을 회복한 후 궁궐 경내에 있던 동물원을 이전하고 본래 궁궐의 모습으로 복원공사가 진행되어 현재의 모습이 되었다. 창경궁은 남향으로 있는 다른 궁궐과 달리 정문과 정전이 동향으로 배치되어 있다.",
+                  "source_span": {
+                    "end": 641,
+                    "unit": "unicode_codepoint",
+                    "start": 0
+                  },
+                  "source_type": "tourapi",
+                  "rerank_score": 0.9998594522476196,
+                  "retrieval_path": "original_field",
+                  "semantic_score": 0.6240623817406676,
+                  "source_version": "584360f560922c2194641c1b365a263851cc0edf0a1170cc0d3c4da955cab3fe",
+                  "vector_binding": "NOT_EMBEDDED",
+                  "context_version": "fae6d0f75d804ad140de597b63b687ef924d1f94492aaa9dc60d259bab1c64a0",
+                  "semantic_score_scope": "place_candidate"
+                }
+              ],
+              "source_category": "고궁",
+              "tour_content_id": "126511",
+              "evidence_assessment": {
+                "status": "not_assessed"
+              },
+              "latest_seen_version": 1,
+              "index_config_version": "bge-m3-v1",
+              "enrichment_snapshot_id": null
+            }
+          ],
+          "query": "창경궁",
+          "status": "COMPLETED",
+          "event_id": "6fceb1fe-cec1-4d46-af74-726cc2604e25",
+          "warnings": [],
+          "event_type": "RECOMMENDATION_COMPLETED",
+          "request_id": "90132657-52cf-4b07-8b10-2e46baf11482",
+          "completed_at": "2026-11-02T04:13:48.077700+00:00",
+          "rerank_status": "APPLIED",
+          "returned_count": 1,
+          "schema_version": 1,
+          "applied_filters": {
+            "area": null,
+            "city": null,
+            "region": "서울",
+            "category": null,
+            "exclude_place_ids": []
+          },
+          "candidate_count": 30,
+          "context_version": 0,
+          "fallback_reason": null,
+          "ranking_mode_applied": "RERANKED",
+          "ranking_mode_requested": "RERANKED"
+        },
+        "context_version": 0
+      }
+    ],
+    "index_job_count": 0,
+    "result_outbox_count": 1
+  }
+}

@@ -1,0 +1,160 @@
+[ {
+  "kind" : "TECHNICAL_ARGUMENT_REGRESSION",
+  "server_accepted" : true,
+  "arguments" : {
+    "query" : "x"
+  }
+}, {
+  "kind" : "TECHNICAL_ARGUMENT_REGRESSION",
+  "server_accepted" : true,
+  "arguments" : {
+    "query" : "x",
+    "region" : null,
+    "city" : null,
+    "category" : null,
+    "exclude_place_ids" : null,
+    "area" : null
+  }
+}, {
+  "kind" : "TECHNICAL_ARGUMENT_REGRESSION",
+  "server_accepted" : true,
+  "arguments" : {
+    "query" : "x",
+    "limit" : 1,
+    "exclude_place_ids" : [ 1, 9223372036854775807 ]
+  }
+}, {
+  "kind" : "TECHNICAL_ARGUMENT_REGRESSION",
+  "server_accepted" : true,
+  "arguments" : {
+    "query" : "x",
+    "limit" : 20,
+    "area" : {
+      "type" : "CIRCLE",
+      "center" : {
+        "lat" : -90,
+        "lon" : 180
+      },
+      "radius_meters" : 10000
+    }
+  }
+}, {
+  "kind" : "TECHNICAL_ARGUMENT_REGRESSION",
+  "server_accepted" : false,
+  "arguments" : { }
+}, {
+  "kind" : "TECHNICAL_ARGUMENT_REGRESSION",
+  "server_accepted" : false,
+  "arguments" : {
+    "query" : null
+  }
+}, {
+  "kind" : "TECHNICAL_ARGUMENT_REGRESSION",
+  "server_accepted" : false,
+  "arguments" : {
+    "query" : " "
+  }
+}, {
+  "kind" : "TECHNICAL_ARGUMENT_REGRESSION",
+  "server_accepted" : false,
+  "arguments" : {
+    "query" : " "
+  }
+}, {
+  "kind" : "TECHNICAL_ARGUMENT_REGRESSION",
+  "server_accepted" : false,
+  "arguments" : {
+    "query" : "x",
+    "excludePlaceIds" : [ ]
+  }
+}, {
+  "kind" : "TECHNICAL_ARGUMENT_REGRESSION",
+  "server_accepted" : false,
+  "arguments" : {
+    "query" : "x",
+    "limit" : null
+  }
+}, {
+  "kind" : "TECHNICAL_ARGUMENT_REGRESSION",
+  "server_accepted" : false,
+  "arguments" : {
+    "query" : "x",
+    "limit" : 0
+  }
+}, {
+  "kind" : "TECHNICAL_ARGUMENT_REGRESSION",
+  "server_accepted" : false,
+  "arguments" : {
+    "query" : "x",
+    "limit" : 21
+  }
+}, {
+  "kind" : "TECHNICAL_ARGUMENT_REGRESSION",
+  "server_accepted" : false,
+  "arguments" : {
+    "query" : "x",
+    "exclude_place_ids" : [ 1, 1.0 ]
+  }
+}, {
+  "kind" : "TECHNICAL_ARGUMENT_REGRESSION",
+  "server_accepted" : false,
+  "arguments" : {
+    "query" : "x",
+    "exclude_place_ids" : [ 1.5 ]
+  }
+}, {
+  "kind" : "TECHNICAL_ARGUMENT_REGRESSION",
+  "server_accepted" : false,
+  "arguments" : {
+    "query" : "x",
+    "city" : " "
+  }
+}, {
+  "kind" : "TECHNICAL_ARGUMENT_REGRESSION",
+  "server_accepted" : false,
+  "arguments" : {
+    "query" : "x",
+    "area" : {
+      "type" : "CIRCLE",
+      "center" : {
+        "lat" : 91,
+        "lon" : 0
+      },
+      "radius_meters" : 500
+    }
+  }
+}, {
+  "kind" : "TECHNICAL_ARGUMENT_REGRESSION",
+  "server_accepted" : false,
+  "arguments" : {
+    "query" : "x",
+    "area" : {
+      "type" : "CIRCLE",
+      "center" : {
+        "lat" : 0,
+        "lon" : 0
+      },
+      "radius_meters" : 499
+    }
+  }
+}, {
+  "kind" : "RECORDED_NATIVE_ARGUMENTS",
+  "case_id" : "PLR-TM-palaces-01",
+  "server_accepted" : true,
+  "arguments" : {
+    "region" : "서울",
+    "query" : "창경궁",
+    "limit" : 1
+  }
+}, {
+  "kind" : "RECORDED_NATIVE_ARGUMENTS",
+  "case_id" : "PLR-TM-palaces-03",
+  "server_accepted" : false,
+  "arguments" : {
+    "excludePlaceIds" : [ ],
+    "area" : null,
+    "region" : "서울",
+    "city" : "종로",
+    "category" : null
+  }
+} ]

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.yollo.TravelMate.ResidentQwenProcessTest" tests="5" skipped="0" failures="0" errors="0" timestamp="2026-11-02T00:56:40.878Z" hostname="DESKTOP-MS327CL" time="7.0">
+  <properties/>
+  <testcase name="queueTimeoutDoesNotKillAnActiveHealthyCalculation()" classname="com.yollo.TravelMate.ResidentQwenProcessTest" time="3.376"/>
+  <testcase name="startupAndCalculationTimeoutsAreDifferentAndStaleQueuedRequestsCannotRestart()" classname="com.yollo.TravelMate.ResidentQwenProcessTest" time="2.237"/>
+  <testcase name="crashWrongRequestAndIdentityRejectionBlockTheCallThenRequireFreshInitialization()" classname="com.yollo.TravelMate.ResidentQwenProcessTest" time="1.137"/>
+  <testcase name="providerLifecycleInitializesOnceWithoutInferenceAndClosesResources()" classname="com.yollo.TravelMate.ResidentQwenProcessTest" time="0.042"/>
+  <testcase name="reusesOneProcessAndCorrelatesEveryCompleteInputUntilClose()" classname="com.yollo.TravelMate.ResidentQwenProcessTest" time="0.206"/>
+  <system-out><![CDATA[09:56:47.671 [Test worker] INFO com.yollo.TravelMate.ai.llm.derived.OllamaLlmClient -- Qwen tokenizer worker ready. initializationMs=123.0
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

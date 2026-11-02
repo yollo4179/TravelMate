@@ -1,0 +1,23 @@
+{
+  "execution_source_commit": "aea9d343524b71a79866168af243e9140a14a7ca",
+  "preparation_deployment_base_commit": "b80aa78bb32633ddb7189d68aaf76981c4eb0bdc",
+  "jar_sha256": "95dcc2f217d3e190ab9263d9d6da651c6e2a8e32edfb03df33bab5acffce62ef",
+  "jar_matches_manifest": true,
+  "source_files_match_preparation_manifest": true,
+  "source_file_count": 251,
+  "api_endpoint": "http://127.0.0.1:18080/api/v1/conversation/turns",
+  "spring_runtime": "WINDOWS",
+  "search_embedding_device": "cpu",
+  "search_reranker_device": "cpu",
+  "search_container_cpu_limit": 2,
+  "search_container_memory_gib_limit": 6,
+  "search_db": "tm-b-eval-searchdb/travelmate_b_search",
+  "spring_db": "tm-b-eval-springdb/travelmate_b_spring",
+  "topics": [
+    "travelmate.b-eval.place-changes.v1",
+    "travelmate.b-eval.recommendation-requests.v1",
+    "travelmate.b-eval.recommendation-results.v1"
+  ],
+  "ranking_scores_comparable_to_prior_gpu": false,
+  "captured_at": "2026-11-02T04:22:51.127107+00:00"
+}

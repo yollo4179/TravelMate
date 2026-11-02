@@ -1,0 +1,9 @@
+{
+  "status": "ok",
+  "dim": 1024,
+  "embedding_device": "cpu",
+  "reranker_device": "cpu",
+  "cuda_available": false,
+  "gpu_name": "",
+  "original_evidence_mode": "post-retrieval-field-v1"
+}

@@ -1,0 +1,47 @@
+{
+  "go_distribution": {
+    "filename": "go1.26.10.windows-amd64.zip",
+    "os": "windows",
+    "arch": "amd64",
+    "version": "go1.26.10",
+    "sha256": "7ecd2d7260e82c59bcbd7f1077a07cee2dea607295b858df67195a1e4e09629b",
+    "size": 75004774,
+    "kind": "archive"
+  },
+  "global_toolchain_installed": false,
+  "ollama_build_info": [
+    "mod\tgithub.com/ollama/ollama\tv0.40.13",
+    "build\tGOARCH=amd64",
+    "build\tGOOS=windows",
+    "build\tvcs.revision=04088e7c9d41cba5d33bafbf788d87a465c79d5b",
+    "build\tvcs.time=2026-10-28T22:20:04Z",
+    "build\tvcs.modified=false"
+  ],
+  "ollama_executable_sha256": "c1cca2937421d78877d5961746d25e33acd62e194d881f90fb63dca7f3e10f41",
+  "renderer_module_build_info": [
+    "mod\ttravelmate.local/qwen-tokenizer-check\t(devel)",
+    "dep\tgithub.com/ollama/ollama\tv0.40.13\th1:bB+N1MLkzpq2n9Y2KsKQre9UXor+1ABQZ7nLMBTlZN8="
+  ],
+  "renderer_sha256": "cec56cb03f8670a9b2e53b01cca20068b1cdad6f611bb7cb18663f8a2bfd5027",
+  "native_library_sha256": "a9ccb9ae84f200579d1103a6d7cb67eb2e79342961497a74dc35d9c87894d9d9",
+  "native_header": {
+    "repository": "ggml-org/llama.cpp",
+    "ref": "b11963",
+    "path": "include/llama.h",
+    "git_blob_sha": "ae54e661bea6b305c0d3684670bc444c53d795bd",
+    "llama_model_params_abi_bytes": 80
+  },
+  "template_source_git_blob_sha": "d906e1ddcb6103bc82a263a7da8db6ec658dd512",
+  "server_prompt_source_git_blob_sha": "17b50efc652865d9098801d0ab27570be7060cc0",
+  "native_vocabulary_source_git_blob_sha": "65b569762a2ad291a94f7d4a8928bd21d217d2c8",
+  "model_weights_evaluated": false,
+  "model_file_bytes_hashed_for_identity": true,
+  "metadata_read_and_vocabulary_loaded_only": true,
+  "native_tokenize_endpoint_source": {
+    "path": "tools/server/server-context.cpp",
+    "ref": "b11963",
+    "git_blob_sha": "2bd1ab9ec00ca581c70bac014f7ca6d3d2bae0ae",
+    "add_special": false,
+    "parse_special": true
+  }
+}

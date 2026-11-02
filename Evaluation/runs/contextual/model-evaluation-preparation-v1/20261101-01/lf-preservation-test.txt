@@ -1,0 +1,6 @@
+test_all_archived_and_original_payload_hashes_match_before_move (test_migration.MigrationTests.test_all_archived_and_original_payload_hashes_match_before_move) ... ok
+
+----------------------------------------------------------------------
+Ran 1 test in 0.079s
+
+OK

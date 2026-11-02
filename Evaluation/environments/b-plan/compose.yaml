@@ -1,0 +1,136 @@
+name: travelmate-b-eval
+services:
+  springdb:
+    image: pgvector/pgvector:pg17
+    container_name: tm-b-eval-springdb
+    environment:
+      POSTGRES_DB: travelmate_b_spring
+      POSTGRES_USER: b_eval
+      POSTGRES_PASSWORD: ${B_EVAL_DB_PASSWORD:?Run prepare.py configure first}
+    ports: ["127.0.0.1:55432:5432"]
+    volumes:
+      - springdata:/var/lib/postgresql/data
+      - ${B_EVAL_REPOSITORY}/Docker/init:/docker-entrypoint-initdb.d:ro
+    networks: [evaluation]
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "b_eval", "-d", "travelmate_b_spring"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  searchdb:
+    image: pgvector/pgvector:pg17
+    container_name: tm-b-eval-searchdb
+    environment:
+      POSTGRES_DB: travelmate_b_search
+      POSTGRES_USER: b_eval
+      POSTGRES_PASSWORD: ${B_EVAL_DB_PASSWORD:?Run prepare.py configure first}
+    ports: ["127.0.0.1:55433:5432"]
+    volumes:
+      - searchdata:/var/lib/postgresql/data
+      - ${B_EVAL_REPOSITORY}/Docker/search-init:/docker-entrypoint-initdb.d:ro
+    networks: [evaluation]
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "b_eval", "-d", "travelmate_b_search"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  redis:
+    image: redis:7-alpine
+    container_name: tm-b-eval-redis
+    ports: ["127.0.0.1:16379:6379"]
+    networks: [evaluation]
+
+  kafka:
+    image: apache/kafka:4.1.1
+    container_name: tm-b-eval-kafka
+    ports: ["127.0.0.1:39092:29092"]
+    environment:
+      CLUSTER_ID: YkV2YWxJc29sYXRlZE9ubHk
+      KAFKA_NODE_ID: "1"
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_LISTENERS: INTERNAL://:9092,CONTROLLER://:9093,EXTERNAL://:29092
+      KAFKA_ADVERTISED_LISTENERS: INTERNAL://kafka:9092,EXTERNAL://127.0.0.1:39092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INTERNAL:PLAINTEXT,CONTROLLER:PLAINTEXT,EXTERNAL:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
+      KAFKA_LOG_DIRS: /var/lib/kafka/data
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: "1"
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: "1"
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: "1"
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "false"
+      KAFKA_HEAP_OPTS: -Xms128m -Xmx384m
+    volumes: ["kafkadata:/var/lib/kafka/data"]
+    networks: [evaluation]
+    healthcheck:
+      test: ["CMD-SHELL", "/opt/kafka/bin/kafka-broker-api-versions.sh --bootstrap-server localhost:9092 >/dev/null 2>&1"]
+      interval: 5s
+      timeout: 10s
+      retries: 20
+
+  search:
+    image: travelmate-contextual-validation:64bf5ef0
+    container_name: tm-b-eval-search
+    entrypoint: ["python", "-m", "uvicorn"]
+    command: ["app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+    working_dir: /workspace/embedding-server
+    ports: ["127.0.0.1:18000:8000"]
+    environment:
+      DATABASE_URL: postgresql://b_eval:${B_EVAL_DB_PASSWORD}@searchdb:5432/travelmate_b_search
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      KAFKA_PLACE_CHANGES_TOPIC: travelmate.b-eval.place-changes.v1
+      KAFKA_RECOMMENDATION_REQUESTS_TOPIC: travelmate.b-eval.recommendation-requests.v1
+      KAFKA_RECOMMENDATION_RESULTS_TOPIC: travelmate.b-eval.recommendation-results.v1
+      CONTEXTUAL_RELATION_RETRIEVAL: chunk-and-relation-v1
+      CONTEXTUAL_RERANK_EVIDENCE_PER_PLACE: "2"
+      PRESERVED_ORIGINAL_EVIDENCE: post-retrieval-field-v1
+      RERANK_BATCH_SIZE: "8"
+      RERANK_EXECUTION_STRATEGY: cross_encoder_predict
+      HF_HOME: /models
+      HF_HUB_OFFLINE: "1"
+      TRANSFORMERS_OFFLINE: "1"
+      HF_HUB_DISABLE_TELEMETRY: "1"
+      TOKENIZERS_PARALLELISM: "false"
+      LOCATION_REVIEW_DIR: /eval-inputs
+      PYTHONDONTWRITEBYTECODE: "1"
+      LANGSMITH_API_KEY: local-b-eval-no-external-account
+      LANGSMITH_ENDPOINT: http://traces:4318
+    volumes:
+      - ${B_EVAL_REPOSITORY}:/workspace:ro
+      - ${B_EVAL_RUNTIME}:/eval-runtime:ro
+      - modelcache:/models:ro
+      - indexinputs:/eval-inputs
+    mem_limit: 6g
+    cpus: 2
+    networks: [evaluation]
+    depends_on:
+      searchdb: {condition: service_healthy}
+      kafka: {condition: service_healthy}
+
+  traces:
+    image: travelmate-contextual-validation:64bf5ef0
+    container_name: tm-b-eval-traces
+    entrypoint: ["python", "/workspace/Evaluation/environments/b-plan/otlp_sink.py"]
+    command: ["--directory", "/captures"]
+    ports: ["127.0.0.1:18318:4318"]
+    volumes:
+      - ${B_EVAL_REPOSITORY}:/workspace:ro
+      - ${B_EVAL_RUNTIME}/traces:/captures
+    mem_limit: 128m
+    networks: [evaluation]
+    healthcheck:
+      disable: true
+
+networks:
+  evaluation:
+    driver: bridge
+volumes:
+  springdata:
+  searchdata:
+  kafkadata:
+  indexinputs:
+  modelcache:
+    external: true
+    name: docker_stack_models

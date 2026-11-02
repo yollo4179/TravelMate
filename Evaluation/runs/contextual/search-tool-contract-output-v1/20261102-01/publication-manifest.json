@@ -1,0 +1,88 @@
+{
+  "files": {
+    ".gitattributes": {
+      "sha256": "f796b50783db7484d7c2ded2f3628d5a15ccdf8ce0a724ce42ebb83b3eda80d9",
+      "bytes": 45
+    },
+    "excluded-integration-test-attempt.json": {
+      "sha256": "9a0276e553cc825fac351953ef3375d58baabeb0d112d66e7eed2a8ddc40bb8d",
+      "bytes": 919
+    },
+    "fixtures/acceptance-matrix.json": {
+      "sha256": "4efe24accbc9418bf777427d1b6bb90ff8c9a374c7ebed31ef30c0ecef8d79f1",
+      "bytes": 3398
+    },
+    "fixtures/contract.json": {
+      "sha256": "7419f9833abfac5f707e5ce78d77472cadc8c78f1b09943325962df3ae54c4e3",
+      "bytes": 3061
+    },
+    "fixtures/PLR-TM-palaces-01.mock-turns.jsonl": {
+      "sha256": "66d7b72439210cec0b9656f67578b6511a9b3bc61eefa79a9111fbc8e04dc07f",
+      "bytes": 16293
+    },
+    "fixtures/PLR-TM-palaces-03.mock-turns.jsonl": {
+      "sha256": "4b1a3651fd618e7028fffd3311f6fee096018e7022c03f61b33c4ac90adb9bbf",
+      "bytes": 5785
+    },
+    "independent-schema-verification.json": {
+      "sha256": "21941f19387b4549cd39e67183ddcc4fc7aa990090108a681922b99ebd391957",
+      "bytes": 5321
+    },
+    "junit/TEST-com.yollo.TravelMate.BudgetedProviderTest.xml": {
+      "sha256": "d21bd8a0bef3fff7956fb1daf294308da44bc84600c15b7284f28d228e98f8e3",
+      "bytes": 636
+    },
+    "junit/TEST-com.yollo.TravelMate.ConversationControllerTest.xml": {
+      "sha256": "19902f0eed1c5f52bcb1656f28473a203e4063b724ff5f0f95bbef3a9ee4bf26",
+      "bytes": 3604
+    },
+    "junit/TEST-com.yollo.TravelMate.ConversationToolLoopTest.xml": {
+      "sha256": "012a60e93863622f092107ac69bcd6aeb197580a728e26741ca3c5d7b332a07f",
+      "bytes": 3652
+    },
+    "junit/TEST-com.yollo.TravelMate.FrozenOriginalFieldPipelineTest.xml": {
+      "sha256": "538d0ee3eb1f55f9e28fceb4bd6befc34fc5803d4549d57c38cdf90f96273a68",
+      "bytes": 530
+    },
+    "junit/TEST-com.yollo.TravelMate.IndependentPlaceSearchTest.xml": {
+      "sha256": "560e28c530d9589d0ae867a5edb4c8a77dd132b0b8ed5ebf9ad81a300db6a89b",
+      "bytes": 4643
+    },
+    "junit/TEST-com.yollo.TravelMate.LlmStrategyTest.xml": {
+      "sha256": "f54dc8df920ec720410bceac4d6db829b42800aeebf812ed933562b5e8dde99e",
+      "bytes": 2254
+    },
+    "junit/TEST-com.yollo.TravelMate.SearchEvidencePipelineTest.xml": {
+      "sha256": "66dfae6e1977b5f47a66909a9808c5cf5a28fe8488d4a8b6482c7a2306710a40",
+      "bytes": 3134
+    },
+    "junit/TEST-com.yollo.TravelMate.SearchToolContractRegressionTest.xml": {
+      "sha256": "92b9300f1aad90e1790ab6637fec6c99e34b21791dee096b135f039400155b94",
+      "bytes": 4400
+    },
+    "junit/TEST-com.yollo.TravelMate.TokenBudgetGuardTest.xml": {
+      "sha256": "4c4bc77805ddb9be7dd7aa273e2c576d3e56b8c6eaf45f8b90883c1aaa632b82",
+      "bytes": 2320
+    },
+    "next-execution-proposal.json": {
+      "sha256": "00b7056760ed86638a603518131d674d888fae2dc3fcf808f77b4ce279a01083",
+      "bytes": 2945
+    },
+    "ollama-log-excerpt.json": {
+      "sha256": "659c0c436a65e486ec6c4c3728ce053f9756064a26cf171614885bae17470ab2",
+      "bytes": 18866
+    },
+    "preservation.json": {
+      "sha256": "66a876635b9de9c4ad6e634fa5fe9b32a09d7b8fc52a7b27a4dcbbc0ce871137",
+      "bytes": 1765
+    },
+    "REPORT.md": {
+      "sha256": "79f0113993da31ab05380b699315e60fdff020dbffe3a2f4509c9e8fd28f2682",
+      "bytes": 14152
+    },
+    "verification.json": {
+      "sha256": "922a868455dc6ca72388749b8604e2acfd8e479797016a55f0d54f070721477f",
+      "bytes": 31497
+    }
+  }
+}

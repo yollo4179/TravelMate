@@ -6,7 +6,9 @@
 
 [추천 구조도](../architecture/fastapi-place-recommendation.md) · [문서 목록](../README.md) · [투어 가이드 명세](personal-tour-guide.md)
 
-갱신일: 2026-10-25, 한국 시간. 코드 확인 기준: `f9f09db`, 이전 문서: `7921ecb`. **별도 FastAPI DB와 Kafka 추천 요청·완료 전달, 완료 이벤트에 추천 장소 상세까지 포함하는 것은 사용자 확정 사항입니다. 원시 임베딩 벡터를 완료 결과로 보내는 계약이 아닙니다. 아래 내용은 로컬 Codex 구현과 맞출 문서 계약이며, 이번 갱신으로 실행 코드를 변경하지 않습니다.**
+문서 버전: 4 · 갱신일: 2026-11-01, 한국 시간. 최초 계약 기준: `f9f09db`, 이전 문서: `7921ecb`.
+별도 FastAPI DB와 Kafka 추천 요청·완료 전달, 완료 이벤트에 추천 장소 상세까지 포함하는 것은 사용자 확정 사항이다.
+이번 갱신은 FastAPI 워커의 선택형 관찰·이동 방향 필터 구현을 반영한다. Spring·UI 전달이나 전체 운영 배포 완료를 뜻하지 않는다.
 
 ## 1. DB 경계와 데이터 소유권
 
@@ -173,6 +175,40 @@ area는 null 또는 아래 CIRCLE 구조입니다. 현행 Context의 500~10000m 
 
 Spring이 확정한 쿼리·조건만 전달하며 개인 기억·대화 전체나 인증 비밀값을 넣지 않습니다. deadline_at의 운영 기본값과 늦은 완료의 사용자 표시 정책은 미정입니다.
 
+#### 4.2.1 선택형 관찰·이동 방향 필터
+
+FastAPI 워커는 `filters.observation`을 선택적으로 받는다. 생략 또는 빈 조건이면 기존 검색 경로를 유지한다.
+
+```json
+{"filters": {"observation": {"content_kinds": ["movement"],
+                             "destination_place_id": 202, "result_endpoint": "origin"},
+             "exclude_place_ids": [202]}}
+```
+
+위 ID는 예시다. 등록된 A→B 관계에서 B로 이동할 수 있는 출발지 A를 찾는 형태다.
+`origin_place_id`로 A를 지정하고 `result_endpoint=destination`을 쓰면 도착지를 찾는다.
+endpoint를 지정한 기본 결과 쪽은 도착지 조건일 때 `origin`, 출발지 조건일 때 `destination`이다.
+`result_endpoint=either`는 조건에 맞는 해당 관계의 어느 참가자든 허용한다. 공원 내부 순환도 이동이므로 ‘다른 장소’를 찾을 때는 기준 장소를 기존 제외 ID 조건에 넣는다.
+미등록 endpoint의 `null` ID를 새 장소로 만들지 않는다.
+
+`content_kinds`는 `landscape | facility | movement | other` 배열이다.
+경관·시설 조건에는 이동 방향을 결합하지 않으며 방향 조건을 지정하면 `movement`로 제한한다.
+FastAPI는 장소 후보와 복수 근거 확장 양쪽에서 같은 조건을 적용한다. 조건을 만족하는 청크가 없으면 일반 장소 설명으로 우회하지 않는다.
+이동 검색은 content_kind와 독립적인 relations를 조회하므로 경관·시설에 붙은 보조 이동도 찾는다.
+`relation_importance=["primary"]` 또는 `["supporting"]`으로 비중을 제한할 수 있다. 생략하면 둘 다 조회한다.
+v6의 비중 없는 관계는 기본 방향 검색을 유지하지만 새 비중 필터에는 임의의 값으로 편입하지 않는다.
+경관·시설은 subject 기준, 이동은 실제 endpoint 기준이다. B를 mentioned에서 subject로 바꾸지 않는다.
+관계 전용 활성 역할은 이동 검색에서만 사용한다. 복합 종류 배열은 관찰 또는 관계를 선택하지만 경관을 다른 endpoint에 공유하지 않는다.
+
+근거 응답은 JSON 문서의 `content_kind/relations/place_refs`와 전체 원문을 그대로 보존한다.
+관계 검색 결과에는 `retrieval_scope=relation`, `matched_relations`, `search_text`를 추가하며,
+리랭킹 입력과 description에는 해당 관계의 정확한 원문 인용만 사용한다. 전체 보존 원문을 목적지 특성으로 해석하지 않는다.
+DB 역할 제약·trigger 변경은 코드에 포함하지만 이번에는 운영 DB에 적용하지 않았다.
+
+이 필터는 자연어에서 자동 추론하지 않는다. Spring 요청 DTO·LLM 도구·UI에서 종류와 방향을 선택해 전달하는 연결은 이번 변경에 포함하지 않았다.
+‘쉽다’는 검색 조건을 자동 만들지 않고, 실제 원문의 계단·거리·시간을 근거로 사용한다.
+워커는 선택 코드만 구현했으며 운영에 배포하지 않았다. 이전 v6의 일부 조건은 PostgreSQL 읽기 전용 검사로 확인했다. 이번 v7은 모의 검사만 했으며 DB 조회·SQL 적용은 하지 않았다.
+
 ### 4.3 완료 이벤트 예시
 
 items는 검색·리랭킹을 마친 순서입니다. 추천 카드와 계획 제안에 필요한 상세를 포함하며 원시 1024차원 벡터는 포함하지 않습니다.
@@ -302,3 +338,11 @@ request_id로 Spring 접수 → 요청 발행 → FastAPI 영속 접수 → 검�
 Kafka·UI는 현재 로컬 기반 시설입니다. 별도 FastAPI DB·추천 요청/결과 토픽·producer·consumer·결과 저장 연결은 로컬 Codex 구현과 대조할 대상입니다. 이번 변경은 문서이며 기존 Docker·앱 코드를 수정하지 않습니다.
 
 운영 GPU·모델 정밀도·토큰·배치·후보 수, Kafka 운영 수치·재시도/DLQ, 결과·삭제 표식 보관, 원본 전파 지연 허용 기준, 앱 접수/진행/완료 수신 방식, 요청 기한·취소·fallback 정책은 확인 후 확정합니다.
+
+
+## 관찰·관계 검색의 후속 실측
+
+2026-11-01 [실제 통합 검증](../../Evaluation/runs/contextual/v7-integration-v1/20261101-01/REPORT.md)에서
+역할·trigger·방향 SQL은 격리 PostgreSQL에서 통과했다. 기존 BGE·리랭커로 12개 검색과 2개 감독 진단도 실행했다.
+통제 자료에서 관계의 위치 오류·활성 상한·Top-30 후보 상한의 손실이 각각 재현됐다.
+운영 전체 정확도 개선·Spring/Kafka 전달·최종 답변 품질을 검증한 것은 아니다. 운영 DB·기본값은 변경하지 않았다.
