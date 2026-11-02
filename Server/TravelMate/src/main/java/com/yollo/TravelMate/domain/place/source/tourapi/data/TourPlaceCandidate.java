@@ -6,6 +6,7 @@ import com.yollo.TravelMate.domain.place.source.tourapi.client.TourApiPlaceDetai
 import com.yollo.TravelMate.domain.place.source.tourapi.client.TourApiPlaceDetailClient.TourApiInfoItem;
 import com.yollo.TravelMate.domain.place.source.tourapi.client.TourApiPlaceListClient.TourApiListItem;
 import com.yollo.TravelMate.domain.place.source.tourapi.code.TourContentType;
+import com.yollo.TravelMate.domain.place.source.tourapi.support.TourPlaceTextNormalizer;
 
 public record TourPlaceCandidate(
         TourApiListItem item,
@@ -17,4 +18,8 @@ public record TourPlaceCandidate(
         String description,
         List<TourApiInfoItem> informationItems
 ) {
+    public boolean hasSearchableContent() {
+        return !TourPlaceTextNormalizer.normalize(common.overview()).isBlank()
+                || informationItems.stream().anyMatch(TourApiInfoItem::hasContent);
+    }
 }
