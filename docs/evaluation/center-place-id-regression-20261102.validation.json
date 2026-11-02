@@ -1,0 +1,264 @@
+{
+  "code_commit": "27df85d79fe248275e6fd4fe9d4c9cf65559928a",
+  "baseline_pr_commit": "78cbe4ab3a658afa7f273139d5cef64950a19369",
+  "scope": "Offline request conversion and mock observation regression only; no search or model quality claim",
+  "offline_tests": {
+    "checkout": "separate LF worktree; core.autocrlf=false only for checkout",
+    "command": "python -X utf8 -m unittest discover -s Evaluation/tests",
+    "tests": 131,
+    "failures": 0,
+    "errors": 0,
+    "seconds": 12.568
+  },
+  "environment": {
+    "python": "3.11.9",
+    "openai": "3.3.0",
+    "httpx": "0.28.1",
+    "packages_installed_or_changed": false
+  },
+  "user_reported_prior_run": {
+    "source": "user report; not rerun evidence from this environment",
+    "tests": 125,
+    "passed": 120,
+    "environment_errors": 5,
+    "reason": "openai package missing; not classified as five code failures"
+  },
+  "projection_regression": {
+    "dataset": "v1.4.0",
+    "existing_search_cases": 85,
+    "ranking_modes": [
+      "SEMANTIC_ONLY",
+      "RERANKED"
+    ],
+    "successful_body_conversions": 170,
+    "case_ids": [
+      "PLR-TM-palaces-01",
+      "PLR-TM-palaces-02",
+      "PLR-TM-palaces-03",
+      "PLR-TM-palaces-04",
+      "PLR-TM-churches-01",
+      "PLR-TM-churches-02",
+      "PLR-TM-churches-03",
+      "PLR-TM-churches-04",
+      "PLR-TM-traditional_experiences-01",
+      "PLR-TM-traditional_experiences-02",
+      "PLR-TM-traditional_experiences-03",
+      "PLR-TM-traditional_experiences-04",
+      "PLR-TM-ancient_history-01",
+      "PLR-TM-ancient_history-02",
+      "PLR-TM-ancient_history-03",
+      "PLR-TM-ancient_history-04",
+      "PLR-TM-aquariums-01",
+      "PLR-TM-aquariums-02",
+      "PLR-TM-aquariums-03",
+      "PLR-TM-aquariums-04",
+      "PLR-TM-family_parks-01",
+      "PLR-TM-family_parks-02",
+      "PLR-TM-family_parks-03",
+      "PLR-TM-family_parks-04",
+      "PLR-TM-wetlands-01",
+      "PLR-TM-wetlands-02",
+      "PLR-TM-wetlands-03",
+      "PLR-TM-wetlands-04",
+      "PLR-TM-mountains-01",
+      "PLR-TM-mountains-02",
+      "PLR-TM-mountains-03",
+      "PLR-TM-mountains-04",
+      "PLR-TM-railway-01",
+      "PLR-TM-railway-02",
+      "PLR-TM-railway-03",
+      "PLR-TM-railway-04",
+      "PLR-TM-crafts-01",
+      "PLR-TM-crafts-02",
+      "PLR-TM-crafts-03",
+      "PLR-TM-crafts-04",
+      "PLR-TM-food_streets-01",
+      "PLR-TM-food_streets-02",
+      "PLR-TM-food_streets-03",
+      "PLR-TM-food_streets-04",
+      "PLR-TM-future_technology-01",
+      "PLR-TM-future_technology-02",
+      "PLR-TM-future_technology-03",
+      "PLR-TM-future_technology-04",
+      "PLR-TM-safety_education-01",
+      "PLR-TM-safety_education-02",
+      "PLR-TM-safety_education-03",
+      "PLR-TM-safety_education-04",
+      "PLR-TM-water_relaxation-01",
+      "PLR-TM-water_relaxation-02",
+      "PLR-TM-water_relaxation-03",
+      "PLR-TM-water_relaxation-04",
+      "PLR-TM-architecture-01",
+      "PLR-TM-architecture-02",
+      "PLR-TM-architecture-03",
+      "PLR-TM-architecture-04",
+      "PLR-TM-modern_history-01",
+      "PLR-TM-modern_history-02",
+      "PLR-TM-modern_history-03",
+      "PLR-TM-modern_history-04",
+      "PLR-TM-literary_homes-01",
+      "PLR-TM-literary_homes-02",
+      "PLR-TM-literary_homes-03",
+      "PLR-TM-literary_homes-04",
+      "PLR-TM-urban_walks-01",
+      "PLR-TM-urban_walks-02",
+      "PLR-TM-urban_walks-03",
+      "PLR-TM-urban_walks-04",
+      "PLR-TM-gardens-01",
+      "PLR-TM-gardens-02",
+      "PLR-TM-gardens-03",
+      "PLR-TM-gardens-04",
+      "PLR-TM-hanok_neighborhoods-01",
+      "PLR-TM-hanok_neighborhoods-02",
+      "PLR-TM-hanok_neighborhoods-03",
+      "PLR-TM-hanok_neighborhoods-04",
+      "MGR-TOOLS-palaces",
+      "MGR-TOOLS-aquariums",
+      "MGR-TOOLS-railway",
+      "MGR-TOOLS-safety_education",
+      "MGR-TOOLS-literary_homes"
+    ],
+    "canonical_original_inputs_sha256": "873d1d5e38d34d7cd21780326328f6151c425b059da2f434bb3bb35c29a3fa39",
+    "canonical_projections_sha256": "41a2340182d10035f027ea91600b3eac98a90fbb3067ce62b919afcd90cdaacd",
+    "fully_representable_condition_cases": 65,
+    "unsupported_conversation_cases": 20,
+    "conversion_success_does_not_mean_execution_or_history_support": true
+  },
+  "actual_radius_case": {
+    "case_id": "PLR-TM-family_parks-04",
+    "input_sha256": "88a500f748e36555ecd834f1aaae6d133d6a68db34d17bdc763c15717cd9d417",
+    "original_area": {
+      "center_place_id": 311,
+      "radius_meters": 500,
+      "center": {
+        "latitude": 37.5206092598,
+        "longitude": 127.1150682209
+      },
+      "distance_method": "haversine_straight_line"
+    },
+    "server_area": {
+      "type": "CIRCLE",
+      "center": {
+        "lat": 37.5206092598,
+        "lon": 127.1150682209
+      },
+      "radiusMeters": 500
+    },
+    "provenance_locations": [
+      "selected_inputs.original_input.conditions.area.center_place_id",
+      "requested_conditions.area.center_place_id"
+    ],
+    "center_id_forwarded_to_server": false,
+    "coordinates_looked_up_from_id": false,
+    "unsupported_conditions": [
+      "conversation"
+    ],
+    "mock_execution_status": "not_run",
+    "reason": "unsupported_original_conditions: conversation"
+  },
+  "mock_batch": {
+    "existing_case_ids": [
+      "PLR-TM-palaces-01",
+      "PLR-TM-family_parks-04"
+    ],
+    "recorded_case_modes": 4,
+    "completed_mock_case_modes": 2,
+    "not_run_case_modes": 2,
+    "actual_http_dispatches": 0,
+    "batch_status": "partial"
+  },
+  "preservation": {
+    "changed_dataset_paths": [],
+    "v14_manifest_file_checks": 45,
+    "v14_manifest_all_match": true,
+    "golden_sha256": "ea298b5b0d690c3dc8b8f6962e3f9c726039d75e8119c39ed1b602882c9dd609",
+    "frozen_dependency_checks": [
+      {
+        "path": "Evaluation/datasets/search-holdout-v1.0.0/README.md",
+        "sha256": "15be8710ce2f69d3f89b6976fdbc88c71d1a7b0ffd7b372168469c8aed034306",
+        "matches": true
+      },
+      {
+        "path": "Evaluation/datasets/search-holdout-v1.0.0/manifest.json",
+        "sha256": "dbf243bbc242af940c5e38f4e14ef4e10d69810935f1dea6a0107f91152d3a11",
+        "matches": true
+      },
+      {
+        "path": "Evaluation/datasets/search-holdout-v1.0.0/protocol.json",
+        "sha256": "f64138c4da979357ee11cf0cfa21083f142ea24d86d6609ce0ab9c6be7cad6dd",
+        "matches": true
+      },
+      {
+        "path": "Evaluation/datasets/search-holdout-v1.0.0/rubric.md",
+        "sha256": "dae60b25c05584ee793cc500636cdc8602d014350e74bd276ee35feab947481a",
+        "matches": true
+      },
+      {
+        "path": "Evaluation/datasets/search-holdout-v1.0.0/source/families.json",
+        "sha256": "92f25b228b07140f397c386de046bfebdd79fd5b0abe559103029c71ca349417",
+        "matches": true
+      },
+      {
+        "path": "Evaluation/datasets/search-holdout-v1.0.0/source/questions.csv",
+        "sha256": "55cab95c4f0363b28cbc40b299733c62fce910db35c3684e5465b568a6bd46b3",
+        "matches": true
+      },
+      {
+        "path": "Evaluation/datasets/search-holdout-v1.0.1/README.md",
+        "sha256": "9c17a4795f7c2b818a9bbc6fb1a705d48519355e2b36040ff87d2e8bf83becbc",
+        "matches": true
+      },
+      {
+        "path": "Evaluation/datasets/search-holdout-v1.0.1/manifest.json",
+        "sha256": "8965c205cdb952cd671d9a2d061f44025acc2490cffefa7076d6e78e27e605df",
+        "matches": true
+      },
+      {
+        "path": "Evaluation/datasets/search-holdout-v1.0.1/protocol.json",
+        "sha256": "bcc160613391dbd87ca474a1c99c1657cbecb2aee0b99e1da880d7e24bdda0b0",
+        "matches": true
+      },
+      {
+        "path": "Evaluation/datasets/search-holdout-v1.0.1/rubric.md",
+        "sha256": "dae60b25c05584ee793cc500636cdc8602d014350e74bd276ee35feab947481a",
+        "matches": true
+      },
+      {
+        "path": "Evaluation/datasets/search-holdout-v1.0.1/source/families.json",
+        "sha256": "510f792cb61e340b9e72117cdb5c8e587795a592d321c300bab1e01907cb6dbd",
+        "matches": true
+      },
+      {
+        "path": "Evaluation/datasets/search-holdout-v1.0.1/source/original_question_review.csv",
+        "sha256": "3854dc20576ed7a81c9fb0c65a6a550d300ed74c220ae775eeba1950da08f18a",
+        "matches": true
+      },
+      {
+        "path": "Evaluation/datasets/search-holdout-v1.0.1/source/question_review.csv",
+        "sha256": "5b36a407b22617ed9db5e5ad021123efb4b39efbe91a77df292d1285a5753494",
+        "matches": true
+      },
+      {
+        "path": "Evaluation/datasets/search-holdout-v1.0.1/source/questions.csv",
+        "sha256": "912e0734461c527d39ccd532ab4e270260091ca6a6a1ddea8b5be4855450ee99",
+        "matches": true
+      },
+      {
+        "path": "Evaluation/datasets/search-holdout-v1.0.1/source/review_changes.json",
+        "sha256": "fbe77ecce0466dfb9b810597c154739c3086b95e18daeba4caa36642f91d8101",
+        "matches": true
+      }
+    ],
+    "preserved_original_files": 83,
+    "original_and_backup_unchanged": true,
+    "original_worktree_status_unchanged": true
+  },
+  "actual_execution_counts": {
+    "model": 0,
+    "search": 0,
+    "judge": 0,
+    "observation_service": 0,
+    "publication": 0,
+    "operating_db": 0
+  }
+}
