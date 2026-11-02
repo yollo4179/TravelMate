@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.yollo.TravelMate.ExecutionObservationTest" tests="1" skipped="0" failures="0" errors="0" timestamp="2026-11-02T02:37:12.924Z" hostname="DESKTOP-MS327CL" time="1.707">
+  <properties/>
+  <testcase name="actualFilterAndLoopCaptureBudgetRejectionAfterUntruncatedToolEvidence()" classname="com.yollo.TravelMate.ExecutionObservationTest" time="1.707"/>
+  <system-out><![CDATA[11:37:13.995 [Test worker] INFO org.springframework.mock.web.MockServletContext -- Initializing Spring TestDispatcherServlet ''
+11:37:13.995 [Test worker] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Initializing Servlet ''
+11:37:14.013 [Test worker] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Completed initialization in 16 ms
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

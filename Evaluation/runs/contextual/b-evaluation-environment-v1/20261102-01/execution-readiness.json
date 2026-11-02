@@ -1,0 +1,14 @@
+{
+  "infrastructure_running": true,
+  "b_live_blockers": [
+    "B_anchors_have_no_preserved_structured_evidence"
+  ],
+  "conversation_requests": 0,
+  "qwen_inference_calls": 0,
+  "embedding_inference_calls": 0,
+  "reranking_inference_calls": 0,
+  "search_executions": 0,
+  "new_evidence_generated": 0,
+  "paid_calls": 0,
+  "actual_quality_scoring": false
+}

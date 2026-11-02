@@ -1,0 +1,24 @@
+{
+  "record": "C:\\ssafy\\Travelmate\\Evaluation\\runs\\contextual\\v7-integration-v1\\20261101-01\\sonar\\g\\394_청담도로공원\\requests\\9c35ad03ac164318b98f4eb22c3db0a6ec59665ee9fd241d1af92651eeec1a93\\15c8008e-27c9-45f0-99a0-9e62c7228589\\record.json",
+  "record_sha256": "df8529d8b7f1539413ac93a3d40460a5c6472fe8faccf03d1006b40a1e9d7034",
+  "approval_sha256": "c0b01603dac60799e49601330d96f256f8fc5cd711548f3f4d4580ccc61782e5",
+  "cache_sha256": "572bc2ddab6f23bc556584285df18efc3a1ec0146f1c1bada5bec5b949de7fca",
+  "place_id": 394,
+  "place_fingerprint": "d51c1552c631f332104b9926985a2c4dca489a74233c97828451c83c83147b88",
+  "prompt_version": "contextual-independent-relations-v7",
+  "validation_version": "contextual-validation-v4",
+  "table_counts": {
+    "retrieval_source_versions": 2,
+    "retrieval_chunks": 8,
+    "retrieval_chunk_contexts": 8,
+    "place_active_chunks": 8,
+    "retrieval_relation_embeddings": 0
+  },
+  "missing_relation_vectors": [],
+  "b_case_place_evidence": {
+    "311": "NO_PRESERVED_STRUCTURED_EVIDENCE",
+    "378": "NO_PRESERVED_STRUCTURED_EVIDENCE"
+  },
+  "synthetic_controls_imported": false,
+  "new_evidence_or_vectors_generated": false
+}
