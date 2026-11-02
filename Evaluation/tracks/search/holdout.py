@@ -16,6 +16,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 from common.dataset.io import canonical_digest, digest, read_json, read_jsonl, write_json, write_jsonl
 from common.paths import EVALUATION_ROOT
+from common.observability.search_records import search_quality_observed, search_record_error
 
 DEFAULT_HOLDOUT = EVALUATION_ROOT / "datasets/search-holdout-v1.0.0"
 REVIEW_SEED = 20261027
@@ -223,7 +224,7 @@ def validate_records(
         ranked = record.get("ranked_place_ids")
         if record.get("input_sha256") != case["input_sha256"] or record.get("ranking_mode") != mode:
             raise ValueError("Response input hash or ranking mode mismatch")
-        if record.get("http_status") != 200 or record.get("condition_coverage") != "complete" or record.get("error_type"):
+        if search_record_error(case, record) is not None or not search_quality_observed(record) or record.get("error_type"):
             raise ValueError("Resolve collection failures or unsupported conditions before preparing a complete review")
         if not isinstance(ranked, list) or any(type(identifier) is not int or identifier not in corpus_ids for identifier in ranked):
             raise ValueError("Returned place IDs must belong to the frozen corpus")

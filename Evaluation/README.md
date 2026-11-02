@@ -1,5 +1,9 @@
 # TravelMate 평가
 
+검색 API 수집·홀드아웃 검수는 [검색 평가 도구 계약](tracks/search/README.md)을 따른다.
+명시적 case·대상·호출 상한과 원본 HTTP 관측을 보존하며 MOCK·실패·미실행을 품질 분모에서 구분한다.
+이는 기존 native 단일 LLM 도구 관측의 대체물이 아니며 계획·설명 품질 완료를 뜻하지 않는다.
+
 [Qwen 정확 계산·검색 계약 검토](runs/contextual/exact-qwen-and-search-contract-v1/20261102-01/REPORT.md)는
 동일 입력의 오프라인 토큰 검증과 계획 없는 검색 제안이다. 실제 추론·검색 품질 평가 완료가 아니다.
 

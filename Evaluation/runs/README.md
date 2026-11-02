@@ -1,5 +1,9 @@
 # 실제 평가 실행 결과
 
+검색 수집기의 `attempts.jsonl`은 전송 전 예약과 원본 요청·응답을 기록한다.
+MOCK·failed·not_run은 실제 성공·지연·품질 집계와 구분한다.
+[검색 평가 도구 계약](../tracks/search/README.md)을 참고한다. 과거 기록과 동결 자료는 덮어쓰지 않는다.
+
 [동일 Qwen 입력 정확 계산과 검색 계약 제안](contextual/exact-qwen-and-search-contract-v1/20261102-01/REPORT.md)은
 추론을 보류한 오프라인 검증이며 기존 가드는 변경하지 않았다.
 

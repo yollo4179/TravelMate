@@ -1,5 +1,9 @@
 # 트랙 실행과 구현 상태
 
+검색 전용 수집·runtime 대조는 [독립 검색 평가 계약](search/README.md)으로 연결한다.
+직접 HTTP 기록과 native LLM 도구 기록의 원본/변환/관측 범위를 구분한다.
+과거 단계별 구현 목록보다 이 계약과 실제 코드가 현재 검색 도구의 기준이다.
+
 모든 run.py는 check / export-inputs / evaluate를 제공한다.
 evaluate는 저장된 응답을 채점하며 앱 API·도구·DB를 실행하지 않는다.
 --split development/test/all을 반드시 지정하며 --type으로 기대 응답 타입을 좁힐 수 있다.

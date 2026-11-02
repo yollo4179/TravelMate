@@ -4,6 +4,7 @@ from __future__ import annotations
 from typing import Any
 
 from common.runs.tracks import PLAN_METRICS, STATE_METRICS, TOOL_METRICS, MEMORY_METRICS
+from common.observability.search_records import is_search_api_record
 
 NATIVE_SOURCES = frozenset({"spring_execution_mock", "spring_execution_live"})
 SEARCH_PREFIXES = ("top_", "recall_at_", "precision_at_", "f1_at_", "mrr_at_", "map_at_", "ndcg_at_", "judged_at_")
@@ -14,6 +15,8 @@ def is_native_record(record: dict[str, Any]) -> bool:
 
 
 def message_is_observed(record: dict[str, Any]) -> bool:
+    if is_search_api_record(record):
+        return False
     if not is_native_record(record):
         return True
     return (record.get("execution_mode") == "LIVE"

@@ -11,13 +11,14 @@ from typing import Any
 from common.dataset.build import check
 from common.dataset.contracts import ExecutionStatus, ResponseType
 from common.judge.runner import JudgeSettings, score_message
-from tracks.end_to_end.score import evaluate_record
 from common.dataset.io import digest, export_inputs, read_json, read_jsonl, write_json, write_jsonl
 
 from common.paths import DEFAULT_DATASET, EVALUATION_ROOT, rubric_path
 from .run_record import allocate_run, update_latest, write_run_record
 from .tracks import Track, matches_track, metric_is_selected
 from common.observability.server_trace import is_native_record, message_is_observed
+from common.observability.search_records import is_search_api_record, search_quality_observed
+from .record_scoring import scorer_for
 
 ROOT = DEFAULT_DATASET
 
@@ -83,8 +84,8 @@ async def evaluate(
             invalid[case["case_id"]] = "response_missing"
         elif record.get("input_sha256") != inputs[case["case_id"]]["input_sha256"]:
             invalid[case["case_id"]] = "input_hash_missing_or_mismatch"
-        elif not isinstance(record.get("tool_calls"), list) or "response" not in record:
-            invalid[case["case_id"]] = "record_requires_response_and_explicit_tool_calls_array"
+        elif error := scorer_for(record).validate(case, record, track):
+            invalid[case["case_id"]] = error
         else:
             valid.append((case, record))
     judge_needed = use_judge and any(message_is_observed(record) for _, record in valid)
@@ -122,12 +123,13 @@ async def evaluate(
                 "case_id": case["case_id"], "evaluation_tracks": case["evaluation_tracks"],
                 "evaluation_group": case["evaluation_group"],
                 "target_model": record.get("model", "not_recorded"),
-                "response": record["response"],
-                "tool_calls": record["tool_calls"],
+                "response": record.get("response"),
+                "tool_calls": record.get("tool_calls"),
                 "expected_response_type": case["expected_response_type"],
-                "actual_response_type": record["response"].get("type") if isinstance(record["response"], dict) else None,
+                "actual_response_type": record["response"].get("type") if isinstance(record.get("response"), dict) else None,
                 "input_sha256": record["input_sha256"],
-                "code": evaluate_record(case, record),
+                "record_source": record.get("record_source", "agent_response"),
+                "code": scorer_for(record).score(case, record),
             }
             row["code"]["metrics"] = {
                 name: value for name, value in row["code"]["metrics"].items()
@@ -137,10 +139,16 @@ async def evaluate(
                 row.update({name: record.get(name) for name in (
                     "execution_mode", "observation_coverage", "compatibility_gaps", "termination", "request_id", "turn_id"
                 )})
+            if is_search_api_record(record):
+                row.update({name: record.get(name) for name in (
+                    "execution_mode", "execution_status", "dispatched", "http_request", "http_response",
+                    "request_id", "turn_id", "job_ids", "evaluation_projection", "requested_conditions",
+                    "runtime_verification", "observation_coverage", "error_type", "duration_ms",
+                )})
             if use_judge:
                 if not message_is_observed(record):
                     row.update(judge_status=ExecutionStatus.NOT_EVALUATED.value,
-                               judge_error_type="native_message_observation_unavailable")
+                               judge_error_type="message_observation_unavailable")
                 elif judge_blocked_error:
                     row.update(judge_status=ExecutionStatus.NOT_RUN.value, judge_error_type=judge_blocked_error)
                 else:
@@ -159,14 +167,17 @@ async def evaluate(
             await client.close()
     summary = {
         **precheck,
-        "status": "completed" if not invalid and all(row.get("judge_status", "completed") == "completed" for row in results) else "partial",
+        "status": "completed" if not invalid and all(row.get("judge_status", "completed") == "completed" for row in results)
+                  and all(search_quality_observed(record) for _, record in valid if is_search_api_record(record)) else "partial",
         "result_count": len(results),
         "code_metrics_and_gpt_scores": metric_summary(results),
         "by_response_type": {
             kind.value: metric_summary([row for row in results if row["expected_response_type"] == kind])
             for kind in ResponseType
         },
-        "type_confusion": dict(Counter(f"{row['expected_response_type']}->{row['actual_response_type']}" for row in results)),
+        "type_confusion": dict(Counter(f"{row['expected_response_type']}->{row['actual_response_type']}" for row in results if not is_search_api_record(row))),
+        "search_execution_counts": dict(Counter(f"{record.get('execution_mode')}:{record.get('execution_status')}" for _, record in valid if is_search_api_record(record))),
+        "search_quality_evaluated_count": sum(search_quality_observed(record) for _, record in valid if is_search_api_record(record)),
         "judge_rubric_sha256": {name: digest(rubric_path(root, name)) for name in rubrics} if use_judge else None,
         "judge_success_count": sum(row.get("judge_status") == "completed" for row in results),
         "llm_connection_verified": any(row.get("judge_status") == "completed" for row in results),
@@ -174,6 +185,7 @@ async def evaluate(
             "Missing/invalid records are coverage failures, not silently converted into incorrect model answers.",
             "Unobserved backend state and unavailable route checks have null scores and separate denominators.",
             "Native MOCK quality and missing/incompatible runtime observations are excluded by explicit coverage masks.",
+            "Search-only HTTP observations do not synthesize agent messages or tool calls; legacy search records need explicit adaptation.",
             "Search and memory recall use their own query-specific relevant ID sets.",
             "GPT criteria use 0..3 scores and are not Ragas built-in AnswerCorrectness scores.",
         ],
