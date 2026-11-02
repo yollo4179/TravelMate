@@ -90,3 +90,35 @@ MOCK·실패·미실행·미확인 자료/설정은 null과 별도 건수로 표
 
 `search-holdout-v1.0.0`과 `v1.0.1`의 질문·protocol·manifest는 보존한 바이트 그대로 유지한다.
 질문 검사는 검색 품질 완성을 의미하지 않는다. 계획의 조건 준수·실제 이동시간·최적화는 별도 평가다.
+
+## Judge와 잠정 비교
+
+`judge_candidates.py`와 `audit_candidate_conditions.py`도 명시적 `--config`와 새 출력 폴더가 필수다.
+앱 모델이나 `RAGAS_JUDGE_MODEL`을 자동 선택하지 않고 설정의 judge 모델·출력 예약량을 그대로 사용한다.
+모델/검색/게시를 이 문서 작성 과정에서 실행하지 않았다.
+
+후보 judge의 parameters에는 `candidate_file_sha256`, `judgment_passes`, `adjudicate_disagreements`를 명시한다.
+현재 보존된 독립 판정 계약은 `judgment_passes: ["first", "independent"]`이며 생략하면 실행하지 않는다.
+중재는 `adjudicate_disagreements`가 true일 때만 수행하고, 최대 3회 × 선택 case 수의 상한을 사전 검사한다.
+중재를 끄면 최대 2회 × 선택 case 수이며 불일치는 높은 검수 우선순위로 남긴다.
+각 pass의 실패·인용 불일치·출력 잘림에는 재호출하지 않고 전체 실행을 중단한다.
+기존 검수표를 덮는 `--apply`와 기존 실행을 자동 재개하는 `--resume`은 제공하지 않는다.
+
+조건 감사 parameters에는 `candidate_file_sha256`, `requirements_sha256`, `candidate_batch_size`, `reverse_candidates`를 명시한다.
+보존된 REQUIREMENTS에 있는 case만 선택할 수 있다. 이 조건표는 평가 자료이며 서비스 검색 정책이 아니다.
+필요 호출 수는 case별 후보 수와 명시한 배치 크기로 계산해 실행 전에 상한과 대조한다.
+SDK 자동 재시도와 응답 보정 루프는 모두 제거했다.
+LIVE judge에는 `judge_base_url` HTTPS 주소를 추가로 명시한다.
+[공식 OpenAI Python SDK 문서](https://developers.openai.com/api/reference/python#retries)의 `max_retries=0`을 적용한다.
+각 원본 요구·응답·모델·usage·실패를 journal에 보존하고, 없는 usage를 0으로 확정하지 않는다.
+
+기존 공통 `run.py evaluate --judge` 경로도 `--execution-config`가 있어야 모델을 호출한다.
+case 목록·judge 모델·출력 예약량·호출 상한이 동일한 가드를 거친다.
+MOCK judge 결과는 `judge_mock_result`로 분리해 GPT 품질 평균에서 제외한다.
+검색 전용 기록과 native MOCK에는 설명 judge를 만들지 않는다.
+
+`compare_holdout.py`는 날짜 폴더를 추정하지 않는다.
+`--labels`, `--mapping`, `--embedding-records`, `--reranking-records`, `--scoring-inputs`, `--case-id`를 명시한다.
+scoring-inputs의 `sha256` 객체는 labels/mapping/embedding_records/reranking_records 네 역할의 정확한 파일 해시다.
+라벨·블라인드 매핑·원본 순위·입력 해시를 대조하고 unknown·MOCK·실패·미실행·미확인을 분모에서 제외한다.
+AI 라벨 비교는 잠정 결과이며 사람 판정 기준의 공식 주지표를 완료했다고 표시하지 않는다.

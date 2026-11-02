@@ -14,6 +14,7 @@ from typing import Any, Awaitable, Callable, Protocol
 import uuid
 
 from common.dataset.io import canonical_digest, digest, read_json
+from common.paths import EVALUATION_ROOT
 
 
 class RunMode(StrEnum):
@@ -233,8 +234,15 @@ class RunControl:
             "stopped": self.stopped,
         }
 
+    def reject_result(self, error_type: str) -> None:
+        self.stopped = True
+        if self.last_attempt is not None:
+            self.record({**self.last_attempt, "status": AttemptStatus.FAILED.value, "validation_error_type": error_type})
+
 
 def load_control(configuration_path: Path, output: Path, mock_path: Path | None) -> RunControl:
+    if output.exists() or output.resolve().is_relative_to((EVALUATION_ROOT / "datasets").resolve()):
+        raise FileExistsError("Execution needs a new output directory outside frozen datasets")
     settings = ExecutionSettings.load(configuration_path)
     if (settings.mode == RunMode.MOCK) != (mock_path is not None):
         raise ExecutionBlocked("MOCK requires a fixture file; LIVE forbids a MOCK fixture file")

@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import asyncio
 import copy
+from contextlib import asynccontextmanager
 import json
 from pathlib import Path
 import shutil
@@ -21,11 +22,16 @@ from common.runs.runner import evaluate
 from common.dataset.io import digest, export_inputs, read_json, read_jsonl, write_jsonl
 
 from common.paths import DEFAULT_DATASET
+from common.execution.control import ExecutionSettings, Operation, RunControl, RunMode
 
 ROOT = DEFAULT_DATASET
 
 
 class EvaluationTests(unittest.TestCase):
+    def judge_control(self, directory: Path, case_ids: list[str]) -> RunControl:
+        settings = ExecutionSettings(mode=RunMode.LIVE, case_ids=tuple(case_ids), max_calls={Operation.JUDGE: len(case_ids)}, timeout_seconds=10, model="gpt-4.1-mini", max_output_tokens=1000, parameters={"judge_base_url": "https://api.openai.com/v1"}, configuration_sha256="synthetic-test-configuration")
+        return RunControl(settings, directory / "synthetic-attempts.jsonl")
+
     @classmethod
     def setUpClass(cls) -> None:
         cls.cases = read_jsonl(ROOT / 'generated/golden.jsonl')
@@ -227,17 +233,22 @@ class EvaluationTests(unittest.TestCase):
 
         cases = self.cases[:2]
         fake_client = type('FakeClient', (), {'close': AsyncMock()})()
+        @asynccontextmanager
+        async def fake_judge_client(*args, **kwargs):
+            yield fake_client
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             responses = root / 'synthetic-test-responses.jsonl'
             write_jsonl(responses, [self.record(case) for case in cases])
-            with patch('openai.AsyncOpenAI', return_value=fake_client), patch(
+            control = self.judge_control(root, [case['case_id'] for case in cases])
+            with patch('common.runs.runner.judge_client', new=fake_judge_client), patch(
                 'common.runs.runner.score_message', new=AsyncMock(side_effect=AuthenticationError('do-not-log-provider-secret')),
             ) as judge:
                 code = asyncio.run(evaluate(
                     root=ROOT, group='plannerLLM', cases=cases, responses_path=responses,
                     output=root / 'reports', use_judge=True,
                     settings=JudgeSettings('gpt-4.1-mini', 'unit-test-key'),
+                    judge_control=control,
                 ))
             self.assertEqual(code, 1)
             self.assertEqual(judge.await_count, 1)
@@ -283,14 +294,16 @@ class EvaluationTests(unittest.TestCase):
                 }],
             })
 
-        async def run() -> dict:
-            async with AsyncOpenAI(api_key='unit-test-key', http_client=httpx.AsyncClient(transport=httpx.MockTransport(handler))) as client:
+        async def run(control: RunControl) -> dict:
+            async with AsyncOpenAI(api_key='unit-test-key', max_retries=0, http_client=httpx.AsyncClient(transport=httpx.MockTransport(handler))) as client:
                 return await score_message(
                     case, record, self.inputs[case['case_id']]['model_input'],
                     'ROLE RUBRIC MARKER', JudgeSettings('gpt-4.1-mini', 'unit-test-key'), client=client,
+                    control=control,
                 )
 
-        result = asyncio.run(run())
+        with tempfile.TemporaryDirectory() as directory:
+            result = asyncio.run(run(self.judge_control(Path(directory), [case['case_id']])))
         self.assertEqual(result['provider_model'], 'gpt-4.1-mini')
         self.assertEqual(seen[0]['model'], 'gpt-4.1-mini')
         self.assertIn('ROLE RUBRIC MARKER', seen[0]['messages'][0]['content'])
