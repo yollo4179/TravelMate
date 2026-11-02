@@ -42,7 +42,7 @@ class SearchEvidencePipelineTest {
     private final ObjectMapper mapper = JsonMapper.builder().addModule(new JavaTimeModule()).build();
 
     @SuppressWarnings("unchecked")
-    private List<PlaceSemanticSearchResult> consume(ObjectNode event) {
+    List<PlaceSemanticSearchResult> consume(ObjectNode event) {
         JdbcTemplate jdbc = mock(JdbcTemplate.class);
         when(jdbc.update(anyString(), any(Object[].class))).thenReturn(1);
         TransactionTemplate transaction = mock(TransactionTemplate.class);

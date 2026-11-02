@@ -1,0 +1,22 @@
+{
+  "validation_scope": "MOCK_SCORES_REAL_EVALUATION_DB_FIELD_BINDING",
+  "place_evidence": {
+    "311": "PRESERVED_ORIGINAL_FIELD_READY",
+    "378": "PRESERVED_ORIGINAL_FIELD_READY"
+  },
+  "evidence_documents_sha256": "cef763c192d5b78ca2794d3135e68c82b8002c178aa6f5cc684382c4ce2bcfc5",
+  "new_embedding_calls": 0,
+  "new_embedding_texts": 0,
+  "vector_binding": "NOT_EMBEDDED",
+  "candidate_embedding_lineage": "preserved_place_vector_only",
+  "original_characters": {
+    "311": 300,
+    "378": 641
+  },
+  "mock_ranking_scores": [
+    0.5,
+    0.5
+  ],
+  "ranking_scores_comparable": false,
+  "real_query_embedding_reranking_or_B_calls": 0
+}

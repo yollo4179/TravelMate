@@ -1,6 +1,13 @@
 -- Additive migration in the FastAPI-owned database, never the Spring database.
 ALTER TABLE place_embeddings ADD COLUMN IF NOT EXISTS chunk_generation BIGINT NOT NULL DEFAULT 0;
 
+CREATE TABLE IF NOT EXISTS place_original_field_evidence (
+    place_id BIGINT PRIMARY KEY REFERENCES place_embeddings(place_id),
+    place_source_version BIGINT NOT NULL,
+    place_fingerprint VARCHAR(64) NOT NULL,
+    document JSONB NOT NULL
+);
+
 CREATE TABLE IF NOT EXISTS retrieval_source_versions (
     source_id UUID NOT NULL,
     source_version VARCHAR(64) NOT NULL,

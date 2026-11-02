@@ -85,6 +85,7 @@ services:
       KAFKA_RECOMMENDATION_RESULTS_TOPIC: travelmate.b-eval.recommendation-results.v1
       CONTEXTUAL_RELATION_RETRIEVAL: chunk-and-relation-v1
       CONTEXTUAL_RERANK_EVIDENCE_PER_PLACE: "2"
+      PRESERVED_ORIGINAL_EVIDENCE: post-retrieval-field-v1
       RERANK_BATCH_SIZE: "8"
       RERANK_EXECUTION_STRATEGY: cross_encoder_predict
       HF_HOME: /models

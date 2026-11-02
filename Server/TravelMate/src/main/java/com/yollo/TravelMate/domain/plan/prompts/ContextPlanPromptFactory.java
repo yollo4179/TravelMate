@@ -39,6 +39,8 @@ public class ContextPlanPromptFactory {
             "matched_relations",
             "retrieved_relation_index",
             "semantic_score",
+            "semantic_score_scope",
+            "vector_binding",
             "rerank_score"
     );
     private final ObjectMapper objectMapper;
@@ -55,6 +57,7 @@ public class ContextPlanPromptFactory {
                 citations의 항목은 {"evidenceId":"입력 ID", "sourceId":"원문 source_id", "quote":"정확한 원문 인용"}이다.
                 description은 잘린 검색 요약일 수 있다. 실제 근거는 selectedEvidence.original.chunk_text다.
                 generatedSupplement는 생성된 보충 문맥이며 원문 인용이나 사실의 독립 근거로 쓰지 마라.
+                source_type=tourapi인 동결 장소 설명은 방문자 리뷰가 아니다. snapshot 시점의 설명을 현재 방문 경험이나 운영 보장으로 바꾸지 마라.
                 annotations의 관찰 주체와 관계 참가자·방향·조건을 구분하라. 다른 장소의 특징으로 옮기지 마라.
                 retrieval의 관계 범위만 허용된 근거는 그 관계 인용에만 사용하라.
                 분위기·주차·시설·방문 조건·주변 장소 연결 설명은 해당 원문 범위에서 작성하라.

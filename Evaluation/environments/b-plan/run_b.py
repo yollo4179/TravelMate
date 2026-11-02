@@ -43,16 +43,34 @@ def execution_blockers(runtime: Path) -> list[str]:
     snapshot = read_json(runtime / "snapshot.json")
     verified = read_json(runtime / "database-verification.json")
     evidence = read_json(runtime / "evidence-inventory.json")
+    deployment_path = runtime / "original-fields/deployment.json"
+    deployment = read_json(deployment_path) if deployment_path.exists() else snapshot
+    jar_path = Path(deployment.get("jar_path", runtime / "spring.jar"))
+    original_inventory = runtime / "original-fields/inventory.json"
+    if original_inventory.exists():
+        from prepare_original_fields import frozen_descriptions
+        from app.contextual.original_fields import validate_description_evidence
+        from app.enrichment.contracts import ExistingPlace
+        fields = read_json(runtime / "original-fields/evidence.json")
+        descriptions, binding = frozen_descriptions()
+        expected = {place["id"]: ExistingPlace.from_mapping(place) for place in descriptions}
+        for field in fields:
+            validate_description_evidence(field, expected[field["metadata"]["place_id"]])
+            if field["metadata"]["corpus_sha256"] != binding.corpus_sha256:
+                raise ValueError("Original-field evidence uses another frozen corpus")
+        if {field["metadata"]["place_id"] for field in fields} != set(expected):
+            raise ValueError("Original-field evidence is incomplete")
+        evidence = {"b_case_place_evidence": read_json(original_inventory)["place_evidence"]}
     blockers = []
     if not verified["spring_rows_match_snapshot"] or not verified["search_original_columns_match_snapshot"]:
         blockers.append("corpus_snapshot_mismatch")
     if verified["pending_search_jobs"] or verified["pending_spring_outbox"]:
         blockers.append("pending_jobs")
-    if any(status != prepare.EvidenceStatus.READY for status in evidence["b_case_place_evidence"].values()):
+    if any(status not in (prepare.EvidenceStatus.READY, prepare.EvidenceStatus.FIELD_READY) for status in evidence["b_case_place_evidence"].values()):
         blockers.append("B_anchors_have_no_preserved_structured_evidence")
-    if prepare.file_sha256(runtime / "spring.jar") != snapshot["jar_sha256"]:
+    if prepare.file_sha256(jar_path) != deployment["jar_sha256"]:
         blockers.append("jar_changed")
-    if any(prepare.file_sha256(ROOT / path) != expected for path, expected in snapshot["source_file_sha256"].items()):
+    if any(prepare.file_sha256(ROOT / path) != expected for path, expected in deployment["source_file_sha256"].items()):
         blockers.append("runtime_source_changed")
     settings = dict(line.split("=", 1) for line in (runtime / "spring.properties").read_text(encoding="utf-8").splitlines()
                     if line and not line.startswith("#"))

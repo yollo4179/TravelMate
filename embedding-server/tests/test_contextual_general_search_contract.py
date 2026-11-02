@@ -20,6 +20,7 @@ sys.path[:0] = [str(ROOT), str(ROOT / "tests")]
 from app.contextual.contracts import ContentKind
 from app.contextual.observation_search import ObservationFilter
 from app.contextual.ranking import EvidenceCount, build_pairs, rank_places, validate_token_budget
+from app.contextual.result_mapping import result_item
 from app.contextual.relations import RelationImportance
 from contextual_search_fixtures import BLOCK, WALK, candidate, document
 
@@ -53,7 +54,7 @@ def runtime_for(
         "EvidenceCount": EvidenceCount, "ObservationFilter": ObservationFilter,
         "build_pairs": build_pairs, "rank_places": rank_places, "validate_token_budget": validate_token_budget,
         "RETRIEVE_TOP_K": 30, "TraceContextTextMapPropagator": MagicMock(), "tracer": MagicMock(),
-        "embedder": embedder, "reranker": model, "to_thread": SimpleNamespace(run_sync=inline),
+        "embedder": embedder, "reranker": model, "to_thread": SimpleNamespace(run_sync=inline), "result_item": result_item,
     }
     exec(compile(ast.Module(body=[*enums, *methods], type_ignores=[]), "<general-search-contract>", "exec"), namespace)
     records = []

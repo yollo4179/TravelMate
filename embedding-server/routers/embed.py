@@ -18,6 +18,8 @@ async def health(request: Request) -> dict[str, int | str | bool]:
     }
     database_pool = getattr(request.app.state, "database_pool", None)
     kafka_runtime = getattr(request.app.state, "kafka_runtime", None)
+    if kafka_runtime is not None:
+        device_status["original_evidence_mode"] = getattr(kafka_runtime, "original_evidence_mode", "disabled")
     if database_pool is None or kafka_runtime is None:
         return {"status": "not_ready", "dim": embedder.getDimension(), **device_status}
     try:

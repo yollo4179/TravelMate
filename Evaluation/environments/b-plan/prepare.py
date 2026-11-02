@@ -40,6 +40,7 @@ class Stage(StrEnum):
 class EvidenceStatus(StrEnum):
     MISSING = "NO_PRESERVED_STRUCTURED_EVIDENCE"
     READY = "PRESERVED_STRUCTURED_EVIDENCE_READY"
+    FIELD_READY = "PRESERVED_ORIGINAL_FIELD_READY"
 
 
 @dataclass(frozen=True)
@@ -101,7 +102,7 @@ async def sql(target: DatabaseTarget, statement: str, *, write: bool = False) ->
 
 
 async def rows(target: DatabaseTarget, table: str, order: str) -> list[dict[str, Any]]:
-    allowed = {"places", "place_embeddings", "place_active_chunks", "retrieval_source_versions",
+    allowed = {"places", "place_embeddings", "place_active_chunks", "retrieval_source_versions", "place_original_field_evidence",
                "retrieval_chunks", "retrieval_chunk_contexts", "retrieval_relation_embeddings"}
     if table not in allowed or order not in ("id", "place_id", "chunk_id", "source_id"):
         raise ValueError("Unsupported snapshot table/order")
@@ -110,7 +111,7 @@ async def rows(target: DatabaseTarget, table: str, order: str) -> list[dict[str,
 
 
 def insert_records(table: str, records: list[dict[str, Any]], *, identity: bool = False) -> str:
-    allowed = {"places", "place_embeddings", "retrieval_source_versions", "retrieval_chunks",
+    allowed = {"places", "place_embeddings", "retrieval_source_versions", "retrieval_chunks", "place_original_field_evidence",
                "retrieval_chunk_contexts", "place_active_chunks", "retrieval_relation_embeddings"}
     if table not in allowed:
         raise ValueError("Unsupported import table")
@@ -317,7 +318,7 @@ async def verify(runtime: Path) -> None:
         "index_config_versions": sorted({row["index_config_version"] for row in search}),
         "active_evidence": len(await rows(TARGET_SEARCH, "place_active_chunks", "place_id")),
         "ranking_scores_comparable": False,
-        "ranking_limitations": ["Only 394 has previously preserved structured active evidence; B anchors 311/378 have none.",
+        "ranking_limitations": ["Evidence availability depends on explicitly preserved records; original fields do not have chunk vectors.",
                                 "CPU cross_encoder_predict differs from the old running autocast_fp16 service; no ranking equivalence evaluation was run.",
                                 "The full frozen persona/context is not forwarded by this API contract."],
         "inference_calls": 0, "search_executions": 0,

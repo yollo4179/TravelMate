@@ -48,7 +48,8 @@ def formatter(source: str) -> Callable[[dict[str, Any], int, float], dict[str, A
     enums = [node for node in syntax.body if isinstance(node, ast.ClassDef) and node.name == "EvidenceAssessmentStatus"]
     selected = runtime_method(source, "_to_result_item")
     selected.decorator_list = []
-    namespace = {"Any": Any, "json": json, "StrEnum": StrEnum}
+    from app.contextual.result_mapping import result_item
+    namespace = {"Any": Any, "json": json, "StrEnum": StrEnum, "result_item": result_item}
     exec(compile(ast.Module(body=[*enums, selected], type_ignores=[]), "<stored-result-formatter>", "exec"), namespace)
     return namespace[selected.name]
 

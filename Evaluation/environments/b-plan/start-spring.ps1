@@ -14,7 +14,14 @@ if ($verification.pending_search_jobs -ne 0 -or $verification.pending_spring_out
     throw 'Pending jobs could invoke inference during preparation.'
 }
 $jarPath = Join-Path $runtimePath 'spring.jar'
-if ((Get-FileHash -LiteralPath $jarPath -Algorithm SHA256).Hash.ToLowerInvariant() -ne $snapshot.jar_sha256) {
+$expectedJarHash = $snapshot.jar_sha256
+$deploymentPath = Join-Path $runtimePath 'original-fields/deployment.json'
+if (Test-Path -LiteralPath $deploymentPath) {
+    $deployment = Get-Content -LiteralPath $deploymentPath -Raw -Encoding UTF8 | ConvertFrom-Json
+    $jarPath = $deployment.jar_path
+    $expectedJarHash = $deployment.jar_sha256
+}
+if ((Get-FileHash -LiteralPath $jarPath -Algorithm SHA256).Hash.ToLowerInvariant() -ne $expectedJarHash) {
     throw 'The frozen evaluation JAR has changed.'
 }
 $pidPath = Join-Path $runtimePath 'spring.pid'

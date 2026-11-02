@@ -24,6 +24,7 @@ class VectorRepresentation(StrEnum):
 class RetrievalPath(StrEnum):
     CHUNK = "chunk"
     RELATION = "relation"
+    ORIGINAL_FIELD = "original_field"
 
 
 @dataclass(frozen=True)

@@ -26,6 +26,8 @@ from app.contextual.repository import desired_chunks, activate_chunks, preserve_
 from app.contextual.relation_vectors import RelationRetrievalMode, relation_embedding_inputs
 from app.contextual.retrieval import resolve_retrieval_strategy
 from app.contextual.artifacts import archive_index_input
+from app.contextual.original_fields import OriginalEvidenceMode, attach_original_fields
+from app.contextual.result_mapping import EvidenceAssessmentStatus, result_item
 from app.contextual.ranking import EvidenceCount, build_pairs, rank_places, validate_token_budget
 
 LOGGER = logging.getLogger(__name__)
@@ -42,15 +44,12 @@ class RankingMode(StrEnum):
     SEMANTIC_ONLY = "SEMANTIC_ONLY"
 
 
-class EvidenceAssessmentStatus(StrEnum):
-    NOT_ASSESSED = "not_assessed"
-
-
 class KafkaRuntime:
     def __init__(self, database_pool: Any) -> None:
         self.database_pool = database_pool
         self.evidence_count = EvidenceCount(int(os.environ.get("CONTEXTUAL_RERANK_EVIDENCE_PER_PLACE", "1")))
         self.use_relation_vectors = RelationRetrievalMode(os.environ.get("CONTEXTUAL_RELATION_RETRIEVAL", RelationRetrievalMode.CHUNK_ONLY.value)) == RelationRetrievalMode.CHUNK_AND_RELATION
+        self.original_evidence_mode = OriginalEvidenceMode(os.environ.get("PRESERVED_ORIGINAL_EVIDENCE", OriginalEvidenceMode.DISABLED))
         self.bootstrap_servers = os.environ["KAFKA_BOOTSTRAP_SERVERS"]
         self.place_changes_topic = os.environ.get(
             "KAFKA_PLACE_CHANGES_TOPIC",
@@ -562,7 +561,7 @@ class KafkaRuntime:
                 (time.perf_counter() - retrieval_started_at) * 1000,
             )
         documents = [dict(row) for row in rows]
-        return strategy.scope_rows(documents, observation)
+        return await self._attach_original_fields(strategy.scope_rows(documents, observation), observation)
 
     async def _retrieve_evidence(
         self,
@@ -605,37 +604,20 @@ class KafkaRuntime:
             async with self.database_pool.acquire() as connection:
                 rows = await connection.fetch(query, *parameters)
         documents = [dict(row) for row in rows]
-        return strategy.scope_rows(documents, observation)
+        return await self._attach_original_fields(strategy.scope_rows(documents, observation), observation)
+
+    async def _attach_original_fields(
+        self,
+        candidates: list[dict[str, Any]],
+        observation: ObservationFilter | None,
+    ) -> list[dict[str, Any]]:
+        if observation is not None or getattr(self, "original_evidence_mode", OriginalEvidenceMode.DISABLED) != OriginalEvidenceMode.POST_RETRIEVAL:
+            return candidates
+        return await attach_original_fields(self.database_pool, candidates)
 
     @staticmethod
     def _to_result_item(candidate: dict[str, Any], rank: int, rerank_score: float | None) -> dict[str, Any]:
-        evidence_chunks = candidate.get("reranked_evidence_chunks")
-        if evidence_chunks is None:
-            evidence = candidate.get("evidence")
-            evidence_chunks = [json.loads(evidence) if isinstance(evidence, str) else evidence] if evidence else []
-        return {
-            "place_id": candidate["place_id"],
-            "rank": rank,
-            "name": candidate["name"],
-            "description": candidate["description"],
-            "region": candidate["region"],
-            "city": candidate["city"],
-            "category": candidate["category"],
-            "source_category": candidate["source_category"],
-            "latitude": candidate["latitude"],
-            "longitude": candidate["longitude"],
-            "tour_content_id": candidate["tour_content_id"],
-            "image_url": candidate["image_url"],
-            "homepage_url": candidate["homepage_url"],
-            "semantic_score": candidate["semantic_score"],
-            "rerank_score": rerank_score,
-            "source_version": candidate["source_version"],
-            "latest_seen_version": candidate["latest_seen_version"],
-            "index_config_version": candidate.get("index_config_version", "bge-m3-v1"),
-            "enrichment_snapshot_id": str(candidate["enrichment_snapshot_id"]) if candidate.get("enrichment_snapshot_id") else None,
-            "evidence_chunks": evidence_chunks,
-            "evidence_assessment": {"status": EvidenceAssessmentStatus.NOT_ASSESSED},
-        }
+        return result_item(candidate, rank, rerank_score)
 
     async def _save_recommendation_result(self, request: Any, result: dict[str, Any]) -> None:
         result_event_id = uuid.UUID(result["event_id"])

@@ -52,7 +52,23 @@ powershell -NoProfile -ExecutionPolicy Bypass -File Evaluation/environments/b-pl
 
 `load`는 기존 승인된 실제 P09 청담도로공원 record·승인 파일과 공개 보존 해시에 맞는 embedding cache만 읽는다. 기존 활성 선택 정책으로 8개를 적재하며 원문·주체·문맥·제한을 바꾸지 않는다. 기존 자료의 주체 지문이 다르거나 저장 벡터가 없으면 새 생성·추론으로 보충하지 않고 실패한다. A/B 합성 통제와 방해 자료는 ID가 실제 corpus와 겹치므로 적재하지 않는다. 현재 실제 자료에는 이동 관계 벡터가 없다.
 
-창경궁(378)·올림픽공원피크닉장(311)에는 corpus의 기존 장소 설명·벡터는 있지만 보존된 구조화 청크/관계는 없다. 누락 근거를 장소 설명에서 새 청크로 만들어 채우지 않았다. 다른 실제 자료로 대체하지도 않았다. 따라서 현재는 인프라 준비와 B안의 원문 기반 설명 평가 준비를 구분한다.
+초기 준비에서는 창경궁(378)·올림픽공원피크닉장(311)에 구조화 청크가 없어 실행을 차단했다. 이후 별도 원문 필드 경로를 추가했다. `prepare_original_fields.py`는 동결 snapshot의 두 `places.description`이 generated corpus와 같고 실제 TourAPI content ID에 연결되는지 확인한 뒤 `place_original_field_evidence`에 그대로 보존한다. snapshot 버전·snapshot/corpus/manifest 파일 해시·장소 ID·content ID·UTF-8 내용 해시를 함께 저장한다. URL·수집 시각·리뷰·생성 문맥·관계는 만들지 않는다.
+
+`PRESERVED_ORIGINAL_EVIDENCE=post-retrieval-field-v1`은 기존 장소 후보를 검색한 **뒤** 적합한 활성 근거가 없는 장소에만 해당 필드를 연결한다. 새 청크 벡터로 검색하지 않고 `vector_binding=NOT_EMBEDDED`, `semantic_score_scope=place_candidate`로 구분한다. 기본 설정은 disabled이며 평가 Compose에서만 활성화했다. 명시적인 observation 종류/이동 필터에는 미분류 원문을 붙이지 않고 기존 리뷰/관계 근거를 교체하지 않는다. 후보 재현율을 높이는 기능이 아니다.
+
+새 임베딩 대상/호출 수는 **0개/0회**다. 원문은 별도의 벡터 대응을 주장하지 않으므로 기존 벡터를 복사해 청크에 붙이거나 새 모델로 계산하지 않는다. 활성 청크 슬롯·기존 장소 벡터·순위/거리/상한 정책은 바꾸지 않는다.
+
+```powershell
+C:/ssafy/Travelmate/.venv-ragas/Scripts/python.exe -X utf8 Evaluation/environments/b-plan/prepare_original_fields.py --runtime Server/TravelMate/build/b-evaluation
+```
+
+이 명령은 평가 DB 원문 결합 SELECT, 고정 모의 후보/점수의 근거 선택과 Kafka 직렬화만 실행한다. 실제 검색 요청이나 검색/리랭킹 모델을 호출하지 않는다. 생성한 `original-fields/mock-kafka-result.json`을 Spring 회귀 리소스로 재사용해 실제 파서·DTO·대화 도구·모의 LLM 입력을 검증했다. mock score 0.5는 품질 점수가 아니다.
+
+새 Spring JAR를 오프라인 빌드한 뒤 아래 명령으로 기존 snapshot/JAR를 보존하고 별도 배포 manifest/JAR를 기록한다. `start-spring.ps1`는 이 manifest가 있으면 해당 JAR를 선택한다. 이미 실행 중이면 경로를 확인한 평가 프로세스 트리만 먼저 종료해야 한다.
+
+```powershell
+C:/ssafy/Travelmate/.venv-ragas/Scripts/python.exe -X utf8 Evaluation/environments/b-plan/prepare_original_fields.py --runtime Server/TravelMate/build/b-evaluation --record-deployment
+```
 
 선택한 평가 설정은 관계 검색 `chunk-and-relation-v1`, 근거 수 2, 후보 30·활성 20·공개 결과 최대 20, RERANKED다. 원본 가중치를 읽되 CPU `cross_encoder_predict`를 사용해 기존 GPU 서비스의 자원 배치를 바꾸지 않는다. 기존 실행 스택의 `autocast_fp16`과 다르므로 순위 점수 비교 가능 판정을 주지 않는다. 보존 벡터의 동일성은 역사적 임베딩 입력/생성 모델 전체의 재검증을 뜻하지 않는다.
 
@@ -80,7 +96,7 @@ docker exec tm-b-eval-search python -m unittest discover -s /workspace/Evaluatio
 C:/ssafy/Travelmate/.venv-ragas/Scripts/python.exe -X utf8 Evaluation/environments/b-plan/run_b.py --runtime Server/TravelMate/build/b-evaluation
 ```
 
-현재 출력에는 `B_anchors_have_no_preserved_structured_evidence`가 남는다. 아래 실제 실행 명령은 **준비 작업에서 실행하지 않았다**. 원문 누락을 기존 보존 자료로 해소하고 DB·실행 설정을 재확인한 뒤 사용한다. 지금 입력하면 API 요청 전에 차단된다.
+원문 연결과 새 배포 해시까지 확인한 현재 환경에서는 준비 차단 목록이 비어 있다. 이는 실제 검색·설명 품질 평가의 통과가 아니다. 아래 실제 실행 명령은 **이번 데이터 연결 준비에서는 실행하지 않았다**. 실제 실행 범위를 확인한 뒤 사용한다.
 
 ```powershell
 C:/ssafy/Travelmate/.venv-ragas/Scripts/python.exe -X utf8 Evaluation/environments/b-plan/run_b.py --runtime Server/TravelMate/build/b-evaluation --output Server/TravelMate/build/b-live-first --execute
