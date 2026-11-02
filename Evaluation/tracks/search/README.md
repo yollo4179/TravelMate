@@ -24,6 +24,7 @@
 ## 실행 설정과 상한
 
 실행 CLI는 `--config`, 새 `--output-dir`, 저장한 `--runtime-record`를 요구한다.
+필요한 의존성은 `Evaluation/requirements/search-live.txt`에 있다. 이번 작업에서 패키지를 설치하거나 기존 환경을 변경하지 않았다.
 홀드아웃 수집기는 해당 버전의 명시적 `--question-review`도 요구한다.
 case 목록은 기존 데이터셋에 있는 ID만 허용하며 전체/무작위 실행 기본값은 없다.
 예열·재시도·자동 judge·자동 LangSmith export는 하지 않는다.
@@ -122,3 +123,36 @@ MOCK judge 결과는 `judge_mock_result`로 분리해 GPT 품질 평균에서 �
 scoring-inputs의 `sha256` 객체는 labels/mapping/embedding_records/reranking_records 네 역할의 정확한 파일 해시다.
 라벨·블라인드 매핑·원본 순위·입력 해시를 대조하고 unknown·MOCK·실패·미실행·미확인을 분모에서 제외한다.
 AI 라벨 비교는 잠정 결과이며 사람 판정 기준의 공식 주지표를 완료했다고 표시하지 않는다.
+
+## 저장 관측 조회·집계·게시
+
+`summarize_langsmith.py --runs-json <저장 JSON> --records <원본 JSONL>`은 오프라인 집계다.
+저장 JSON은 `execution_mode`와 `runs`를 포함한다. 기록에 없는 trace ID나 단계를 만들지 않는다.
+실제 조회는 별도 `--config`를 요구하며 parameters의 `records_sha256`, `langsmith_api_url`,
+`project_id`, `query_filter`, `max_pages`, `page_size`로 대상을 고정한다.
+각 페이지 요청은 `observation_read` 상한을 소비하며 다음 페이지가 남으면 partial로 표시한다.
+누락된 trace·단계·종료 시각은 미관측이다. 장치·정밀도가 다르면 시간을 따로 집계한다.
+
+검색 수집 설정의 선택적 `traceparents`는 `case_id:ranking_mode`에서 명시적 W3C traceparent로 가는 표다.
+이 값이 있으면 실제 요청에 전달하고 원본 요청에 보존한다. 임의의 서버 trace/span ID로 표시하지 않는다.
+없으면 서버가 관측한 trace와 자동 연결됐다고 가정하지 않는다. 기본 자동 export는 없다.
+
+`publish_metrics.py`는 C04 원본 응답과 실제 채점 입력의 동일성·case 집합·파일 해시를 먼저 검사한다.
+원본에 없는 성공·모의 지표·부분 조건을 verified 품질로 게시하지 않는다.
+`publish_batch_experiment.py`는 C08 코드를 실행/가져오지 않고 보존한 과거 보고서만 읽는다.
+이 도구의 결과는 `legacy_report_only`이며 현재 품질 feedback으로 바꾸지 않는다.
+C08 코드·실험 설정·성능 글은 이번 변경 묶음에 포함하지 않는다.
+
+게시 설정에는 `source_sha256`, `publication_purpose`, `langsmith_api_url`, `project_name`,
+`project_id`, 새 `run_id`, `publication_timestamp`, `feedback_metrics`를 명시한다.
+`publication_timestamp`는 설정에서 받은 게시용 표시 시각이며 검색/추론 실측 시간이 아니다.
+실제 각 시도 시각과 소요 시간은 journal에 별도로 기록한다.
+과거 보고서의 purpose는 `archive_legacy_report`, feedback_metrics는 빈 목록이어야 한다.
+검색 품질의 purpose는 `verified_search_quality`이며 실제 검증된 관측만 LIVE로 게시할 수 있다.
+배치 보고서는 추가로 `batch_configurations`를 명시한다.
+
+metric N개 게시의 최대 요청은 `publish=1+N`, `observation_read=1+N`이다.
+run 생성·feedback 생성·run 재조회·각 feedback 재조회를 요청별로 계산한다.
+기존 run PATCH·자동 폴링·SDK 묶음 전송·재시도는 하지 않는다.
+재조회 실패나 내용 불일치는 부분 게시 실패로 남기고 자동 복구/재게시하지 않는다.
+MOCK는 실제 HTTP client와 키 조회를 사용하지 않으며 외부 게시 완료로 표시하지 않는다.
