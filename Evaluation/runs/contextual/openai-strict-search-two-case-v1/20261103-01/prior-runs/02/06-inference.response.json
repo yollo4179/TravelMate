@@ -1,0 +1,230 @@
+{
+  "id": "resp_090689edd2f61bf5016ae8c6c117b487d28656984b62a2c626",
+  "object": "response",
+  "created_at": 1793640129,
+  "status": "completed",
+  "access_programs": null,
+  "background": false,
+  "billing": {
+    "payer": "developer"
+  },
+  "completed_at": 1793640130,
+  "error": null,
+  "frequency_penalty": 0.0,
+  "incomplete_details": null,
+  "instructions": null,
+  "max_output_tokens": 1536,
+  "max_tool_calls": null,
+  "model": "gpt-5.4-mini-2026-03-17",
+  "moderation": null,
+  "output": [
+    {
+      "id": "fc_090689edd2f61bf5016ae8c6c20cd887d2bfac05001acaaa93",
+      "type": "function_call",
+      "status": "completed",
+      "arguments": "{\"exclude_place_ids\":[],\"limit\":10,\"area\":null,\"city\":\"\uc885\ub85c\",\"category\":\"\uad81\",\"region\":\"\uc11c\uc6b8\",\"query\":\"\uc870\uc120 \uc655\uc2e4 \uac00\uc871\uc774 \uc0dd\ud65c\ud588\ub358 \uad81 \ub610\ub294 \uac70\ucc98\"}",
+      "call_id": "call_MSKRsBHCAavIlXAITCPSRgjO",
+      "name": "search_places"
+    }
+  ],
+  "parallel_tool_calls": false,
+  "presence_penalty": 0.0,
+  "previous_response_id": null,
+  "prompt_cache_key": null,
+  "prompt_cache_retention": "24h",
+  "reasoning": {
+    "context": "current_turn",
+    "effort": "none",
+    "mode": "standard",
+    "summary": null
+  },
+  "safety_identifier": null,
+  "service_tier": "default",
+  "store": false,
+  "temperature": 1.0,
+  "text": {
+    "format": {
+      "type": "text"
+    },
+    "verbosity": "medium"
+  },
+  "tool_choice": "auto",
+  "tool_usage": {
+    "image_gen": {
+      "input_tokens": 0,
+      "input_tokens_details": {
+        "image_tokens": 0,
+        "text_tokens": 0
+      },
+      "output_tokens": 0,
+      "output_tokens_details": {
+        "image_tokens": 0,
+        "text_tokens": 0
+      },
+      "total_tokens": 0
+    },
+    "web_search": {
+      "num_requests": 0
+    }
+  },
+  "tools": [
+    {
+      "type": "function",
+      "description": "\uacc4\ud68d \uc5c6\uc774 \uc7a5\uc18c\uc640 \uc6d0\ubb38 \uadfc\uac70\ub97c \uac80\uc0c9\ud55c\ub2e4. query\ub294 \ubc18\ub4dc\uc2dc \uc9c1\uc811 \uc791\uc131\ud55c\ub2e4. arguments\uc5d0\ub294 \uc2a4\ud0a4\ub9c8 \ud544\ub4dc\ub9cc \uc9c1\uc811 \ub123\uace0 searchContext \uac1d\uccb4\ub294 \ub123\uc9c0 \uc54a\ub294\ub2e4. \uc120\ud0dd \ud544\ud130\ub97c \uc0dd\ub7b5\ud558\uba74 \uc11c\ubc84\uac00 \uc0ac\uc6a9\uc790 \uc694\uccad\uc758 searchContext\ub97c \uc0c1\uc18d\ud55c\ub2e4. exclude_place_ids\ub294 snake_case\ub2e4. limit \uc0dd\ub7b5 \uc2dc 10. \uba85\uc2dc \ud544\ud130\uc640 context\uac00 \ucda9\ub3cc\ud558\uba74 \uac70\ubd80\ud55c\ub2e4.",
+      "name": "search_places",
+      "output_schema": null,
+      "parameters": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "exclude_place_ids": {
+            "anyOf": [
+              {
+                "type": "array",
+                "items": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 9223372036854775807
+                }
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "\uc0dd\ub7b5 \ub610\ub294 null\uc774\uba74 \ube48 \ubaa9\ub85d. searchContext\uc758 \uc81c\uc678 ID\uc640 \ud569\uce5c\ub2e4."
+          },
+          "limit": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 20
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "area": {
+            "anyOf": [
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "center": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                      "lon": {
+                        "type": "number",
+                        "minimum": -180.0,
+                        "maximum": 180.0
+                      },
+                      "lat": {
+                        "type": "number",
+                        "minimum": -90.0,
+                        "maximum": 90.0
+                      }
+                    },
+                    "required": [
+                      "lat",
+                      "lon"
+                    ]
+                  },
+                  "type": {
+                    "type": "string",
+                    "enum": [
+                      "CIRCLE"
+                    ]
+                  },
+                  "radius_meters": {
+                    "type": "integer",
+                    "minimum": 500,
+                    "maximum": 10000
+                  }
+                },
+                "required": [
+                  "center",
+                  "radius_meters",
+                  "type"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "\uc0dd\ub7b5 \ub610\ub294 null\uc774\uba74 searchContext\uc758 area\ub97c \uc0ac\uc6a9\ud55c\ub2e4. \ub458 \ub2e4 \uc5c6\uc73c\uba74 \ubc18\uacbd \uc81c\ud55c \uc5c6\uc74c."
+          },
+          "city": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "\\S"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "\uc120\ud0dd \ud544\ud130. \uc0dd\ub7b5 \ub610\ub294 null\uc774\uba74 searchContext \uac12\uc744 \uc0ac\uc6a9\ud55c\ub2e4. \ub458 \ub2e4 \uc5c6\uc73c\uba74 \uc81c\ud55c \uc5c6\uc74c."
+          },
+          "category": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "\\S"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "\uc120\ud0dd \ud544\ud130. \uc0dd\ub7b5 \ub610\ub294 null\uc774\uba74 searchContext \uac12\uc744 \uc0ac\uc6a9\ud55c\ub2e4. \ub458 \ub2e4 \uc5c6\uc73c\uba74 \uc81c\ud55c \uc5c6\uc74c."
+          },
+          "region": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "\\S"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "\uc120\ud0dd \ud544\ud130. \uc0dd\ub7b5 \ub610\ub294 null\uc774\uba74 searchContext \uac12\uc744 \uc0ac\uc6a9\ud55c\ub2e4. \ub458 \ub2e4 \uc5c6\uc73c\uba74 \uc81c\ud55c \uc5c6\uc74c."
+          },
+          "query": {
+            "type": "string",
+            "pattern": "\\S",
+            "description": "\ud544\uc218 \uac80\uc0c9\uc5b4. \uc0ac\uc6a9\uc790 \uc9c8\ubb38\uc5d0 \ub9de\ucdb0 \uc9c1\uc811 \uc791\uc131\ud558\uba70 \uc11c\ubc84\uac00 \ub300\uc2e0 \ucc44\uc6b0\uc9c0 \uc54a\ub294\ub2e4."
+          }
+        },
+        "required": [
+          "exclude_place_ids",
+          "limit",
+          "area",
+          "city",
+          "category",
+          "region",
+          "query"
+        ]
+      },
+      "strict": true
+    }
+  ],
+  "top_logprobs": 0,
+  "top_p": 0.98,
+  "truncation": "disabled",
+  "usage": {
+    "input_tokens": 1348,
+    "input_tokens_details": {
+      "cache_write_tokens": 0,
+      "cached_tokens": 1152
+    },
+    "output_tokens": 55,
+    "output_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "total_tokens": 1403
+  },
+  "user": null,
+  "metadata": {}
+}

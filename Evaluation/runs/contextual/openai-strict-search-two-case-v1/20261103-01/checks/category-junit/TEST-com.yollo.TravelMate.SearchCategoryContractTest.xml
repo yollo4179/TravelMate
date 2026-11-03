@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.yollo.TravelMate.SearchCategoryContractTest" tests="21" skipped="0" failures="0" errors="0" timestamp="2026-11-02T17:35:46.164Z" hostname="DESKTOP-MS327CL" time="0.076">
+  <properties/>
+  <testcase name="[1] category=null" classname="com.yollo.TravelMate.SearchCategoryContractTest" time="0.001"/>
+  <testcase name="[2] category=관광지" classname="com.yollo.TravelMate.SearchCategoryContractTest" time="0.001"/>
+  <testcase name="recordedCategoryFailureStopsCanonicalToolExecutionWithoutSearchOrRetry()" classname="com.yollo.TravelMate.SearchCategoryContractTest" time="0.008"/>
+  <testcase name="recordedProviderResponseRetainsItsOriginalHash()" classname="com.yollo.TravelMate.SearchCategoryContractTest" time="0.002"/>
+  <testcase name="recordedStrictArgumentsAreRejectedWithOriginalReceiptAndNoCorrection()" classname="com.yollo.TravelMate.SearchCategoryContractTest" time="0.003"/>
+  <testcase name="invalidInheritedCategoryCannotReachSearch()" classname="com.yollo.TravelMate.SearchCategoryContractTest" time="0.001"/>
+  <testcase name="[1] category=궁" classname="com.yollo.TravelMate.SearchCategoryContractTest" time="0.007"/>
+  <testcase name="[2] category=조용한" classname="com.yollo.TravelMate.SearchCategoryContractTest" time="0.003"/>
+  <testcase name="[3] category=왕실 가족의 거처" classname="com.yollo.TravelMate.SearchCategoryContractTest" time="0.003"/>
+  <testcase name="[4] category=관광지 " classname="com.yollo.TravelMate.SearchCategoryContractTest" time="0.003"/>
+  <testcase name="[5] category=MUSEUM" classname="com.yollo.TravelMate.SearchCategoryContractTest" time="0.002"/>
+  <testcase name="[6] category=" classname="com.yollo.TravelMate.SearchCategoryContractTest" time="0.002"/>
+  <testcase name="[1] contentType=관광지" classname="com.yollo.TravelMate.SearchCategoryContractTest" time="0.003"/>
+  <testcase name="[2] contentType=문화시설" classname="com.yollo.TravelMate.SearchCategoryContractTest" time="0.003"/>
+  <testcase name="[3] contentType=축제공연행사" classname="com.yollo.TravelMate.SearchCategoryContractTest" time="0.003"/>
+  <testcase name="[4] contentType=여행코스" classname="com.yollo.TravelMate.SearchCategoryContractTest" time="0.003"/>
+  <testcase name="[5] contentType=레포츠" classname="com.yollo.TravelMate.SearchCategoryContractTest" time="0.003"/>
+  <testcase name="[6] contentType=숙박" classname="com.yollo.TravelMate.SearchCategoryContractTest" time="0.005"/>
+  <testcase name="[7] contentType=쇼핑" classname="com.yollo.TravelMate.SearchCategoryContractTest" time="0.003"/>
+  <testcase name="[8] contentType=음식점" classname="com.yollo.TravelMate.SearchCategoryContractTest" time="0.003"/>
+  <testcase name="providerAndServerPublishTheLabelsThatIndexingStores()" classname="com.yollo.TravelMate.SearchCategoryContractTest" time="0.002"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

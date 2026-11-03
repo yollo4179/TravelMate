@@ -1,0 +1,20 @@
+{
+  "case_id": "PLR-TM-palaces-01",
+  "input_sha256": "13f07e1370f08c3962a159bbf18ff3ef60b7a5b2d03f1d550a34c96f70f9598b",
+  "repeats": 1,
+  "area_provenance": null,
+  "api_request": {
+    "message": "창경궁을 찾아줘.",
+    "planningRequest": null,
+    "history": [],
+    "searchContext": {
+      "region": "서울",
+      "city": null,
+      "category": null,
+      "excludePlaceIds": [],
+      "area": null
+    }
+  },
+  "turn_id": "d0ed7d3a-0088-4732-9b59-c26c0c501e65",
+  "mode": "LIVE"
+}

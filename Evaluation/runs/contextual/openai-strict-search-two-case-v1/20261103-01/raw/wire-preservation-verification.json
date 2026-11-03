@@ -1,0 +1,126 @@
+{
+  "comparisons_only_required_order_ignored": true,
+  "wire_body_array_order_and_hash_not_rewritten": true,
+  "requests": [
+    {
+      "ordinal": 1,
+      "sha256": "2ef1c595de3e1022bed20415dde4d7a7a17b7b7c25375aad80fd995aeab01308",
+      "raw_received_equals_forwarded": true,
+      "required_original_order": [
+        "region",
+        "query",
+        "exclude_place_ids",
+        "limit",
+        "area",
+        "city",
+        "category"
+      ],
+      "category_schema_matches_expected": true
+    },
+    {
+      "ordinal": 2,
+      "sha256": "753e479ed721c086977909bf010c5b04a65b0e758d19f358d610204fc55ecf61",
+      "raw_received_equals_forwarded": true,
+      "required_original_order": [
+        "region",
+        "query",
+        "exclude_place_ids",
+        "limit",
+        "area",
+        "city",
+        "category"
+      ],
+      "category_schema_matches_expected": true
+    },
+    {
+      "ordinal": 3,
+      "sha256": "5612e0a51cd6609d5965368ce854d02355de08c025498786d208d55458973093",
+      "raw_received_equals_forwarded": true,
+      "required_original_order": [
+        "region",
+        "query",
+        "exclude_place_ids",
+        "limit",
+        "area",
+        "city",
+        "category"
+      ],
+      "category_schema_matches_expected": true
+    },
+    {
+      "ordinal": 4,
+      "sha256": "cb7e09c1c5d0f9c893ea60bba3d1a04904573ea280edbff132b0fa7b5478e006",
+      "raw_received_equals_forwarded": true,
+      "required_original_order": [
+        "region",
+        "query",
+        "exclude_place_ids",
+        "limit",
+        "area",
+        "city",
+        "category"
+      ],
+      "category_schema_matches_expected": true
+    },
+    {
+      "ordinal": 5,
+      "sha256": "c8551c8260f02f72096b2f9fac71183c29be43eb3bfe231d5ee330d5f9183a30",
+      "raw_received_equals_forwarded": true,
+      "required_original_order": [
+        "region",
+        "query",
+        "exclude_place_ids",
+        "limit",
+        "area",
+        "city",
+        "category"
+      ],
+      "category_schema_matches_expected": true
+    },
+    {
+      "ordinal": 6,
+      "sha256": "9b74f565bbdce8aad7865e8fb234c20ccc443a0ecc214ba82ae308b90bfba3ac",
+      "raw_received_equals_forwarded": true,
+      "required_original_order": [
+        "region",
+        "query",
+        "exclude_place_ids",
+        "limit",
+        "area",
+        "city",
+        "category"
+      ],
+      "category_schema_matches_expected": true
+    },
+    {
+      "ordinal": 7,
+      "sha256": "8fbb1218b3ac8cbffa9094eb7063f03291b7e89022dabc05fc3636668c14eb8a",
+      "raw_received_equals_forwarded": true,
+      "required_original_order": [
+        "region",
+        "query",
+        "exclude_place_ids",
+        "limit",
+        "area",
+        "city",
+        "category"
+      ],
+      "category_schema_matches_expected": true
+    },
+    {
+      "ordinal": 8,
+      "sha256": "66668fce6d5e2750d1297a78189ec0f004ebba2651651fc24ec7b5160917c899",
+      "raw_received_equals_forwarded": true,
+      "required_original_order": [
+        "region",
+        "query",
+        "exclude_place_ids",
+        "limit",
+        "area",
+        "city",
+        "category"
+      ],
+      "category_schema_matches_expected": true
+    }
+  ]
+}

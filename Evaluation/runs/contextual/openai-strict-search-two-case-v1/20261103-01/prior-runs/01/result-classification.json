@@ -1,0 +1,7 @@
+{
+  "failure_category": "EVALUATION_INFRASTRUCTURE",
+  "model_quality_status": "NOT_EVALUATED",
+  "include_in_model_quality_aggregate": false,
+  "prior_result_sha256": "86eef61a4bce5a94ff31c3ad5fa6928037cbbd5c0938a437a4e2fb31a939f325",
+  "prior_result_path": "C:\\ssafy\\Travelmate\\.local-backups\\openai-strict-live-20261103-01\\results\\run.json"
+}

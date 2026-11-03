@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.yollo.TravelMate.OpenAiBatchBudgetTest" tests="16" skipped="0" failures="0" errors="0" timestamp="2026-11-02T17:41:57.380Z" hostname="DESKTOP-MS327CL" time="1.432">
+  <properties/>
+  <testcase name="[1] inferenceCap=4, countingCap=4, permitted=4" classname="com.yollo.TravelMate.OpenAiBatchBudgetTest" time="0.14"/>
+  <testcase name="[2] inferenceCap=4, countingCap=3, permitted=3" classname="com.yollo.TravelMate.OpenAiBatchBudgetTest" time="0.008"/>
+  <testcase name="[3] inferenceCap=3, countingCap=4, permitted=3" classname="com.yollo.TravelMate.OpenAiBatchBudgetTest" time="0.007"/>
+  <testcase name="[1] missingConfirmation=approved" classname="com.yollo.TravelMate.OpenAiBatchBudgetTest" time="1.106"/>
+  <testcase name="[2] missingConfirmation=inputCountBillingConfirmed" classname="com.yollo.TravelMate.OpenAiBatchBudgetTest" time="0.022"/>
+  <testcase name="unverifiedAllowanceCannotExceedTheInferenceSpendLimit()" classname="com.yollo.TravelMate.OpenAiBatchBudgetTest" time="0.008"/>
+  <testcase name="reservesAllFourCallsAndCannotResetBudgetByRestarting()" classname="com.yollo.TravelMate.OpenAiBatchBudgetTest" time="0.019"/>
+  <testcase name="explicitUnverifiedAllowancePreservesNullCostAndOnlyBoundsInference()" classname="com.yollo.TravelMate.OpenAiBatchBudgetTest" time="0.015"/>
+  <testcase name="aCaseCannotBeRepeatedWithANewRequestId()" classname="com.yollo.TravelMate.OpenAiBatchBudgetTest" time="0.01"/>
+  <testcase name="strictModeWithoutAnExplicitBudgetCannotCallTheCountingEndpoint()" classname="com.yollo.TravelMate.OpenAiBatchBudgetTest" time="0.012"/>
+  <testcase name="[1] defect=missingAllowance" classname="com.yollo.TravelMate.OpenAiBatchBudgetTest" time="0.012"/>
+  <testcase name="[2] defect=unapproved" classname="com.yollo.TravelMate.OpenAiBatchBudgetTest" time="0.006"/>
+  <testcase name="[3] defect=claimedConfirmation" classname="com.yollo.TravelMate.OpenAiBatchBudgetTest" time="0.005"/>
+  <testcase name="[4] defect=zeroPrice" classname="com.yollo.TravelMate.OpenAiBatchBudgetTest" time="0.006"/>
+  <testcase name="[5] defect=claimedSource" classname="com.yollo.TravelMate.OpenAiBatchBudgetTest" time="0.006"/>
+  <testcase name="spendLimitAndUnknownCountingCostBlockBeforeLedgerAndHttp()" classname="com.yollo.TravelMate.OpenAiBatchBudgetTest" time="0.012"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

@@ -1,0 +1,35 @@
+{
+  "built_jar_matches_deployed_jar": true,
+  "jar_sha256": "48b849b79f2381b85fbc1fb131532b720a317d2e85e23f3b4d51f47fe6462c79",
+  "packaged_classes_match_current_compiled_classes": {
+    "domain/conversation/tool/SearchPlacesContract.class": "2ddfbb6e416ac00a81d030931c8bf6b18ad534c0e0afaaf4837034975ce7a84a",
+    "domain/conversation/tool/PlaceSearchCriteriaResolver.class": "c230366e7fa6afdfd9596d5b67aa6b3c4ab2f695257c55cefcbeae1b59b3537d",
+    "domain/conversation/tool/SearchPlacesTool.class": "ea5bf46b7d7ff339fef8766a21ec6b88b4275b51ff40e070cd1653eec2eff00b",
+    "domain/place/enums/PlaceSearchCategories.class": "9d6dc74878e97a42db8fbf89e408e8790f78ed7e86419c939545d05e7bdcb9f0",
+    "domain/place/service/PlaceSemanticSearchService.class": "d4a7db7df4c27e15842f299e08bd768ab727e66ec571860eec7eda2cedc8c984",
+    "ai/llm/budget/OpenAiBatchBudget.class": "cab34af1c83a5d2ac67461d9d896c5b6c2e4764ecf0f810883bfe3953b3bd37c",
+    "ai/llm/budget/OpenAiBatchBudget$Policy.class": "458bd36113cc3595695484e7e9907e7bf726b8a4ec678bd630d1fa2f127f9328",
+    "ai/llm/budget/OpenAiBatchBudget$InputCountCostPolicy.class": "572a19b4f2229e7bbab79faeb23c63ee15938c19e846f729a5c0995a46bc5fb4"
+  },
+  "provider_schema_contains_category_enum": [
+    "관광지",
+    "문화시설",
+    "축제공연행사",
+    "여행코스",
+    "레포츠",
+    "숙박",
+    "쇼핑",
+    "음식점"
+  ],
+  "schema_guard_before_provider_dispatch": true,
+  "offline_tests": {
+    "tests": 51,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "live_cases_allowed": 2,
+  "all_eight_categories_evaluated": false,
+  "input_count_cost_usd": null,
+  "total_cost_bound_usd": null
+}

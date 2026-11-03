@@ -1,0 +1,1 @@
+{"type":"ERROR","data":null,"message":"토큰 예산이 확인되지 않았거나 한도를 초과해 다음 모델 호출을 중단했습니다.","citations":[],"termination":"COUNT_UNAVAILABLE","modelTurns":1,"toolResults":[],"requestId":"df5072d7-5737-4e89-955e-2b1cfad06538","turnId":"c74bdf11-730f-4b97-a022-2e9396a665b6","conversationId":"fcd46123-b35c-4eb9-8e70-044376f1c2bd","primaryResultId":null,"messageSource":"SERVER_FALLBACK"}

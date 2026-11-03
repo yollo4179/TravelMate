@@ -1,0 +1,27 @@
+{
+  "original_files_verified": 83,
+  "backup_files_verified": 83,
+  "original_git_status_unchanged": true,
+  "excluded_c05_sha256": {
+    "Evaluation/tracks/search/finalize_holdout.py": "84218a0c275cfdafbac208f590739a426ee4574a2a2217f3d96eb7a3b5f53f49",
+    "Evaluation/tests/test_search_holdout.py": "c6586977635e3d1c64dba15881c5ca16d242428840f9de93b21c0a16ab7bf975"
+  },
+  "application_jar_unchanged": true,
+  "existing_cost_policy_unchanged": true,
+  "application_sources_unchanged": true,
+  "comparison_only_change": true,
+  "request_bytes_and_hashes_preserved": true,
+  "offline_comparison_tests_passed": 12,
+  "actual_counts": {
+    "inference": 4,
+    "input_count": 4,
+    "search": 2,
+    "retries": 0,
+    "plans": 0,
+    "judge": 0,
+    "extra_cases": 0
+  },
+  "all_eight_categories_evaluated": false,
+  "automatic_fix_or_extra_execution": false,
+  "c02_c03_work_performed": false
+}

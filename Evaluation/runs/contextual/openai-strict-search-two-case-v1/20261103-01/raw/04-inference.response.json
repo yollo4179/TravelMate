@@ -1,0 +1,246 @@
+{
+  "id": "resp_070feecac0007e9b016ae8cdf4987c87d2927174ad70f42126",
+  "object": "response",
+  "created_at": 1793641972,
+  "status": "completed",
+  "access_programs": null,
+  "background": false,
+  "billing": {
+    "payer": "developer"
+  },
+  "completed_at": 1793641974,
+  "error": null,
+  "frequency_penalty": 0.0,
+  "incomplete_details": null,
+  "instructions": null,
+  "max_output_tokens": 1536,
+  "max_tool_calls": null,
+  "model": "gpt-5.4-mini-2026-03-17",
+  "moderation": null,
+  "output": [
+    {
+      "id": "msg_070feecac0007e9b016ae8cdf5e7e887d28e03b584135aceb9",
+      "type": "message",
+      "status": "completed",
+      "content": [
+        {
+          "type": "output_text",
+          "annotations": [],
+          "logprobs": [],
+          "text": "{\"message\":\"\uc11c\uc6b8\uc5d0\uc11c \ucc3e\uc740 \ucc3d\uacbd\uad81\uc740 \uad81\uad90\ub85c, \uc6d0\ub798 \uc655\uc2e4 \uac00\uc871\ub4e4\uc758 \uc0dd\ud65c\uacf5\uac04\uc73c\ub85c \uc0ac\uc6a9\ub418\ub358 \uacf3\uc785\ub2c8\ub2e4. \ucc3d\uacbd\uad81\uc740 \ucc3d\ub355\uad81\uacfc \uacbd\uacc4 \uc5c6\uc774 \ud558\ub098\uc758 \uad81\uad90 \uc601\uc5ed\uc774\uc5c8\ub358 \ub3d9\uad90\uc5d0 \uc18d\ud588\ub358 \uc810\uc774 \ud2b9\uc9d5\uc785\ub2c8\ub2e4.\",\"citations\":[{\"placeId\":378,\"evidenceId\":\"780fa8da-d863-4955-ab16-8fad66cad6c9:E378-0\",\"sourceId\":\"f9778e87-11f5-5d07-83fa-33e8350a3a40\",\"quote\":\"\ucc3d\uacbd\uad81\uc740 \ucc3d\ub355\uad81\uacfc \uacbd\uacc4 \uc5c6\uc774 \ub3d9\uad90(\u6771\u95d5)\uc774\ub77c\ub294 \ud558\ub098\uc758 \uad81\uad90 \uc601\uc5ed\uc774\uc5c8\uc73c\uba70,  \uc8fc\ub85c \uc655\uc2e4 \uac00\uc871\ub4e4\uc758 \uc0dd\ud65c\uacf5\uac04\uc73c\ub85c \uc0ac\uc6a9\ud558\uc600\ub2e4.\"}]}"
+        }
+      ],
+      "phase": "final_answer",
+      "role": "assistant"
+    }
+  ],
+  "parallel_tool_calls": false,
+  "presence_penalty": 0.0,
+  "previous_response_id": null,
+  "prompt_cache_key": null,
+  "prompt_cache_retention": "24h",
+  "reasoning": {
+    "context": "current_turn",
+    "effort": "none",
+    "mode": "standard",
+    "summary": null
+  },
+  "safety_identifier": null,
+  "service_tier": "default",
+  "store": false,
+  "temperature": 1.0,
+  "text": {
+    "format": {
+      "type": "text"
+    },
+    "verbosity": "medium"
+  },
+  "tool_choice": "auto",
+  "tool_usage": {
+    "image_gen": {
+      "input_tokens": 0,
+      "input_tokens_details": {
+        "image_tokens": 0,
+        "text_tokens": 0
+      },
+      "output_tokens": 0,
+      "output_tokens_details": {
+        "image_tokens": 0,
+        "text_tokens": 0
+      },
+      "total_tokens": 0
+    },
+    "web_search": {
+      "num_requests": 0
+    }
+  },
+  "tools": [
+    {
+      "type": "function",
+      "description": "\uacc4\ud68d \uc5c6\uc774 \uc7a5\uc18c\uc640 \uc6d0\ubb38 \uadfc\uac70\ub97c \uac80\uc0c9\ud55c\ub2e4. query\ub294 \ubc18\ub4dc\uc2dc \uc9c1\uc811 \uc791\uc131\ud558\uba70 \uc138\ubd80 \uc7a5\uc18c \uc720\ud615\u00b7\ubd84\uc704\uae30\u00b7\uad00\uacc4 \uc870\uac74\uc744 \uc720\uc9c0\ud55c\ub2e4. category\ub294 DB \ub300\ubd84\ub958 enum\ub9cc \uc0ac\uc6a9\ud558\uace0 \ud655\uc815\ud560 \uc218 \uc5c6\uc73c\uba74 \uc0dd\ub7b5 \ub610\ub294 null\ub85c \ub454\ub2e4. arguments\uc5d0\ub294 \uc2a4\ud0a4\ub9c8 \ud544\ub4dc\ub9cc \uc9c1\uc811 \ub123\uace0 searchContext \uac1d\uccb4\ub294 \ub123\uc9c0 \uc54a\ub294\ub2e4. \uc120\ud0dd \ud544\ud130\ub97c \uc0dd\ub7b5\ud558\uba74 \uc11c\ubc84\uac00 \uc0ac\uc6a9\uc790 \uc694\uccad\uc758 searchContext\ub97c \uc0c1\uc18d\ud55c\ub2e4. exclude_place_ids\ub294 snake_case\ub2e4. limit \uc0dd\ub7b5 \uc2dc 10. \uba85\uc2dc \ud544\ud130\uc640 context\uac00 \ucda9\ub3cc\ud558\uac70\ub098 \ud5c8\uc6a9\ub418\uc9c0 \uc54a\ub294 category\uc774\uba74 \uac70\ubd80\ud558\uba70 \uc790\ub3d9 \ubcf4\uc815\ud558\uc9c0 \uc54a\ub294\ub2e4.",
+      "name": "search_places",
+      "output_schema": null,
+      "parameters": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "region": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "\\S"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "\uc120\ud0dd \ud544\ud130. \uc0dd\ub7b5 \ub610\ub294 null\uc774\uba74 searchContext \uac12\uc744 \uc0ac\uc6a9\ud55c\ub2e4. \ub458 \ub2e4 \uc5c6\uc73c\uba74 \uc81c\ud55c \uc5c6\uc74c."
+          },
+          "query": {
+            "type": "string",
+            "pattern": "\\S",
+            "description": "\ud544\uc218 \uac80\uc0c9\uc5b4. \uad81\u00b7\uc870\uc6a9\ud55c\u00b7\uc655\uc2e4 \uac00\uc871\uc758 \uac70\ucc98 \uac19\uc740 \uc138\ubd80 \uc7a5\uc18c \uc720\ud615\u00b7\ubd84\uc704\uae30\u00b7\uad00\uacc4 \uc870\uac74\uc744 \uc5ec\uae30\uc5d0 \uc720\uc9c0\ud55c\ub2e4. \uc0ac\uc6a9\uc790 \uc9c8\ubb38\uc5d0 \ub9de\ucdb0 \uc9c1\uc811 \uc791\uc131\ud558\uba70 \uc11c\ubc84\uac00 \ub300\uc2e0 \ucc44\uc6b0\uc9c0 \uc54a\ub294\ub2e4."
+          },
+          "exclude_place_ids": {
+            "anyOf": [
+              {
+                "type": "array",
+                "items": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 9223372036854775807
+                }
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "\uc0dd\ub7b5 \ub610\ub294 null\uc774\uba74 \ube48 \ubaa9\ub85d. searchContext\uc758 \uc81c\uc678 ID\uc640 \ud569\uce5c\ub2e4."
+          },
+          "limit": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 20
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "area": {
+            "anyOf": [
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "center": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                      "lon": {
+                        "type": "number",
+                        "minimum": -180.0,
+                        "maximum": 180.0
+                      },
+                      "lat": {
+                        "type": "number",
+                        "minimum": -90.0,
+                        "maximum": 90.0
+                      }
+                    },
+                    "required": [
+                      "lat",
+                      "lon"
+                    ]
+                  },
+                  "type": {
+                    "type": "string",
+                    "enum": [
+                      "CIRCLE"
+                    ]
+                  },
+                  "radius_meters": {
+                    "type": "integer",
+                    "minimum": 500,
+                    "maximum": 10000
+                  }
+                },
+                "required": [
+                  "center",
+                  "radius_meters",
+                  "type"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "\uc0dd\ub7b5 \ub610\ub294 null\uc774\uba74 searchContext\uc758 area\ub97c \uc0ac\uc6a9\ud55c\ub2e4. \ub458 \ub2e4 \uc5c6\uc73c\uba74 \ubc18\uacbd \uc81c\ud55c \uc5c6\uc74c."
+          },
+          "city": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "\\S"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "\uc120\ud0dd \ud544\ud130. \uc0dd\ub7b5 \ub610\ub294 null\uc774\uba74 searchContext \uac12\uc744 \uc0ac\uc6a9\ud55c\ub2e4. \ub458 \ub2e4 \uc5c6\uc73c\uba74 \uc81c\ud55c \uc5c6\uc74c."
+          },
+          "category": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "\uad00\uad11\uc9c0",
+                  "\ubb38\ud654\uc2dc\uc124",
+                  "\ucd95\uc81c\uacf5\uc5f0\ud589\uc0ac",
+                  "\uc5ec\ud589\ucf54\uc2a4",
+                  "\ub808\ud3ec\uce20",
+                  "\uc219\ubc15",
+                  "\uc1fc\ud551",
+                  "\uc74c\uc2dd\uc810"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "DB\uc758 \ub300\ubd84\ub958\uc640 \uc815\ud655\ud788 \uc77c\uce58\ud558\ub294 enum \uac12\ub9cc \uc0ac\uc6a9\ud55c\ub2e4. \uc138\ubd80 \uc7a5\uc18c \uc720\ud615\u00b7\ubd84\uc704\uae30\u00b7\uad00\uacc4\ub294 query\uc5d0 \uc720\uc9c0\ud55c\ub2e4. \uc801\uc808\ud55c \ubd84\ub958\ub97c \ud655\uc815\ud560 \uc218 \uc5c6\uc73c\uba74 \uc0dd\ub7b5 \ub610\ub294 null\ub85c \ub450\uba70 searchContext \uac12\uc744 \uc0c1\uc18d\ud55c\ub2e4. \ub458 \ub2e4 \uc5c6\uc73c\uba74 \uc81c\ud55c \uc5c6\uc74c. \uc11c\ubc84\ub294 \ubd84\ub958\ub97c \uc790\ub3d9 \ubcf4\uc815\ud558\uc9c0 \uc54a\ub294\ub2e4."
+          }
+        },
+        "required": [
+          "region",
+          "query",
+          "exclude_place_ids",
+          "limit",
+          "area",
+          "city",
+          "category"
+        ]
+      },
+      "strict": true
+    }
+  ],
+  "top_logprobs": 0,
+  "top_p": 0.98,
+  "truncation": "disabled",
+  "usage": {
+    "input_tokens": 4115,
+    "input_tokens_details": {
+      "cache_write_tokens": 0,
+      "cached_tokens": 1408
+    },
+    "output_tokens": 185,
+    "output_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "total_tokens": 4300
+  },
+  "user": null,
+  "metadata": {}
+}

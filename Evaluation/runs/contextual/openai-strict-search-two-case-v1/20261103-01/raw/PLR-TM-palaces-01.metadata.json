@@ -1,0 +1,9 @@
+{
+  "case_id": "PLR-TM-palaces-01",
+  "http_status": 200,
+  "duration_ms": 12927.091600024141,
+  "request_id": "203e5bb0-cdf0-4f1a-961b-0232be8e6b2d",
+  "termination": "COMPLETED",
+  "type": "PLACES",
+  "model_turns": 2
+}
