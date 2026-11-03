@@ -20,9 +20,15 @@ public class OpenAiBatchBudget {
     private final Map<String, String> caseRequests = new HashMap<>();
     private final Map<String, Integer> caseCalls = new HashMap<>();
     private BigDecimal reservedUsd = BigDecimal.ZERO;
+    private BigDecimal reservedInferenceUsd = BigDecimal.ZERO;
     private int reservations;
     private boolean ledgerCreated;
     private boolean halted;
+
+    public enum InputCountCostPolicy {
+        REQUIRE_CONFIRMED,
+        ALLOW_UNVERIFIED
+    }
 
     public record Policy(
             boolean approved,
@@ -38,8 +44,16 @@ public class OpenAiBatchBudget {
             BigDecimal inputCountRequestMaxUsd,
             BigDecimal maxSpendUsd,
             Map<String, String> caseInputHashes,
-            String ledgerFile
-    ) {}
+            String ledgerFile,
+            InputCountCostPolicy inputCountCostPolicy,
+            int maxInputCountRequests
+    ) {
+        public Policy {
+            inputCountCostPolicy = inputCountCostPolicy == null
+                    ? InputCountCostPolicy.REQUIRE_CONFIRMED : inputCountCostPolicy;
+            maxInputCountRequests = maxInputCountRequests == 0 ? maxCalls : maxInputCountRequests;
+        }
+    }
 
     public record Reservation(int ordinal, BigDecimal maximumUsd, String caseId) {}
 
@@ -68,10 +82,10 @@ public class OpenAiBatchBudget {
 
     public synchronized Reservation reserve(TokenBudget.Limits limits) {
         if (policy == null) return null;
-        if (halted || !policy.approved() || !policy.inputCountBillingConfirmed()
-                || policy.inputCountBillingSource() == null || policy.inputCountBillingSource().isBlank()) {
-            throw new IllegalStateException("OpenAI evaluation approval and input-count billing confirmation required");
+        if (halted || !policy.approved()) {
+            throw new IllegalStateException("OpenAI evaluation approval required and halted batches cannot resume");
         }
+        requireInputCountCostPolicy();
         if (!limits.model().equals(policy.model()) || limits.contextTokens() != policy.contextCap()
                 || limits.outputReservation() != policy.outputReservation()) {
             throw new IllegalStateException("OpenAI evaluation model/token configuration mismatch");
@@ -87,33 +101,59 @@ public class OpenAiBatchBudget {
         if (previousRequest != null && !previousRequest.equals(context.requestId())) {
             throw new IllegalStateException("OpenAI evaluation case cannot be retried");
         }
-        if (reservations >= policy.maxCalls() || caseCalls.getOrDefault(context.caseId(), 0) >= policy.maxCallsPerCase()) {
+        if (reservations >= policy.maxCalls() || reservations >= policy.maxInputCountRequests()
+                || caseCalls.getOrDefault(context.caseId(), 0) >= policy.maxCallsPerCase()) {
             throw new IllegalStateException("OpenAI evaluation call cap reached");
         }
         requireNonNegative(policy.inputUsdPerMillion());
         requireNonNegative(policy.outputUsdPerMillion());
-        requireNonNegative(policy.inputCountRequestMaxUsd());
         requireNonNegative(policy.maxSpendUsd());
         long inputMaximum = Math.subtractExact(policy.contextCap(), policy.outputReservation());
         if (inputMaximum < 0) throw new IllegalStateException("Invalid OpenAI evaluation context cap");
-        BigDecimal maximum = BigDecimal.valueOf(inputMaximum).multiply(policy.inputUsdPerMillion())
+        BigDecimal inferenceMaximum = BigDecimal.valueOf(inputMaximum).multiply(policy.inputUsdPerMillion())
                 .add(BigDecimal.valueOf(policy.outputReservation()).multiply(policy.outputUsdPerMillion()))
-                .divide(MILLION).add(policy.inputCountRequestMaxUsd());
+                .divide(MILLION);
+        boolean unverifiedCounting = policy.inputCountCostPolicy() == InputCountCostPolicy.ALLOW_UNVERIFIED;
+        BigDecimal maximum = unverifiedCounting
+                ? inferenceMaximum : inferenceMaximum.add(policy.inputCountRequestMaxUsd());
         if (reservedUsd.add(maximum).compareTo(policy.maxSpendUsd()) > 0) {
             throw new IllegalStateException("OpenAI evaluation spend cap reached before HTTP dispatch");
         }
-        var reservation = new Reservation(reservations + 1, maximum, context.caseId());
+        var reservation = new Reservation(reservations + 1, unverifiedCounting ? null : maximum, context.caseId());
         // Persist before either counting or inference; failed/unknown requests keep their entire reservation.
         var event = JSON.createObjectNode().put("stage", "RESERVED").put("ordinal", reservation.ordinal())
                 .put("caseId", context.caseId()).put("requestId", context.requestId()).put("model", limits.model())
                 .put("mode", context.mode().name())
-                .put("maximumUsd", maximum).put("batchReservedUsd", reservedUsd.add(maximum));
+                .put("inputCountCostPolicy", policy.inputCountCostPolicy().name())
+                .put("inputCountBillingConfirmed", policy.inputCountBillingConfirmed())
+                .put("inputCountRequestMaxUsd", policy.inputCountRequestMaxUsd())
+                .put("totalCostBoundConfirmed", !unverifiedCounting)
+                .put("maximumUsd", reservation.maximumUsd())
+                .put("batchReservedUsd", unverifiedCounting ? null : reservedUsd.add(maximum))
+                .put("inferenceMaximumUsd", inferenceMaximum)
+                .put("inferenceBatchReservedUsd", reservedInferenceUsd.add(inferenceMaximum));
         persist(event.toString());
         reservedUsd = reservedUsd.add(maximum);
+        reservedInferenceUsd = reservedInferenceUsd.add(inferenceMaximum);
         reservations++;
         caseRequests.put(context.caseId(), context.requestId());
         caseCalls.merge(context.caseId(), 1, Integer::sum);
         return reservation;
+    }
+
+    private void requireInputCountCostPolicy() {
+        if (policy.inputCountCostPolicy() == InputCountCostPolicy.ALLOW_UNVERIFIED) {
+            if (policy.inputCountBillingConfirmed() || policy.inputCountBillingSource() != null
+                    || policy.inputCountRequestMaxUsd() != null) {
+                throw new IllegalStateException("Unverified counting cost must remain unconfirmed with null price and source");
+            }
+            return;
+        }
+        if (!policy.inputCountBillingConfirmed() || policy.inputCountBillingSource() == null
+                || policy.inputCountBillingSource().isBlank()) {
+            throw new IllegalStateException("OpenAI input-count billing confirmation required unless explicitly waived");
+        }
+        requireNonNegative(policy.inputCountRequestMaxUsd());
     }
 
     public synchronized void observe(Reservation reservation, TokenBudget.Receipt receipt, TokenBudget.Count countedInput) {
@@ -130,7 +170,9 @@ public class OpenAiBatchBudget {
         BigDecimal usageUpperCost = BigDecimal.valueOf(usage.inputTokens()).multiply(policy.inputUsdPerMillion())
                 .add(BigDecimal.valueOf(usage.outputTokens()).multiply(policy.outputUsdPerMillion())).divide(MILLION);
         var event = JSON.createObjectNode().put("stage", "USAGE_OBSERVED").put("ordinal", reservation.ordinal())
-                .put("inferenceUsageCostWithoutCacheDiscountUsd", usageUpperCost).put("invoiceConfirmed", false);
+                .put("inferenceUsageCostWithoutCacheDiscountUsd", usageUpperCost).put("invoiceConfirmed", false)
+                .put("inputCountBillingConfirmed", policy.inputCountBillingConfirmed())
+                .putNull("inputCountCostUsd").putNull("totalCostUsd");
         event.set("usage", JSON.valueToTree(usage));
         persist(event.toString());
     }
