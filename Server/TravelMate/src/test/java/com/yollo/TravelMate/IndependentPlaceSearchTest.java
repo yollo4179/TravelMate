@@ -164,10 +164,10 @@ class IndependentPlaceSearchTest {
         var actual = new PlaceSemanticSearchClient(mock(JdbcTemplate.class), mapper, mock(TransactionTemplate.class),
                 mock(SearchTracing.class), "mock-topic", 1);
         JsonNode kafka = ReflectionTestUtils.invokeMethod(actual, "buildRequest", UUID.randomUUID(), request.query(),
-                request.region(), request.city(), "공원", request.limit(), request.area().toPlanArea(), request.rankingMode(), request.excludePlaceIds());
+                request.region(), request.city(), "관광지", request.limit(), request.area().toPlanArea(), request.rankingMode(), request.excludePlaceIds());
         assertEquals("서울", kafka.path("filters").path("region").asText());
         assertEquals("종로", kafka.path("filters").path("city").asText());
-        assertEquals("공원", kafka.path("filters").path("category").asText());
+        assertEquals("관광지", kafka.path("filters").path("category").asText());
         assertEquals(378, kafka.path("filters").path("exclude_place_ids").get(0).asInt());
         assertEquals(500, kafka.path("filters").path("area").path("radius_meters").asInt());
         assertEquals(37.57, kafka.path("filters").path("area").path("center").path("lat").asDouble());
