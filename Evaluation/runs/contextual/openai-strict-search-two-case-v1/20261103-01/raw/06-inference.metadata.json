@@ -1,0 +1,10 @@
+{
+  "kind": "inference",
+  "route": "/v1/responses",
+  "model": "gpt-5.4-mini-2026-03-17",
+  "request_transfer_encoding": "chunked",
+  "request_content_length": null,
+  "http_status": 200,
+  "provider_request_id": "req_f15f25ee2c8a41d9b3b3517901fbe142",
+  "duration_ms": 1713.5378000093624
+}

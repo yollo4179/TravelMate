@@ -1,0 +1,119 @@
+{
+  "completion_scope": "existing_two_questions_openai_strict_search_tool_connection_only",
+  "base_develop": "49ddb1de91e818ad329c5b0e9eea3212216bf973",
+  "implementation_commits": {
+    "execution_policy": "430f2f49529f1f654507f00440408e4f0a1b7c44",
+    "category_contract": "7441b2fd3e29e985f3a94f039d11dca0e4331c4e",
+    "recorded_transport": "85f119fe645613af1b1a32797b5140b7ea76fd88"
+  },
+  "execution_preceded_commit_packaging": true,
+  "tested_executable_sources_unchanged": true,
+  "no_rebuild_retest_paid_call_or_deployment_during_packaging": true,
+  "source_versions": [
+    {
+      "path": "Server/TravelMate/src/main/java/com/yollo/TravelMate/domain/conversation/tool/PlaceSearchCriteriaResolver.java",
+      "executed_source_sha256": "a41a3ff2ff2bf45bb91c5c6ed1dfbd7e97a3e6e337c9cf7155b772a43b73eee5",
+      "committed_blob_id": "9e973e33a0739664a36273683c2d2b3e0eb4f4a6",
+      "committed_blob_sha256": "29bc54816755a8e7c71d45a6123a38231253bdb5a7af2230a189c059f347cfda",
+      "only_eol_normalization_if_bytes_differ": true
+    },
+    {
+      "path": "Server/TravelMate/src/main/java/com/yollo/TravelMate/domain/conversation/tool/SearchPlacesContract.java",
+      "executed_source_sha256": "0021578c0fa15128c87b3878b0b00b5259b58739cd1096d653a5aa0254a295cd",
+      "committed_blob_id": "8bba927c2009b81ec026aa5573e9c80ea9babe66",
+      "committed_blob_sha256": "e2ff3c6df0aeece74c9fa8b8b60aca16316c6abac0279b3ff4e83b73edc99583",
+      "only_eol_normalization_if_bytes_differ": true
+    },
+    {
+      "path": "Server/TravelMate/src/main/java/com/yollo/TravelMate/domain/conversation/tool/SearchPlacesTool.java",
+      "executed_source_sha256": "ac7e434197db5c1ddcdd81d1eb341a55f1a30613d34d65ec4c483f29c2fdd8b5",
+      "committed_blob_id": "ba9d39824bb9406ead99911164bae20dd2e23272",
+      "committed_blob_sha256": "266893246305256b04d8064c29246736116f9337126041d211a1966915b99246",
+      "only_eol_normalization_if_bytes_differ": true
+    },
+    {
+      "path": "Server/TravelMate/src/main/java/com/yollo/TravelMate/domain/place/service/PlaceSemanticSearchService.java",
+      "executed_source_sha256": "2d3939cb1f8a2e93e28dc7b04c117f36ac76a9134c14a3a7470e4e8c9559b5b4",
+      "committed_blob_id": "7039b469601e535cbc612ce7bd9748620c6266d9",
+      "committed_blob_sha256": "3d10ad624070505c1bdd69b551640d9b6afb2f934958fa8a4e7ef728290906bb",
+      "only_eol_normalization_if_bytes_differ": true
+    },
+    {
+      "path": "Server/TravelMate/src/test/java/com/yollo/TravelMate/IndependentPlaceSearchTest.java",
+      "executed_source_sha256": "9b0c5525e30f57504baa4a5a690e9945b10c6a2c65e64e06dc626965c57889f2",
+      "committed_blob_id": "826d4cb63c3d70f3f31ee345c480ba4e5da764bf",
+      "committed_blob_sha256": "4c50427eb3feaa653e48676e8ff6bb5b7af8ceaf4a74ee023dc3bda14e5ee229",
+      "only_eol_normalization_if_bytes_differ": true
+    },
+    {
+      "path": "Server/TravelMate/src/main/java/com/yollo/TravelMate/domain/place/enums/PlaceSearchCategories.java",
+      "executed_source_sha256": "95daa93f47cb8dc6346cd05411b74978bfba39d5fc50673d25cbbdb6947ebe99",
+      "committed_blob_id": "a8a12dfd4d0fd1c6d9ec5a5195c9707446825ac2",
+      "committed_blob_sha256": "95daa93f47cb8dc6346cd05411b74978bfba39d5fc50673d25cbbdb6947ebe99",
+      "only_eol_normalization_if_bytes_differ": false
+    },
+    {
+      "path": "Server/TravelMate/src/test/java/com/yollo/TravelMate/SearchCategoryContractTest.java",
+      "executed_source_sha256": "410a94d29501fcc62f5e8c0f7095963fe7fa8f058729367e88dc7f30f1252144",
+      "committed_blob_id": "2a08d43a81785188e31eeafbc94b49c836688cd5",
+      "committed_blob_sha256": "410a94d29501fcc62f5e8c0f7095963fe7fa8f058729367e88dc7f30f1252144",
+      "only_eol_normalization_if_bytes_differ": false
+    },
+    {
+      "path": "Server/TravelMate/src/test/resources/search-category/openai-palaces-03.response.json",
+      "executed_source_sha256": "20ca00a985959a22bb22221a41a83efba18803a42f758cec6de1bf3fabd1e813",
+      "committed_blob_id": "e38afbedd7996fb0220b014a9db6037d994ed0e7",
+      "committed_blob_sha256": "20ca00a985959a22bb22221a41a83efba18803a42f758cec6de1bf3fabd1e813",
+      "only_eol_normalization_if_bytes_differ": false
+    },
+    {
+      "path": "Server/TravelMate/src/test/resources/search-category/provenance.json",
+      "executed_source_sha256": "f3100d8b0cd30d990ed5884dba5b687dd625a8ab1a47ebf53d9014cf00a53a26",
+      "committed_blob_id": "fe379cf36fa346849c31e863b874bd27d1f2dabc",
+      "committed_blob_sha256": "f3100d8b0cd30d990ed5884dba5b687dd625a8ab1a47ebf53d9014cf00a53a26",
+      "only_eol_normalization_if_bytes_differ": false
+    },
+    {
+      "path": "Server/TravelMate/src/main/java/com/yollo/TravelMate/ai/llm/budget/OpenAiBatchBudget.java",
+      "executed_source_sha256": "9a960ce3e3b911792374f90ec9ab2d16ab1f893ad4426354cdfe78cf36e348ae",
+      "committed_blob_id": "eb7ac297d1dfc286e55abf955fbc0950dcf6a60a",
+      "committed_blob_sha256": "384854e134582e589fa5481ec55b18ed13f44b7b6621b10f7d5f16a090217520",
+      "only_eol_normalization_if_bytes_differ": true
+    },
+    {
+      "path": "Server/TravelMate/src/test/java/com/yollo/TravelMate/OpenAiBatchBudgetTest.java",
+      "executed_source_sha256": "6934e76532f474be4b82cb30753828633d7c00e39d21bc5fc159fd420c5b83eb",
+      "committed_blob_id": "a9ea5045b5458653129b2305c7ee9a9327a62f9f",
+      "committed_blob_sha256": "7262403f1377002065606d4ae32e426f7f16a73673b2ca39626acf50ba549f12",
+      "only_eol_normalization_if_bytes_differ": true
+    }
+  ],
+  "runtime_artifacts": {
+    "transport/run-once.py": "e2fc22f6d48a1c77f05977528699f94d29962c3bab404bfcf76937f4b1067807",
+    "policy/approved-inference-policy.json": "a627df25919e0203bf9756a3aa34e8e09bd4e7f194ddf3b01e06ab46e5e2121a",
+    "policy/execution-scope.json": "5b0c092aeb731a85b092740d88d6006395175d2a2805e1f55aa641fdaaf366b5",
+    "policy/provider-schema.expected.json": "f82dd8d3381e6826ea1c87544ca3bf934c79f11a0bfc3b4f4498bdbb2e1eb563",
+    "policy/inference-reservations.jsonl": "ccefd0ac29b8962472bc232d4aa0c319fb7889958267708bd428009ef5d8d820",
+    "run.json": "29abac07bdfc96c7c5206afd196537ff3c81362233730ef0dec3403fa5b9da68",
+    "observations-summary.json": "0d8966d8e90b4e4c06777e79a2230632275c72f817d305d259f3d76e25256ec7"
+  },
+  "executed_jar_sha256": "48b849b79f2381b85fbc1fb131532b720a317d2e85e23f3b4d51f47fe6462c79",
+  "recorded_transport_committed_blob_id": "0e6c33fd37e1ac461a3f706be4f20d4e6c3c2177",
+  "existing_offline_checks": {
+    "category_65": "checks/category-junit/",
+    "packaged_51": "checks/packaged-junit/",
+    "required_12": "checks/required-comparison.json",
+    "chunked_4_requests": "checks/chunked-transport/verification.json"
+  },
+  "unresolved_candidates": [
+    "Unrequested quiet/walking query expansion",
+    "Missing formal citations for Nakseonjae and Unhyeongung"
+  ],
+  "not_validated": [
+    "Overall call reliability",
+    "Average performance and p95",
+    "All eight categories",
+    "Itinerary generation and modification",
+    "Repeat-run stability"
+  ]
+}

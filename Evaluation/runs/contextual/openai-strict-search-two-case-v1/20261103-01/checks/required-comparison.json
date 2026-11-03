@@ -1,0 +1,94 @@
+{
+  "status": "PASSED",
+  "tests": 12,
+  "failures": 0,
+  "external_calls": 0,
+  "preserved_actual_request_sha256": "48a8de7d27a5bf29cf4c84040dc3b65fec832f043143f96c0b490270746f1171",
+  "previous_request_bytes_and_hash_unchanged": true,
+  "cases": [
+    {
+      "case": "preserved_real_request_required_order",
+      "accepted": true,
+      "raw_request_sha256": "48a8de7d27a5bf29cf4c84040dc3b65fec832f043143f96c0b490270746f1171",
+      "raw_request_preserved": true,
+      "external_calls": 0
+    },
+    {
+      "case": "nested_required_order",
+      "accepted": true,
+      "raw_request_sha256": "e278f1dd1a9a2e805d4f6f8ec13bb1bbf79fd025fbb38ba4aae4cc1b92a9d055",
+      "raw_request_preserved": true,
+      "external_calls": 0
+    },
+    {
+      "case": "required_field_removed",
+      "accepted": false,
+      "raw_request_sha256": "383efe5763a0d96cc6ec4c03e5c9abe0b34615d2396c4fe60ef90527b46bc701",
+      "raw_request_preserved": true,
+      "external_calls": 0
+    },
+    {
+      "case": "required_field_added",
+      "accepted": false,
+      "raw_request_sha256": "d3c33ba199b3cf5b9f28a7a31ed2cf6cdbebdd9773d33635269295611c33d52e",
+      "raw_request_preserved": true,
+      "external_calls": 0
+    },
+    {
+      "case": "required_field_duplicated",
+      "accepted": false,
+      "raw_request_sha256": "668556455d788f4d3ebcbc497d5c9d148fa8dcc74d99d82e3cb06c209616d38c",
+      "raw_request_preserved": true,
+      "external_calls": 0
+    },
+    {
+      "case": "category_enum_removed",
+      "accepted": false,
+      "raw_request_sha256": "6f5c08e85f991be2ca230d264012f87b446a85a519177d644516aff24fc87a15",
+      "raw_request_preserved": true,
+      "external_calls": 0
+    },
+    {
+      "case": "category_enum_added",
+      "accepted": false,
+      "raw_request_sha256": "39c4ecd029706c857e87b720e1e78246aa38d23d7400b0322a85fa0959e60eb1",
+      "raw_request_preserved": true,
+      "external_calls": 0
+    },
+    {
+      "case": "category_enum_order_changed",
+      "accepted": false,
+      "raw_request_sha256": "addf247d8109628911aaf6fe6ef59385353602f9bd861339eda06473c6700f3b",
+      "raw_request_preserved": true,
+      "external_calls": 0
+    },
+    {
+      "case": "category_type_changed",
+      "accepted": false,
+      "raw_request_sha256": "b771bea04ba466e610fff018ecfd89b1b048d071181ee75d1b00cbe3e3b0b399",
+      "raw_request_preserved": true,
+      "external_calls": 0
+    },
+    {
+      "case": "additional_fields_allowed",
+      "accepted": false,
+      "raw_request_sha256": "7a47e889c866503daa03e9e786b26aaeab7e0177effb4f67b79606c604784088",
+      "raw_request_preserved": true,
+      "external_calls": 0
+    },
+    {
+      "case": "nested_additional_fields_allowed",
+      "accepted": false,
+      "raw_request_sha256": "96da6bd0e03c2e20aa40fbbe8ec3dd08b06a59ec224c21cb594abc0c2573fa32",
+      "raw_request_preserved": true,
+      "external_calls": 0
+    },
+    {
+      "case": "required_type_changed",
+      "accepted": false,
+      "raw_request_sha256": "11d6dd75bd9962a13fb59cbe1a7c532228cf9adece284c1817726e840f7caded",
+      "raw_request_preserved": true,
+      "external_calls": 0
+    }
+  ]
+}

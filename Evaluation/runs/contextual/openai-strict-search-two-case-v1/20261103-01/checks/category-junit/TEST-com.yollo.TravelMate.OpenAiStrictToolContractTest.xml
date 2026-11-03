@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.yollo.TravelMate.OpenAiStrictToolContractTest" tests="14" skipped="0" failures="0" errors="0" timestamp="2026-11-02T17:35:45.948Z" hostname="DESKTOP-MS327CL" time="0.213">
+  <properties/>
+  <testcase name="strictProjectionAndCanonicalContractRemainDistinctAndExportable()" classname="com.yollo.TravelMate.OpenAiStrictToolContractTest" time="0.009"/>
+  <testcase name="[1] missing=query" classname="com.yollo.TravelMate.OpenAiStrictToolContractTest" time="0.008"/>
+  <testcase name="[2] missing=limit" classname="com.yollo.TravelMate.OpenAiStrictToolContractTest" time="0.001"/>
+  <testcase name="[3] missing=region" classname="com.yollo.TravelMate.OpenAiStrictToolContractTest" time="0.001"/>
+  <testcase name="[4] missing=city" classname="com.yollo.TravelMate.OpenAiStrictToolContractTest" time="0.001"/>
+  <testcase name="[5] missing=category" classname="com.yollo.TravelMate.OpenAiStrictToolContractTest" time="0.001"/>
+  <testcase name="[6] missing=exclude_place_ids" classname="com.yollo.TravelMate.OpenAiStrictToolContractTest" time="0.001"/>
+  <testcase name="[7] missing=area" classname="com.yollo.TravelMate.OpenAiStrictToolContractTest" time="0.001"/>
+  <testcase name="nullDefaultIsExplicitAndNativeContinuationIsNeverRewritten()" classname="com.yollo.TravelMate.OpenAiStrictToolContractTest" time="0.147"/>
+  <testcase name="[1] invalid=extra" classname="com.yollo.TravelMate.OpenAiStrictToolContractTest" time="0.002"/>
+  <testcase name="[2] invalid=blank" classname="com.yollo.TravelMate.OpenAiStrictToolContractTest" time="0.001"/>
+  <testcase name="[3] invalid=duplicates" classname="com.yollo.TravelMate.OpenAiStrictToolContractTest" time="0.001"/>
+  <testcase name="[4] invalid=range" classname="com.yollo.TravelMate.OpenAiStrictToolContractTest" time="0.0"/>
+  <testcase name="[5] invalid=tooLong" classname="com.yollo.TravelMate.OpenAiStrictToolContractTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

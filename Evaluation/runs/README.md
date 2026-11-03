@@ -1,5 +1,9 @@
 # 실제 평가 실행 결과
 
+[OpenAI strict 기존 2문항 검색 도구 연결 검증 완료](contextual/openai-strict-search-two-case-v1/20261103-01/REPORT.md)는
+문항별 1회 관찰과 category 선택·적용 필터·검색 결과·설명·시간·비용 기록이다.
+검색어 확장과 일부 정식 인용 부족은 미해결 개선 후보로 남겼다. 전체 호출 신뢰성·평균 성능·p95·8개 분류·일정 생성·수정 검증을 뜻하지 않는다.
+
 검색 수집기의 `attempts.jsonl`은 전송 전 예약과 원본 요청·응답을 기록한다.
 MOCK·failed·not_run은 실제 성공·지연·품질 집계와 구분한다.
 [검색 평가 도구 계약](../tracks/search/README.md)을 참고한다. 과거 기록과 동결 자료는 덮어쓰지 않는다.

@@ -1,0 +1,38 @@
+{
+  "status": "PASSED",
+  "external_calls": 0,
+  "search_calls": 0,
+  "fixture_only": true,
+  "model_quality_evaluated": false,
+  "real_java_client": true,
+  "requests": [
+    {
+      "route": "/v1/responses/input_tokens",
+      "bytes": 5855,
+      "sha256": "bce2ea6de98da173177ef5858bb36b85ba5067aa46165ea1deebd482695cc184",
+      "upstream_bytes_equal_recorded_bytes": true,
+      "request_transfer_encoding": "chunked"
+    },
+    {
+      "route": "/v1/responses",
+      "bytes": 6000,
+      "sha256": "f1a5d0561a287a4321e4083583b5f7d3df289af9fd39fdd0ab6ed2c0786fc78f",
+      "upstream_bytes_equal_recorded_bytes": true,
+      "request_transfer_encoding": "chunked"
+    },
+    {
+      "route": "/v1/responses/input_tokens",
+      "bytes": 5928,
+      "sha256": "076c85339d6baf1844e5fe0e0212d35f0490229cb222925059e5e94c3073c9d9",
+      "upstream_bytes_equal_recorded_bytes": true,
+      "request_transfer_encoding": "chunked"
+    },
+    {
+      "route": "/v1/responses",
+      "bytes": 6073,
+      "sha256": "a707d809b897e692481a3f36db505c7adbe8e115ec5a60b33d5805006a704e76",
+      "upstream_bytes_equal_recorded_bytes": true,
+      "request_transfer_encoding": "chunked"
+    }
+  ]
+}

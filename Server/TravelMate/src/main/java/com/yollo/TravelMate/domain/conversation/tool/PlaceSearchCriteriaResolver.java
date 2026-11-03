@@ -10,6 +10,7 @@ import com.yollo.TravelMate.domain.conversation.data.ConversationRequest;
 import com.yollo.TravelMate.domain.place.data.request.PlaceSearchContext;
 import com.yollo.TravelMate.domain.place.data.request.PlaceSearchRequest;
 import com.yollo.TravelMate.domain.place.service.PlaceSemanticSearchService.RankingMode;
+import com.yollo.TravelMate.domain.place.enums.PlaceSearchCategories;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -44,6 +45,7 @@ public class PlaceSearchCriteriaResolver {
         String region = merge("region", text(arguments, "region"), context.region(), contextOrigin, provenance);
         String city = merge("city", text(arguments, "city"), context.city(), contextOrigin, provenance);
         String category = merge("category", text(arguments, "category"), context.category(), contextOrigin, provenance);
+        PlaceSearchCategories.validate(category);
         var toolArea = area(arguments.get("area"));
         var effectiveArea = merge("area", toolArea, context.area(), contextOrigin, provenance);
         var excluded = exclusions(arguments.get("exclude_place_ids"));

@@ -1,3 +1,5 @@
 Docker/*.sh text eol=lf
 Docker/*.py text eol=lf
 Server/TravelMate/gradlew text eol=lf
+Server/TravelMate/src/test/resources/search-category/** -text -whitespace
+Evaluation/runs/contextual/openai-strict-search-two-case-v1/** -text -whitespace

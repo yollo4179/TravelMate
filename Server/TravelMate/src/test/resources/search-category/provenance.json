@@ -1,0 +1,9 @@
+{
+  "case_id": "PLR-TM-palaces-03",
+  "model": "gpt-5.4-mini-2026-03-17",
+  "input_sha256": "42a6a1b0fb5c40e8be6c37f1cf5e685c982b4d927151646eb6b2467478d8246d",
+  "source": "openai-strict-live-20261103-02/results/06-inference.response.json",
+  "provider_response_sha256": "20ca00a985959a22bb22221a41a83efba18803a42f758cec6de1bf3fabd1e813",
+  "quality_issue": "Unrecognized category filter; raw provider arguments must be rejected without repair",
+  "offline_regression_only": true
+}

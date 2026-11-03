@@ -1,0 +1,8 @@
+﻿{
+    "commandLine":  "\"C:\\Program Files\\BellSoft\\LibericaJDK-21\\bin\\java.exe\" -jar C:\\ssafy\\Travelmate\\.local-backups\\openai-strict-live-20261103-04\\spring.jar --spring.config.additional-location=file:C:/ssafy/Travelmate/.local-backups/openai-strict-live-20261103-04/spring.properties ",
+    "listener_matches_pid":  true,
+    "pid":  16600,
+    "jar_sha256":  "48b849b79f2381b85fbc1fb131532b720a317d2e85e23f3b4d51f47fe6462c79",
+    "checked_at":  "2026-11-03T02:52:33.3785766+09:00",
+    "port":  18080
+}

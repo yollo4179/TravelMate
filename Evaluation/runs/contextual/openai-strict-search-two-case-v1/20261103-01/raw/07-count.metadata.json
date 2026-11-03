@@ -1,0 +1,10 @@
+{
+  "kind": "count",
+  "route": "/v1/responses/input_tokens",
+  "model": "gpt-5.4-mini-2026-03-17",
+  "request_transfer_encoding": "chunked",
+  "request_content_length": null,
+  "http_status": 200,
+  "provider_request_id": "req_716e7fd022ab4ba18c02e505d90c92d3",
+  "duration_ms": 779.0851999889128
+}

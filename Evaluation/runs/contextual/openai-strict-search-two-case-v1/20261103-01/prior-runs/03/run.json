@@ -1,0 +1,35 @@
+{
+  "state": "STOPPED_ON_FIRST_ERROR",
+  "failure": {
+    "type": "RuntimeError",
+    "message": "First execution error: COUNT_UNAVAILABLE"
+  },
+  "model": "gpt-5.4-mini-2026-03-17",
+  "case_results": [
+    {
+      "case_id": "PLR-TM-palaces-01",
+      "http_status": 200,
+      "duration_ms": 513.9175000367686,
+      "request_id": "a6c7375e-74af-4aa6-99ec-fe6891d8c2af",
+      "termination": "COUNT_UNAVAILABLE",
+      "type": "ERROR",
+      "model_turns": 1
+    }
+  ],
+  "not_run_cases": [
+    "PLR-TM-palaces-03"
+  ],
+  "inference_attempts": 0,
+  "input_count_attempts": 0,
+  "search_tool_attempts": 0,
+  "usage_rows": [],
+  "input_count_cost_usd": null,
+  "total_billed_cost_usd": null,
+  "total_cost_bound_usd": null,
+  "inference_cost_limit_usd": "0.047616",
+  "invoice_confirmed": false,
+  "retries": 0,
+  "plan_calls": 0,
+  "judge_calls": 0,
+  "finished_at": "2026-11-02T17:44:30.022466+00:00"
+}

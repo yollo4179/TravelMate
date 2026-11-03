@@ -14,6 +14,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.springframework.test.web.client.MockRestServiceServer;
 import org.springframework.web.client.RestClient;
 import org.springframework.http.MediaType;
@@ -43,6 +44,78 @@ class OpenAiBatchBudgetTest {
     private OpenAiBatchBudget budget(ObjectNode policy) throws Exception {
         Files.writeString(directory.resolve("policy.json"), policy.toString());
         return new OpenAiBatchBudget(directory.resolve("policy.json").toString());
+    }
+
+    private ObjectNode unverifiedPolicy() {
+        var unverified = policy().put("inputCountCostPolicy", "ALLOW_UNVERIFIED")
+                .put("maxInputCountRequests", 4).put("inputCountBillingConfirmed", false)
+                .put("maxSpendUsd", new BigDecimal("0.00072"));
+        unverified.putNull("inputCountBillingSource");
+        unverified.putNull("inputCountRequestMaxUsd");
+        return unverified;
+    }
+
+    @Test
+    void explicitUnverifiedAllowancePreservesNullCostAndOnlyBoundsInference() throws Exception {
+        var allowance = budget(unverifiedPolicy());
+        try (var scope = context("C1", "R1")) {
+            assertNull(allowance.reserve(limits).maximumUsd());
+        }
+        var event = mapper.readTree(Files.readString(directory.resolve("ledger.jsonl")));
+        assertFalse(event.path("inputCountBillingConfirmed").asBoolean());
+        assertFalse(event.path("totalCostBoundConfirmed").asBoolean());
+        assertTrue(event.path("inputCountRequestMaxUsd").isNull());
+        assertTrue(event.path("maximumUsd").isNull());
+        assertTrue(event.path("batchReservedUsd").isNull());
+        assertEquals(new BigDecimal("0.00018"), event.path("inferenceMaximumUsd").decimalValue());
+        assertEquals("ALLOW_UNVERIFIED", event.path("inputCountCostPolicy").asText());
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"missingAllowance", "unapproved", "claimedConfirmation", "zeroPrice", "claimedSource"})
+    void unknownCountingCostsRemainBlockedWithoutAnHonestExplicitAllowance(String defect) throws Exception {
+        var configuration = unverifiedPolicy();
+        java.util.Map.<String, Runnable>of(
+                "missingAllowance", () -> configuration.remove("inputCountCostPolicy"),
+                "unapproved", () -> configuration.put("approved", false),
+                "claimedConfirmation", () -> configuration.put("inputCountBillingConfirmed", true),
+                "zeroPrice", () -> configuration.put("inputCountRequestMaxUsd", 0),
+                "claimedSource", () -> configuration.put("inputCountBillingSource", "not verified")
+        ).get(defect).run();
+        var allowance = budget(configuration);
+        try (var scope = context("C1", "R1")) {
+            assertThrows(IllegalStateException.class, () -> allowance.reserve(limits));
+        }
+        assertFalse(Files.exists(directory.resolve("ledger.jsonl")));
+    }
+
+    @ParameterizedTest
+    @CsvSource({"4,4,4", "4,3,3", "3,4,3"})
+    void unverifiedAllowanceStillEnforcesBothCallCaps(
+            int inferenceCap,
+            int countingCap,
+            int permitted
+    ) throws Exception {
+        var allowance = budget(unverifiedPolicy().put("maxCalls", inferenceCap).put("maxInputCountRequests", countingCap));
+        for (int index = 0; index < permitted; index++) {
+            String caseId = index < 2 ? "C1" : "C2";
+            try (var scope = context(caseId, caseId)) {
+                allowance.reserve(limits);
+            }
+        }
+        try (var scope = context("C2", "C2")) {
+            assertThrows(IllegalStateException.class, () -> allowance.reserve(limits));
+        }
+        assertEquals(permitted, Files.readAllLines(directory.resolve("ledger.jsonl")).size());
+    }
+
+    @Test
+    void unverifiedAllowanceCannotExceedTheInferenceSpendLimit() throws Exception {
+        var allowance = budget(unverifiedPolicy().put("maxSpendUsd", new BigDecimal("0.000179")));
+        try (var scope = context("C1", "R1")) {
+            assertThrows(IllegalStateException.class, () -> allowance.reserve(limits));
+        }
+        assertFalse(Files.exists(directory.resolve("ledger.jsonl")));
     }
 
     private ObservationContext.Scope context(String caseId, String requestId) {

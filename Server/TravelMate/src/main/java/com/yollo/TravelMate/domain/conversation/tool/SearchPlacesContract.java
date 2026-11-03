@@ -5,6 +5,7 @@ import java.util.Set;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.yollo.TravelMate.domain.place.enums.PlaceSearchCategories;
 
 public final class SearchPlacesContract {
     private static final JsonNodeFactory JSON = JsonNodeFactory.instance;
@@ -36,11 +37,14 @@ public final class SearchPlacesContract {
         optionalExclusions.set("default", JSON.arrayNode());
         optionalExclusions.put("description", "생략 또는 null이면 빈 목록. searchContext의 제외 ID와 합친다.");
         return ToolSchemas.object(Map.of(
-                "query", ToolSchemas.text(2000).put("pattern", "\\S").put("description", "필수 검색어. 사용자 질문에 맞춰 직접 작성하며 서버가 대신 채우지 않는다."),
+                "query", ToolSchemas.text(2000)
+                        .put("pattern", "\\S")
+                        .put("description", "필수 검색어. 궁·조용한·왕실 가족의 거처 같은 세부 장소 유형·분위기·관계 조건을 여기에 유지한다. "
+                                + "사용자 질문에 맞춰 직접 작성하며 서버가 대신 채우지 않는다."),
                 "limit", ToolSchemas.integer(1, 20).put("default", 10),
                 "region", inheritedText(),
                 "city", inheritedText(),
-                "category", inheritedText(),
+                "category", categoryFilter(),
                 "exclude_place_ids", optionalExclusions,
                 "area", ToolSchemas.nullable(ToolSchemas.object(Map.of(
                         "type", JSON.objectNode().put("type", "string").set("enum", JSON.arrayNode().add("CIRCLE")),
@@ -55,5 +59,14 @@ public final class SearchPlacesContract {
     private static ObjectNode inheritedText() {
         return ToolSchemas.nullable(ToolSchemas.text(200).put("pattern", "\\S"))
                 .put("description", "선택 필터. 생략 또는 null이면 searchContext 값을 사용한다. 둘 다 없으면 제한 없음.");
+    }
+
+    private static ObjectNode categoryFilter() {
+        var category = JSON.objectNode().put("type", "string");
+        var allowed = category.putArray("enum");
+        PlaceSearchCategories.allowedValues().forEach(allowed::add);
+        return ToolSchemas.nullable(category).put("description",
+                "DB의 대분류와 정확히 일치하는 enum 값만 사용한다. 세부 장소 유형·분위기·관계는 query에 유지한다. "
+                        + "적절한 분류를 확정할 수 없으면 생략 또는 null로 두며 searchContext 값을 상속한다. 둘 다 없으면 제한 없음. 서버는 분류를 자동 보정하지 않는다.");
     }
 }

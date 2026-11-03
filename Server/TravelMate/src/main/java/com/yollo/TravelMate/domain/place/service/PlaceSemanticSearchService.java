@@ -2,6 +2,7 @@ package com.yollo.TravelMate.domain.place.service;
 
 import java.util.List;
 import com.yollo.TravelMate.domain.place.data.request.PlaceSearchRequest;
+import com.yollo.TravelMate.domain.place.enums.PlaceSearchCategories;
 import jakarta.validation.Validation;
 
 import org.springframework.stereotype.Service;
@@ -27,6 +28,7 @@ public class PlaceSemanticSearchService {
     private final PlaceSemanticSearchClient placeSemanticSearchClient;
 
     public List<PlaceSemanticSearchResult> search(PlaceSearchRequest request) {
+        PlaceSearchCategories.validate(request.category());
         if (!VALIDATOR.validate(request).isEmpty()) throw new IllegalArgumentException("Invalid search criteria");
         return placeSemanticSearchClient.search(
                 request.query(),
@@ -76,6 +78,7 @@ public class PlaceSemanticSearchService {
         if (limit < 1 || limit > MAX_SEARCH_LIMIT) {
             throw new IllegalArgumentException("검색 결과 수는 1 이상 " + MAX_SEARCH_LIMIT + " 이하여야 합니다.");
         }
+        PlaceSearchCategories.validate(category);
         return placeSemanticSearchClient.search(query, region, city, category, limit, area, rankingMode);
     }
 }

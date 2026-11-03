@@ -1,0 +1,628 @@
+{
+  "copied_artifacts": [
+    {
+      "path": "raw/01-count.metadata.json",
+      "origin": "openai-strict-live-20261103-04/results/01-count.metadata.json",
+      "sha256": "05f29f5e3f586d54d40ddc2348ce029b7e5b6bd4cefa487ecc027722171f160c",
+      "copied_byte_for_byte": true
+    },
+    {
+      "path": "raw/01-count.request.json",
+      "origin": "openai-strict-live-20261103-04/results/01-count.request.json",
+      "sha256": "2ef1c595de3e1022bed20415dde4d7a7a17b7b7c25375aad80fd995aeab01308",
+      "copied_byte_for_byte": true
+    },
+    {
+      "path": "raw/01-count.response.json",
+      "origin": "openai-strict-live-20261103-04/results/01-count.response.json",
+      "sha256": "656a58ff31cde776dcc3f630bd6defa59d67929d747906e95dbec60f6719d38d",
+      "copied_byte_for_byte": true
+    },
+    {
+      "path": "raw/02-inference.metadata.json",
+      "origin": "openai-strict-live-20261103-04/results/02-inference.metadata.json",
+      "sha256": "ef0a0101072775d1919566e82b738bd9c0ed75b493046387ca6b002ec397e2b2",
+      "copied_byte_for_byte": true
+    },
+    {
+      "path": "raw/02-inference.request.json",
+      "origin": "openai-strict-live-20261103-04/results/02-inference.request.json",
+      "sha256": "753e479ed721c086977909bf010c5b04a65b0e758d19f358d610204fc55ecf61",
+      "copied_byte_for_byte": true
+    },
+    {
+      "path": "raw/02-inference.response.json",
+      "origin": "openai-strict-live-20261103-04/results/02-inference.response.json",
+      "sha256": "37a3d1c2c33eb05c198cd69a875d65abb77b981f0870809d6d649bd2184a97e2",
+      "copied_byte_for_byte": true
+    },
+    {
+      "path": "raw/03-count.metadata.json",
+      "origin": "openai-strict-live-20261103-04/results/03-count.metadata.json",
+      "sha256": "677889af2a6f64963f8a59d53444bdd27d0f9538f74b4da92525bff4676f0b4d",
+      "copied_byte_for_byte": true
+    },
+    {
+      "path": "raw/03-count.request.json",
+      "origin": "openai-strict-live-20261103-04/results/03-count.request.json",
+      "sha256": "5612e0a51cd6609d5965368ce854d02355de08c025498786d208d55458973093",
+      "copied_byte_for_byte": true
+    },
+    {
+      "path": "raw/03-count.response.json",
+      "origin": "openai-strict-live-20261103-04/results/03-count.response.json",
+      "sha256": "164089dd370c94f13e1f59971a5b04ed4dab7d01b91639c92a0ec1dc0cc1671d",
+      "copied_byte_for_byte": true
+    },
+    {
+      "path": "raw/04-inference.metadata.json",
+      "origin": "openai-strict-live-20261103-04/results/04-inference.metadata.json",
+      "sha256": "2d7d3bfe6e61d7884a7137c58c7d074c3d6d853dd6bc5b85b51b03dfde4dbdf2",
+      "copied_byte_for_byte": true
+    },
+    {
+      "path": "raw/04-inference.request.json",
+      "origin": "openai-strict-live-20261103-04/results/04-inference.request.json",
+      "sha256": "cb7e09c1c5d0f9c893ea60bba3d1a04904573ea280edbff132b0fa7b5478e006",
+      "copied_byte_for_byte": true
+    },
+    {
+      "path": "raw/04-inference.response.json",
+      "origin": "openai-strict-live-20261103-04/results/04-inference.response.json",
+      "sha256": "bf015f1a37d15c47df35f82f961314c9d6cd563cf8a93bc8010103f6a615369a",
+      "copied_byte_for_byte": true
+    },
+    {
+      "path": "raw/05-count.metadata.json",
+      "origin": "openai-strict-live-20261103-04/results/05-count.metadata.json",
+      "sha256": "100ddbac2262eac2dfe71718878e70084fb7972204f92ebc4d95a6facfff8da7",
+      "copied_byte_for_byte": true
+    },
+    {
+      "path": "raw/05-count.request.json",
+      "origin": "openai-strict-live-20261103-04/results/05-count.request.json",
+      "sha256": "c8551c8260f02f72096b2f9fac71183c29be43eb3bfe231d5ee330d5f9183a30",
+      "copied_byte_for_byte": true
+    },
+    {
+      "path": "raw/05-count.response.json",
+      "origin": "openai-strict-live-20261103-04/results/05-count.response.json",
+      "sha256": "ba9f4cee124246dfd68edcb6adad4d585229fed968be0dc52b15864b0225aef7",
+      "copied_byte_for_byte": true
+    },
+    {
+      "path": "raw/06-inference.metadata.json",
+      "origin": "openai-strict-live-20261103-04/results/06-inference.metadata.json",
+      "sha256": "f4ac7cb0eae276c561e449dc0b6fe1a6088348b42a8c8b141152196adc887d72",
+      "copied_byte_for_byte": true
+    },
+    {
+      "path": "raw/06-inference.request.json",
+      "origin": "openai-strict-live-20261103-04/results/06-inference.request.json",
+      "sha256": "9b74f565bbdce8aad7865e8fb234c20ccc443a0ecc214ba82ae308b90bfba3ac",
+      "copied_byte_for_byte": true
+    },
+    {
+      "path": "raw/06-inference.response.json",
+      "origin": "openai-strict-live-20261103-04/results/06-inference.response.json",
+      "sha256": "96229208e2a0248bcb7b2a8a81b2da33631252cfac59b100bd413f237d15b315",
+      "copied_byte_for_byte": true
+    },
+    {
+      "path": "raw/07-count.metadata.json",
+      "origin": "openai-strict-live-20261103-04/results/07-count.metadata.json",
+      "sha256": "cf800bb24476dac780afce729f3378ecc721635a96208ed0994bb1d369e0174c",
+      "copied_byte_for_byte": true
+    },
+    {
+      "path": "raw/07-count.request.json",
+      "origin": "openai-strict-live-20261103-04/results/07-count.request.json",
+      "sha256": "8fbb1218b3ac8cbffa9094eb7063f03291b7e89022dabc05fc3636668c14eb8a",
+      "copied_byte_for_byte": true
+    },
+    {
+      "path": "raw/07-count.response.json",
+      "origin": "openai-strict-live-20261103-04/results/07-count.response.json",
+      "sha256": "549e5d29e85ee398887943ab321ec120bf71a1037b11f2317f7261737a1fae43",
+      "copied_byte_for_byte": true
+    },
+    {
+      "path": "raw/08-inference.metadata.json",
+      "origin": "openai-strict-live-20261103-04/results/08-inference.metadata.json",
+      "sha256": "71f19ccf307dc998ad01f811638cf776e29e3254b228707fd6bab0080e376876",
+      "copied_byte_for_byte": true
+    },
+    {
+      "path": "raw/08-inference.request.json",
+      "origin": "openai-strict-live-20261103-04/results/08-inference.request.json",
+      "sha256": "66668fce6d5e2750d1297a78189ec0f004ebba2651651fc24ec7b5160917c899",
+      "copied_byte_for_byte": true
+    },
+    {
+      "path": "raw/08-inference.response.json",
+      "origin": "openai-strict-live-20261103-04/results/08-inference.response.json",
+      "sha256": "27293118333731b5cd960ca519a62ee8aa2ebe90baf50ec68ac0dba06aca5620",
+      "copied_byte_for_byte": true
+    },
+    {
+      "path": "raw/bindings.json",
+      "origin": "openai-strict-live-20261103-04/results/bindings.json",
+      "sha256": "1880d216f55b71a29f841ec01fcccc1decd44fde10414ea8582f53552eba1179",
+      "copied_byte_for_byte": true
+    },
+    {
+      "path": "raw/execution.jsonl",
+      "origin": "openai-strict-live-20261103-04/results/execution.jsonl",
+      "sha256": "c23f2b8a7982791fb6b837eaf600d21ceb438bf19de69a160acd1e23b45c6032",
+      "copied_byte_for_byte": true
+    },
+    {
+      "path": "raw/observations-summary.json",
+      "origin": "openai-strict-live-20261103-04/results/observations-summary.json",
+      "sha256": "0d8966d8e90b4e4c06777e79a2230632275c72f817d305d259f3d76e25256ec7",
+      "copied_byte_for_byte": true
+    },
+    {
+      "path": "raw/PLR-TM-palaces-01.metadata.json",
+      "origin": "openai-strict-live-20261103-04/results/PLR-TM-palaces-01.metadata.json",
+      "sha256": "e74616d1ad0494796c50bf8ac20d4a9ea0acaa2cbb30babc4dbd38c748705062",
+      "copied_byte_for_byte": true
+    },
+    {
+      "path": "raw/PLR-TM-palaces-01.request.json",
+      "origin": "openai-strict-live-20261103-04/results/PLR-TM-palaces-01.request.json",
+      "sha256": "13b5aab64e026ee9cd00a21387c9d141d40ba120f6b3961ffa1eb586c2b3e614",
+      "copied_byte_for_byte": true
+    },
+    {
+      "path": "raw/PLR-TM-palaces-01.response.json",
+      "origin": "openai-strict-live-20261103-04/results/PLR-TM-palaces-01.response.json",
+      "sha256": "6cb830b0e4f06badd9f3895973fc4d17819b0a82656049709486fe1e3ad0e08a",
+      "copied_byte_for_byte": true
+    },
+    {
+      "path": "raw/PLR-TM-palaces-03.metadata.json",
+      "origin": "openai-strict-live-20261103-04/results/PLR-TM-palaces-03.metadata.json",
+      "sha256": "bcf79a720aed07d5861656d41ca5e80878b6673a770ce4ba2c0f9e39c3bcd201",
+      "copied_byte_for_byte": true
+    },
+    {
+      "path": "raw/PLR-TM-palaces-03.request.json",
+      "origin": "openai-strict-live-20261103-04/results/PLR-TM-palaces-03.request.json",
+      "sha256": "84292d04a54a9074a3b2d6ea8e1db627886902eff5058ab1f0f30c91db5dcce1",
+      "copied_byte_for_byte": true
+    },
+    {
+      "path": "raw/PLR-TM-palaces-03.response.json",
+      "origin": "openai-strict-live-20261103-04/results/PLR-TM-palaces-03.response.json",
+      "sha256": "38ec3d484da7d9a7599e990578c4c0bb6760702e2de08af2be4c7cf671200765",
+      "copied_byte_for_byte": true
+    },
+    {
+      "path": "raw/provider-attempts.json",
+      "origin": "openai-strict-live-20261103-04/results/provider-attempts.json",
+      "sha256": "24faba6609cb8b6e8d27dc7ee4c31d3fbfb268c50dff2e21a236465f67e1b472",
+      "copied_byte_for_byte": true
+    },
+    {
+      "path": "raw/received-01.request.json",
+      "origin": "openai-strict-live-20261103-04/results/received-01.request.json",
+      "sha256": "2ef1c595de3e1022bed20415dde4d7a7a17b7b7c25375aad80fd995aeab01308",
+      "copied_byte_for_byte": true
+    },
+    {
+      "path": "raw/received-02.request.json",
+      "origin": "openai-strict-live-20261103-04/results/received-02.request.json",
+      "sha256": "753e479ed721c086977909bf010c5b04a65b0e758d19f358d610204fc55ecf61",
+      "copied_byte_for_byte": true
+    },
+    {
+      "path": "raw/received-03.request.json",
+      "origin": "openai-strict-live-20261103-04/results/received-03.request.json",
+      "sha256": "5612e0a51cd6609d5965368ce854d02355de08c025498786d208d55458973093",
+      "copied_byte_for_byte": true
+    },
+    {
+      "path": "raw/received-04.request.json",
+      "origin": "openai-strict-live-20261103-04/results/received-04.request.json",
+      "sha256": "cb7e09c1c5d0f9c893ea60bba3d1a04904573ea280edbff132b0fa7b5478e006",
+      "copied_byte_for_byte": true
+    },
+    {
+      "path": "raw/received-05.request.json",
+      "origin": "openai-strict-live-20261103-04/results/received-05.request.json",
+      "sha256": "c8551c8260f02f72096b2f9fac71183c29be43eb3bfe231d5ee330d5f9183a30",
+      "copied_byte_for_byte": true
+    },
+    {
+      "path": "raw/received-06.request.json",
+      "origin": "openai-strict-live-20261103-04/results/received-06.request.json",
+      "sha256": "9b74f565bbdce8aad7865e8fb234c20ccc443a0ecc214ba82ae308b90bfba3ac",
+      "copied_byte_for_byte": true
+    },
+    {
+      "path": "raw/received-07.request.json",
+      "origin": "openai-strict-live-20261103-04/results/received-07.request.json",
+      "sha256": "8fbb1218b3ac8cbffa9094eb7063f03291b7e89022dabc05fc3636668c14eb8a",
+      "copied_byte_for_byte": true
+    },
+    {
+      "path": "raw/received-08.request.json",
+      "origin": "openai-strict-live-20261103-04/results/received-08.request.json",
+      "sha256": "66668fce6d5e2750d1297a78189ec0f004ebba2651651fc24ec7b5160917c899",
+      "copied_byte_for_byte": true
+    },
+    {
+      "path": "raw/run.json",
+      "origin": "openai-strict-live-20261103-04/results/run.json",
+      "sha256": "29abac07bdfc96c7c5206afd196537ff3c81362233730ef0dec3403fa5b9da68",
+      "copied_byte_for_byte": true
+    },
+    {
+      "path": "raw/search-traces-final.jsonl",
+      "origin": "openai-strict-live-20261103-04/results/search-traces-final.jsonl",
+      "sha256": "9640a62420b19bdd11d32e25f556cc119261c75a672dd975e7b7820fdb120680",
+      "copied_byte_for_byte": true
+    },
+    {
+      "path": "raw/search-traces.jsonl",
+      "origin": "openai-strict-live-20261103-04/results/search-traces.jsonl",
+      "sha256": "322693ac65016f3ca3b03716423d1770dc7347781519aaef759cd89cfc1d405c",
+      "copied_byte_for_byte": true
+    },
+    {
+      "path": "raw/started.json",
+      "origin": "openai-strict-live-20261103-04/results/started.json",
+      "sha256": "40928a4263244c45fe5065002b243fab10519dcd29f7934decf9e894af0a99af",
+      "copied_byte_for_byte": true
+    },
+    {
+      "path": "raw/verification.json",
+      "origin": "openai-strict-live-20261103-04/results/verification.json",
+      "sha256": "03f299188012dcf1673be9238832f6bf420124219a64efd4988d983fd482ad3e",
+      "copied_byte_for_byte": true
+    },
+    {
+      "path": "raw/wire-preservation-verification.json",
+      "origin": "openai-strict-live-20261103-04/results/wire-preservation-verification.json",
+      "sha256": "0f18547f0baf3f9dffb8571963a8e153744f4ddc25866516d1b2eb6c07ba89fd",
+      "copied_byte_for_byte": true
+    },
+    {
+      "path": "observations-summary.json",
+      "origin": "openai-strict-live-20261103-04/results/observations-summary.json",
+      "sha256": "0d8966d8e90b4e4c06777e79a2230632275c72f817d305d259f3d76e25256ec7",
+      "copied_byte_for_byte": true
+    },
+    {
+      "path": "run.json",
+      "origin": "openai-strict-live-20261103-04/results/run.json",
+      "sha256": "29abac07bdfc96c7c5206afd196537ff3c81362233730ef0dec3403fa5b9da68",
+      "copied_byte_for_byte": true
+    },
+    {
+      "path": "transport/run-once.py",
+      "origin": "openai-strict-live-20261103-04/run-once.py",
+      "sha256": "e2fc22f6d48a1c77f05977528699f94d29962c3bab404bfcf76937f4b1067807",
+      "copied_byte_for_byte": true
+    },
+    {
+      "path": "transport/required-comparison-change.patch",
+      "origin": "openai-strict-live-20261103-04/comparison-change.patch",
+      "sha256": "a5b0742683b7bf75a115ef3f615f63ba1a4555354e052ef622048c579763999a",
+      "copied_byte_for_byte": true
+    },
+    {
+      "path": "transport/offline/verify_required_comparison.py",
+      "origin": "openai-strict-live-20261103-04/offline/verify_required_comparison.py",
+      "sha256": "f75fce577badd4db1a5108dde5a516b4c92f0f64c93ba46d07c11fc9e2d71206",
+      "copied_byte_for_byte": true
+    },
+    {
+      "path": "checks/required-comparison.json",
+      "origin": "openai-strict-live-20261103-04/offline/verification.json",
+      "sha256": "f2ead6d75343920769f2f3cdd90b463429ecbf17aad1701710dbcd2983ae9745",
+      "copied_byte_for_byte": true
+    },
+    {
+      "path": "transport/offline/fixtures/received-01.request.json",
+      "origin": "openai-strict-live-20261103-03/results/received-01.request.json",
+      "sha256": "48a8de7d27a5bf29cf4c84040dc3b65fec832f043143f96c0b490270746f1171",
+      "copied_byte_for_byte": true
+    },
+    {
+      "path": "checks/comparison-fixtures/additional_fields_allowed/received-01.request.json",
+      "origin": "openai-strict-live-20261103-04/offline/additional_fields_allowed/received-01.request.json",
+      "sha256": "7a47e889c866503daa03e9e786b26aaeab7e0177effb4f67b79606c604784088",
+      "copied_byte_for_byte": true
+    },
+    {
+      "path": "checks/comparison-fixtures/category_enum_added/received-01.request.json",
+      "origin": "openai-strict-live-20261103-04/offline/category_enum_added/received-01.request.json",
+      "sha256": "39c4ecd029706c857e87b720e1e78246aa38d23d7400b0322a85fa0959e60eb1",
+      "copied_byte_for_byte": true
+    },
+    {
+      "path": "checks/comparison-fixtures/category_enum_order_changed/received-01.request.json",
+      "origin": "openai-strict-live-20261103-04/offline/category_enum_order_changed/received-01.request.json",
+      "sha256": "addf247d8109628911aaf6fe6ef59385353602f9bd861339eda06473c6700f3b",
+      "copied_byte_for_byte": true
+    },
+    {
+      "path": "checks/comparison-fixtures/category_enum_removed/received-01.request.json",
+      "origin": "openai-strict-live-20261103-04/offline/category_enum_removed/received-01.request.json",
+      "sha256": "6f5c08e85f991be2ca230d264012f87b446a85a519177d644516aff24fc87a15",
+      "copied_byte_for_byte": true
+    },
+    {
+      "path": "checks/comparison-fixtures/category_type_changed/received-01.request.json",
+      "origin": "openai-strict-live-20261103-04/offline/category_type_changed/received-01.request.json",
+      "sha256": "b771bea04ba466e610fff018ecfd89b1b048d071181ee75d1b00cbe3e3b0b399",
+      "copied_byte_for_byte": true
+    },
+    {
+      "path": "checks/comparison-fixtures/nested_additional_fields_allowed/received-01.request.json",
+      "origin": "openai-strict-live-20261103-04/offline/nested_additional_fields_allowed/received-01.request.json",
+      "sha256": "96da6bd0e03c2e20aa40fbbe8ec3dd08b06a59ec224c21cb594abc0c2573fa32",
+      "copied_byte_for_byte": true
+    },
+    {
+      "path": "checks/comparison-fixtures/nested_required_order/01-count.request.json",
+      "origin": "openai-strict-live-20261103-04/offline/nested_required_order/01-count.request.json",
+      "sha256": "e278f1dd1a9a2e805d4f6f8ec13bb1bbf79fd025fbb38ba4aae4cc1b92a9d055",
+      "copied_byte_for_byte": true
+    },
+    {
+      "path": "checks/comparison-fixtures/nested_required_order/received-01.request.json",
+      "origin": "openai-strict-live-20261103-04/offline/nested_required_order/received-01.request.json",
+      "sha256": "e278f1dd1a9a2e805d4f6f8ec13bb1bbf79fd025fbb38ba4aae4cc1b92a9d055",
+      "copied_byte_for_byte": true
+    },
+    {
+      "path": "checks/comparison-fixtures/preserved_real_request_required_order/01-count.request.json",
+      "origin": "openai-strict-live-20261103-04/offline/preserved_real_request_required_order/01-count.request.json",
+      "sha256": "48a8de7d27a5bf29cf4c84040dc3b65fec832f043143f96c0b490270746f1171",
+      "copied_byte_for_byte": true
+    },
+    {
+      "path": "checks/comparison-fixtures/preserved_real_request_required_order/received-01.request.json",
+      "origin": "openai-strict-live-20261103-04/offline/preserved_real_request_required_order/received-01.request.json",
+      "sha256": "48a8de7d27a5bf29cf4c84040dc3b65fec832f043143f96c0b490270746f1171",
+      "copied_byte_for_byte": true
+    },
+    {
+      "path": "checks/comparison-fixtures/required_field_added/received-01.request.json",
+      "origin": "openai-strict-live-20261103-04/offline/required_field_added/received-01.request.json",
+      "sha256": "d3c33ba199b3cf5b9f28a7a31ed2cf6cdbebdd9773d33635269295611c33d52e",
+      "copied_byte_for_byte": true
+    },
+    {
+      "path": "checks/comparison-fixtures/required_field_duplicated/received-01.request.json",
+      "origin": "openai-strict-live-20261103-04/offline/required_field_duplicated/received-01.request.json",
+      "sha256": "668556455d788f4d3ebcbc497d5c9d148fa8dcc74d99d82e3cb06c209616d38c",
+      "copied_byte_for_byte": true
+    },
+    {
+      "path": "checks/comparison-fixtures/required_field_removed/received-01.request.json",
+      "origin": "openai-strict-live-20261103-04/offline/required_field_removed/received-01.request.json",
+      "sha256": "383efe5763a0d96cc6ec4c03e5c9abe0b34615d2396c4fe60ef90527b46bc701",
+      "copied_byte_for_byte": true
+    },
+    {
+      "path": "checks/comparison-fixtures/required_type_changed/received-01.request.json",
+      "origin": "openai-strict-live-20261103-04/offline/required_type_changed/received-01.request.json",
+      "sha256": "11d6dd75bd9962a13fb59cbe1a7c532228cf9adece284c1817726e840f7caded",
+      "copied_byte_for_byte": true
+    },
+    {
+      "path": "policy/approved-inference-policy.json",
+      "origin": "openai-strict-live-20261103-04/approved-inference-policy.json",
+      "sha256": "a627df25919e0203bf9756a3aa34e8e09bd4e7f194ddf3b01e06ab46e5e2121a",
+      "copied_byte_for_byte": true
+    },
+    {
+      "path": "policy/execution-scope.json",
+      "origin": "openai-strict-live-20261103-04/execution-scope.json",
+      "sha256": "5b0c092aeb731a85b092740d88d6006395175d2a2805e1f55aa641fdaaf366b5",
+      "copied_byte_for_byte": true
+    },
+    {
+      "path": "policy/inference-reservations.jsonl",
+      "origin": "openai-strict-live-20261103-04/inference-reservations.jsonl",
+      "sha256": "ccefd0ac29b8962472bc232d4aa0c319fb7889958267708bd428009ef5d8d820",
+      "copied_byte_for_byte": true
+    },
+    {
+      "path": "policy/provider-schema.expected.json",
+      "origin": "openai-strict-live-20261103-04/provider-schema.expected.json",
+      "sha256": "f82dd8d3381e6826ea1c87544ca3bf934c79f11a0bfc3b4f4498bdbb2e1eb563",
+      "copied_byte_for_byte": true
+    },
+    {
+      "path": "checks/deployment-verification.json",
+      "origin": "openai-strict-live-20261103-04/deployment-verification.json",
+      "sha256": "99c99ae8120b8c85b8037e4bd6f808bb2b4ccbb71cd7b630175f1772a8f551b2",
+      "copied_byte_for_byte": true
+    },
+    {
+      "path": "checks/server-process-verification.json",
+      "origin": "openai-strict-live-20261103-04/server-process-verification.json",
+      "sha256": "f7d6a20e5b1850ec1304e4c0bc20eb560aceacd33c7892346a4261de44400bfc",
+      "copied_byte_for_byte": true
+    },
+    {
+      "path": "checks/category-junit/TEST-com.yollo.TravelMate.IndependentPlaceSearchTest.xml",
+      "origin": "search-category-contract/Server/TravelMate/build/test-results/test/TEST-com.yollo.TravelMate.IndependentPlaceSearchTest.xml",
+      "sha256": "efac66bc4e3c5847b5a6e4b0a20cb88547ce3b13ca6099727dc0f96a9ebc04f5",
+      "copied_byte_for_byte": true
+    },
+    {
+      "path": "checks/category-junit/TEST-com.yollo.TravelMate.OpenAiStrictToolContractTest.xml",
+      "origin": "search-category-contract/Server/TravelMate/build/test-results/test/TEST-com.yollo.TravelMate.OpenAiStrictToolContractTest.xml",
+      "sha256": "665305ca11bbcd9de0b726215e3cee8a5b13aecb314cca654cc09709f8f85e33",
+      "copied_byte_for_byte": true
+    },
+    {
+      "path": "checks/category-junit/TEST-com.yollo.TravelMate.SearchCategoryContractTest.xml",
+      "origin": "search-category-contract/Server/TravelMate/build/test-results/test/TEST-com.yollo.TravelMate.SearchCategoryContractTest.xml",
+      "sha256": "b15952069e8c152e78d5e4cc2b7acb1764d66ee75da68c97c6933ca218afeaec",
+      "copied_byte_for_byte": true
+    },
+    {
+      "path": "checks/category-junit/TEST-com.yollo.TravelMate.SearchToolContractRegressionTest.xml",
+      "origin": "search-category-contract/Server/TravelMate/build/test-results/test/TEST-com.yollo.TravelMate.SearchToolContractRegressionTest.xml",
+      "sha256": "8e38049b341942e8a3d69683c6055156dd702557c9597d053244672de9cae6ca",
+      "copied_byte_for_byte": true
+    },
+    {
+      "path": "checks/packaged-junit/TEST-com.yollo.TravelMate.OpenAiBatchBudgetTest.xml",
+      "origin": "openai-strict-live-20261103-03/junit/TEST-com.yollo.TravelMate.OpenAiBatchBudgetTest.xml",
+      "sha256": "bcd9ae8d817e6e25aaed8a81d2cac7e5bd2ec9530ffcc33ca1bd5e6e8c8eb3ec",
+      "copied_byte_for_byte": true
+    },
+    {
+      "path": "checks/packaged-junit/TEST-com.yollo.TravelMate.OpenAiStrictToolContractTest.xml",
+      "origin": "openai-strict-live-20261103-03/junit/TEST-com.yollo.TravelMate.OpenAiStrictToolContractTest.xml",
+      "sha256": "5c8c005dfe1fe5041abc11fc58aff58527d00988d71587909be21bbe044aba72",
+      "copied_byte_for_byte": true
+    },
+    {
+      "path": "checks/packaged-junit/TEST-com.yollo.TravelMate.SearchCategoryContractTest.xml",
+      "origin": "openai-strict-live-20261103-03/junit/TEST-com.yollo.TravelMate.SearchCategoryContractTest.xml",
+      "sha256": "c4b029aded11fb97e52d7eef882f40aa254e88d713401f1e4fd15bde3f51c681",
+      "copied_byte_for_byte": true
+    },
+    {
+      "path": "checks/chunked-transport/verification.json",
+      "origin": "openai-strict-live-20261103-02/offline/verification.json",
+      "sha256": "0603b9fc107b1b860d53dc7816a094676ed16e2d66de232ea18a173c59b68149",
+      "copied_byte_for_byte": true
+    },
+    {
+      "path": "checks/chunked-transport/TransportProbe.java",
+      "origin": "openai-strict-live-20261103-02/offline/TransportProbe.java",
+      "sha256": "ee872e3896e29d52f9ec940da3ce097df8c14d6db28a63f7e50f4071ed01835c",
+      "copied_byte_for_byte": true
+    },
+    {
+      "path": "checks/chunked-transport/verify_transport.py",
+      "origin": "openai-strict-live-20261103-02/offline/verify_transport.py",
+      "sha256": "4e741cffde6c97733755228310a779b919cb49ae583705679e42d3dab11629de",
+      "copied_byte_for_byte": true
+    },
+    {
+      "path": "prior-runs/01/REPORT.md",
+      "origin": "openai-strict-live-20261103-01/results/REPORT.md",
+      "sha256": "bd5ed61b2fce8696316a5be819d7e23a96337d37d0f7331bf2c5bb68b8916996",
+      "copied_byte_for_byte": true
+    },
+    {
+      "path": "prior-runs/01/run.json",
+      "origin": "openai-strict-live-20261103-01/results/run.json",
+      "sha256": "86eef61a4bce5a94ff31c3ad5fa6928037cbbd5c0938a437a4e2fb31a939f325",
+      "copied_byte_for_byte": true
+    },
+    {
+      "path": "prior-runs/01/execution.jsonl",
+      "origin": "openai-strict-live-20261103-01/results/execution.jsonl",
+      "sha256": "3f480727036077adf61d9a3b5c07574b596ddd744b65f0ca45a93232db50ac5d",
+      "copied_byte_for_byte": true
+    },
+    {
+      "path": "prior-runs/01/PLR-TM-palaces-01.request.json",
+      "origin": "openai-strict-live-20261103-01/results/PLR-TM-palaces-01.request.json",
+      "sha256": "35a3a222786cb4a8e89ae0264ed611f22f1fb4a9010cb4df291386c152682fae",
+      "copied_byte_for_byte": true
+    },
+    {
+      "path": "prior-runs/01/PLR-TM-palaces-01.response.json",
+      "origin": "openai-strict-live-20261103-01/results/PLR-TM-palaces-01.response.json",
+      "sha256": "4958601c65dd6cb3d8e4380e1a3e893895ffe3a01a37d1802dec809c67fe67d2",
+      "copied_byte_for_byte": true
+    },
+    {
+      "path": "prior-runs/02/REPORT.md",
+      "origin": "openai-strict-live-20261103-02/results/REPORT.md",
+      "sha256": "182438730b2d589d10d8d8c53ee455cc08f127185871151441e781f0ddb649b7",
+      "copied_byte_for_byte": true
+    },
+    {
+      "path": "prior-runs/02/run.json",
+      "origin": "openai-strict-live-20261103-02/results/run.json",
+      "sha256": "976bf500c4d10892d6d2e94c4441ef43b7a02e30a4b00db78dd616e6c10f2735",
+      "copied_byte_for_byte": true
+    },
+    {
+      "path": "prior-runs/02/observations-summary.json",
+      "origin": "openai-strict-live-20261103-02/results/observations-summary.json",
+      "sha256": "31ebc9d1a4ed7d6819502087d2e261b26b9f5c77d13fa0555bdb058787f8d073",
+      "copied_byte_for_byte": true
+    },
+    {
+      "path": "prior-runs/02/PLR-TM-palaces-03.request.json",
+      "origin": "openai-strict-live-20261103-02/results/PLR-TM-palaces-03.request.json",
+      "sha256": "aea77742c11c60cb58c992c751b47ca951360ced3027c6db3c810eba33fe84a9",
+      "copied_byte_for_byte": true
+    },
+    {
+      "path": "prior-runs/02/PLR-TM-palaces-03.response.json",
+      "origin": "openai-strict-live-20261103-02/results/PLR-TM-palaces-03.response.json",
+      "sha256": "c8798952367d9af2ad80b1c516b6c61429a77e481a408316eecd77fdac88ce13",
+      "copied_byte_for_byte": true
+    },
+    {
+      "path": "prior-runs/02/06-inference.response.json",
+      "origin": "openai-strict-live-20261103-02/results/06-inference.response.json",
+      "sha256": "20ca00a985959a22bb22221a41a83efba18803a42f758cec6de1bf3fabd1e813",
+      "copied_byte_for_byte": true
+    },
+    {
+      "path": "prior-runs/03/REPORT.md",
+      "origin": "openai-strict-live-20261103-03/results/REPORT.md",
+      "sha256": "dfe73562a5d41c122a1e41f26db9dcd8fb5bdc4909cd080a29dff2a428f49df8",
+      "copied_byte_for_byte": true
+    },
+    {
+      "path": "prior-runs/03/run.json",
+      "origin": "openai-strict-live-20261103-03/results/run.json",
+      "sha256": "565bd19f498ce2b8970db909418c19e0824c0592acd4b83f75fc4dc859dc75c7",
+      "copied_byte_for_byte": true
+    },
+    {
+      "path": "prior-runs/03/result-classification.json",
+      "origin": "openai-strict-live-20261103-03/results/result-classification.json",
+      "sha256": "0930e3dccfa2e27ad6bfbd24817617077fe809704428e7fc011af3d4c6aa94a9",
+      "copied_byte_for_byte": true
+    },
+    {
+      "path": "prior-runs/03/received-01.request.json",
+      "origin": "openai-strict-live-20261103-03/results/received-01.request.json",
+      "sha256": "48a8de7d27a5bf29cf4c84040dc3b65fec832f043143f96c0b490270746f1171",
+      "copied_byte_for_byte": true
+    },
+    {
+      "path": "prior-runs/03/execution.jsonl",
+      "origin": "openai-strict-live-20261103-03/results/execution.jsonl",
+      "sha256": "ac1b27a88a19e347ea7d11020616354460aed87db181a81cf3aface4033c9523",
+      "copied_byte_for_byte": true
+    },
+    {
+      "path": "prior-runs/03/PLR-TM-palaces-01.response.json",
+      "origin": "openai-strict-live-20261103-03/results/PLR-TM-palaces-01.response.json",
+      "sha256": "28d8775b1fa76411384bc14581a607c83b70ad3ab493c5bb35dfc4c1023960c7",
+      "copied_byte_for_byte": true
+    },
+    {
+      "path": "prior-runs/03/provider-schema.expected.json",
+      "origin": "openai-strict-live-20261103-03/provider-schema.expected.json",
+      "sha256": "f82dd8d3381e6826ea1c87544ca3bf934c79f11a0bfc3b4f4498bdbb2e1eb563",
+      "copied_byte_for_byte": true
+    },
+    {
+      "path": "prior-runs/01/result-classification.json",
+      "origin": "openai-strict-live-20261103-02/prior-run-classification.json",
+      "sha256": "e05396c71910c88953849104c7ab5c27185976f8dee6b851a37ca558ca8a9c21",
+      "copied_byte_for_byte": true
+    }
+  ]
+}
