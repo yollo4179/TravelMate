@@ -82,8 +82,17 @@ class FrozenOriginalFieldPipelineTest {
         });
         var prompts = new ContextPlanPromptFactory(mapper);
         var registry = new ConversationToolRegistry(List.of(new SearchPlacesTool(searches, new PlaceSearchCriteriaResolver(), prompts, mapper)), "SEARCH_PLACES");
-        var service = new ConversationService(llm, registry, new ConversationToolExecutor(registry, mapper),
-                new ConversationAnswerRenderer(mapper), mapper, 2, 1, ConversationService.ToolFailurePolicy.STOP);
+        var service = new ConversationService(
+                llm,
+                registry,
+                new ConversationToolExecutor(registry, mapper),
+                new ConversationAnswerRenderer(mapper),
+                mapper,
+                2,
+                1,
+                ConversationService.ToolFailurePolicy.STOP,
+                new ConversationEvidencePreparation(List.of())
+        );
         var response = service.respond("mock-owner", UUID.randomUUID(), new ConversationRequest("동결 장소 설명", null, List.of()));
         assertEquals(ConversationResponse.Termination.COMPLETED, response.termination());
         assertEquals(mapper.valueToTree(results.stream().map(PlaceSearchResponseDto::from).toList()), response.data());

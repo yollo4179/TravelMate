@@ -1,5 +1,7 @@
 package com.yollo.TravelMate;
 
+import com.yollo.TravelMate.domain.conversation.service.ConversationEvidencePreparation;
+
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
@@ -145,7 +147,8 @@ class OpenAiSearchComparisonPreparationTest {
                 mapper,
                 2,
                 1,
-                ConversationService.ToolFailurePolicy.STOP
+                ConversationService.ToolFailurePolicy.STOP,
+                new ConversationEvidencePreparation(List.of())
         );
         var response = service.respond("MOCK-owner", UUID.randomUUID(),
                 mapper.treeToValue(recorded.path("api_request"), ConversationRequest.class));

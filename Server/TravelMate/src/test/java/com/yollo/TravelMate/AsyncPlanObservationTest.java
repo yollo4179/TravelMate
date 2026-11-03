@@ -111,8 +111,16 @@ class AsyncPlanObservationTest {
         var registry = new ConversationToolRegistry(List.of(
                 new GeneratePlanTool(planning, mappedResults), new GetPlanningJobTool(planning, mappedResults),
                 new SearchPlacesTool(search, new PlaceSearchCriteriaResolver(), prompts, mapper)));
-        var conversation = new ConversationService(llm, registry, new ConversationToolExecutor(registry, mapper),
-                new ConversationAnswerRenderer(mapper), mapper, 6, 8);
+        var conversation = new ConversationService(
+                llm,
+                registry,
+                new ConversationToolExecutor(registry, mapper),
+                new ConversationAnswerRenderer(mapper),
+                mapper,
+                6,
+                8,
+                new ConversationEvidencePreparation(List.of())
+        );
         try {
             try (var scope = ObservationContext.open(root)) {
                 var initial = conversation.respond("owner", UUID.randomUUID(), new ConversationRequest("초안", request, List.of()));
@@ -139,7 +147,7 @@ class AsyncPlanObservationTest {
             assertEquals("turn-one", worker.path("turnId").asText());
             assertEquals("generate-call", worker.path("parentToolCallId").asText());
             assertEquals(jobId.get().toString(), worker.path("jobId").asText());
-            assertEquals(5, events.stream().filter(event -> event.path("event").asText().equals("MODEL_CALL")
+            assertEquals(3, events.stream().filter(event -> event.path("event").asText().equals("MODEL_CALL")
                     && event.path("payload").path("stage").asText().equals("FINISHED")).count());
             assertTrue(events.stream().allMatch(event -> event.path("mode").asText().equals("MOCK")));
         } finally {

@@ -107,7 +107,8 @@ class ExecutionObservationTest {
                 new ConversationAnswerRenderer(mapper),
                 mapper,
                 6,
-                8
+                8,
+                new ConversationEvidencePreparation(List.of())
         );
         var mvc = MockMvcBuilders.standaloneSetup(new ConversationController(service))
                 .setCustomArgumentResolvers(new AuthenticationPrincipalArgumentResolver())

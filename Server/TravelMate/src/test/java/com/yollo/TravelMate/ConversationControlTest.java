@@ -199,7 +199,8 @@ class ConversationControlTest {
                 new ConversationAnswerRenderer(mapper),
                 mapper,
                 turns,
-                8
+                8,
+                new ConversationEvidencePreparation(List.of())
         );
     }
 

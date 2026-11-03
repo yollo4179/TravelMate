@@ -205,7 +205,8 @@ class SearchCategoryContractTest {
                 mapper,
                 2,
                 1,
-                ConversationService.ToolFailurePolicy.STOP
+                ConversationService.ToolFailurePolicy.STOP,
+                new ConversationEvidencePreparation(List.of())
         );
         var response = service.respond("offline-owner", UUID.randomUUID(), new ConversationRequest("original", null, List.of()));
         assertEquals(ConversationResponse.Termination.TOOL_FAILED, response.termination());

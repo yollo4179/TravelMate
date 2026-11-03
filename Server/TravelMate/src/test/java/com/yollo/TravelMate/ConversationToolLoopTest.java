@@ -261,7 +261,8 @@ class ConversationToolLoopTest {
                 new ConversationAnswerRenderer(mapper),
                 mapper,
                 modelTurns,
-                toolCalls
+                toolCalls,
+                new ConversationEvidencePreparation(List.of())
         );
     }
 

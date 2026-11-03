@@ -82,7 +82,17 @@ class IndependentPlaceSearchTest {
             when(searches.search(any(PlaceSearchRequest.class))).thenReturn(List.of(new PlaceSemanticSearchResult(place, .8f,
                     List.of(new SearchEvidenceChunk(chunk(mapper, ORIGINAL, WALK)), new SearchEvidenceChunk(chunk(mapper, BLOCK, BLOCK))))));
             var registry = new ConversationToolRegistry(List.of(new SearchPlacesTool(searches, resolver, new ContextPlanPromptFactory(mapper), mapper)), "SEARCH_PLACES");
-            var conversation = new ConversationService(llm, registry, new ConversationToolExecutor(registry, mapper), new ConversationAnswerRenderer(mapper), mapper, 2, 1, ConversationService.ToolFailurePolicy.STOP);
+            var conversation = new ConversationService(
+                    llm,
+                    registry,
+                    new ConversationToolExecutor(registry, mapper),
+                    new ConversationAnswerRenderer(mapper),
+                    mapper,
+                    2,
+                    1,
+                    ConversationService.ToolFailurePolicy.STOP,
+                    new ConversationEvidencePreparation(List.of())
+            );
             var response = conversation.respond("mock-owner", UUID.randomUUID(), request);
             assertEquals(com.yollo.TravelMate.domain.conversation.data.ConversationResponse.Termination.COMPLETED, response.termination());
             verify(searches).search(criteria);
@@ -109,7 +119,17 @@ class IndependentPlaceSearchTest {
                     : scenario.equals("multiple") ? List.of(call, new LlmTurn.ToolCall("s2", "search_places", call.arguments())) : List.of(call);
             when(llm.chat(anyList(), anyList())).thenReturn(LlmTurn.builder().content("{\"afterTool\":\"REASSESS\"}").toolCalls(first).build(),
                     LlmTurn.builder().toolCalls(List.of(new LlmTurn.ToolCall("s2", "search_places", call.arguments()))).build());
-            var conversation = new ConversationService(llm, registry, new ConversationToolExecutor(registry, mapper), new ConversationAnswerRenderer(mapper), mapper, 2, 1, ConversationService.ToolFailurePolicy.STOP);
+            var conversation = new ConversationService(
+                    llm,
+                    registry,
+                    new ConversationToolExecutor(registry, mapper),
+                    new ConversationAnswerRenderer(mapper),
+                    mapper,
+                    2,
+                    1,
+                    ConversationService.ToolFailurePolicy.STOP,
+                    new ConversationEvidencePreparation(List.of())
+            );
             var result = conversation.respond("mock-owner", UUID.randomUUID(), new ConversationRequest("park", null, List.of()));
             assertEquals(scenario.equals("unsupported_plan") ? "TOOL_FAILED" : "TOOL_LIMIT", result.termination().name());
             verify(llm, times(scenario.equals("repeated") ? 2 : 1)).chat(anyList(), anyList());

@@ -89,8 +89,16 @@ class ModelInputBudgetPreparationTest {
             if (initialMessages.isEmpty()) initialMessages.addAll(messages);
             return client.chat(messages, invocation.getArgument(1));
         });
-        var conversation = new ConversationService(recordingClient, registry,
-                new ConversationToolExecutor(registry, mapper), new ConversationAnswerRenderer(mapper), mapper, 6, 8);
+        var conversation = new ConversationService(
+                recordingClient,
+                registry,
+                new ConversationToolExecutor(registry, mapper),
+                new ConversationAnswerRenderer(mapper),
+                mapper,
+                6,
+                8,
+                new ConversationEvidencePreparation(List.of())
+        );
         for (var connection : connections) {
             current.set(new Label(connection.path("case_id").asText(), Scope.INITIAL_API_REQUEST));
             var request = mapper.treeToValue(connection.path("minimal_api_request"), ConversationRequest.class);

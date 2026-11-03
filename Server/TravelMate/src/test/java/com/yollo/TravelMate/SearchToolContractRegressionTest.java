@@ -78,8 +78,17 @@ class SearchToolContractRegressionTest {
                     .put("sourceId", evidence.sourceId()).put("quote", existingQuote(record.path("case_id").asText(), place.id()));
             return LlmTurn.builder().content(answer.toString()).build();
         });
-        var service = new ConversationService(llm, registry, new ConversationToolExecutor(registry, mapper),
-                new ConversationAnswerRenderer(mapper), mapper, 2, 1, ConversationService.ToolFailurePolicy.STOP);
+        var service = new ConversationService(
+                llm,
+                registry,
+                new ConversationToolExecutor(registry, mapper),
+                new ConversationAnswerRenderer(mapper),
+                mapper,
+                2,
+                1,
+                ConversationService.ToolFailurePolicy.STOP,
+                new ConversationEvidencePreparation(List.of())
+        );
         var request = mapper.treeToValue(record.path("api_request"), ConversationRequest.class);
         var response = service.respond("MOCK-owner", UUID.randomUUID(), request);
         Path captureDirectory = Path.of("build/search-contract-regression");
