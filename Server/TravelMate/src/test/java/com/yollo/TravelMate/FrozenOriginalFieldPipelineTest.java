@@ -41,7 +41,8 @@ class FrozenOriginalFieldPipelineTest {
         AtomicInteger turns = new AtomicInteger();
         when(llm.chat(anyList(), anyList())).thenAnswer(invocation -> {
             if (turns.getAndIncrement() == 0) {
-                return LlmTurn.builder().toolCalls(List.of(new LlmTurn.ToolCall("frozen-search", "search_places",
+                return LlmTurn.builder().content("{\"afterTool\":\"REASSESS\"}")
+                        .toolCalls(List.of(new LlmTurn.ToolCall("frozen-search", "search_places",
                         "{\"query\":\"동결 장소 설명\",\"limit\":2}"))).build();
             }
             List<LlmMessage> messages = invocation.getArgument(0);

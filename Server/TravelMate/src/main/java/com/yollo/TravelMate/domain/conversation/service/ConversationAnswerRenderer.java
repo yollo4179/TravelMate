@@ -3,6 +3,7 @@ package com.yollo.TravelMate.domain.conversation.service;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -20,6 +21,13 @@ import org.springframework.stereotype.Component;
 @Component
 @RequiredArgsConstructor
 public class ConversationAnswerRenderer {
+    private static final Map<ResultType, Function<JsonNode, String>> RECEIPT_MESSAGES = Map.of(
+            ResultType.PLACES, places -> places.isEmpty() ? "검색 조건에 맞는 장소가 없습니다." : "장소 검색 결과 " + places.size() + "개를 확인했습니다.",
+            ResultType.PLANNING_JOB, ConversationAnswerRenderer::jobMessage,
+            ResultType.DRAFT, draft -> "서버에서 확인한 일정 초안입니다. 확정 여부와 세부 내용은 반환된 상태와 데이터를 확인해 주세요.",
+            ResultType.TEXT, result -> "도구 실행 결과를 확인했습니다.",
+            ResultType.ERROR, error -> "도구 실행을 완료하지 못했습니다. 반환된 실패 상태와 사유를 확인해 주세요."
+    );
     private final ObjectMapper mapper;
     public record Answer(String message, List<Citation> citations) {}
 
@@ -58,18 +66,55 @@ public class ConversationAnswerRenderer {
             int modelTurns,
             List<ToolObservation> observations
     ) {
+        return render(
+                primary,
+                answer,
+                termination,
+                modelTurns,
+                observations,
+                answer == null ? MessageSource.SERVER_FALLBACK : MessageSource.LLM
+        );
+    }
+
+    public ConversationResponse receipt(
+            ConversationTool.Result primary,
+            Termination termination,
+            int modelTurns,
+            List<ToolObservation> observations
+    ) {
+        String message = termination == Termination.TOOL_FAILED
+                ? "도구 실행을 완료하지 못했습니다. 반환된 실패 상태와 사유를 확인해 주세요."
+                : RECEIPT_MESSAGES.get(primary.type()).apply(primary.publicData());
+        return render(
+                primary,
+                new Answer(message, List.of()),
+                termination,
+                modelTurns,
+                observations,
+                MessageSource.SERVER_RECEIPT
+        );
+    }
+
+    private ConversationResponse render(
+            ConversationTool.Result primary,
+            Answer answer,
+            Termination termination,
+            int modelTurns,
+            List<ToolObservation> observations,
+            MessageSource messageSource
+    ) {
         ResultType type = primary == null
                 ? (termination == Termination.COMPLETED ? ResultType.TEXT : ResultType.ERROR) : primary.type();
         JsonNode publicData = primary == null ? mapper.nullNode() : primary.publicData();
         String message = answer == null ? "설명을 완료하지 못했습니다. 확인된 서버 결과와 작업 상태를 확인해 주세요." : answer.message();
         List<Citation> citations = answer == null ? List.of() : answer.citations();
-        MessageSource messageSource = answer == null ? MessageSource.SERVER_FALLBACK : MessageSource.LLM;
         if (termination == Termination.BUDGET_REJECTED || termination == Termination.COUNT_UNAVAILABLE) {
             message = "토큰 예산이 확인되지 않았거나 한도를 초과해 다음 모델 호출을 중단했습니다.";
         }
         if (type == ResultType.PLANNING_JOB) {
             // 접수 기록을 생성 완료로 바꾸는 자유문장은 현재 상태 영수증을 대신할 수 없다.
             message = jobMessage(publicData);
+            if (termination == Termination.TOOL_FAILED) message += " 일부 도구 실행에 실패했습니다. 도구별 실패 상태와 사유를 확인해 주세요.";
             citations = List.of();
             messageSource = MessageSource.SERVER_RECEIPT;
         }
@@ -89,7 +134,7 @@ public class ConversationAnswerRenderer {
                 .messageSource(messageSource).build();
     }
 
-    private String jobMessage(JsonNode receipt) {
+    private static String jobMessage(JsonNode receipt) {
         var status = com.yollo.TravelMate.domain.plan.data.response.PlanningResponse.JobStatus.valueOf(receipt.path("status").asText());
         return switch (status) {
             case QUEUED -> "초안 생성 요청을 접수했습니다. 아직 초안이 완성되지 않았습니다.";

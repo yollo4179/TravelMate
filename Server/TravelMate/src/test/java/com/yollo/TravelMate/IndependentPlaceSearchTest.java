@@ -70,7 +70,8 @@ class IndependentPlaceSearchTest {
                         .put("scope", turn == 1 ? "CURRENT_INITIAL" : "CURRENT_MOCK_TOOL_FOLLOWUP");
                 row.set("wire", wire);
                 captured.add(row.toString());
-                if (turn == 1) return LlmTurn.builder().toolCalls(List.of(new LlmTurn.ToolCall("s1", "search_places", rawArguments.toString()))).build();
+                if (turn == 1) return LlmTurn.builder().content("{\"afterTool\":\"REASSESS\"}")
+                        .toolCalls(List.of(new LlmTurn.ToolCall("s1", "search_places", rawArguments.toString()))).build();
                 return LlmTurn.builder().content("{\"message\":\"MOCK explanation\",\"citations\":[]}").build();
             }).when(guard).call(any(), any(), any(), any(), any(), any());
             var httpBuilder = org.springframework.web.client.RestClient.builder().baseUrl("http://never-call.invalid");
@@ -106,7 +107,7 @@ class IndependentPlaceSearchTest {
             var first = scenario.equals("unsupported_plan")
                     ? List.of(new LlmTurn.ToolCall("g1", "generate_plan", "{}"))
                     : scenario.equals("multiple") ? List.of(call, new LlmTurn.ToolCall("s2", "search_places", call.arguments())) : List.of(call);
-            when(llm.chat(anyList(), anyList())).thenReturn(LlmTurn.builder().toolCalls(first).build(),
+            when(llm.chat(anyList(), anyList())).thenReturn(LlmTurn.builder().content("{\"afterTool\":\"REASSESS\"}").toolCalls(first).build(),
                     LlmTurn.builder().toolCalls(List.of(new LlmTurn.ToolCall("s2", "search_places", call.arguments()))).build());
             var conversation = new ConversationService(llm, registry, new ConversationToolExecutor(registry, mapper), new ConversationAnswerRenderer(mapper), mapper, 2, 1, ConversationService.ToolFailurePolicy.STOP);
             var result = conversation.respond("mock-owner", UUID.randomUUID(), new ConversationRequest("park", null, List.of()));

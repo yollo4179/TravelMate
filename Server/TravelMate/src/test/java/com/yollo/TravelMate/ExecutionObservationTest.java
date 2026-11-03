@@ -66,6 +66,8 @@ class ExecutionObservationTest {
         callResponse.putArray("output").addObject().put("type", "function_call").put("id", "fc1")
                 .put("call_id", "search1").put("name", "search_places")
                 .put("arguments", mapper.writeValueAsString(Map.of("query", binding.path("query").asText(), "limit", 5)));
+        ((com.fasterxml.jackson.databind.node.ArrayNode) callResponse.path("output")).addObject().put("type", "message")
+                .putArray("content").addObject().put("type", "output_text").put("text", "{\"afterTool\":\"REASSESS\"}");
         http.expect(requestTo("https://mock.invalid/v1/responses/input_tokens"))
                 .andRespond(withSuccess("{\"object\":\"response.input_tokens\",\"input_tokens\":100}", MediaType.APPLICATION_JSON));
         http.expect(requestTo("https://mock.invalid/v1/responses"))
@@ -74,7 +76,9 @@ class ExecutionObservationTest {
                 .andExpect(request -> {
                     var actual = (org.springframework.mock.http.client.MockClientHttpRequest) request;
                     JsonNode counted = mapper.readTree(actual.getBodyAsString(StandardCharsets.UTF_8));
-                    JsonNode toolResult = mapper.readTree(counted.path("input").get(3).path("output").asText());
+                    JsonNode feedback = java.util.stream.StreamSupport.stream(counted.path("input").spliterator(), false)
+                            .filter(item -> "function_call_output".equals(item.path("type").asText())).findFirst().orElseThrow();
+                    JsonNode toolResult = mapper.readTree(feedback.path("output").asText());
                     var evidence = toolResult.path("data").path("candidates").get(0).path("selectedEvidence");
                     assertEquals(ORIGINAL, evidence.get(0).path("original").path("chunk_text").asText());
                     assertEquals(BLOCK, evidence.get(1).path("original").path("chunk_text").asText());

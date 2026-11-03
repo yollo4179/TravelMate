@@ -90,6 +90,8 @@ class OpenAiSearchComparisonPreparationTest {
                 .put("call_id", "mock-call-from-recording")
                 .put("name", "search_places")
                 .put("arguments", nativeArguments);
+        ((com.fasterxml.jackson.databind.node.ArrayNode) nativeCompletion.path("output")).addObject().put("type", "message")
+                .putArray("content").addObject().put("type", "output_text").put("text", "{\"afterTool\":\"REASSESS\"}");
         server.expect(requestTo("https://mock.invalid/v1/responses"))
                 .andExpect(jsonPath("$.model").value(PROPOSED_MODEL))
                 .andExpect(jsonPath("$.tools[0].strict").value(false))
@@ -116,7 +118,9 @@ class OpenAiSearchComparisonPreparationTest {
                         var encoded = ((org.springframework.mock.http.client.MockClientHttpRequest) request).getBodyAsString();
                         JsonNode wire = mapper.readTree(encoded);
                         assertEquals(nativeArguments, wire.path("input").get(2).path("arguments").asText());
-                        JsonNode feedback = mapper.readTree(wire.path("input").get(3).path("output").asText());
+                        JsonNode toolOutput = java.util.stream.StreamSupport.stream(wire.path("input").spliterator(), false)
+                                .filter(item -> "function_call_output".equals(item.path("type").asText())).findFirst().orElseThrow();
+                        JsonNode feedback = mapper.readTree(toolOutput.path("output").asText());
                         JsonNode selected = feedback.path("data").path("candidates").get(0).path("selectedEvidence").get(0);
                         assertEquals(evidence.toJson().path("chunk_text"), selected.path("original").path("chunk_text"));
                         assertEquals(evidence.toJson().path("metadata"), selected.path("original").path("metadata"));

@@ -38,8 +38,14 @@ public class ConversationService {
             get_planning_job에서 진행 중이면 응답을 끝내라. 같은 턴에 반복 조회하지 마라.
             등록되지 않은 수정·확정·롤백 도구는 없으며 실행됐다고 말하지 마라.
             실제 이동시간·동선 최적화와 운영시간은 검증되지 않았다.
-            도구 결과를 받은 후 계속 판단하라. 필요한 정보가 없으면 사용자에게 설명으로 물어라.
-            최종 응답은 {"message":"설명","citations":[]} JSON만 반환하라.
+            질문·대화·현재 상태·제공된 근거·등록 도구를 함께 보고 직접 답변·되묻기·도구 호출을 한 판단에서 선택하라.
+            필요한 정보가 없으면 도구를 호출하지 말고 설명으로 되물어라.
+            도구의 실제 결과와 실행 상태는 서버가 만든다. 실행 전의 성공·장소·일정·기억 조회 결과를 미리 확정해 말하지 마라.
+            도구 호출 뒤 별도 설명 생성은 기본 단계가 아니다. 서버의 결과와 실행 상태만으로 요청을 충족하면 호출에서 끝내라.
+            결과에 의존하는 추가 비교·설명·연속 작업이 필요할 때만 도구 호출과 함께 assistant content에 {"afterTool":"REASSESS"}를 써라.
+            추가 판단이 없으면 content를 비우거나 {"afterTool":"RETURN_RESULT"}를 써라. afterTool은 도구 arguments에 넣지 마라.
+            도구 호출과 함께 사용자용 message나 결과 주장을 쓰지 마라. REASSESS이면 서버 결과를 받은 뒤 같은 대화에서 계속 판단하라.
+            도구를 호출하지 않는 최종 응답은 {"message":"설명","citations":[]} JSON만 반환하라.
             인용은 {"placeId":123,"evidenceId":"전달된 ID","sourceId":"원문 ID","quote":"정확한 원문"}이다.
             해당 장소에 실제 전달된 근거만 인용하라. 생성 보충 문맥은 원문 인용이 아니다.
             서버가 type과 장소·일정 data를 만든다. 최종 JSON에 type/data/ID/좌표/순번을 새로 만들지 마라.
@@ -148,7 +154,14 @@ public class ConversationService {
             if (!validCallIds(completion.toolCalls(), usedCallIds)) {
                 return renderer.render(primary, null, Termination.INVALID_RESPONSE, turn, observations);
             }
+            final ToolContinuation continuation;
+            try {
+                continuation = ToolContinuation.parse(completion.content(), mapper);
+            } catch (Exception exception) {
+                return renderer.render(primary, null, Termination.INVALID_RESPONSE, turn, observations);
+            }
             messages.add(LlmMessage.assistant(completion));
+            boolean toolFailed = false;
             for (var call : completion.toolCalls()) {
                 var invocation = ConversationTool.Invocation.builder().userUid(userUid).turnKey(turnKey).request(request).build();
                 long toolStarted = System.nanoTime();
@@ -165,14 +178,23 @@ public class ConversationService {
                 toolEvent.set("result", mapper.valueToTree(observation));
                 toolEvent.set("modelData", result.modelData());
                 ObservationContext.record(ObservationContext.Event.TOOL_RESULT, toolEvent);
+                if (primary == null || PRIORITY.get(result.type()) >= PRIORITY.get(primary.type())) primary = result;
+                toolFailed |= executed.status() == ToolStatus.FAILED;
                 if (toolFailurePolicy == ToolFailurePolicy.STOP && executed.status() == ToolStatus.FAILED) {
-                    return renderer.render(primary, null, Termination.TOOL_FAILED, turn, observations);
+                    return renderer.receipt(primary, Termination.TOOL_FAILED, turn, observations);
                 }
                 sources.putAll(result.sources());
                 var feedback = mapper.createObjectNode().put("type", result.type().name());
                 feedback.set("data", result.modelData());
                 messages.add(LlmMessage.tool(call, feedback.toString()));
-                if (primary == null || PRIORITY.get(result.type()) >= PRIORITY.get(primary.type())) primary = result;
+            }
+            if (continuation == ToolContinuation.RETURN_RESULT) {
+                return renderer.receipt(
+                        primary,
+                        toolFailed ? Termination.TOOL_FAILED : Termination.COMPLETED,
+                        turn,
+                        observations
+                );
             }
         }
         return renderer.render(primary, null, Termination.MODEL_LIMIT, maxModelTurns, observations);

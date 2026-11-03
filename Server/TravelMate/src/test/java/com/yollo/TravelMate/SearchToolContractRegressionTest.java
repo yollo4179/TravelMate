@@ -63,7 +63,8 @@ class SearchToolContractRegressionTest {
             frame.set("messages", mapper.valueToTree(invocation.getArgument(0)));
             frame.set("tools", mapper.valueToTree(invocation.getArgument(1)));
             capturedFrames.add(frame.toString());
-            if (turns.getAndIncrement() == 0) return LlmTurn.builder().toolCalls(List.of(actualCall)).build();
+            if (turns.getAndIncrement() == 0) return LlmTurn.builder().content("{\"afterTool\":\"REASSESS\"}")
+                    .toolCalls(List.of(actualCall)).build();
             List<LlmMessage> messages = invocation.getArgument(0);
             JsonNode forwarded = mapper.readTree(messages.get(messages.size() - 1).content())
                     .path("data").path("candidates").get(0).path("selectedEvidence").get(0);

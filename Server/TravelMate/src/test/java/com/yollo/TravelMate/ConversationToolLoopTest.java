@@ -278,7 +278,8 @@ class ConversationToolLoopTest {
     }
 
     private LlmTurn call(String id, String name, String arguments) {
-        return LlmTurn.builder().toolCalls(List.of(new LlmTurn.ToolCall(id, name, arguments))).build();
+        return LlmTurn.builder().content("{\"afterTool\":\"REASSESS\"}")
+                .toolCalls(List.of(new LlmTurn.ToolCall(id, name, arguments))).build();
     }
 
     private LlmTurn answer(String message, List<Citation> citations) {
