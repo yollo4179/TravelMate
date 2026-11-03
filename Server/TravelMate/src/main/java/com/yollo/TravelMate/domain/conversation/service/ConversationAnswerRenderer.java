@@ -29,12 +29,27 @@ public class ConversationAnswerRenderer {
             ResultType.ERROR, error -> "도구 실행을 완료하지 못했습니다. 반환된 실패 상태와 사유를 확인해 주세요."
     );
     private final ObjectMapper mapper;
-    public record Answer(String message, List<Citation> citations) {}
+    public enum AnswerKind { PLACE_GUIDANCE, CONVERSATION, CLARIFICATION }
+
+    public record Answer(String message, List<Citation> citations, AnswerKind answerKind) {
+        public Answer {
+            // Older preserved answers have no kind; absence must not discard verified place data.
+            answerKind = answerKind == null ? AnswerKind.PLACE_GUIDANCE : answerKind;
+        }
+
+        public Answer(String message, List<Citation> citations) {
+            this(message, citations, AnswerKind.PLACE_GUIDANCE);
+        }
+    }
 
     public Answer parse(String content, Map<String, CitationSource> sources) throws Exception {
         JsonNode parsed = mapper.reader().with(DeserializationFeature.FAIL_ON_TRAILING_TOKENS).readTree(content);
         if (parsed == null) throw new IllegalArgumentException("최종 설명이 없습니다.");
-        ToolSchemas.requireFields(parsed, Set.of("message", "citations"));
+        ToolSchemas.requireFields(parsed, parsed.has("answerKind")
+                ? Set.of("message", "citations", "answerKind") : Set.of("message", "citations"));
+        if (parsed.has("answerKind") && !parsed.get("answerKind").isTextual()) {
+            throw new IllegalArgumentException("최종 설명의 종류가 올바르지 않습니다.");
+        }
         if (!parsed.get("message").isTextual() || parsed.get("message").asText().isBlank()
                 || parsed.get("message").asText().length() > 8000
                 || !parsed.get("citations").isArray() || parsed.get("citations").size() > 30) {

@@ -31,6 +31,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.params.provider.EnumSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.core.env.MapPropertySource;
 import org.springframework.http.MediaType;
@@ -148,18 +150,61 @@ class ConversationGroundingTest {
         }
     }
 
-    @Test
-    void preparationFailureStopsBeforeModelAndRemainsDistinctFromAnEmptySearch() throws Exception {
+    @ParameterizedTest
+    @EnumSource(ConversationAnswerRenderer.AnswerKind.class)
+    void preparationFailureRemainsVisibleWithoutBlockingConversationOrClarification(
+            ConversationAnswerRenderer.AnswerKind answerKind
+    ) throws Exception {
         var preserved = preserved("PLR-TM-palaces-01");
         var llm = mock(LlmClient.class);
+        List<JsonNode> events = new ArrayList<>();
         when(searches.search(any(PlaceSearchRequest.class))).thenThrow(new IllegalStateException("offline search failure"));
-        try (var context = context(llm, 1, 1)) {
+        when(llm.chat(anyList(), anyList())).thenAnswer(invocation -> {
+            assertPreparationFailed(envelope(invocation.getArgument(0)).path("serverEvidence"));
+            return LlmTurn.builder().content(mapper.createObjectNode()
+                    .put("message", "장소 검색은 실패했지만 대화나 조건 확인은 계속할 수 있습니다.")
+                    .put("answerKind", answerKind.name()).set("citations", mapper.createArrayNode()).toString()).build();
+        });
+        var observation = ObservationContext.Context.builder().mode(ObservationContext.Mode.MOCK)
+                .phase(ObservationContext.Phase.REQUEST).sink(event -> events.add(event.deepCopy())).build();
+        try (var context = context(llm, 1, 1); var scope = ObservationContext.open(observation)) {
             var response = context.getBean(ConversationService.class).respond("owner", UUID.randomUUID(), preserved.request());
-            assertEquals(Termination.TOOL_FAILED, response.termination());
-            assertEquals(ResultType.ERROR, response.type());
-            assertEquals("EVIDENCE_PREPARATION_FAILED", response.data().path("code").asText());
-            assertEquals(0, response.modelTurns());
-            verifyNoInteractions(llm);
+            assertEquals(Termination.COMPLETED, response.termination());
+            if (answerKind == ConversationAnswerRenderer.AnswerKind.PLACE_GUIDANCE) {
+                assertEquals(ResultType.ERROR, response.type());
+                assertEquals("EVIDENCE_PREPARATION_FAILED", response.data().path("code").asText());
+            } else {
+                assertEquals(ResultType.TEXT, response.type());
+                assertTrue(response.data().isNull());
+            }
+            assertEquals("FAILED", events.get(0).path("payload").path("state").asText());
+            assertEquals(1, response.modelTurns());
+            assertEquals(MessageSource.LLM, response.messageSource());
+            verify(searches).search(any(PlaceSearchRequest.class));
+            verify(llm).chat(anyList(), anyList());
+            verifyNoMoreInteractions(llm, searches);
+            verifyNoInteractions(planning);
+        }
+    }
+
+    @ParameterizedTest
+    @ValueSource(ints = {2001, 4000})
+    void inputBeyondSearchQueryLimitStillReachesTheModelUnchanged(int length) throws Exception {
+        var request = new ConversationRequest("안".repeat(length), null, List.of());
+        var llm = mock(LlmClient.class);
+        when(llm.chat(anyList(), anyList())).thenAnswer(invocation -> {
+            var firstInput = envelope(invocation.getArgument(0));
+            assertEquals(request.message(), firstInput.path("message").asText());
+            assertPreparationFailed(firstInput.path("serverEvidence"));
+            return LlmTurn.builder().content("{\"message\":\"어떤 도움을 드릴까요?\",\"citations\":[],\"answerKind\":\"CLARIFICATION\"}").build();
+        });
+        try (var context = context(llm, 1, 1)) {
+            var response = context.getBean(ConversationService.class).respond("owner", UUID.randomUUID(), request);
+            assertEquals(Termination.COMPLETED, response.termination());
+            assertEquals(ResultType.TEXT, response.type());
+            assertTrue(response.data().isNull());
+            verify(llm).chat(anyList(), anyList());
+            verifyNoInteractions(searches, planning);
         }
     }
 
@@ -183,13 +228,17 @@ class ConversationGroundingTest {
         }
     }
 
-    @Test
-    void directClarificationDoesNotExposeUnrelatedPreparedPlacesOrRunAnAction() throws Exception {
+    @ParameterizedTest
+    @EnumSource(value = ConversationAnswerRenderer.AnswerKind.class, names = {"CONVERSATION", "CLARIFICATION"})
+    void directConversationOrClarificationDoesNotExposeUnrelatedPreparedPlacesOrRunAnAction(
+            ConversationAnswerRenderer.AnswerKind answerKind
+    ) throws Exception {
         var preserved = preserved("PLR-TM-palaces-01");
         var llm = mock(LlmClient.class);
         when(searches.search(any(PlaceSearchRequest.class))).thenReturn(preserved.results());
         when(llm.chat(anyList(), anyList())).thenReturn(LlmTurn.builder()
-                .content("{\"message\":\"추가로 어떤 조건을 원하시나요?\",\"citations\":[]}").build());
+                .content(mapper.createObjectNode().put("message", "추가로 어떤 조건을 원하시나요?")
+                        .put("answerKind", answerKind.name()).set("citations", mapper.createArrayNode()).toString()).build());
         try (var context = context(llm, 1, 1)) {
             var response = context.getBean(ConversationService.class).respond("owner", UUID.randomUUID(), preserved.request());
             assertEquals(ResultType.TEXT, response.type());
@@ -200,12 +249,16 @@ class ConversationGroundingTest {
         }
     }
 
-    @Test
-    void theSameGroundedModelCanChooseAStateToolWithoutPretendingItAlreadyRan() throws Exception {
+    @ParameterizedTest
+    @ValueSource(booleans = {false, true})
+    void theSameModelCanChooseAStateToolEvenWhenPreparationFails(boolean searchFails) throws Exception {
         var preserved = preserved("PLR-TM-palaces-03");
         var llm = mock(LlmClient.class);
         var jobId = UUID.randomUUID();
-        when(searches.search(any(PlaceSearchRequest.class))).thenReturn(preserved.results());
+        when(searches.search(any(PlaceSearchRequest.class))).thenAnswer(invocation -> {
+            if (searchFails) throw new IllegalStateException("offline search failure");
+            return preserved.results();
+        });
         when(planning.job(jobId, "owner")).thenReturn(new com.yollo.TravelMate.domain.plan.data.response.PlanningResponse.Job(
                 jobId,
                 com.yollo.TravelMate.domain.plan.data.response.PlanningResponse.JobStatus.RUNNING,
@@ -215,7 +268,9 @@ class ConversationGroundingTest {
         ));
         when(llm.chat(anyList(), anyList())).thenAnswer(invocation -> {
             verifyNoInteractions(planning);
-            assertOriginals(preserved, envelope(invocation.getArgument(0)).path("serverEvidence").path("data"));
+            var evidence = envelope(invocation.getArgument(0)).path("serverEvidence");
+            if (searchFails) assertPreparationFailed(evidence);
+            else assertOriginals(preserved, evidence.path("data"));
             return LlmTurn.builder().toolCalls(List.of(new LlmTurn.ToolCall(
                     "job-status",
                     "get_planning_job",
@@ -230,6 +285,51 @@ class ConversationGroundingTest {
             assertTrue(response.message().contains("아직 완성되지 않았습니다"));
             verify(planning).job(jobId, "owner");
             verify(llm).chat(anyList(), anyList());
+            verify(searches).search(any(PlaceSearchRequest.class));
+            assertEquals(1, response.toolResults().size());
+            assertEquals(ToolStatus.SUCCEEDED, response.toolResults().get(0).status());
+            verifyNoMoreInteractions(planning, llm, searches);
+        }
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"PLACE_GUIDANCE", ""})
+    void uncitedPlaceGuidanceKeepsActualPreparedPlacesIncludingLegacyAnswers(String answerKind) throws Exception {
+        var preserved = preserved("PLR-TM-palaces-01");
+        var llm = mock(LlmClient.class);
+        var reply = mapper.createObjectNode().put("message", preserved.reply().path("message").asText());
+        reply.putArray("citations");
+        if (!answerKind.isEmpty()) reply.put("answerKind", answerKind);
+        when(searches.search(any(PlaceSearchRequest.class))).thenReturn(preserved.results());
+        when(llm.chat(anyList(), anyList())).thenReturn(LlmTurn.builder().content(reply.toString()).build());
+        try (var context = context(llm, 1, 1)) {
+            var response = context.getBean(ConversationService.class).respond("owner", UUID.randomUUID(), preserved.request());
+            assertEquals(Termination.COMPLETED, response.termination());
+            assertEquals(ResultType.PLACES, response.type());
+            assertEquals(preserved.reply().path("data"), mapper.readTree(response.data().toString()));
+            assertTrue(response.citations().isEmpty());
+            assertEquals(MessageSource.LLM, response.messageSource());
+            verify(llm).chat(anyList(), anyList());
+            verify(searches).search(any(PlaceSearchRequest.class));
+            verifyNoInteractions(planning);
+        }
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"null", "true", "\"UNKNOWN\""})
+    void invalidAnswerKindCannotDiscardVerifiedPlaceResults(String invalidKind) throws Exception {
+        var preserved = preserved("PLR-TM-palaces-01");
+        var llm = mock(LlmClient.class);
+        var reply = mapper.createObjectNode().put("message", "모의 응답");
+        reply.putArray("citations");
+        reply.set("answerKind", mapper.readTree(invalidKind));
+        when(searches.search(any(PlaceSearchRequest.class))).thenReturn(preserved.results());
+        when(llm.chat(anyList(), anyList())).thenReturn(LlmTurn.builder().content(reply.toString()).build());
+        try (var context = context(llm, 1, 1)) {
+            var response = context.getBean(ConversationService.class).respond("owner", UUID.randomUUID(), preserved.request());
+            assertEquals(Termination.INVALID_RESPONSE, response.termination());
+            assertEquals(ResultType.PLACES, response.type());
+            assertEquals(preserved.reply().path("data"), mapper.readTree(response.data().toString()));
         }
     }
 
@@ -296,9 +396,18 @@ class ConversationGroundingTest {
         try (var context = context(llm, 1, 1)) {
             var response = context.getBean(ConversationService.class).respond("owner", UUID.randomUUID(), preserved.request());
             assertEquals(Termination.COMPLETED, response.termination());
+            assertEquals(ResultType.PLACES, response.type());
+            assertTrue(response.data().isArray());
+            assertTrue(response.data().isEmpty());
             assertEquals(MessageSource.LLM, response.messageSource());
             verify(llm).chat(anyList(), anyList());
         }
+    }
+
+    private void assertPreparationFailed(JsonNode evidence) {
+        assertEquals(ConversationEvidencePreparation.State.FAILED.name(), evidence.path("state").asText());
+        assertEquals("EVIDENCE_PREPARATION_FAILED", evidence.path("data").path("code").asText());
+        assertFalse(evidence.path("data").has("candidates"), "A failed preparation is not a successful empty search");
     }
 
     private OpenAiLlmClient client(RestClient.Builder builder) throws IOException {
