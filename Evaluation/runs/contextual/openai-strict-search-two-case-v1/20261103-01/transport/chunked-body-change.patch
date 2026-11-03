@@ -1,0 +1,61 @@
+--- initial-recorder.py
++++ chunked-recorder.py
+@@ -15,11 +15,12 @@
+ 
+ import httpx
+ 
+-ROOT = Path(__file__).resolve().parent.parent
++ROOT = Path("C:/ssafy/Travelmate")
+ SOURCE = ROOT / ".local-backups/openai-strict-evaluation"
+-RUNTIME = ROOT / ".local-backups/openai-strict-live-20261103-01"
++RUNTIME = ROOT / ".local-backups/openai-strict-live-20261103-02"
+ RESULTS = RUNTIME / "results"
+ MODEL = "gpt-5.4-mini-2026-03-17"
++API_UPSTREAM = "https://api.openai.com"
+ COUNTERS = {"/v1/responses/input_tokens": 0, "/v1/responses": 0}
+ LOCK = threading.Lock()
+ HALTED = threading.Event()
+@@ -38,13 +39,29 @@
+     def log_message(self, format: str, *arguments: Any) -> None:
+         return
+ 
++    def read_request_body(self) -> bytes:
++        if self.headers.get("Transfer-Encoding", "").lower() != "chunked":
++            return self.rfile.read(int(self.headers.get("Content-Length", "0")))
++        chunks: list[bytes] = []
++        while True:
++            chunk_size = int(self.rfile.readline().split(b";", 1)[0].strip(), 16)
++            if chunk_size == 0:
++                while self.rfile.readline() != b"\r\n":
++                    pass
++                return b"".join(chunks)
++            chunk = self.rfile.read(chunk_size)
++            if len(chunk) != chunk_size or self.rfile.read(2) != b"\r\n":
++                raise ValueError("Incomplete chunked request body")
++            chunks.append(chunk)
++
+     def do_POST(self) -> None:
+-        raw_request = self.rfile.read(int(self.headers.get("Content-Length", "0")))
++        raw_request = self.read_request_body()
+         with LOCK:
+             if HALTED.is_set() or self.path not in COUNTERS or COUNTERS[self.path] >= 4:
+                 self.send_error(429, "Approved one-shot request cap or stop policy reached")
+                 HALTED.set()
+                 return
++            (RESULTS / f"received-{sum(COUNTERS.values()) + 1:02d}.request.json").write_bytes(raw_request)
+             parsed = json.loads(raw_request)
+             if parsed.get("model") != MODEL or any(tool.get("name") != "search_places" for tool in parsed.get("tools", [])):
+                 self.send_error(400, "Request outside approved model/tool scope")
+@@ -57,10 +74,10 @@
+             (RESULTS / f"{prefix}.request.json").write_bytes(raw_request)
+             write_json(RESULTS / "provider-attempts.json", {"counts": COUNTERS, "started_at": datetime.now(UTC).isoformat()})
+         started = time.perf_counter()
+-        metadata: dict[str, Any] = {"kind": kind, "route": self.path, "model": MODEL}
++        metadata: dict[str, Any] = {"kind": kind, "route": self.path, "model": MODEL, "request_transfer_encoding": self.headers.get("Transfer-Encoding"), "request_content_length": self.headers.get("Content-Length")}
+         try:
+             with httpx.Client(timeout=httpx.Timeout(240, connect=10), transport=httpx.HTTPTransport(retries=0), trust_env=False) as client:
+-                response = client.post("https://api.openai.com" + self.path,
++                response = client.post(API_UPSTREAM + self.path,
+                         headers={"Authorization": self.headers.get("Authorization", ""), "Content-Type": "application/json"},
+                         content=raw_request)
+             (RESULTS / f"{prefix}.response.json").write_bytes(response.content)
