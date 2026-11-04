@@ -32,8 +32,9 @@ services:
   redis:
     image: redis:7-alpine
     container_name: travelmate-redis
-    # The base file may publish a separate local Redis; this stack is internal.
-    ports: !reset []
+    # Loopback only: host-run Spring tests and locally started servers read REDIS_HOST=127.0.0.1 from .env.
+    ports: !override
+      - "127.0.0.1:6379:6379"
     restart: unless-stopped
     command: ["redis-server", "--appendonly", "yes"]
     volumes:
