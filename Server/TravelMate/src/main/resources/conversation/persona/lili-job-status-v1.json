@@ -1,0 +1,14 @@
+{
+  "QUEUED": {
+    "text": "요청은 잘 들어가 있어. 아직 차례를 기다리는 중이라 조금 있다가 다시 물어봐 줘.",
+    "emotion": "GUIDING"
+  },
+  "RUNNING": {
+    "text": "지금 열심히 일정 짜는 중이야. 조금만 기다려 주면 금방 보여줄게!",
+    "emotion": "THINKING"
+  },
+  "SUCCEEDED": {
+    "text": "일정 초안이 다 만들어졌어! 카드에서 한번 확인해 봐.",
+    "emotion": "HAPPY"
+  }
+}

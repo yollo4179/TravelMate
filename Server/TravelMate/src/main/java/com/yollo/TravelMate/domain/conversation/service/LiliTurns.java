@@ -40,6 +40,7 @@ public class LiliTurns {
             LiliBranch branch,
             ConversationIntent intent,
             String searchQuery,
+            List<Integer> excludePositions,
             CharacterEmotion emotion,
             String message,
             List<String> choices
@@ -57,6 +58,10 @@ public class LiliTurns {
     ) {
         public DialogueCut cut() {
             return new DialogueCut(message, emotion);
+        }
+
+        public Reply withoutChoices() {
+            return new Reply(intent, emotion, message, List.of());
         }
     }
 
@@ -106,6 +111,8 @@ public class LiliTurns {
                 branch,
                 ConversationIntent.valueOf(node.get("intent").asText()),
                 branch.requiresSearchQuery() ? query : null,
+                // Positions only mean something for a search over the list the user is looking at.
+                branch == LiliBranch.SEARCH_PLACES ? positions(node.get("exclude_positions")) : List.of(),
                 CharacterEmotion.valueOf(node.get("emotion").asText()),
                 node.get("message").asText().strip(),
                 branch == LiliBranch.CLARIFY ? texts(node.get("choices")) : List.of()
@@ -149,6 +156,12 @@ public class LiliTurns {
         if (node == null) throw new IllegalArgumentException("LiLi returned no JSON");
         ToolSchemas.validate(schema, node);
         return node;
+    }
+
+    private static List<Integer> positions(JsonNode array) {
+        List<Integer> values = new ArrayList<>();
+        array.forEach(value -> values.add(value.intValue()));
+        return List.copyOf(values);
     }
 
     private static List<String> texts(JsonNode array) {

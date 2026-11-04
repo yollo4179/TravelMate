@@ -6,6 +6,7 @@ import java.util.stream.IntStream;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.yollo.TravelMate.ai.llm.base.LlmClient;
+import com.yollo.TravelMate.ai.llm.budget.TokenBudgetException;
 import com.yollo.TravelMate.ai.llm.observation.ObservationContext;
 import com.yollo.TravelMate.domain.place.data.result.PlaceResult;
 import com.yollo.TravelMate.domain.place.service.PlaceSemanticSearchService;
@@ -30,6 +31,7 @@ public class ContextPlanningService {
     private enum JobObservationOperation {
         IDEMPOTENCY_READ, INSERT_ACKNOWLEDGED, QUEUE_REJECTED, OWNER_SCOPED_READ, UPDATE_ACKNOWLEDGED
     }
+    private static final String GENERATION_UNAVAILABLE = "일정 생성 서비스가 잠시 응답하지 않아요. 잠시 후 다시 요청해 주세요.";
     private final PlanningJobRepository jobs;
     private final ContextPlanRepository plans;
     private final PlaceSemanticSearchService searchService;
@@ -180,6 +182,8 @@ public class ContextPlanningService {
     }
 
     private void generateDraft(UUID jobId, String userUid, GeneratePlanRequest request, String requestJson) {
+        // Kept outside the try so a rejected draft is recorded with the exact output and candidates it was judged on.
+        var attempt = new DraftAttempt();
         try {
             jobs.update(jobId, PlanningResponse.JobStatus.RUNNING, null, null);
             recordJob(jobId, PlanningResponse.JobStatus.RUNNING, null, JobObservationOperation.UPDATE_ACKNOWLEDGED);
@@ -191,6 +195,7 @@ public class ContextPlanningService {
             // LiLi's query states what the user asked for in this turn, so it leads the candidate search.
             if (request.searchQuery() != null && !request.searchQuery().isBlank()) query = request.searchQuery() + " " + query;
             if (query.isBlank()) query = "여행 관광 산책";
+            attempt.query = query;
             var candidatesById = new LinkedHashMap<Long, PlaceResult>();
             var searchResults = searchService.search(
                     query,
@@ -203,12 +208,14 @@ public class ContextPlanningService {
             searchResults.forEach(result -> candidatesById.put(result.place().id(), result.place()));
             required.forEach(place -> candidatesById.put(place.id(), place));
             var candidates = List.copyOf(candidatesById.values());
+            attempt.candidateIds = List.copyOf(candidatesById.keySet());
             if (candidates.isEmpty()) throw new IllegalStateException("선택한 여행 범위에서 장소를 찾지 못했습니다.");
             var preparedPrompt = promptFactory.prepare(request, candidates, searchResults);
             String prompt = preparedPrompt.userPrompt();
             log.info("planning job={} stage=GENERATING candidateIds={} contextIncluded=true promptCharacters={}",
                     jobId, candidatesById.keySet(), prompt.length());
             String output = llmClient.generate(promptFactory.systemPrompt(), prompt);
+            attempt.output = output;
             log.info("planning job={} stage=VALIDATING_RESULT responseCharacters={}", jobId, output == null ? 0 : output.length());
             var generated = DraftPlanValidator.validate(planValidator.parse(output), candidates, request);
             PlanEvidenceCitationValidator.validate(generated, preparedPrompt);
@@ -225,15 +232,37 @@ public class ContextPlanningService {
             jobs.update(jobId, PlanningResponse.JobStatus.SUCCEEDED, planId, null);
             recordJob(jobId, PlanningResponse.JobStatus.SUCCEEDED, planId, JobObservationOperation.UPDATE_ACKNOWLEDGED);
             log.info("planning job={} stage=SUCCEEDED planId={} pinCount={}", jobId, planId, normalized.pins().size());
+            recordDraft(attempt, PlanningResponse.JobStatus.SUCCEEDED, null);
         } catch (Exception exception) {
             log.warn("planning job={} stage=FAILED exception={}", jobId, exception.toString());
-            String message = exception instanceof ResponseStatusException status ? status.getReason()
+            // The job's error is shown to users and read aloud by LiLi; model budget and provider failures stay internal.
+            String message = exception instanceof TokenBudgetException ? GENERATION_UNAVAILABLE
+                    : exception instanceof ResponseStatusException status ? status.getReason()
                     : exception instanceof IllegalStateException ? exception.getMessage()
                     : exception instanceof com.yollo.TravelMate.exceptions.cumtom.ErrorCodeException known ? known.getErrorCode().getMessage()
                     : "일정 생성 처리에 실패했습니다. 잠시 후 새 요청으로 시도해 주세요.";
+            recordDraft(attempt, PlanningResponse.JobStatus.FAILED, exception);
             jobs.update(jobId, PlanningResponse.JobStatus.FAILED, null, message);
             recordJob(jobId, PlanningResponse.JobStatus.FAILED, null, JobObservationOperation.UPDATE_ACKNOWLEDGED);
         }
+    }
+
+    private void recordDraft(DraftAttempt attempt, PlanningResponse.JobStatus status, Exception failure) {
+        var event = objectMapper.createObjectNode().put("status", status.name()).put("query", attempt.query)
+                .put("output", attempt.output)
+                .put("failureType", failure == null ? null : failure.getClass().getSimpleName())
+                .put("failureMessage", failure == null ? null : failure instanceof ResponseStatusException rejected
+                        ? rejected.getReason() : failure.getMessage());
+        var candidates = event.putArray("candidateIds");
+        attempt.candidateIds.forEach(candidates::add);
+        ObservationContext.record(ObservationContext.Event.PLAN_DRAFT, event);
+    }
+
+    /** What one generation attempt saw and produced, filled in as the job advances. */
+    private static final class DraftAttempt {
+        private String query;
+        private List<Long> candidateIds = List.of();
+        private String output;
     }
 
     private void recordJob(

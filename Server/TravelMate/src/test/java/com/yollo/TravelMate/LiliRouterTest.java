@@ -11,7 +11,13 @@ import com.yollo.TravelMate.ai.llm.base.LlmMessage;
 import com.yollo.TravelMate.ai.llm.base.LlmTurn;
 import com.yollo.TravelMate.ai.llm.base.StructuredOutput;
 import com.yollo.TravelMate.domain.conversation.data.CharacterEmotion;
+import com.yollo.TravelMate.domain.conversation.data.ConversationIntent;
 import com.yollo.TravelMate.domain.conversation.data.ConversationRequest;
+import com.yollo.TravelMate.domain.conversation.data.DialogueCut;
+import com.yollo.TravelMate.domain.conversation.data.DisplayedResult;
+import com.yollo.TravelMate.domain.conversation.pipeline.LiliStatusLines;
+import com.yollo.TravelMate.domain.place.data.request.PlaceSearchContext;
+import com.yollo.TravelMate.domain.plan.data.response.PlanningResponse.JobStatus;
 import com.yollo.TravelMate.domain.conversation.data.ConversationResponse;
 import com.yollo.TravelMate.domain.conversation.data.ConversationResponse.MessageSource;
 import com.yollo.TravelMate.domain.conversation.data.ConversationResponse.ResultType;
@@ -34,6 +40,8 @@ import static org.mockito.Mockito.*;
 class LiliRouterTest {
     private static final String OWNER = "owner";
     private static final String QUERY = "종로 조선 왕실 궁궐";
+    private static final String FAILURE_REASON = "방문 체류시간이 여행 가능 시간을 초과합니다.";
+    private String jobStatus = "QUEUED";
     private final ObjectMapper mapper = new ObjectMapper();
     private final LlmClient llm = mock(LlmClient.class);
     private final RecommendationJobService recommendations = mock(RecommendationJobService.class);
@@ -117,18 +125,36 @@ class LiliRouterTest {
         assertTrue(planInvocations.isEmpty());
         assertEquals("언제 어디로 갈지 먼저 알려줄래?", response.message());
         assertEquals(LiliTurnContract.REPLY_NAME, outputs.get(1).name());
-        assertTrue(prompts.get(1).get(prompts.get(1).size() - 1).content().contains(LiliServerCode.PLANNING_CONDITIONS_MISSING.name()));
+        String followUp = lastUserInput(1);
+        assertTrue(followUp.contains(LiliServerCode.PLANNING_CONDITIONS_MISSING.situation()));
+        assertFalse(followUp.contains(LiliServerCode.PLANNING_CONDITIONS_MISSING.name()), "LiLi never reads an internal code");
     }
 
     @Test
-    void jobStatusUsesTheIdTheServerFindsInTheMessage() throws Exception {
+    void knownJobStatusIsToldWithAFixedLineAfterLilisCutWithoutASecondModelCall() throws Exception {
         String jobId = UUID.randomUUID().toString();
-        answer(decision("GET_PLANNING_JOB", "PLAN", null, "THINKING", "확인해 볼게.", List.of()),
-                reply("PLAN", "THINKING", "아직 만들고 있어. 조금만 기다려 줘.", List.of()));
+        answer(decision("GET_PLANNING_JOB", "PLAN", null, "THINKING", "확인해 볼게.", List.of()));
         var response = respond(new ConversationRequest("내 생성 작업 " + jobId + "의 현재 상태를 확인해줘.", null, List.of()));
         assertEquals(1, jobInvocations.size());
         assertEquals(jobId, jobInvocations.get(0).arguments().path("job_id").asText());
-        assertEquals("아직 만들고 있어. 조금만 기다려 줘.", response.message());
+        assertEquals(List.of(new DialogueCut("확인해 볼게.", CharacterEmotion.THINKING), LiliStatusLines.line(JobStatus.QUEUED)),
+                response.dialogue());
+        assertEquals(1, outputs.size(), "a known status needs no follow-up call");
+        assertTrue(lastUserInput(0).contains("\"jobIdProvided\":true"));
+    }
+
+    @Test
+    void failedJobIsExplainedByLiliWithTheUserFacingReasonOnly() throws Exception {
+        jobStatus = "FAILED";
+        String jobId = UUID.randomUUID().toString();
+        answer(decision("GET_PLANNING_JOB", "PLAN", null, "THINKING", "확인해 볼게.", List.of()),
+                reply("PLAN", "SAD", "이번 일정은 시간이 모자라서 못 만들었어. 조건을 바꿔서 다시 해 볼까?", List.of("시간 늘리기")));
+        var response = respond(new ConversationRequest("작업 " + jobId + " 어떻게 됐어?", null, List.of()));
+        String followUp = lastUserInput(1);
+        assertTrue(followUp.contains(LiliServerCode.PLAN_GENERATION_FAILED.situation()));
+        assertTrue(followUp.contains(FAILURE_REASON));
+        assertFalse(followUp.contains("FAILED"), "status codes stay on the server");
+        assertTrue(response.choices().isEmpty(), "a failure is not a question, so no choices");
     }
 
     @Test
@@ -138,7 +164,45 @@ class LiliRouterTest {
         var response = respond(new ConversationRequest("내 일정 생성 작업이 어디까지 됐어?", null, List.of()));
         assertTrue(jobInvocations.isEmpty());
         assertEquals("어떤 작업인지 알려줄래?", response.message());
-        assertTrue(prompts.get(1).get(prompts.get(1).size() - 1).content().contains(LiliServerCode.JOB_ID_NOT_FOUND.name()));
+        assertTrue(lastUserInput(1).contains(LiliServerCode.JOB_ID_NOT_FOUND.situation()));
+        assertFalse(lastUserInput(1).contains(LiliServerCode.JOB_ID_NOT_FOUND.name()));
+        assertTrue(lastUserInput(0).contains("\"jobIdProvided\":false"));
+    }
+
+    @Test
+    void positionsAreMappedOntoTheDisplayedListAndMergedIntoTheAppsExclusions() throws Exception {
+        answer(decision("SEARCH_PLACES", "RECOMMENDATION", QUERY, List.of(1), "GUIDING", "알겠어, 그건 빼고 다시 찾아볼게.", List.of()));
+        var context = new PlaceSearchContext("서울", "종로", "관광지", List.of(99L), null);
+        var displayed = new DisplayedResult(UUID.randomUUID(), List.of(11L, 22L, 33L));
+        var request = new ConversationRequest("첫 번째는 빼고 다시 찾아줘", null, List.of(), context, ConversationIntent.AUTO, displayed);
+        var response = respond(request);
+        var submitted = org.mockito.ArgumentCaptor.forClass(ConversationRequest.class);
+        verify(recommendations).submit(eq(OWNER), any(), submitted.capture(), eq(QUERY));
+        assertEquals(List.of(99L, 11L), submitted.getValue().searchContext().excludePlaceIds());
+        assertEquals("종로", submitted.getValue().searchContext().city(), "other filters stay as the app sent them");
+        var arguments = mapper.readTree(response.toolResults().get(0).arguments());
+        assertEquals(11L, arguments.path("exclude_place_ids").path(0).asLong());
+        assertTrue(lastUserInput(0).contains("\"displayedResultCount\":3"));
+    }
+
+    @Test
+    void anExclusionWithoutTheDisplayedListAsksBackAndNeverSearches() throws Exception {
+        answer(decision("SEARCH_PLACES", "RECOMMENDATION", QUERY, List.of(1), "GUIDING", "그건 빼고 찾아볼게.", List.of()),
+                reply("RECOMMENDATION", "THINKING", "어떤 장소를 뺄지 알려줄래?", List.of("이름으로 말하기", "목록 다시 보기")));
+        var response = respond(new ConversationRequest("첫 번째는 빼고 다시 찾아줘", null, List.of()));
+        verifyNoInteractions(recommendations);
+        assertTrue(lastUserInput(1).contains(LiliServerCode.DISPLAYED_RESULT_MISSING.situation()));
+        assertEquals(List.of("이름으로 말하기", "목록 다시 보기"), response.choices());
+    }
+
+    @Test
+    void aPositionPastTheDisplayedListAsksBackInsteadOfGuessing() throws Exception {
+        answer(decision("SEARCH_PLACES", "RECOMMENDATION", QUERY, List.of(5), "GUIDING", "그건 빼고 찾아볼게.", List.of()),
+                reply("RECOMMENDATION", "THINKING", "목록에 다섯 번째는 없는 것 같아. 어떤 걸 뺄까?", List.of()));
+        var displayed = new DisplayedResult(UUID.randomUUID(), List.of(11L, 22L));
+        respond(new ConversationRequest("다섯 번째 빼줘", null, List.of(), null, ConversationIntent.AUTO, displayed));
+        verifyNoInteractions(recommendations);
+        assertTrue(lastUserInput(1).contains(LiliServerCode.EXCLUDE_POSITION_OUT_OF_RANGE.situation()));
     }
 
     @Test
@@ -153,10 +217,15 @@ class LiliRouterTest {
     void routerSchemaDecidesBeforeItSpeaks() {
         var order = new ArrayList<String>();
         LiliTurnContract.routerSchema().path("properties").fieldNames().forEachRemaining(order::add);
-        assertEquals(List.of("branch", "intent", "search_query", "emotion", "message", "choices"), order);
+        assertEquals(List.of("branch", "intent", "search_query", "exclude_positions", "emotion", "message", "choices"), order);
         var recommendation = new ArrayList<String>();
         LiliTurnContract.recommendationSchema().path("properties").fieldNames().forEachRemaining(recommendation::add);
         assertTrue(recommendation.indexOf("citations") < recommendation.indexOf("dialogue"));
+    }
+
+    private String lastUserInput(int call) {
+        var messages = prompts.get(call);
+        return messages.get(messages.size() - 1).content();
     }
 
     private ConversationResponse respond(ConversationRequest request) {
@@ -174,8 +243,22 @@ class LiliRouterTest {
     }
 
     private String decision(String branch, String intent, String query, String emotion, String message, List<String> choices) {
-        var node = mapper.createObjectNode().put("branch", branch).put("intent", intent).put("search_query", query)
-                .put("emotion", emotion).put("message", message);
+        return decision(branch, intent, query, List.of(), emotion, message, choices);
+    }
+
+    private String decision(
+            String branch,
+            String intent,
+            String query,
+            List<Integer> excludePositions,
+            String emotion,
+            String message,
+            List<String> choices
+    ) {
+        var node = mapper.createObjectNode().put("branch", branch).put("intent", intent).put("search_query", query);
+        var positions = node.putArray("exclude_positions");
+        excludePositions.forEach(positions::add);
+        node.put("emotion", emotion).put("message", message);
         choices.forEach(node.putArray("choices")::add);
         if (choices.isEmpty()) node.putArray("choices");
         return node.toString();
@@ -198,7 +281,8 @@ class LiliRouterTest {
             @Override
             public Result execute(Invocation invocation) {
                 calls.add(invocation);
-                JsonNode data = new ObjectMapper().createObjectNode().put("jobId", UUID.randomUUID().toString()).put("status", "QUEUED");
+                JsonNode data = new ObjectMapper().createObjectNode().put("jobId", UUID.randomUUID().toString())
+                        .put("status", jobStatus).put("errorMessage", "FAILED".equals(jobStatus) ? FAILURE_REASON : null);
                 return Result.builder().type(type).publicData(data).modelData(data).sources(Map.of()).build();
             }
         };

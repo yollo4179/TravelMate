@@ -1,24 +1,30 @@
 package com.yollo.TravelMate.domain.conversation.service;
 
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
-import java.util.regex.Pattern;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.yollo.TravelMate.domain.conversation.data.CharacterEmotion;
 import com.yollo.TravelMate.domain.conversation.data.ConversationResponse;
 import com.yollo.TravelMate.domain.conversation.data.ConversationResponse.ResultType;
 import com.yollo.TravelMate.domain.conversation.data.ConversationResponse.Termination;
+import com.yollo.TravelMate.domain.conversation.data.DialogueCut;
 import com.yollo.TravelMate.domain.conversation.data.LiliBranch;
+import com.yollo.TravelMate.domain.conversation.pipeline.LiliStatusLines;
 import com.yollo.TravelMate.domain.conversation.tool.ConversationTool;
+import com.yollo.TravelMate.domain.plan.data.response.PlanningResponse.JobStatus;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
-/** The server, not the model, takes the job ID from the user's words; LiLi then explains the real status. */
+/**
+ * The server, not the model, takes the job ID from the user's words. A known status is told with LiLi's fixed
+ * line after her router cut; only failures go back to her follow-up, with a user-facing reason.
+ */
 @Component
 @RequiredArgsConstructor
 public class LiliJobHandler implements LiliBranchHandler {
-    // Not \b: Java treats Hangul as word characters, so "<id>의" would never match.
-    private static final Pattern JOB_ID = Pattern.compile(
-            "(?<![0-9a-fA-F-])[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}(?![0-9a-fA-F-])");
+    private static final int ROUTER_TURNS = 1;
+    private static final int FOLLOW_UP_TURNS = 2;
     private final LiliActions actions;
     private final ConversationAnswerRenderer renderer;
     private final ObjectMapper mapper;
@@ -31,21 +37,56 @@ public class LiliJobHandler implements LiliBranchHandler {
     @Override
     public ConversationResponse execute(Input input) {
         var turn = input.turn();
-        List<String> ids = JOB_ID.matcher(turn.request().message()).results()
-                .map(match -> match.group().toLowerCase(Locale.ROOT)).distinct().toList();
-        if (ids.size() != 1) {
-            var missing = mapper.createObjectNode().put("code", LiliServerCode.JOB_ID_NOT_FOUND.name());
-            return actions.followUp(turn, ResultType.ERROR, missing)
-                    .map(reply -> renderer.dialogue(null, reply.intent(), List.of(), List.of(reply.cut()),
-                            reply.choices(), Termination.COMPLETED, 2, List.of()))
-                    .orElseGet(() -> renderer.render(null, null, Termination.INVALID_RESPONSE, 2, List.of()));
-        }
+        var jobId = PlanningJobReference.single(turn.request().message());
+        if (jobId.isEmpty()) return followUp(input, LiliServerCode.JOB_ID_NOT_FOUND, null, null, Termination.COMPLETED);
         var executed = actions.run(turn, turn.request(), ConversationTool.Name.GET_PLANNING_JOB,
-                mapper.createObjectNode().put("job_id", ids.get(0)));
-        Termination termination = executed.failed() ? Termination.TOOL_FAILED : Termination.COMPLETED;
-        return actions.followUp(turn, executed.result().type(), executed.result().modelData())
-                .map(reply -> renderer.dialogue(executed.result(), reply.intent(), List.of(), List.of(reply.cut()),
-                        reply.choices(), termination, 2, List.of(executed.observation())))
-                .orElseGet(() -> renderer.receipt(executed.result(), termination, 1, List.of(executed.observation())));
+                mapper.createObjectNode().put("job_id", jobId.get().toString()));
+        var result = executed.result();
+        if (executed.failed()) {
+            return followUp(input, LiliServerCode.JOB_LOOKUP_FAILED, result.modelData().path("message").asText(null),
+                    executed, Termination.TOOL_FAILED);
+        }
+        if (result.type() == ResultType.DRAFT) return told(input, executed, draftCuts(result.publicData()));
+        var status = JobStatus.valueOf(result.publicData().path("status").asText());
+        if (status == JobStatus.FAILED) {
+            return followUp(input, LiliServerCode.PLAN_GENERATION_FAILED,
+                    result.publicData().path("errorMessage").asText(null), executed, Termination.COMPLETED);
+        }
+        return told(input, executed, List.of(LiliStatusLines.line(status)));
+    }
+
+    private ConversationResponse told(Input input, LiliActions.Executed executed, List<DialogueCut> statusCuts) {
+        var dialogue = new ArrayList<DialogueCut>();
+        dialogue.add(input.decision().cut());
+        dialogue.addAll(statusCuts);
+        return renderer.dialogue(executed.result(), input.decision().intent(), List.of(), dialogue, List.of(),
+                Termination.COMPLETED, ROUTER_TURNS, List.of(executed.observation()));
+    }
+
+    // The plan model already wrote LiLi's cuts for the draft; older drafts without cuts get the fixed line.
+    private List<DialogueCut> draftCuts(JsonNode draft) {
+        var stored = draft.path("dialogue");
+        if (!stored.isArray() || stored.isEmpty()) return List.of(LiliStatusLines.line(JobStatus.SUCCEEDED));
+        var cuts = new ArrayList<DialogueCut>();
+        stored.forEach(cut -> cuts.add(new DialogueCut(cut.path("text").asText(),
+                CharacterEmotion.valueOf(cut.path("emotion").asText()))));
+        return cuts;
+    }
+
+    private ConversationResponse followUp(
+            Input input,
+            LiliServerCode code,
+            String userFacingReason,
+            LiliActions.Executed executed,
+            Termination termination
+    ) {
+        var primary = executed == null ? null : executed.result();
+        var observations = executed == null ? List.<ConversationResponse.ToolObservation>of() : List.of(executed.observation());
+        return actions.followUp(input.turn(), code, userFacingReason)
+                .map(reply -> renderer.dialogue(primary, reply.intent(), List.of(), List.of(reply.cut()),
+                        reply.choices(), termination, FOLLOW_UP_TURNS, observations))
+                .orElseGet(() -> primary == null
+                        ? renderer.render(null, null, Termination.INVALID_RESPONSE, FOLLOW_UP_TURNS, List.of())
+                        : renderer.receipt(primary, termination, ROUTER_TURNS, observations));
     }
 }

@@ -31,9 +31,13 @@ public class LiliRouterV1 implements ConversationRoutingModule {
     @Override
     public ConversationResponse execute(Turn turn) {
         var request = turn.request();
+        // LiLi gets facts the server can check exactly, not the IDs themselves: she picks a branch and positions,
+        // and the server resolves them.
         var input = mapper.createObjectNode().put("message", request.message())
                 .put("intentHint", request.intentHint().name())
-                .put("planningRequestProvided", request.planningRequest() != null);
+                .put("planningRequestProvided", request.planningRequest() != null)
+                .put("jobIdProvided", PlanningJobReference.single(request.message()).isPresent())
+                .put("displayedResultCount", request.displayedResult() == null ? 0 : request.displayedResult().placeIds().size());
         input.set("searchContext", mapper.valueToTree(request.searchContext()));
         long started = System.nanoTime();
         final LlmTurn completion;

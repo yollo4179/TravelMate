@@ -8,7 +8,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.yollo.TravelMate.ai.llm.base.LlmTurn;
 import com.yollo.TravelMate.ai.llm.observation.ObservationContext;
 import com.yollo.TravelMate.domain.conversation.data.ConversationRequest;
-import com.yollo.TravelMate.domain.conversation.data.ConversationResponse.ResultType;
 import com.yollo.TravelMate.domain.conversation.data.ConversationResponse.ToolObservation;
 import com.yollo.TravelMate.domain.conversation.data.ConversationResponse.ToolStatus;
 import com.yollo.TravelMate.domain.conversation.pipeline.ConversationRoutingModule;
@@ -58,21 +57,27 @@ public class LiliActions {
         return observe("lili-" + UUID.randomUUID(), tool, arguments, result, ToolStatus.SUCCEEDED, started);
     }
 
-    /** Empty when LiLi's follow-up cannot be used; the caller then falls back to the server receipt. */
+    /**
+     * Empty when LiLi's follow-up cannot be used; the caller then falls back to the server receipt.
+     * She receives the situation in Korean and a user-facing reason, never internal codes or raw tool payloads.
+     */
     public Optional<LiliTurns.Reply> followUp(
             ConversationRoutingModule.Turn turn,
-            ResultType type,
-            JsonNode serverData
+            LiliServerCode code,
+            String userFacingReason
     ) {
         var input = mapper.createObjectNode().put("message", turn.request().message());
-        var serverResult = input.putObject("serverResult").put("type", type.name());
-        serverResult.set("data", serverData);
+        input.putObject("serverResult")
+                .put("situation", code.situation())
+                .put("reason", userFacingReason)
+                .put("askUser", code.needsUserInput());
         long started = System.nanoTime();
         try {
             var completion = lili.call(LiliPrompts.Prompt.FOLLOWUP, turn.request(), input,
                     LiliTurnContract.REPLY_NAME, LiliTurnContract.replySchema());
             lili.record(LiliTurns.Stage.FOLLOW_UP, LiliPrompts.Prompt.FOLLOWUP, completion, elapsed(started));
-            return Optional.of(lili.reply(completion.content()));
+            var reply = lili.reply(completion.content());
+            return Optional.of(code.needsUserInput() ? reply : reply.withoutChoices());
         } catch (Exception exception) {
             lili.record(LiliTurns.Stage.FOLLOW_UP, LiliPrompts.Prompt.FOLLOWUP, null, elapsed(started));
             return Optional.empty();

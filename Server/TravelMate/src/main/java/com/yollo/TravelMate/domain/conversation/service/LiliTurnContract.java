@@ -11,6 +11,7 @@ import com.yollo.TravelMate.domain.conversation.data.CharacterEmotion;
 import com.yollo.TravelMate.domain.conversation.data.ConversationAnswerKind;
 import com.yollo.TravelMate.domain.conversation.data.ConversationIntent;
 import com.yollo.TravelMate.domain.conversation.data.DialogueCut;
+import com.yollo.TravelMate.domain.conversation.data.DisplayedResult;
 import com.yollo.TravelMate.domain.conversation.data.LiliBranch;
 import com.yollo.TravelMate.domain.conversation.tool.ToolSchemas;
 
@@ -34,8 +35,16 @@ public final class LiliTurnContract {
         properties.put("branch", enumeration(Arrays.asList(LiliBranch.values())));
         properties.put("intent", enumeration(ConversationIntent.finalValues()));
         properties.put("search_query", ToolSchemas.nullable(ToolSchemas.text(MAX_QUERY_LENGTH)));
+        properties.put("exclude_positions", excludePositions());
         properties.putAll(reply());
         return ToolSchemas.object(properties);
+    }
+
+    /** 1-based positions in the list the app displayed (DisplayedResult); the server maps them to place IDs. */
+    private static ObjectNode excludePositions() {
+        ObjectNode positions = JSON.objectNode().put("type", "array").put("maxItems", DisplayedResult.MAX_PLACES);
+        positions.set("items", ToolSchemas.integer(DisplayedResult.FIRST_POSITION, DisplayedResult.MAX_PLACES));
+        return positions;
     }
 
     public static JsonNode replySchema() {

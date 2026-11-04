@@ -3,7 +3,6 @@ package com.yollo.TravelMate.domain.conversation.service;
 import java.util.List;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.yollo.TravelMate.domain.conversation.data.ConversationResponse;
-import com.yollo.TravelMate.domain.conversation.data.ConversationResponse.ResultType;
 import com.yollo.TravelMate.domain.conversation.data.ConversationResponse.Termination;
 import com.yollo.TravelMate.domain.conversation.data.LiliBranch;
 import com.yollo.TravelMate.domain.conversation.tool.ConversationTool;
@@ -29,8 +28,7 @@ public class LiliPlanHandler implements LiliBranchHandler {
         var decision = input.decision();
         var planning = turn.request().planningRequest();
         if (planning == null) {
-            var missing = mapper.createObjectNode().put("code", LiliServerCode.PLANNING_CONDITIONS_MISSING.name());
-            return actions.followUp(turn, ResultType.ERROR, missing)
+            return actions.followUp(turn, LiliServerCode.PLANNING_CONDITIONS_MISSING, null)
                     .map(reply -> renderer.dialogue(null, reply.intent(), List.of(), List.of(reply.cut()),
                             reply.choices(), Termination.COMPLETED, 2, List.of()))
                     .orElseGet(() -> renderer.render(null, null, Termination.INVALID_RESPONSE, 2, List.of()));
@@ -41,7 +39,8 @@ public class LiliPlanHandler implements LiliBranchHandler {
             return renderer.dialogue(executed.result(), decision.intent(), List.of(), List.of(decision.cut()),
                     List.of(), Termination.COMPLETED, 1, List.of(executed.observation()));
         }
-        return actions.followUp(turn, executed.result().type(), executed.result().modelData())
+        String reason = executed.result().modelData().path("message").asText(null);
+        return actions.followUp(turn, LiliServerCode.PLAN_REQUEST_FAILED, reason)
                 .map(reply -> renderer.dialogue(executed.result(), reply.intent(), List.of(), List.of(reply.cut()),
                         reply.choices(), Termination.TOOL_FAILED, 2, List.of(executed.observation())))
                 .orElseGet(() -> renderer.receipt(executed.result(), Termination.TOOL_FAILED, 1,
