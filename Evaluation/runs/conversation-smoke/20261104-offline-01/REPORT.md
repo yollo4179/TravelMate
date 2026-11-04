@@ -33,3 +33,12 @@
 
 남은 구현·검증 범위는 [요구 사항별 기록](../../../../docs/evaluation/unified-conversation-implementation-20261104.md),
 공통 실행법과 구조도는 [아키텍처](../../../../docs/architecture/unified-conversation-evaluation.md)에 정리했다.
+
+
+## Git 참조 비교 정정
+
+초기 `origin/develop=b2c21803`은 main만 추적하는 fetch 설정에 남은 오래된 참조였다.
+실제 `FETCH_HEAD`는 `6244ec6c`였으므로 원격 이력이 되돌아갔다는 안내는 잘못이었다.
+이번 푸시는 `6244ec6c → 44e17a60` 정상 추가였고, 이력 복원·강제 푸시는 없었다.
+`git fetch origin refs/heads/develop:refs/remotes/origin/develop`으로 실제 원격 일치를 확인했다.
+이 정정은 실행 결과·코드·검사 수를 변경하지 않는다.

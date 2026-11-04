@@ -61,5 +61,15 @@
     "Plan structured citation persistence/retrieval not implemented",
     "Background map SDK not connected",
     "On-device TTS deferred by user"
-  ]
+  ],
+  "git_publication": {
+    "initial_tracking_ref": "b2c218034537a74f7bc652dcd688cf36240789d1",
+    "actual_fetched_head_before_implementation": "6244ec6ceb7fdeba31d0b0846f82f1b878daa0cc",
+    "default_fetch_refspec": "+refs/heads/main:refs/remotes/origin/main",
+    "first_published_head": "44e17a60caedcf24cbf3153dd050f4f84d5eed05",
+    "tracking_ref_explicitly_refreshed": true,
+    "earlier_remote_rollback_claim": "INCORRECT_TRACKING_REFERENCE_COMPARISON",
+    "history_restore_performed": false,
+    "force_push_performed": false
+  }
 }
