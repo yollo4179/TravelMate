@@ -82,6 +82,11 @@ class LiliRouterTest {
         assertEquals(LiliTurnContract.ROUTER_NAME, outputs.get(0).name());
         String system = prompts.get(0).get(0).content();
         assertTrue(system.contains(LiliPersona.text()), "the router speaks with the one shared persona");
+        // Live runs offered lookups by plan name, exclusion by place name and booking help, none of which exist.
+        assertTrue(system.contains("[할 수 있는 일과 그 방법]"));
+        assertTrue(system.contains("작업 번호를 직접 적어야 한다"));
+        assertTrue(system.contains("장소 이름으로 빼거나, 목록을 다시 보여 주는 일은 할 수 없다"));
+        assertTrue(system.contains("예약에 필요한 정보 찾기나 정리"));
         assertFalse(prompts.get(0).get(1).content().contains("serverEvidence"), "LiLi decides before any place evidence");
     }
 
