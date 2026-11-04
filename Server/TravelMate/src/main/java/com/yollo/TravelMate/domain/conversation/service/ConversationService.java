@@ -135,6 +135,7 @@ public class ConversationService {
         request.history().forEach(message -> messages.add(LlmMessage.text(
                 LlmMessage.Role.valueOf(message.role().name()), message.content())));
         var userInput = mapper.createObjectNode().put("message", request.message());
+        userInput.put("intentHint", request.intentHint().name());
         userInput.set("planningRequest", mapper.valueToTree(request.planningRequest()));
         userInput.set("searchContext", mapper.valueToTree(request.searchContext()));
         if (prepared.result() != null) {

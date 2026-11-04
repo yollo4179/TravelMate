@@ -10,14 +10,20 @@ public record ConversationRequest(
         @NotBlank @Size(max = 4000) String message,
         @Valid GeneratePlanRequest planningRequest,
         @Size(max = 20) List<@NotNull @Valid HistoryMessage> history,
-        @Valid PlaceSearchContext searchContext
+        @Valid PlaceSearchContext searchContext,
+        ConversationIntent intentHint
 ) {
     public ConversationRequest {
+        intentHint = intentHint == null ? ConversationIntent.AUTO : intentHint;
         history = history == null ? List.of() : List.copyOf(history);
     }
 
     public ConversationRequest(String message, GeneratePlanRequest planningRequest, List<HistoryMessage> history) {
         this(message, planningRequest, history, null);
+    }
+
+    public ConversationRequest(String message, GeneratePlanRequest planningRequest, List<HistoryMessage> history, PlaceSearchContext searchContext) {
+        this(message, planningRequest, history, searchContext, ConversationIntent.AUTO);
     }
 
     public enum HistoryRole { USER, ASSISTANT }

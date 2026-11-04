@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Request
 from inspect import signature
+from app.source_identity import RUNTIME_SOURCE_SHA256
 from app.schemas import EmbeddingRequest, EmbeddingResponse
 from app.embedder import embedder
 from app.observability import tracer
@@ -12,6 +13,7 @@ router = APIRouter()
 async def health(request: Request) -> dict[str, int | str | bool]:
     cuda_available, gpu_name = get_cuda_status()
     device_status = {
+        "source_sha256": RUNTIME_SOURCE_SHA256,
         "embedding_device": embedder.device,
         "reranker_device": reranker.device,
         "cuda_available": cuda_available,

@@ -103,13 +103,14 @@ class RelationVectorTests(unittest.IsolatedAsyncioTestCase):
         runtime = next(node for node in module.body if isinstance(node, ast.ClassDef) and node.name == "KafkaRuntime")
         methods = [node for node in runtime.body if isinstance(node, ast.AsyncFunctionDef) and node.name in ("_retrieve_candidates", "_retrieve_evidence")]
         trace = MagicMock()
-        namespace = {"Any": Any, "ObservationFilter": ObservationFilter, "EvidenceCount": EvidenceCount,
+        namespace = {"PlaceMetadataFilter": __import__("app.contextual.metadata_filter", fromlist=["PlaceMetadataFilter"]).PlaceMetadataFilter, "Any": Any, "ObservationFilter": ObservationFilter, "EvidenceCount": EvidenceCount,
                      "resolve_retrieval_strategy": resolve_retrieval_strategy,
                      "time": time, "tracer": lambda: trace, "RETRIEVE_TOP_K": 30}
         exec(compile(ast.Module(body=methods, type_ignores=[]), "<relation-search>", "exec"), namespace)
         pool, connection = mock_database({})
         connection.fetch.return_value = []
         target = MagicMock(database_pool=pool, use_relation_vectors=False)
+        target._attach_original_fields = AsyncMock(side_effect=lambda rows, _: rows)
         move = {"origin_place_id": 394}
         await namespace["_retrieve_candidates"](target, {"filters": {"observation": move}}, "[0]")
         self.assertNotIn("retrieval_relation_embeddings", connection.fetch.await_args.args[0])

@@ -124,7 +124,8 @@ class ConversationModulesTest {
 
     @Test
     void defaultPromptMatchesThePreviousJavaTextBlockExactly() {
-        var prompt = new ResourcePromptV1(defaults, new DefaultResourceLoader());
+        var legacy = configured(SearchRanking.REQUEST_DEFAULT, "classpath:conversation/prompts/v1-grounded-system.txt");
+        var prompt = new ResourcePromptV1(legacy, new DefaultResourceLoader());
         assertEquals("981cd883794d751f63b0fca1c0bc29734d9ae19b4c844634c695368a1b9b81d2", prompt.sha256());
         assertTrue(prompt.execute(null, defaults).contains("serverEvidence"));
     }

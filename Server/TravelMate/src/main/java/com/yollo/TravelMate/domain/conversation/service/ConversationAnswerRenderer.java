@@ -1,6 +1,8 @@
 package com.yollo.TravelMate.domain.conversation.service;
 
 import java.util.List;
+import com.yollo.TravelMate.domain.conversation.data.CharacterEmotion;
+import com.yollo.TravelMate.domain.conversation.data.ConversationIntent;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
@@ -24,29 +26,65 @@ public class ConversationAnswerRenderer {
     private static final Map<ResultType, Function<JsonNode, String>> RECEIPT_MESSAGES = Map.of(
             ResultType.PLACES, places -> places.isEmpty() ? "검색 조건에 맞는 장소가 없습니다." : "장소 검색 결과 " + places.size() + "개를 확인했습니다.",
             ResultType.PLANNING_JOB, ConversationAnswerRenderer::jobMessage,
-            ResultType.DRAFT, draft -> "서버에서 확인한 일정 초안입니다. 확정 여부와 세부 내용은 반환된 상태와 데이터를 확인해 주세요.",
+            ResultType.DRAFT, draft -> draft.path("description").isTextual() && !draft.path("description").asText().isBlank()
+                    ? draft.path("description").asText()
+                    : "서버에서 확인한 일정 초안입니다. 확정 여부와 세부 내용은 반환된 상태와 데이터를 확인해 주세요.",
             ResultType.TEXT, result -> "도구 실행 결과를 확인했습니다.",
             ResultType.ERROR, error -> "도구 실행을 완료하지 못했습니다. 반환된 실패 상태와 사유를 확인해 주세요."
+    );
+    private static final Map<ResultType, ConversationIntent> RESULT_INTENTS = Map.of(
+            ResultType.TEXT, ConversationIntent.CONVERSATION,
+            ResultType.ERROR, ConversationIntent.CONVERSATION,
+            ResultType.PLACES, ConversationIntent.RECOMMENDATION,
+            ResultType.PLANNING_JOB, ConversationIntent.PLAN,
+            ResultType.DRAFT, ConversationIntent.PLAN
+    );
+    private static final Map<ResultType, CharacterEmotion> RECEIPT_EMOTIONS = Map.of(
+            ResultType.TEXT, CharacterEmotion.NEUTRAL, ResultType.ERROR, CharacterEmotion.CONCERNED,
+            ResultType.PLACES, CharacterEmotion.GUIDING, ResultType.PLANNING_JOB, CharacterEmotion.THINKING,
+            ResultType.DRAFT, CharacterEmotion.EXCITED
     );
     private final ObjectMapper mapper;
     public enum AnswerKind { PLACE_GUIDANCE, CONVERSATION, CLARIFICATION }
 
-    public record Answer(String message, List<Citation> citations, AnswerKind answerKind) {
+    public record Answer(String message, List<Citation> citations, AnswerKind answerKind, CharacterEmotion emotion, ConversationIntent intent) {
         public Answer {
             // Older preserved answers have no kind; absence must not discard verified place data.
+            emotion = emotion == null ? CharacterEmotion.NEUTRAL : emotion;
             answerKind = answerKind == null ? AnswerKind.PLACE_GUIDANCE : answerKind;
+            intent = intent == null ? (answerKind == AnswerKind.PLACE_GUIDANCE ? ConversationIntent.RECOMMENDATION : ConversationIntent.CONVERSATION) : intent;
+        }
+
+        public Answer(String message, List<Citation> citations, AnswerKind kind, CharacterEmotion emotion) {
+            this(message, citations, kind, emotion, null);
+        }
+
+        public Answer(String message, List<Citation> citations, AnswerKind kind) {
+            this(message, citations, kind, CharacterEmotion.NEUTRAL);
         }
 
         public Answer(String message, List<Citation> citations) {
-            this(message, citations, AnswerKind.PLACE_GUIDANCE);
+            this(message, citations, AnswerKind.PLACE_GUIDANCE, CharacterEmotion.NEUTRAL);
         }
     }
 
     public Answer parse(String content, Map<String, CitationSource> sources) throws Exception {
         JsonNode parsed = mapper.reader().with(DeserializationFeature.FAIL_ON_TRAILING_TOKENS).readTree(content);
         if (parsed == null) throw new IllegalArgumentException("최종 설명이 없습니다.");
-        ToolSchemas.requireFields(parsed, parsed.has("answerKind")
-                ? Set.of("message", "citations", "answerKind") : Set.of("message", "citations"));
+        var fields = new java.util.HashSet<>(Set.of("message", "citations"));
+        if (parsed.has("answerKind")) fields.add("answerKind");
+        if (parsed.has("emotion")) fields.add("emotion");
+        if (parsed.has("intent")) fields.add("intent");
+        ToolSchemas.requireFields(parsed, fields);
+        if (parsed.has("emotion") && (!parsed.get("emotion").isTextual()
+                || java.util.Arrays.stream(CharacterEmotion.values()).noneMatch(value -> value.name().equals(parsed.get("emotion").asText())))) {
+            throw new IllegalArgumentException("Unknown character emotion");
+        }
+        if (parsed.has("intent") && (!parsed.get("intent").isTextual()
+                || java.util.Arrays.stream(ConversationIntent.values()).filter(value -> value != ConversationIntent.AUTO)
+                    .noneMatch(value -> value.name().equals(parsed.get("intent").asText())))) {
+            throw new IllegalArgumentException("Unknown conversation intent");
+        }
         if (parsed.has("answerKind") && !parsed.get("answerKind").isTextual()) {
             throw new IllegalArgumentException("최종 설명의 종류가 올바르지 않습니다.");
         }
@@ -146,7 +184,8 @@ public class ConversationAnswerRenderer {
                 .termination(termination).modelTurns(modelTurns).toolResults(List.copyOf(observations))
                 .requestId(context == null ? null : context.requestId()).turnId(context == null ? null : context.turnId())
                 .conversationId(context == null ? null : context.conversationId()).primaryResultId(primaryId)
-                .messageSource(messageSource).build();
+                .messageSource(messageSource).intent(type == ResultType.TEXT && answer != null ? answer.intent() : RESULT_INTENTS.get(type))
+                .emotion(messageSource == MessageSource.LLM && answer != null ? answer.emotion() : RECEIPT_EMOTIONS.get(type)).build();
     }
 
     private static String jobMessage(JsonNode receipt) {

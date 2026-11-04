@@ -3,3 +3,10 @@ Docker/*.py text eol=lf
 Server/TravelMate/gradlew text eol=lf
 Server/TravelMate/src/test/resources/search-category/** -text -whitespace
 Evaluation/runs/contextual/openai-strict-search-two-case-v1/** -text -whitespace
+
+# Shared runtime identities must be reproducible on Windows and Linux.
+Server/TravelMate/src/main/** text eol=lf
+embedding-server/app/**/*.py text eol=lf
+embedding-server/app/**/*.sql text eol=lf
+embedding-server/routers/*.py text eol=lf
+Evaluation/runs/conversation-smoke/** -text -whitespace

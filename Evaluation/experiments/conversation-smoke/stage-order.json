@@ -1,0 +1,20 @@
+{
+  "stages": [
+    {
+      "stage": "tool_call",
+      "configuration": "tool_call.offline.json"
+    },
+    {
+      "stage": "recommendation",
+      "configuration": "recommendation.offline.json"
+    },
+    {
+      "stage": "plan",
+      "configuration": "plan.offline.json"
+    },
+    {
+      "stage": "conversation",
+      "configuration": "conversation.offline.json"
+    }
+  ]
+}

@@ -49,7 +49,7 @@ def runtime_for(
     embedder = MagicMock(device="mock-only")
     embedder.embed.return_value = [[1.0] + [0.0] * 1023]
     embedder.getDimension.return_value = 1024
-    namespace = {
+    namespace = {"PlaceMetadataFilter": __import__("app.contextual.metadata_filter", fromlist=["PlaceMetadataFilter"]).PlaceMetadataFilter,
         "Any": Any, "StrEnum": StrEnum, "json": json, "time": time, "uuid": uuid, "datetime": datetime, "UTC": UTC,
         "EvidenceCount": EvidenceCount, "ObservationFilter": ObservationFilter,
         "build_pairs": build_pairs, "rank_places": rank_places, "validate_token_budget": validate_token_budget,
@@ -69,6 +69,7 @@ def runtime_for(
     runtime = SimpleNamespace(
         evidence_count=count,
         _retrieve_candidates=AsyncMock(return_value=candidates),
+        _eligible_place_ids=AsyncMock(return_value=[row["place_id"] for row in candidates]),
         _retrieve_evidence=AsyncMock(return_value=records),
         _retrieve_quality_context=AsyncMock(side_effect=AssertionError("일반 검색은 실험용 이동 정책을 조회하지 않는다")),
         _save_recommendation_result=AsyncMock(),

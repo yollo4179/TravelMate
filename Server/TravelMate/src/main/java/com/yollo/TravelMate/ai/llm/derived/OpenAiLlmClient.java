@@ -10,6 +10,7 @@ import com.yollo.TravelMate.ai.llm.base.*;
 import com.yollo.TravelMate.ai.llm.budget.*;
 import com.yollo.TravelMate.ai.llm.observation.ExecutionRecorder;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.yollo.TravelMate.domain.conversation.service.ConversationAnswerContract;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -26,6 +27,9 @@ public class OpenAiLlmClient implements LlmStrategy {
     private final LlmCallGuard guard;
     private final OpenAiToolContracts.Mode toolContractMode;
     private final OpenAiBatchBudget batchBudget;
+    private final ConversationResponseFormat responseFormat;
+    private BatchBudgetRequirement budgetRequirement;
+    private ReasoningMode reasoningMode = ReasoningMode.DISABLED;
 
     @Autowired
     public OpenAiLlmClient(
@@ -38,12 +42,17 @@ public class OpenAiLlmClient implements LlmStrategy {
             @Value("${openai.limits-model:}") String limitsModel,
             @Value("${openai.limits-source:}") String limitsSource,
             @Value("${openai.tool-contract-mode:CANONICAL}") OpenAiToolContracts.Mode toolContractMode,
+            @Value("${openai.conversation-response-format:PROMPT_ONLY}") ConversationResponseFormat responseFormat,
+            @Value("${openai.reasoning-mode:DISABLED}") ReasoningMode reasoningMode,
+            @Value("${openai.evaluation-budget-requirement:OPTIONAL}") BatchBudgetRequirement budgetRequirement,
             OpenAiBatchBudget batchBudget,
             LlmCallGuard guard
     ) {
         this(LlmHttpClients.create(baseUrl), apiKey, TokenBudget.Limits.builder()
                 .provider(LlmProvider.OPENAI).model(model).contextTokens(contextTokens).outputReservation(maxOutputTokens)
-                .modelOutputLimit(modelOutputLimit).limitsModel(limitsModel).limitsSource(limitsSource).build(), guard, toolContractMode, batchBudget);
+                .modelOutputLimit(modelOutputLimit).limitsModel(limitsModel).limitsSource(limitsSource).build(), guard, toolContractMode, batchBudget, responseFormat);
+        this.reasoningMode = java.util.Objects.requireNonNull(reasoningMode);
+        this.budgetRequirement = java.util.Objects.requireNonNull(budgetRequirement);
     }
 
     public OpenAiLlmClient(
@@ -84,6 +93,18 @@ public class OpenAiLlmClient implements LlmStrategy {
             OpenAiToolContracts.Mode toolContractMode,
             OpenAiBatchBudget batchBudget
     ) {
+        this(restClient, apiKey, limits, guard, toolContractMode, batchBudget, ConversationResponseFormat.PROMPT_ONLY);
+    }
+
+    public OpenAiLlmClient(
+            RestClient restClient,
+            String apiKey,
+            TokenBudget.Limits limits,
+            LlmCallGuard guard,
+            OpenAiToolContracts.Mode toolContractMode,
+            OpenAiBatchBudget batchBudget,
+            ConversationResponseFormat responseFormat
+    ) {
         this.restClient = restClient;
         this.model = limits.model();
         this.apiKey = apiKey;
@@ -92,6 +113,9 @@ public class OpenAiLlmClient implements LlmStrategy {
         this.guard = guard;
         this.toolContractMode = toolContractMode;
         this.batchBudget = batchBudget;
+        this.budgetRequirement = toolContractMode == OpenAiToolContracts.Mode.STRICT_SEARCH_V1
+                ? BatchBudgetRequirement.REQUIRED : BatchBudgetRequirement.OPTIONAL;
+        this.responseFormat = java.util.Objects.requireNonNull(responseFormat);
     }
 
     @Override
@@ -128,8 +152,19 @@ public class OpenAiLlmClient implements LlmStrategy {
         request.put("service_tier", "default");
         request.put("truncation", "disabled");
         request.put("max_output_tokens", maxOutputTokens);
-        request.put("include", List.of("reasoning.encrypted_content"));
-        if (jsonOutput) request.put("text", Map.of("format", Map.of("type", "json_object")));
+        if (reasoningMode == ReasoningMode.DISABLED) request.put("reasoning", Map.of("effort", "none"));
+        if (jsonOutput) request.put("text", Map.of("format", responseFormat == ConversationResponseFormat.JSON_SCHEMA_V1
+                ? Map.of("type", "json_schema", "name", "draft_plan_v1", "strict", true,
+                    "schema", com.yollo.TravelMate.domain.plan.prompts.GeneratedPlanOutputContract.schema())
+                : Map.of("type", "json_object")));
+        if (!jsonOutput && !tools.isEmpty() && responseFormat == ConversationResponseFormat.JSON_SCHEMA_V1) {
+            request.put("text", Map.of("format", Map.of(
+                    "type", "json_schema",
+                    "name", "conversation_answer_v1",
+                    "strict", true,
+                    "schema", ConversationAnswerContract.schema()
+            )));
+        }
         if (!tools.isEmpty()) {
             request.put("tools", preparedTools.stream().map(tool -> Map.of(
                     "type", "function",
@@ -145,7 +180,7 @@ public class OpenAiLlmClient implements LlmStrategy {
         var countedInput = new java.util.concurrent.atomic.AtomicReference<TokenBudget.Count>();
         try {
             return guard.call(limits, wireRequest, () -> {
-                    if (toolContractMode == OpenAiToolContracts.Mode.STRICT_SEARCH_V1) batchBudget.requireConfigured();
+                    if (budgetRequirement == BatchBudgetRequirement.REQUIRED) batchBudget.requireConfigured();
                     reservation.set(batchBudget.reserve(limits));
                     var counted = countInput(wireRequest);
                     countedInput.set(counted);

@@ -7,7 +7,7 @@ import sys
 import time
 from typing import Any
 import unittest
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, AsyncMock
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path[:0] = [str(ROOT), str(ROOT / "tests")]
@@ -21,13 +21,14 @@ class IndependentSearchFilterTests(unittest.IsolatedAsyncioTestCase):
         module = ast.parse((ROOT / "app/kafka_runtime.py").read_text(encoding="utf-8"))
         runtime = next(node for node in module.body if isinstance(node, ast.ClassDef) and node.name == "KafkaRuntime")
         method = next(node for node in runtime.body if isinstance(node, ast.AsyncFunctionDef) and node.name == "_retrieve_candidates")
-        namespace = {"Any": Any, "ObservationFilter": ObservationFilter, "resolve_retrieval_strategy": resolve_retrieval_strategy,
+        namespace = {"PlaceMetadataFilter": __import__("app.contextual.metadata_filter", fromlist=["PlaceMetadataFilter"]).PlaceMetadataFilter, "Any": Any, "ObservationFilter": ObservationFilter, "resolve_retrieval_strategy": resolve_retrieval_strategy,
                      "time": time, "tracer": lambda: MagicMock(), "RETRIEVE_TOP_K": 30}
         exec(compile(ast.Module(body=[method], type_ignores=[]), "<production-retrieval>", "exec"), namespace)
         for use_relations in (False, True):
             pool, connection = mock_database({})
             connection.fetch.return_value = []
             target = MagicMock(database_pool=pool, use_relation_vectors=use_relations)
+            target._attach_original_fields = AsyncMock(side_effect=lambda rows, _: rows)
             filters = {"region": "서울", "city": "종로", "category": "공원", "exclude_place_ids": [378, 379],
                        "area": {"type": "CIRCLE", "center": {"lat": 37.57, "lon": 126.98}, "radius_meters": 500}}
             await namespace["_retrieve_candidates"](target, {"filters": filters}, "[0]")

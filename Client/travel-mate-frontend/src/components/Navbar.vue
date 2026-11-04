@@ -13,7 +13,7 @@
       <template v-else>
         <div class="user-profile">
           <img
-            :src="userStore.userDesc?.profileImgUrl || '/images/default-avatar.png'"
+            :src="userStore.userDesc?.profileImgUrl || defaultAvatar"
             alt="프로필"
             class="profile-img"
           />
@@ -31,6 +31,8 @@
 
 <script setup>
 import { useRouter } from 'vue-router'
+import { EmotionAssets } from '@/conversation/character'
+const defaultAvatar = EmotionAssets.NEUTRAL.url
 import { DebugManager } from '@/utils/DebugManager'
 
 import { useUserStore } from '@/piniaStores/MyStore'
@@ -62,15 +64,15 @@ const logout = async () => {
   justify-content: space-between;
   align-items: center;
   padding: 0.8rem 2rem;
-  background-color: #1a1a1a;
-  color: #ffffff;
+  background-color: #315c7d;
+  color: #315c7d;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .brand-logo {
   font-size: 1.4rem;
   font-weight: bold;
-  color: #42b883;
+  color: #2488cd;
   text-decoration: none;
 }
 
@@ -81,14 +83,14 @@ const logout = async () => {
 }
 
 .nav-item {
-  color: #cccccc;
+  color: #527a9a;
   text-decoration: none;
   font-size: 1rem;
   transition: color 0.2s;
 }
 
 .nav-item:hover {
-  color: #ffffff;
+  color: #315c7d;
 }
 
 /* ⭐️ 유저 프로필 관련 스타일 추가 */
@@ -104,16 +106,17 @@ const logout = async () => {
   height: 32px;
   border-radius: 50%;
   object-fit: cover;
-  border: 2px solid #42b883;
+  object-position: center 15%;
+  border: 2px solid #2488cd;
 }
 
 .nickname {
   font-size: 0.95rem;
-  color: #ffffff;
+  color: #315c7d;
 }
 
 .signup-btn {
-  background-color: #42b883;
+  background-color: #2488cd;
   color: white;
   padding: 0.4rem 0.8rem;
   border-radius: 4px;
@@ -125,15 +128,15 @@ const logout = async () => {
 
 .logout-btn {
   background-color: transparent;
-  border: 1px solid #ff4d4d;
-  color: #ff4d4d;
+  border: 1px solid #5288b4;
+  color: #5288b4;
   padding: 0.4rem 0.8rem;
   border-radius: 4px;
   cursor: pointer;
 }
 
 .logout-btn:hover {
-  background-color: #ff4d4d;
+  background-color: #5288b4;
   color: white;
 }
 </style>

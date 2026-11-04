@@ -90,3 +90,21 @@ dependencies {
 tasks.named('test') {
 	useJUnitPlatform()
 }
+
+// Both profiles embed a content identity from exactly the same runtime source files.
+tasks.named('processResources') {
+    inputs.files(fileTree('src/main'))
+    doLast {
+        def fingerprint = java.security.MessageDigest.getInstance('SHA-256')
+        fileTree('src/main').files.findAll { it.isFile() }.sort { a, b ->
+            project.relativePath(a).replace('\\', '/') <=> project.relativePath(b).replace('\\', '/')
+        }.each { entry ->
+            fingerprint.update(project.relativePath(entry).replace('\\', '/').getBytes('UTF-8'))
+            fingerprint.update((byte) 0)
+            fingerprint.update(entry.bytes)
+            fingerprint.update((byte) 0)
+        }
+        new File(destinationDir, 'pipeline-identity.properties').text =
+                'source.sha256=' + fingerprint.digest().encodeHex().toString() + '\n'
+    }
+}

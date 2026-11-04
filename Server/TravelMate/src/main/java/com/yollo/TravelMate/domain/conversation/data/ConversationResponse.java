@@ -17,8 +17,23 @@ public record ConversationResponse(
         String turnId,
         String conversationId,
         String primaryResultId,
-        MessageSource messageSource
+        MessageSource messageSource,
+        ConversationIntent intent,
+        CharacterEmotion emotion,
+        List<JsonNode> items
 ) {
+    public ConversationResponse {
+        emotion = emotion == null ? CharacterEmotion.NEUTRAL : emotion;
+        intent = intent == null ? ConversationIntent.CONVERSATION : intent;
+        // Preserve authoritative legacy data, while all candidate/plan consumers use arrays.
+        if (items == null) {
+            items = data == null || data.isNull() ? List.of()
+                    : data.isArray() ? java.util.stream.StreamSupport.stream(data.spliterator(), false).toList()
+                    : type == ResultType.DRAFT ? List.of(data) : List.of();
+        }
+        items = List.copyOf(items);
+    }
+
     public enum ResultType { TEXT, PLACES, PLANNING_JOB, DRAFT, ERROR }
     public enum Termination { COMPLETED, MODEL_FAILED, INVALID_RESPONSE, MODEL_LIMIT, TOOL_LIMIT, TOOL_FAILED, BUDGET_REJECTED, COUNT_UNAVAILABLE }
     public enum ToolStatus { SUCCEEDED, FAILED, CACHED }

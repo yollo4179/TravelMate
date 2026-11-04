@@ -20,6 +20,7 @@ from app.reranker import reranker
 from app.enrichment.contracts import ExistingPlace
 from app.enrichment.evidence import search_description
 from app.enrichment.repository import latest_snapshot
+from app.contextual.metadata_filter import PlaceMetadataFilter
 from app.contextual.pipeline import tourapi_chunks, legacy_evidence_chunks, select_active, index_embedding_inputs
 from app.contextual.observation_search import ObservationFilter
 from app.contextual.repository import desired_chunks, activate_chunks, preserve_chunks, store_relation_embeddings
@@ -369,12 +370,18 @@ class KafkaRuntime:
             pipeline_span.set_attribute("search.top_k", RETRIEVE_TOP_K)
             pipeline_span.set_attribute("search.filters", json.dumps(payload.get("filters", {}), ensure_ascii=False))
 
+            with tracer().start_as_current_span("database.metadata_filter") as metadata_span:
+                eligible_ids = await self._eligible_place_ids(payload)
+                metadata_span.set_attribute("search.eligible_place_count", len(eligible_ids))
+            # Freeze eligibility for this request; filters are also rechecked during vector lookup.
+            payload = {**payload, "eligible_place_ids": eligible_ids}
             embedding_started_at = time.perf_counter()
             with tracer().start_as_current_span("embedding.model_inference") as embedding_span:
                 embedding_span.set_attribute("embedding.device", embedder.device)
-                embedding_span.set_attribute("embedding.text_count", 1)
+                embedding_span.set_attribute("embedding.text_count", 1 if eligible_ids else 0)
+                embedding_span.set_attribute("embedding.skipped", not eligible_ids)
                 embedding_span.set_attribute("embedding.query", query)
-                query_embedding = (await to_thread.run_sync(lambda: embedder.embed([query])))[0]
+                query_embedding = (await to_thread.run_sync(lambda: embedder.embed([query])))[0] if eligible_ids else []
                 embedding_span.set_attribute("embedding.dimension", embedder.getDimension())
                 embedding_span.set_attribute(
                     "embedding.elapsed_ms",
@@ -382,7 +389,7 @@ class KafkaRuntime:
                 )
 
             vector = "[" + ",".join(map(str, query_embedding)) + "]"
-            candidates = await self._retrieve_candidates(payload, vector)
+            candidates = await self._retrieve_candidates(payload, vector) if eligible_ids else []
             pipeline_span.set_attribute("search.candidate_count", len(candidates))
 
             if candidates and ranking_mode == RankingMode.RERANKED:
@@ -470,43 +477,18 @@ class KafkaRuntime:
             pipeline_span.set_attribute("search.results_preview", json.dumps(output_preview, ensure_ascii=False))
             await self._save_recommendation_result(request, result)
 
+    async def _eligible_place_ids(self, payload: dict[str, Any]) -> list[int]:
+        return await PlaceMetadataFilter.build(payload.get("filters", {})).execute(self.database_pool)
+
     async def _retrieve_candidates(self, payload: dict[str, Any], vector: str) -> list[dict[str, Any]]:
         filters = payload.get("filters", {})
         observation = ObservationFilter.from_mapping(filters.get("observation"))
-        conditions = [
-            "document_status = 'READY'",
-            "source_version = latest_seen_version",
-            "retrieval_embedding IS NOT NULL",
-            "1 - (retrieval_embedding <=> $1::vector) >= 0",
-        ]
-        parameters: list[Any] = [vector]
-        for column, value in (
-            ("region", filters.get("region")),
-            ("city", filters.get("city")),
-            ("category", filters.get("category")),
-        ):
-            if value and value.strip():
-                parameters.append(value)
-                conditions.append(f"{column} = ${len(parameters)}")
-
-        excluded_ids = filters.get("exclude_place_ids", [])
-        if excluded_ids:
-            parameters.append(excluded_ids)
-            conditions.append(f"NOT (place_id = ANY(${len(parameters)}::bigint[]))")
-
-        area = filters.get("area")
-        if area:
-            center = area["center"]
-            parameters.extend([center["lat"], center["lat"], center["lon"], area["radius_meters"]])
-            latitude_a, latitude_b, longitude, radius = range(len(parameters) - 3, len(parameters) + 1)
-            conditions.append(
-                f"""latitude IS NOT NULL AND longitude IS NOT NULL
-                AND latitude BETWEEN -90 AND 90 AND longitude BETWEEN -180 AND 180
-                AND 6371000 * 2 * asin(sqrt(least(1.0,
-                    power(sin(radians(latitude - ${latitude_a}) / 2), 2)
-                    + cos(radians(${latitude_b})) * cos(radians(latitude))
-                    * power(sin(radians(longitude - ${longitude}) / 2), 2)))) <= ${radius}"""
-            )
+        metadata = PlaceMetadataFilter.build(filters, offset=1)
+        conditions = ["retrieval_embedding IS NOT NULL", "1 - (retrieval_embedding <=> $1::vector) >= 0"]
+        parameters: list[Any] = [vector, *metadata.parameters]
+        if "eligible_place_ids" in payload:
+            parameters.append(payload["eligible_place_ids"])
+            conditions.append(f"place_id = ANY(${len(parameters)}::bigint[])")
 
         strategy = resolve_retrieval_strategy(observation, getattr(self, "use_relation_vectors", False) is True)
         retrieval = strategy.build_sql(observation, parameters)
@@ -515,6 +497,9 @@ class KafkaRuntime:
         parameters.extend([vector, RETRIEVE_TOP_K])
         vector_parameter, limit_parameter = len(parameters) - 1, len(parameters)
         query = f"""
+            WITH eligible_places AS MATERIALIZED (
+                SELECT * FROM place_embeddings WHERE {' AND '.join(metadata.conditions)}
+            )
             SELECT place_id, source_version, latest_seen_version, name,
                    CASE WHEN evidence IS NOT NULL THEN
                        (evidence->>'context_text') || E'\n\n' || (evidence->>'chunk_text')
@@ -529,7 +514,7 @@ class KafkaRuntime:
                 SELECT p.*, matched.chunk_id, matched.context_version,
                        matched.evidence,
                        COALESCE(matched.chunk_embedding, p.embedding) AS retrieval_embedding
-                FROM place_embeddings p
+                FROM eligible_places p
                 LEFT JOIN LATERAL (
                     SELECT a.chunk_id, a.context_version, {retrieval.embedding} AS chunk_embedding,
                            c.document || jsonb_build_object('context_version', a.context_version,

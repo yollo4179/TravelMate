@@ -1,0 +1,2455 @@
+{
+  "provenance": "SYNTHETIC OFFLINE FIXTURES. Actual source text is from the frozen v1.4.0 corpus; no model ran.",
+  "contract": {
+    "schema_version": "conversation-evaluation-contract-v1",
+    "environment": "evaluation",
+    "evaluation_user": {
+      "uid": "offline-fixture-user",
+      "user_id": "aDMINuser"
+    },
+    "tools": [
+      {
+        "tool_type": "GENERATE_PLAN",
+        "name": "generate_plan",
+        "parameters": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {},
+          "required": []
+        }
+      },
+      {
+        "tool_type": "GET_PLANNING_JOB",
+        "name": "get_planning_job",
+        "parameters": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "job_id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 36
+            }
+          },
+          "required": [
+            "job_id"
+          ]
+        }
+      },
+      {
+        "tool_type": "SEARCH_PLACES",
+        "name": "search_places",
+        "parameters": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "area": {
+              "anyOf": [
+                {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "enum": [
+                        "CIRCLE"
+                      ]
+                    },
+                    "center": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "properties": {
+                        "lon": {
+                          "type": "number",
+                          "minimum": -180.0,
+                          "maximum": 180.0
+                        },
+                        "lat": {
+                          "type": "number",
+                          "minimum": -90.0,
+                          "maximum": 90.0
+                        }
+                      },
+                      "required": [
+                        "lat",
+                        "lon"
+                      ]
+                    },
+                    "radius_meters": {
+                      "type": "integer",
+                      "minimum": 500,
+                      "maximum": 10000
+                    }
+                  },
+                  "required": [
+                    "center",
+                    "radius_meters",
+                    "type"
+                  ]
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "생략 또는 null이면 searchContext의 area를 사용한다. 둘 다 없으면 반경 제한 없음."
+            },
+            "limit": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 20,
+              "default": 10
+            },
+            "exclude_place_ids": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "uniqueItems": true,
+                  "items": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 9223372036854775807
+                  }
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": [],
+              "description": "생략 또는 null이면 빈 목록. searchContext의 제외 ID와 합친다."
+            },
+            "query": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 2000,
+              "pattern": "\\S",
+              "description": "필수 검색어. 궁·조용한·왕실 가족의 거처 같은 세부 장소 유형·분위기·관계 조건을 여기에 유지한다. 사용자 질문에 맞춰 직접 작성하며 서버가 대신 채우지 않는다."
+            },
+            "region": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 200,
+                  "pattern": "\\S"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "선택 필터. 생략 또는 null이면 searchContext 값을 사용한다. 둘 다 없으면 제한 없음."
+            },
+            "category": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "enum": [
+                    "관광지",
+                    "문화시설",
+                    "축제공연행사",
+                    "여행코스",
+                    "레포츠",
+                    "숙박",
+                    "쇼핑",
+                    "음식점"
+                  ]
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "DB의 대분류와 정확히 일치하는 enum 값만 사용한다. 세부 장소 유형·분위기·관계는 query에 유지한다. 적절한 분류를 확정할 수 없으면 생략 또는 null로 두며 searchContext 값을 상속한다. 둘 다 없으면 제한 없음. 서버는 분류를 자동 보정하지 않는다."
+            },
+            "city": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 200,
+                  "pattern": "\\S"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "선택 필터. 생략 또는 null이면 searchContext 값을 사용한다. 둘 다 없으면 제한 없음."
+            }
+          },
+          "required": [
+            "query"
+          ]
+        }
+      }
+    ],
+    "answer_schema": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "emotion": {
+          "type": "string",
+          "enum": [
+            "NEUTRAL",
+            "THINKING",
+            "HAPPY",
+            "GUIDING",
+            "EXCITED",
+            "AFFECTIONATE",
+            "EMBARRASSED",
+            "SHY",
+            "SAD",
+            "CONCERNED"
+          ]
+        },
+        "citations": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "placeId": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 9223372036854775807
+              },
+              "evidenceId": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 500
+              },
+              "quote": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 20000
+              },
+              "sourceId": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 500
+              }
+            },
+            "required": [
+              "evidenceId",
+              "placeId",
+              "quote",
+              "sourceId"
+            ]
+          }
+        },
+        "message": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 8000
+        },
+        "intent": {
+          "type": "string",
+          "enum": [
+            "CONVERSATION",
+            "RECOMMENDATION",
+            "PLAN"
+          ]
+        },
+        "answerKind": {
+          "type": "string",
+          "enum": [
+            "PLACE_GUIDANCE",
+            "CONVERSATION",
+            "CLARIFICATION"
+          ]
+        }
+      },
+      "required": [
+        "answerKind",
+        "citations",
+        "emotion",
+        "intent",
+        "message"
+      ]
+    },
+    "max_model_turns": 1,
+    "max_tool_calls": 2,
+    "provider": "OPENAI",
+    "model": "offline-fixture",
+    "response_format": "JSON_SCHEMA_V1",
+    "modules": {
+      "config": {
+        "search": "KAFKA_V1",
+        "evidence": "ORIGINAL_V1",
+        "prompt": "RESOURCE_V1",
+        "model": "GUARDED_V1",
+        "searchRanking": "REQUEST_DEFAULT",
+        "promptResource": "classpath:conversation/prompts/v2-grounded-system.txt"
+      },
+      "promptSha256": "463425932320c264b21ca6e08b8d48d7f61ac1ec7b4262d25e3b1a0b18742fca",
+      "promptClass": "com.yollo.TravelMate.domain.conversation.pipeline.ResourcePromptV1",
+      "modelClass": "com.yollo.TravelMate.domain.conversation.pipeline.GuardedModelV1"
+    },
+    "search_endpoint": "http://127.0.0.1:18000",
+    "source_sha256": "SYNTHETIC-MOCK-NOT-A-DEPLOYMENT-IDENTITY",
+    "reasoning_mode": "DISABLED",
+    "evaluation_budget_requirement": "REQUIRED",
+    "tool_contract_mode": "STRICT_TOOLS_V1",
+    "observation_file": "/workspace/travelmate-evaluation-versions/Server/TravelMate/build/observations/execution.jsonl"
+  },
+  "cases": {
+    "PLR-TM-palaces-01": {
+      "identity": {
+        "turn_id": "5e367d11-9ed0-5f28-a71b-0da43a772408",
+        "conversation_id": "dfef0248-d673-5112-96cf-07ee5c22c1bf"
+      },
+      "input_sha256": "13f07e1370f08c3962a159bbf18ff3ef60b7a5b2d03f1d550a34c96f70f9598b",
+      "body_sha256": "edca24981df96db2e3bcc0fd59b8e8c67b82c75c744b1f288589d29953f78cd2",
+      "response": {
+        "status_code": 200,
+        "raw_body": "{\"type\": \"PLACES\", \"data\": [{\"placeId\": 378, \"name\": \"창경궁\", \"description\": \"관광지. 고궁. 창경궁(昌慶宮)은 성종이 세 명의 대비를 위해 옛 수강궁에 창건한 궁이다. 창경궁은 원래 1418년(세종 즉위) 세종이 상왕 태종을 위해 창건한 수강궁(壽康宮)이 있던 자리이다. 이후 1483년(성종 14) 성종이 세 명의 대비인 세조의 왕비 정희왕후, 덕종의 왕비 소혜왕후, 예종의 왕비 안순왕후를 위해 수강궁을 크게 확장하고 궁의 이름을 창경궁이라 하였다. \\n창경궁은 창덕궁과 경계 없이 동궐(東闕)이라는 하나의 궁궐 영역이었으며,  주로 왕실 가족들의 생활공간으로 사용하였다. 창경궁은 1592년(선조 25) 임진왜란으로 소실된 것을 1616년(광해군 8) 중건하였으며, 1830년(순조 30) 대화재로 대부분의 건물들이 소실되었다가 4년 뒤에 중건하였다.\\n그러나 1907년 순종이 황위에 오른 후 창경궁 내에 동물원과 식물원을 조성하면서 궁궐로서의 모습을 잃기 시작하였다. 1911년에는 일제에 의해 궁의 이름마저 창경원(昌慶苑)으로 격하되어 궁궐이 아닌 공원화가 되어 훼손이 심하였다. 광복 후 1983년에 다시 창경궁으로 명칭을 회복한 후 궁궐 경내에 있던 동물원을 이전하고 본래 궁궐의 모습으로 복원공사가 진행되어 현재의 모습이 되었다. 창경궁은 남향으로 있는 다른 궁궐과 달리 정문과 정전이 동향으로 배치되어 있다.\", \"region\": \"서울\", \"city\": \"종로\", \"category\": \"관광지\"}], \"message\": \"창경궁을 찾았어요. 제공된 원문에 주로 왕실 가족들의 생활공간으로 사용됐다고 나와 있어요.\", \"citations\": [{\"placeId\": 378, \"evidenceId\": \"fixture-E378\", \"sourceId\": \"fixture-frozen-source-378\", \"quote\": \"주로 왕실 가족들의 생활공간으로 사용하였다.\"}], \"termination\": \"COMPLETED\", \"modelTurns\": 1, \"toolResults\": [], \"requestId\": \"3601c14f-33ac-57a5-ab0b-60ce91b648bd\", \"turnId\": \"5e367d11-9ed0-5f28-a71b-0da43a772408\", \"conversationId\": \"dfef0248-d673-5112-96cf-07ee5c22c1bf\", \"primaryResultId\": null, \"messageSource\": \"LLM\", \"intent\": \"RECOMMENDATION\", \"emotion\": \"GUIDING\", \"items\": [{\"placeId\": 378, \"name\": \"창경궁\", \"description\": \"관광지. 고궁. 창경궁(昌慶宮)은 성종이 세 명의 대비를 위해 옛 수강궁에 창건한 궁이다. 창경궁은 원래 1418년(세종 즉위) 세종이 상왕 태종을 위해 창건한 수강궁(壽康宮)이 있던 자리이다. 이후 1483년(성종 14) 성종이 세 명의 대비인 세조의 왕비 정희왕후, 덕종의 왕비 소혜왕후, 예종의 왕비 안순왕후를 위해 수강궁을 크게 확장하고 궁의 이름을 창경궁이라 하였다. \\n창경궁은 창덕궁과 경계 없이 동궐(東闕)이라는 하나의 궁궐 영역이었으며,  주로 왕실 가족들의 생활공간으로 사용하였다. 창경궁은 1592년(선조 25) 임진왜란으로 소실된 것을 1616년(광해군 8) 중건하였으며, 1830년(순조 30) 대화재로 대부분의 건물들이 소실되었다가 4년 뒤에 중건하였다.\\n그러나 1907년 순종이 황위에 오른 후 창경궁 내에 동물원과 식물원을 조성하면서 궁궐로서의 모습을 잃기 시작하였다. 1911년에는 일제에 의해 궁의 이름마저 창경원(昌慶苑)으로 격하되어 궁궐이 아닌 공원화가 되어 훼손이 심하였다. 광복 후 1983년에 다시 창경궁으로 명칭을 회복한 후 궁궐 경내에 있던 동물원을 이전하고 본래 궁궐의 모습으로 복원공사가 진행되어 현재의 모습이 되었다. 창경궁은 남향으로 있는 다른 궁궐과 달리 정문과 정전이 동향으로 배치되어 있다.\", \"region\": \"서울\", \"city\": \"종로\", \"category\": \"관광지\"}]}",
+        "server_request_id": "3601c14f-33ac-57a5-ab0b-60ce91b648bd"
+      },
+      "events": [
+        {
+          "schemaVersion": 1,
+          "eventId": "86b0ccdf-2079-5c4e-b0fe-03d723c2d3d5",
+          "event": "EVIDENCE_PREPARATION",
+          "timestamp": "2026-11-04T00:00:00Z",
+          "requestId": "3601c14f-33ac-57a5-ab0b-60ce91b648bd",
+          "turnId": "5e367d11-9ed0-5f28-a71b-0da43a772408",
+          "conversationId": "dfef0248-d673-5112-96cf-07ee5c22c1bf",
+          "caseId": "PLR-TM-palaces-01",
+          "inputSha256": "13f07e1370f08c3962a159bbf18ff3ef60b7a5b2d03f1d550a34c96f70f9598b",
+          "mode": "MOCK",
+          "phase": "CONVERSATION",
+          "payload": {
+            "state": "READY",
+            "sourceTool": "search_places",
+            "publicData": [
+              {
+                "placeId": 378,
+                "name": "창경궁",
+                "description": "관광지. 고궁. 창경궁(昌慶宮)은 성종이 세 명의 대비를 위해 옛 수강궁에 창건한 궁이다. 창경궁은 원래 1418년(세종 즉위) 세종이 상왕 태종을 위해 창건한 수강궁(壽康宮)이 있던 자리이다. 이후 1483년(성종 14) 성종이 세 명의 대비인 세조의 왕비 정희왕후, 덕종의 왕비 소혜왕후, 예종의 왕비 안순왕후를 위해 수강궁을 크게 확장하고 궁의 이름을 창경궁이라 하였다. \n창경궁은 창덕궁과 경계 없이 동궐(東闕)이라는 하나의 궁궐 영역이었으며,  주로 왕실 가족들의 생활공간으로 사용하였다. 창경궁은 1592년(선조 25) 임진왜란으로 소실된 것을 1616년(광해군 8) 중건하였으며, 1830년(순조 30) 대화재로 대부분의 건물들이 소실되었다가 4년 뒤에 중건하였다.\n그러나 1907년 순종이 황위에 오른 후 창경궁 내에 동물원과 식물원을 조성하면서 궁궐로서의 모습을 잃기 시작하였다. 1911년에는 일제에 의해 궁의 이름마저 창경원(昌慶苑)으로 격하되어 궁궐이 아닌 공원화가 되어 훼손이 심하였다. 광복 후 1983년에 다시 창경궁으로 명칭을 회복한 후 궁궐 경내에 있던 동물원을 이전하고 본래 궁궐의 모습으로 복원공사가 진행되어 현재의 모습이 되었다. 창경궁은 남향으로 있는 다른 궁궐과 달리 정문과 정전이 동향으로 배치되어 있다.",
+                "region": "서울",
+                "city": "종로",
+                "category": "관광지"
+              }
+            ],
+            "modelData": {
+              "searchCriteria": {
+                "query": "창경궁을 찾아줘.",
+                "region": "서울",
+                "city": null,
+                "category": null,
+                "excludePlaceIds": [],
+                "area": null,
+                "limit": 10,
+                "rankingMode": "RERANKED"
+              },
+              "candidates": [
+                {
+                  "placeId": 378,
+                  "name": "창경궁",
+                  "description": "관광지. 고궁. 창경궁(昌慶宮)은 성종이 세 명의 대비를 위해 옛 수강궁에 창건한 궁이다. 창경궁은 원래 1418년(세종 즉위) 세종이 상왕 태종을 위해 창건한 수강궁(壽康宮)이 있던 자리이다. 이후 1483년(성종 14) 성종이 세 명의 대비인 세조의 왕비 정희왕후, 덕종의 왕비 소혜왕후, 예종의 왕비 안순왕후를 위해 수강궁을 크게 확장하고 궁의 이름을 창경궁이라 하였다. \n창경궁은 창덕궁과 경계 없이 동궐(東闕)이라는 하나의 궁궐 영역이었으며,  주로 왕실 가족들의 생활공간으로 사용하였다. 창경궁은 1592년(선조 25) 임진왜란으로 소실된 것을 1616년(광해군 8) 중건하였으며, 1830년(순조 30) 대화재로 대부분의 건물들이 소실되었다가 4년 뒤에 중건하였다.\n그러나 1907년 순종이 황위에 오른",
+                  "selectedEvidence": [
+                    {
+                      "evidenceId": "fixture-E378",
+                      "original": {
+                        "source_id": "fixture-frozen-source-378",
+                        "chunk_text": "관광지. 고궁. 창경궁(昌慶宮)은 성종이 세 명의 대비를 위해 옛 수강궁에 창건한 궁이다. 창경궁은 원래 1418년(세종 즉위) 세종이 상왕 태종을 위해 창건한 수강궁(壽康宮)이 있던 자리이다. 이후 1483년(성종 14) 성종이 세 명의 대비인 세조의 왕비 정희왕후, 덕종의 왕비 소혜왕후, 예종의 왕비 안순왕후를 위해 수강궁을 크게 확장하고 궁의 이름을 창경궁이라 하였다. \n창경궁은 창덕궁과 경계 없이 동궐(東闕)이라는 하나의 궁궐 영역이었으며,  주로 왕실 가족들의 생활공간으로 사용하였다. 창경궁은 1592년(선조 25) 임진왜란으로 소실된 것을 1616년(광해군 8) 중건하였으며, 1830년(순조 30) 대화재로 대부분의 건물들이 소실되었다가 4년 뒤에 중건하였다.\n그러나 1907년 순종이 황위에 오른 후 창경궁 내에 동물원과 식물원을 조성하면서 궁궐로서의 모습을 잃기 시작하였다. 1911년에는 일제에 의해 궁의 이름마저 창경원(昌慶苑)으로 격하되어 궁궐이 아닌 공원화가 되어 훼손이 심하였다. 광복 후 1983년에 다시 창경궁으로 명칭을 회복한 후 궁궐 경내에 있던 동물원을 이전하고 본래 궁궐의 모습으로 복원공사가 진행되어 현재의 모습이 되었다. 창경궁은 남향으로 있는 다른 궁궐과 달리 정문과 정전이 동향으로 배치되어 있다."
+                      },
+                      "generatedSupplement": {}
+                    }
+                  ]
+                }
+              ]
+            },
+            "durationMs": 1
+          }
+        },
+        {
+          "schemaVersion": 1,
+          "eventId": "31fd5497-c843-500e-9a8f-cf6ba359b4d8",
+          "event": "MODEL_CALL",
+          "timestamp": "2026-11-04T00:00:00Z",
+          "requestId": "3601c14f-33ac-57a5-ab0b-60ce91b648bd",
+          "turnId": "5e367d11-9ed0-5f28-a71b-0da43a772408",
+          "conversationId": "dfef0248-d673-5112-96cf-07ee5c22c1bf",
+          "caseId": "PLR-TM-palaces-01",
+          "inputSha256": "13f07e1370f08c3962a159bbf18ff3ef60b7a5b2d03f1d550a34c96f70f9598b",
+          "mode": "MOCK",
+          "phase": "CONVERSATION",
+          "payload": {
+            "stage": "FINISHED",
+            "status": "SUCCEEDED",
+            "dispatched": false,
+            "fixture_only": true,
+            "provider": "OPENAI",
+            "model": "offline-fixture"
+          }
+        },
+        {
+          "schemaVersion": 1,
+          "eventId": "9ca854fe-280f-5d42-98ed-42e882b2544c",
+          "event": "MODEL_TURN",
+          "timestamp": "2026-11-04T00:00:00Z",
+          "requestId": "3601c14f-33ac-57a5-ab0b-60ce91b648bd",
+          "turnId": "5e367d11-9ed0-5f28-a71b-0da43a772408",
+          "conversationId": "dfef0248-d673-5112-96cf-07ee5c22c1bf",
+          "caseId": "PLR-TM-palaces-01",
+          "inputSha256": "13f07e1370f08c3962a159bbf18ff3ef60b7a5b2d03f1d550a34c96f70f9598b",
+          "mode": "MOCK",
+          "phase": "CONVERSATION",
+          "payload": {
+            "content": "{\"message\": \"창경궁을 찾았어요. 제공된 원문에 주로 왕실 가족들의 생활공간으로 사용됐다고 나와 있어요.\", \"citations\": [{\"placeId\": 378, \"evidenceId\": \"fixture-E378\", \"sourceId\": \"fixture-frozen-source-378\", \"quote\": \"주로 왕실 가족들의 생활공간으로 사용하였다.\"}], \"answerKind\": \"PLACE_GUIDANCE\", \"emotion\": \"GUIDING\", \"intent\": \"RECOMMENDATION\"}",
+            "toolCalls": [],
+            "modelTurn": 1
+          }
+        },
+        {
+          "schemaVersion": 1,
+          "eventId": "8c6f4c2c-ff4a-5cd8-804b-f1978a69c333",
+          "event": "TURN_RESULT",
+          "timestamp": "2026-11-04T00:00:00Z",
+          "requestId": "3601c14f-33ac-57a5-ab0b-60ce91b648bd",
+          "turnId": "5e367d11-9ed0-5f28-a71b-0da43a772408",
+          "conversationId": "dfef0248-d673-5112-96cf-07ee5c22c1bf",
+          "caseId": "PLR-TM-palaces-01",
+          "inputSha256": "13f07e1370f08c3962a159bbf18ff3ef60b7a5b2d03f1d550a34c96f70f9598b",
+          "mode": "MOCK",
+          "phase": "CONVERSATION",
+          "payload": {
+            "type": "PLACES",
+            "data": [
+              {
+                "placeId": 378,
+                "name": "창경궁",
+                "description": "관광지. 고궁. 창경궁(昌慶宮)은 성종이 세 명의 대비를 위해 옛 수강궁에 창건한 궁이다. 창경궁은 원래 1418년(세종 즉위) 세종이 상왕 태종을 위해 창건한 수강궁(壽康宮)이 있던 자리이다. 이후 1483년(성종 14) 성종이 세 명의 대비인 세조의 왕비 정희왕후, 덕종의 왕비 소혜왕후, 예종의 왕비 안순왕후를 위해 수강궁을 크게 확장하고 궁의 이름을 창경궁이라 하였다. \n창경궁은 창덕궁과 경계 없이 동궐(東闕)이라는 하나의 궁궐 영역이었으며,  주로 왕실 가족들의 생활공간으로 사용하였다. 창경궁은 1592년(선조 25) 임진왜란으로 소실된 것을 1616년(광해군 8) 중건하였으며, 1830년(순조 30) 대화재로 대부분의 건물들이 소실되었다가 4년 뒤에 중건하였다.\n그러나 1907년 순종이 황위에 오른 후 창경궁 내에 동물원과 식물원을 조성하면서 궁궐로서의 모습을 잃기 시작하였다. 1911년에는 일제에 의해 궁의 이름마저 창경원(昌慶苑)으로 격하되어 궁궐이 아닌 공원화가 되어 훼손이 심하였다. 광복 후 1983년에 다시 창경궁으로 명칭을 회복한 후 궁궐 경내에 있던 동물원을 이전하고 본래 궁궐의 모습으로 복원공사가 진행되어 현재의 모습이 되었다. 창경궁은 남향으로 있는 다른 궁궐과 달리 정문과 정전이 동향으로 배치되어 있다.",
+                "region": "서울",
+                "city": "종로",
+                "category": "관광지"
+              }
+            ],
+            "message": "창경궁을 찾았어요. 제공된 원문에 주로 왕실 가족들의 생활공간으로 사용됐다고 나와 있어요.",
+            "citations": [
+              {
+                "placeId": 378,
+                "evidenceId": "fixture-E378",
+                "sourceId": "fixture-frozen-source-378",
+                "quote": "주로 왕실 가족들의 생활공간으로 사용하였다."
+              }
+            ],
+            "termination": "COMPLETED",
+            "modelTurns": 1,
+            "toolResults": [],
+            "requestId": "3601c14f-33ac-57a5-ab0b-60ce91b648bd",
+            "turnId": "5e367d11-9ed0-5f28-a71b-0da43a772408",
+            "conversationId": "dfef0248-d673-5112-96cf-07ee5c22c1bf",
+            "primaryResultId": null,
+            "messageSource": "LLM",
+            "intent": "RECOMMENDATION",
+            "emotion": "GUIDING",
+            "items": [
+              {
+                "placeId": 378,
+                "name": "창경궁",
+                "description": "관광지. 고궁. 창경궁(昌慶宮)은 성종이 세 명의 대비를 위해 옛 수강궁에 창건한 궁이다. 창경궁은 원래 1418년(세종 즉위) 세종이 상왕 태종을 위해 창건한 수강궁(壽康宮)이 있던 자리이다. 이후 1483년(성종 14) 성종이 세 명의 대비인 세조의 왕비 정희왕후, 덕종의 왕비 소혜왕후, 예종의 왕비 안순왕후를 위해 수강궁을 크게 확장하고 궁의 이름을 창경궁이라 하였다. \n창경궁은 창덕궁과 경계 없이 동궐(東闕)이라는 하나의 궁궐 영역이었으며,  주로 왕실 가족들의 생활공간으로 사용하였다. 창경궁은 1592년(선조 25) 임진왜란으로 소실된 것을 1616년(광해군 8) 중건하였으며, 1830년(순조 30) 대화재로 대부분의 건물들이 소실되었다가 4년 뒤에 중건하였다.\n그러나 1907년 순종이 황위에 오른 후 창경궁 내에 동물원과 식물원을 조성하면서 궁궐로서의 모습을 잃기 시작하였다. 1911년에는 일제에 의해 궁의 이름마저 창경원(昌慶苑)으로 격하되어 궁궐이 아닌 공원화가 되어 훼손이 심하였다. 광복 후 1983년에 다시 창경궁으로 명칭을 회복한 후 궁궐 경내에 있던 동물원을 이전하고 본래 궁궐의 모습으로 복원공사가 진행되어 현재의 모습이 되었다. 창경궁은 남향으로 있는 다른 궁궐과 달리 정문과 정전이 동향으로 배치되어 있다.",
+                "region": "서울",
+                "city": "종로",
+                "category": "관광지"
+              }
+            ]
+          }
+        },
+        {
+          "schemaVersion": 1,
+          "eventId": "2cb44791-a9df-54d2-95c2-ae32429a57d5",
+          "event": "API_REQUEST",
+          "timestamp": "2026-11-04T00:00:00Z",
+          "requestId": "3601c14f-33ac-57a5-ab0b-60ce91b648bd",
+          "turnId": "5e367d11-9ed0-5f28-a71b-0da43a772408",
+          "conversationId": "dfef0248-d673-5112-96cf-07ee5c22c1bf",
+          "caseId": "PLR-TM-palaces-01",
+          "inputSha256": "13f07e1370f08c3962a159bbf18ff3ef60b7a5b2d03f1d550a34c96f70f9598b",
+          "mode": "MOCK",
+          "phase": "CONVERSATION",
+          "payload": {
+            "method": "POST",
+            "path": "/api/v1/conversation/turns",
+            "rawBody": "{\"message\":\"창경궁을 찾아줘.\",\"planningRequest\":null,\"history\":[],\"searchContext\":{\"region\":\"서울\",\"city\":null,\"category\":null,\"excludePlaceIds\":[],\"area\":null}}",
+            "bodySha256": "edca24981df96db2e3bcc0fd59b8e8c67b82c75c744b1f288589d29953f78cd2"
+          }
+        },
+        {
+          "schemaVersion": 1,
+          "eventId": "41c101db-1557-5a35-ac98-b0d6e7972d49",
+          "event": "API_RESPONSE",
+          "timestamp": "2026-11-04T00:00:00Z",
+          "requestId": "3601c14f-33ac-57a5-ab0b-60ce91b648bd",
+          "turnId": "5e367d11-9ed0-5f28-a71b-0da43a772408",
+          "conversationId": "dfef0248-d673-5112-96cf-07ee5c22c1bf",
+          "caseId": "PLR-TM-palaces-01",
+          "inputSha256": "13f07e1370f08c3962a159bbf18ff3ef60b7a5b2d03f1d550a34c96f70f9598b",
+          "mode": "MOCK",
+          "phase": "CONVERSATION",
+          "payload": {
+            "httpStatus": 200,
+            "response": {
+              "type": "PLACES",
+              "data": [
+                {
+                  "placeId": 378,
+                  "name": "창경궁",
+                  "description": "관광지. 고궁. 창경궁(昌慶宮)은 성종이 세 명의 대비를 위해 옛 수강궁에 창건한 궁이다. 창경궁은 원래 1418년(세종 즉위) 세종이 상왕 태종을 위해 창건한 수강궁(壽康宮)이 있던 자리이다. 이후 1483년(성종 14) 성종이 세 명의 대비인 세조의 왕비 정희왕후, 덕종의 왕비 소혜왕후, 예종의 왕비 안순왕후를 위해 수강궁을 크게 확장하고 궁의 이름을 창경궁이라 하였다. \n창경궁은 창덕궁과 경계 없이 동궐(東闕)이라는 하나의 궁궐 영역이었으며,  주로 왕실 가족들의 생활공간으로 사용하였다. 창경궁은 1592년(선조 25) 임진왜란으로 소실된 것을 1616년(광해군 8) 중건하였으며, 1830년(순조 30) 대화재로 대부분의 건물들이 소실되었다가 4년 뒤에 중건하였다.\n그러나 1907년 순종이 황위에 오른 후 창경궁 내에 동물원과 식물원을 조성하면서 궁궐로서의 모습을 잃기 시작하였다. 1911년에는 일제에 의해 궁의 이름마저 창경원(昌慶苑)으로 격하되어 궁궐이 아닌 공원화가 되어 훼손이 심하였다. 광복 후 1983년에 다시 창경궁으로 명칭을 회복한 후 궁궐 경내에 있던 동물원을 이전하고 본래 궁궐의 모습으로 복원공사가 진행되어 현재의 모습이 되었다. 창경궁은 남향으로 있는 다른 궁궐과 달리 정문과 정전이 동향으로 배치되어 있다.",
+                  "region": "서울",
+                  "city": "종로",
+                  "category": "관광지"
+                }
+              ],
+              "message": "창경궁을 찾았어요. 제공된 원문에 주로 왕실 가족들의 생활공간으로 사용됐다고 나와 있어요.",
+              "citations": [
+                {
+                  "placeId": 378,
+                  "evidenceId": "fixture-E378",
+                  "sourceId": "fixture-frozen-source-378",
+                  "quote": "주로 왕실 가족들의 생활공간으로 사용하였다."
+                }
+              ],
+              "termination": "COMPLETED",
+              "modelTurns": 1,
+              "toolResults": [],
+              "requestId": "3601c14f-33ac-57a5-ab0b-60ce91b648bd",
+              "turnId": "5e367d11-9ed0-5f28-a71b-0da43a772408",
+              "conversationId": "dfef0248-d673-5112-96cf-07ee5c22c1bf",
+              "primaryResultId": null,
+              "messageSource": "LLM",
+              "intent": "RECOMMENDATION",
+              "emotion": "GUIDING",
+              "items": [
+                {
+                  "placeId": 378,
+                  "name": "창경궁",
+                  "description": "관광지. 고궁. 창경궁(昌慶宮)은 성종이 세 명의 대비를 위해 옛 수강궁에 창건한 궁이다. 창경궁은 원래 1418년(세종 즉위) 세종이 상왕 태종을 위해 창건한 수강궁(壽康宮)이 있던 자리이다. 이후 1483년(성종 14) 성종이 세 명의 대비인 세조의 왕비 정희왕후, 덕종의 왕비 소혜왕후, 예종의 왕비 안순왕후를 위해 수강궁을 크게 확장하고 궁의 이름을 창경궁이라 하였다. \n창경궁은 창덕궁과 경계 없이 동궐(東闕)이라는 하나의 궁궐 영역이었으며,  주로 왕실 가족들의 생활공간으로 사용하였다. 창경궁은 1592년(선조 25) 임진왜란으로 소실된 것을 1616년(광해군 8) 중건하였으며, 1830년(순조 30) 대화재로 대부분의 건물들이 소실되었다가 4년 뒤에 중건하였다.\n그러나 1907년 순종이 황위에 오른 후 창경궁 내에 동물원과 식물원을 조성하면서 궁궐로서의 모습을 잃기 시작하였다. 1911년에는 일제에 의해 궁의 이름마저 창경원(昌慶苑)으로 격하되어 궁궐이 아닌 공원화가 되어 훼손이 심하였다. 광복 후 1983년에 다시 창경궁으로 명칭을 회복한 후 궁궐 경내에 있던 동물원을 이전하고 본래 궁궐의 모습으로 복원공사가 진행되어 현재의 모습이 되었다. 창경궁은 남향으로 있는 다른 궁궐과 달리 정문과 정전이 동향으로 배치되어 있다.",
+                  "region": "서울",
+                  "city": "종로",
+                  "category": "관광지"
+                }
+              ]
+            },
+            "durationMs": 1
+          }
+        }
+      ]
+    },
+    "PLR-TM-palaces-03": {
+      "identity": {
+        "turn_id": "92a6c9fd-0b5f-581c-9cc4-06373ae6dde0",
+        "conversation_id": "562914c0-52bf-5dae-b45e-a64b343d0351"
+      },
+      "input_sha256": "42a6a1b0fb5c40e8be6c37f1cf5e685c982b4d927151646eb6b2467478d8246d",
+      "body_sha256": "7f092746a92c758578230077e08ddeb64b72c6dab3406c31256352014febadbb",
+      "response": {
+        "status_code": 200,
+        "raw_body": "{\"type\": \"PLACES\", \"data\": [{\"placeId\": 378, \"name\": \"창경궁\", \"description\": \"관광지. 고궁. 창경궁(昌慶宮)은 성종이 세 명의 대비를 위해 옛 수강궁에 창건한 궁이다. 창경궁은 원래 1418년(세종 즉위) 세종이 상왕 태종을 위해 창건한 수강궁(壽康宮)이 있던 자리이다. 이후 1483년(성종 14) 성종이 세 명의 대비인 세조의 왕비 정희왕후, 덕종의 왕비 소혜왕후, 예종의 왕비 안순왕후를 위해 수강궁을 크게 확장하고 궁의 이름을 창경궁이라 하였다. \\n창경궁은 창덕궁과 경계 없이 동궐(東闕)이라는 하나의 궁궐 영역이었으며,  주로 왕실 가족들의 생활공간으로 사용하였다. 창경궁은 1592년(선조 25) 임진왜란으로 소실된 것을 1616년(광해군 8) 중건하였으며, 1830년(순조 30) 대화재로 대부분의 건물들이 소실되었다가 4년 뒤에 중건하였다.\\n그러나 1907년 순종이 황위에 오른 후 창경궁 내에 동물원과 식물원을 조성하면서 궁궐로서의 모습을 잃기 시작하였다. 1911년에는 일제에 의해 궁의 이름마저 창경원(昌慶苑)으로 격하되어 궁궐이 아닌 공원화가 되어 훼손이 심하였다. 광복 후 1983년에 다시 창경궁으로 명칭을 회복한 후 궁궐 경내에 있던 동물원을 이전하고 본래 궁궐의 모습으로 복원공사가 진행되어 현재의 모습이 되었다. 창경궁은 남향으로 있는 다른 궁궐과 달리 정문과 정전이 동향으로 배치되어 있다.\", \"region\": \"서울\", \"city\": \"종로\", \"category\": \"관광지\"}], \"message\": \"왕실 가족의 생활공간을 둘러보고 싶다면 창경궁이 잘 맞아요. 제공된 원문에 왕실 가족들의 생활공간으로 사용됐다고 명시돼 있습니다.\", \"citations\": [{\"placeId\": 378, \"evidenceId\": \"fixture-E378\", \"sourceId\": \"fixture-frozen-source-378\", \"quote\": \"주로 왕실 가족들의 생활공간으로 사용하였다.\"}], \"termination\": \"COMPLETED\", \"modelTurns\": 1, \"toolResults\": [], \"requestId\": \"b8a61f9a-f35f-5a06-91e0-e26b1a76916d\", \"turnId\": \"92a6c9fd-0b5f-581c-9cc4-06373ae6dde0\", \"conversationId\": \"562914c0-52bf-5dae-b45e-a64b343d0351\", \"primaryResultId\": null, \"messageSource\": \"LLM\", \"intent\": \"RECOMMENDATION\", \"emotion\": \"GUIDING\", \"items\": [{\"placeId\": 378, \"name\": \"창경궁\", \"description\": \"관광지. 고궁. 창경궁(昌慶宮)은 성종이 세 명의 대비를 위해 옛 수강궁에 창건한 궁이다. 창경궁은 원래 1418년(세종 즉위) 세종이 상왕 태종을 위해 창건한 수강궁(壽康宮)이 있던 자리이다. 이후 1483년(성종 14) 성종이 세 명의 대비인 세조의 왕비 정희왕후, 덕종의 왕비 소혜왕후, 예종의 왕비 안순왕후를 위해 수강궁을 크게 확장하고 궁의 이름을 창경궁이라 하였다. \\n창경궁은 창덕궁과 경계 없이 동궐(東闕)이라는 하나의 궁궐 영역이었으며,  주로 왕실 가족들의 생활공간으로 사용하였다. 창경궁은 1592년(선조 25) 임진왜란으로 소실된 것을 1616년(광해군 8) 중건하였으며, 1830년(순조 30) 대화재로 대부분의 건물들이 소실되었다가 4년 뒤에 중건하였다.\\n그러나 1907년 순종이 황위에 오른 후 창경궁 내에 동물원과 식물원을 조성하면서 궁궐로서의 모습을 잃기 시작하였다. 1911년에는 일제에 의해 궁의 이름마저 창경원(昌慶苑)으로 격하되어 궁궐이 아닌 공원화가 되어 훼손이 심하였다. 광복 후 1983년에 다시 창경궁으로 명칭을 회복한 후 궁궐 경내에 있던 동물원을 이전하고 본래 궁궐의 모습으로 복원공사가 진행되어 현재의 모습이 되었다. 창경궁은 남향으로 있는 다른 궁궐과 달리 정문과 정전이 동향으로 배치되어 있다.\", \"region\": \"서울\", \"city\": \"종로\", \"category\": \"관광지\"}]}",
+        "server_request_id": "b8a61f9a-f35f-5a06-91e0-e26b1a76916d"
+      },
+      "events": [
+        {
+          "schemaVersion": 1,
+          "eventId": "b19c6ed8-e9a6-5538-bc0a-01ce6f3004ca",
+          "event": "EVIDENCE_PREPARATION",
+          "timestamp": "2026-11-04T00:00:00Z",
+          "requestId": "b8a61f9a-f35f-5a06-91e0-e26b1a76916d",
+          "turnId": "92a6c9fd-0b5f-581c-9cc4-06373ae6dde0",
+          "conversationId": "562914c0-52bf-5dae-b45e-a64b343d0351",
+          "caseId": "PLR-TM-palaces-03",
+          "inputSha256": "42a6a1b0fb5c40e8be6c37f1cf5e685c982b4d927151646eb6b2467478d8246d",
+          "mode": "MOCK",
+          "phase": "CONVERSATION",
+          "payload": {
+            "state": "READY",
+            "sourceTool": "search_places",
+            "publicData": [
+              {
+                "placeId": 378,
+                "name": "창경궁",
+                "description": "관광지. 고궁. 창경궁(昌慶宮)은 성종이 세 명의 대비를 위해 옛 수강궁에 창건한 궁이다. 창경궁은 원래 1418년(세종 즉위) 세종이 상왕 태종을 위해 창건한 수강궁(壽康宮)이 있던 자리이다. 이후 1483년(성종 14) 성종이 세 명의 대비인 세조의 왕비 정희왕후, 덕종의 왕비 소혜왕후, 예종의 왕비 안순왕후를 위해 수강궁을 크게 확장하고 궁의 이름을 창경궁이라 하였다. \n창경궁은 창덕궁과 경계 없이 동궐(東闕)이라는 하나의 궁궐 영역이었으며,  주로 왕실 가족들의 생활공간으로 사용하였다. 창경궁은 1592년(선조 25) 임진왜란으로 소실된 것을 1616년(광해군 8) 중건하였으며, 1830년(순조 30) 대화재로 대부분의 건물들이 소실되었다가 4년 뒤에 중건하였다.\n그러나 1907년 순종이 황위에 오른 후 창경궁 내에 동물원과 식물원을 조성하면서 궁궐로서의 모습을 잃기 시작하였다. 1911년에는 일제에 의해 궁의 이름마저 창경원(昌慶苑)으로 격하되어 궁궐이 아닌 공원화가 되어 훼손이 심하였다. 광복 후 1983년에 다시 창경궁으로 명칭을 회복한 후 궁궐 경내에 있던 동물원을 이전하고 본래 궁궐의 모습으로 복원공사가 진행되어 현재의 모습이 되었다. 창경궁은 남향으로 있는 다른 궁궐과 달리 정문과 정전이 동향으로 배치되어 있다.",
+                "region": "서울",
+                "city": "종로",
+                "category": "관광지"
+              }
+            ],
+            "modelData": {
+              "searchCriteria": {
+                "query": "종로에서 조선 왕실 가족이 생활했던 궁이나 거처를 둘러보고 싶어.",
+                "region": "서울",
+                "city": "종로",
+                "category": null,
+                "excludePlaceIds": [],
+                "area": null,
+                "limit": 10,
+                "rankingMode": "RERANKED"
+              },
+              "candidates": [
+                {
+                  "placeId": 378,
+                  "name": "창경궁",
+                  "description": "관광지. 고궁. 창경궁(昌慶宮)은 성종이 세 명의 대비를 위해 옛 수강궁에 창건한 궁이다. 창경궁은 원래 1418년(세종 즉위) 세종이 상왕 태종을 위해 창건한 수강궁(壽康宮)이 있던 자리이다. 이후 1483년(성종 14) 성종이 세 명의 대비인 세조의 왕비 정희왕후, 덕종의 왕비 소혜왕후, 예종의 왕비 안순왕후를 위해 수강궁을 크게 확장하고 궁의 이름을 창경궁이라 하였다. \n창경궁은 창덕궁과 경계 없이 동궐(東闕)이라는 하나의 궁궐 영역이었으며,  주로 왕실 가족들의 생활공간으로 사용하였다. 창경궁은 1592년(선조 25) 임진왜란으로 소실된 것을 1616년(광해군 8) 중건하였으며, 1830년(순조 30) 대화재로 대부분의 건물들이 소실되었다가 4년 뒤에 중건하였다.\n그러나 1907년 순종이 황위에 오른",
+                  "selectedEvidence": [
+                    {
+                      "evidenceId": "fixture-E378",
+                      "original": {
+                        "source_id": "fixture-frozen-source-378",
+                        "chunk_text": "관광지. 고궁. 창경궁(昌慶宮)은 성종이 세 명의 대비를 위해 옛 수강궁에 창건한 궁이다. 창경궁은 원래 1418년(세종 즉위) 세종이 상왕 태종을 위해 창건한 수강궁(壽康宮)이 있던 자리이다. 이후 1483년(성종 14) 성종이 세 명의 대비인 세조의 왕비 정희왕후, 덕종의 왕비 소혜왕후, 예종의 왕비 안순왕후를 위해 수강궁을 크게 확장하고 궁의 이름을 창경궁이라 하였다. \n창경궁은 창덕궁과 경계 없이 동궐(東闕)이라는 하나의 궁궐 영역이었으며,  주로 왕실 가족들의 생활공간으로 사용하였다. 창경궁은 1592년(선조 25) 임진왜란으로 소실된 것을 1616년(광해군 8) 중건하였으며, 1830년(순조 30) 대화재로 대부분의 건물들이 소실되었다가 4년 뒤에 중건하였다.\n그러나 1907년 순종이 황위에 오른 후 창경궁 내에 동물원과 식물원을 조성하면서 궁궐로서의 모습을 잃기 시작하였다. 1911년에는 일제에 의해 궁의 이름마저 창경원(昌慶苑)으로 격하되어 궁궐이 아닌 공원화가 되어 훼손이 심하였다. 광복 후 1983년에 다시 창경궁으로 명칭을 회복한 후 궁궐 경내에 있던 동물원을 이전하고 본래 궁궐의 모습으로 복원공사가 진행되어 현재의 모습이 되었다. 창경궁은 남향으로 있는 다른 궁궐과 달리 정문과 정전이 동향으로 배치되어 있다."
+                      },
+                      "generatedSupplement": {}
+                    }
+                  ]
+                }
+              ]
+            },
+            "durationMs": 1
+          }
+        },
+        {
+          "schemaVersion": 1,
+          "eventId": "4742670a-ceb1-524b-8837-411929358829",
+          "event": "MODEL_CALL",
+          "timestamp": "2026-11-04T00:00:00Z",
+          "requestId": "b8a61f9a-f35f-5a06-91e0-e26b1a76916d",
+          "turnId": "92a6c9fd-0b5f-581c-9cc4-06373ae6dde0",
+          "conversationId": "562914c0-52bf-5dae-b45e-a64b343d0351",
+          "caseId": "PLR-TM-palaces-03",
+          "inputSha256": "42a6a1b0fb5c40e8be6c37f1cf5e685c982b4d927151646eb6b2467478d8246d",
+          "mode": "MOCK",
+          "phase": "CONVERSATION",
+          "payload": {
+            "stage": "FINISHED",
+            "status": "SUCCEEDED",
+            "dispatched": false,
+            "fixture_only": true,
+            "provider": "OPENAI",
+            "model": "offline-fixture"
+          }
+        },
+        {
+          "schemaVersion": 1,
+          "eventId": "79903f0c-34b8-5d17-be08-1b6a87329fa1",
+          "event": "MODEL_TURN",
+          "timestamp": "2026-11-04T00:00:00Z",
+          "requestId": "b8a61f9a-f35f-5a06-91e0-e26b1a76916d",
+          "turnId": "92a6c9fd-0b5f-581c-9cc4-06373ae6dde0",
+          "conversationId": "562914c0-52bf-5dae-b45e-a64b343d0351",
+          "caseId": "PLR-TM-palaces-03",
+          "inputSha256": "42a6a1b0fb5c40e8be6c37f1cf5e685c982b4d927151646eb6b2467478d8246d",
+          "mode": "MOCK",
+          "phase": "CONVERSATION",
+          "payload": {
+            "content": "{\"message\": \"왕실 가족의 생활공간을 둘러보고 싶다면 창경궁이 잘 맞아요. 제공된 원문에 왕실 가족들의 생활공간으로 사용됐다고 명시돼 있습니다.\", \"citations\": [{\"placeId\": 378, \"evidenceId\": \"fixture-E378\", \"sourceId\": \"fixture-frozen-source-378\", \"quote\": \"주로 왕실 가족들의 생활공간으로 사용하였다.\"}], \"answerKind\": \"PLACE_GUIDANCE\", \"emotion\": \"GUIDING\", \"intent\": \"RECOMMENDATION\"}",
+            "toolCalls": [],
+            "modelTurn": 1
+          }
+        },
+        {
+          "schemaVersion": 1,
+          "eventId": "5aae6585-96e1-53f2-8688-8d9c5bc14943",
+          "event": "TURN_RESULT",
+          "timestamp": "2026-11-04T00:00:00Z",
+          "requestId": "b8a61f9a-f35f-5a06-91e0-e26b1a76916d",
+          "turnId": "92a6c9fd-0b5f-581c-9cc4-06373ae6dde0",
+          "conversationId": "562914c0-52bf-5dae-b45e-a64b343d0351",
+          "caseId": "PLR-TM-palaces-03",
+          "inputSha256": "42a6a1b0fb5c40e8be6c37f1cf5e685c982b4d927151646eb6b2467478d8246d",
+          "mode": "MOCK",
+          "phase": "CONVERSATION",
+          "payload": {
+            "type": "PLACES",
+            "data": [
+              {
+                "placeId": 378,
+                "name": "창경궁",
+                "description": "관광지. 고궁. 창경궁(昌慶宮)은 성종이 세 명의 대비를 위해 옛 수강궁에 창건한 궁이다. 창경궁은 원래 1418년(세종 즉위) 세종이 상왕 태종을 위해 창건한 수강궁(壽康宮)이 있던 자리이다. 이후 1483년(성종 14) 성종이 세 명의 대비인 세조의 왕비 정희왕후, 덕종의 왕비 소혜왕후, 예종의 왕비 안순왕후를 위해 수강궁을 크게 확장하고 궁의 이름을 창경궁이라 하였다. \n창경궁은 창덕궁과 경계 없이 동궐(東闕)이라는 하나의 궁궐 영역이었으며,  주로 왕실 가족들의 생활공간으로 사용하였다. 창경궁은 1592년(선조 25) 임진왜란으로 소실된 것을 1616년(광해군 8) 중건하였으며, 1830년(순조 30) 대화재로 대부분의 건물들이 소실되었다가 4년 뒤에 중건하였다.\n그러나 1907년 순종이 황위에 오른 후 창경궁 내에 동물원과 식물원을 조성하면서 궁궐로서의 모습을 잃기 시작하였다. 1911년에는 일제에 의해 궁의 이름마저 창경원(昌慶苑)으로 격하되어 궁궐이 아닌 공원화가 되어 훼손이 심하였다. 광복 후 1983년에 다시 창경궁으로 명칭을 회복한 후 궁궐 경내에 있던 동물원을 이전하고 본래 궁궐의 모습으로 복원공사가 진행되어 현재의 모습이 되었다. 창경궁은 남향으로 있는 다른 궁궐과 달리 정문과 정전이 동향으로 배치되어 있다.",
+                "region": "서울",
+                "city": "종로",
+                "category": "관광지"
+              }
+            ],
+            "message": "왕실 가족의 생활공간을 둘러보고 싶다면 창경궁이 잘 맞아요. 제공된 원문에 왕실 가족들의 생활공간으로 사용됐다고 명시돼 있습니다.",
+            "citations": [
+              {
+                "placeId": 378,
+                "evidenceId": "fixture-E378",
+                "sourceId": "fixture-frozen-source-378",
+                "quote": "주로 왕실 가족들의 생활공간으로 사용하였다."
+              }
+            ],
+            "termination": "COMPLETED",
+            "modelTurns": 1,
+            "toolResults": [],
+            "requestId": "b8a61f9a-f35f-5a06-91e0-e26b1a76916d",
+            "turnId": "92a6c9fd-0b5f-581c-9cc4-06373ae6dde0",
+            "conversationId": "562914c0-52bf-5dae-b45e-a64b343d0351",
+            "primaryResultId": null,
+            "messageSource": "LLM",
+            "intent": "RECOMMENDATION",
+            "emotion": "GUIDING",
+            "items": [
+              {
+                "placeId": 378,
+                "name": "창경궁",
+                "description": "관광지. 고궁. 창경궁(昌慶宮)은 성종이 세 명의 대비를 위해 옛 수강궁에 창건한 궁이다. 창경궁은 원래 1418년(세종 즉위) 세종이 상왕 태종을 위해 창건한 수강궁(壽康宮)이 있던 자리이다. 이후 1483년(성종 14) 성종이 세 명의 대비인 세조의 왕비 정희왕후, 덕종의 왕비 소혜왕후, 예종의 왕비 안순왕후를 위해 수강궁을 크게 확장하고 궁의 이름을 창경궁이라 하였다. \n창경궁은 창덕궁과 경계 없이 동궐(東闕)이라는 하나의 궁궐 영역이었으며,  주로 왕실 가족들의 생활공간으로 사용하였다. 창경궁은 1592년(선조 25) 임진왜란으로 소실된 것을 1616년(광해군 8) 중건하였으며, 1830년(순조 30) 대화재로 대부분의 건물들이 소실되었다가 4년 뒤에 중건하였다.\n그러나 1907년 순종이 황위에 오른 후 창경궁 내에 동물원과 식물원을 조성하면서 궁궐로서의 모습을 잃기 시작하였다. 1911년에는 일제에 의해 궁의 이름마저 창경원(昌慶苑)으로 격하되어 궁궐이 아닌 공원화가 되어 훼손이 심하였다. 광복 후 1983년에 다시 창경궁으로 명칭을 회복한 후 궁궐 경내에 있던 동물원을 이전하고 본래 궁궐의 모습으로 복원공사가 진행되어 현재의 모습이 되었다. 창경궁은 남향으로 있는 다른 궁궐과 달리 정문과 정전이 동향으로 배치되어 있다.",
+                "region": "서울",
+                "city": "종로",
+                "category": "관광지"
+              }
+            ]
+          }
+        },
+        {
+          "schemaVersion": 1,
+          "eventId": "e805d98a-4edf-573e-9ddd-d588e8386d11",
+          "event": "API_REQUEST",
+          "timestamp": "2026-11-04T00:00:00Z",
+          "requestId": "b8a61f9a-f35f-5a06-91e0-e26b1a76916d",
+          "turnId": "92a6c9fd-0b5f-581c-9cc4-06373ae6dde0",
+          "conversationId": "562914c0-52bf-5dae-b45e-a64b343d0351",
+          "caseId": "PLR-TM-palaces-03",
+          "inputSha256": "42a6a1b0fb5c40e8be6c37f1cf5e685c982b4d927151646eb6b2467478d8246d",
+          "mode": "MOCK",
+          "phase": "CONVERSATION",
+          "payload": {
+            "method": "POST",
+            "path": "/api/v1/conversation/turns",
+            "rawBody": "{\"message\":\"종로에서 조선 왕실 가족이 생활했던 궁이나 거처를 둘러보고 싶어.\",\"planningRequest\":null,\"history\":[],\"searchContext\":{\"region\":\"서울\",\"city\":\"종로\",\"category\":null,\"excludePlaceIds\":[],\"area\":null}}",
+            "bodySha256": "7f092746a92c758578230077e08ddeb64b72c6dab3406c31256352014febadbb"
+          }
+        },
+        {
+          "schemaVersion": 1,
+          "eventId": "50a0d513-b193-5036-8f45-0293fb45237a",
+          "event": "API_RESPONSE",
+          "timestamp": "2026-11-04T00:00:00Z",
+          "requestId": "b8a61f9a-f35f-5a06-91e0-e26b1a76916d",
+          "turnId": "92a6c9fd-0b5f-581c-9cc4-06373ae6dde0",
+          "conversationId": "562914c0-52bf-5dae-b45e-a64b343d0351",
+          "caseId": "PLR-TM-palaces-03",
+          "inputSha256": "42a6a1b0fb5c40e8be6c37f1cf5e685c982b4d927151646eb6b2467478d8246d",
+          "mode": "MOCK",
+          "phase": "CONVERSATION",
+          "payload": {
+            "httpStatus": 200,
+            "response": {
+              "type": "PLACES",
+              "data": [
+                {
+                  "placeId": 378,
+                  "name": "창경궁",
+                  "description": "관광지. 고궁. 창경궁(昌慶宮)은 성종이 세 명의 대비를 위해 옛 수강궁에 창건한 궁이다. 창경궁은 원래 1418년(세종 즉위) 세종이 상왕 태종을 위해 창건한 수강궁(壽康宮)이 있던 자리이다. 이후 1483년(성종 14) 성종이 세 명의 대비인 세조의 왕비 정희왕후, 덕종의 왕비 소혜왕후, 예종의 왕비 안순왕후를 위해 수강궁을 크게 확장하고 궁의 이름을 창경궁이라 하였다. \n창경궁은 창덕궁과 경계 없이 동궐(東闕)이라는 하나의 궁궐 영역이었으며,  주로 왕실 가족들의 생활공간으로 사용하였다. 창경궁은 1592년(선조 25) 임진왜란으로 소실된 것을 1616년(광해군 8) 중건하였으며, 1830년(순조 30) 대화재로 대부분의 건물들이 소실되었다가 4년 뒤에 중건하였다.\n그러나 1907년 순종이 황위에 오른 후 창경궁 내에 동물원과 식물원을 조성하면서 궁궐로서의 모습을 잃기 시작하였다. 1911년에는 일제에 의해 궁의 이름마저 창경원(昌慶苑)으로 격하되어 궁궐이 아닌 공원화가 되어 훼손이 심하였다. 광복 후 1983년에 다시 창경궁으로 명칭을 회복한 후 궁궐 경내에 있던 동물원을 이전하고 본래 궁궐의 모습으로 복원공사가 진행되어 현재의 모습이 되었다. 창경궁은 남향으로 있는 다른 궁궐과 달리 정문과 정전이 동향으로 배치되어 있다.",
+                  "region": "서울",
+                  "city": "종로",
+                  "category": "관광지"
+                }
+              ],
+              "message": "왕실 가족의 생활공간을 둘러보고 싶다면 창경궁이 잘 맞아요. 제공된 원문에 왕실 가족들의 생활공간으로 사용됐다고 명시돼 있습니다.",
+              "citations": [
+                {
+                  "placeId": 378,
+                  "evidenceId": "fixture-E378",
+                  "sourceId": "fixture-frozen-source-378",
+                  "quote": "주로 왕실 가족들의 생활공간으로 사용하였다."
+                }
+              ],
+              "termination": "COMPLETED",
+              "modelTurns": 1,
+              "toolResults": [],
+              "requestId": "b8a61f9a-f35f-5a06-91e0-e26b1a76916d",
+              "turnId": "92a6c9fd-0b5f-581c-9cc4-06373ae6dde0",
+              "conversationId": "562914c0-52bf-5dae-b45e-a64b343d0351",
+              "primaryResultId": null,
+              "messageSource": "LLM",
+              "intent": "RECOMMENDATION",
+              "emotion": "GUIDING",
+              "items": [
+                {
+                  "placeId": 378,
+                  "name": "창경궁",
+                  "description": "관광지. 고궁. 창경궁(昌慶宮)은 성종이 세 명의 대비를 위해 옛 수강궁에 창건한 궁이다. 창경궁은 원래 1418년(세종 즉위) 세종이 상왕 태종을 위해 창건한 수강궁(壽康宮)이 있던 자리이다. 이후 1483년(성종 14) 성종이 세 명의 대비인 세조의 왕비 정희왕후, 덕종의 왕비 소혜왕후, 예종의 왕비 안순왕후를 위해 수강궁을 크게 확장하고 궁의 이름을 창경궁이라 하였다. \n창경궁은 창덕궁과 경계 없이 동궐(東闕)이라는 하나의 궁궐 영역이었으며,  주로 왕실 가족들의 생활공간으로 사용하였다. 창경궁은 1592년(선조 25) 임진왜란으로 소실된 것을 1616년(광해군 8) 중건하였으며, 1830년(순조 30) 대화재로 대부분의 건물들이 소실되었다가 4년 뒤에 중건하였다.\n그러나 1907년 순종이 황위에 오른 후 창경궁 내에 동물원과 식물원을 조성하면서 궁궐로서의 모습을 잃기 시작하였다. 1911년에는 일제에 의해 궁의 이름마저 창경원(昌慶苑)으로 격하되어 궁궐이 아닌 공원화가 되어 훼손이 심하였다. 광복 후 1983년에 다시 창경궁으로 명칭을 회복한 후 궁궐 경내에 있던 동물원을 이전하고 본래 궁궐의 모습으로 복원공사가 진행되어 현재의 모습이 되었다. 창경궁은 남향으로 있는 다른 궁궐과 달리 정문과 정전이 동향으로 배치되어 있다.",
+                  "region": "서울",
+                  "city": "종로",
+                  "category": "관광지"
+                }
+              ]
+            },
+            "durationMs": 1
+          }
+        }
+      ]
+    },
+    "CONV-SOCIAL-thanks": {
+      "identity": {
+        "turn_id": "63bdebf2-e8a8-502f-8106-104117995452",
+        "conversation_id": "c47acd62-6bd7-5d24-8564-a11638bb1065"
+      },
+      "input_sha256": "7f7d0483cffa30aeb829c6eb866e057e8dba6fa01166eba79e6265408e42290d",
+      "body_sha256": "c8ef1ddc4582c7264d493bff5bc72eee1098bb33cb91d6af4612e6b38829d5f5",
+      "response": {
+        "status_code": 200,
+        "raw_body": "{\"type\": \"TEXT\", \"data\": null, \"message\": \"도움이 됐다니 다행이에요. 다음 여행 준비할 때 또 이야기해요.\", \"citations\": [], \"termination\": \"COMPLETED\", \"modelTurns\": 1, \"toolResults\": [], \"requestId\": \"97872f45-bd39-59cf-bae0-f2b89d040b9e\", \"turnId\": \"63bdebf2-e8a8-502f-8106-104117995452\", \"conversationId\": \"c47acd62-6bd7-5d24-8564-a11638bb1065\", \"primaryResultId\": null, \"messageSource\": \"LLM\", \"intent\": \"CONVERSATION\", \"emotion\": \"HAPPY\", \"items\": []}",
+        "server_request_id": "97872f45-bd39-59cf-bae0-f2b89d040b9e"
+      },
+      "events": [
+        {
+          "schemaVersion": 1,
+          "eventId": "3ca2d6e7-a98f-5d66-b2d1-ffb0d4cbffc1",
+          "event": "EVIDENCE_PREPARATION",
+          "timestamp": "2026-11-04T00:00:00Z",
+          "requestId": "97872f45-bd39-59cf-bae0-f2b89d040b9e",
+          "turnId": "63bdebf2-e8a8-502f-8106-104117995452",
+          "conversationId": "c47acd62-6bd7-5d24-8564-a11638bb1065",
+          "caseId": "CONV-SOCIAL-thanks",
+          "inputSha256": "7f7d0483cffa30aeb829c6eb866e057e8dba6fa01166eba79e6265408e42290d",
+          "mode": "MOCK",
+          "phase": "CONVERSATION",
+          "payload": {
+            "state": "READY",
+            "sourceTool": "search_places",
+            "publicData": [
+              {
+                "placeId": 378,
+                "name": "창경궁",
+                "description": "관광지. 고궁. 창경궁(昌慶宮)은 성종이 세 명의 대비를 위해 옛 수강궁에 창건한 궁이다. 창경궁은 원래 1418년(세종 즉위) 세종이 상왕 태종을 위해 창건한 수강궁(壽康宮)이 있던 자리이다. 이후 1483년(성종 14) 성종이 세 명의 대비인 세조의 왕비 정희왕후, 덕종의 왕비 소혜왕후, 예종의 왕비 안순왕후를 위해 수강궁을 크게 확장하고 궁의 이름을 창경궁이라 하였다. \n창경궁은 창덕궁과 경계 없이 동궐(東闕)이라는 하나의 궁궐 영역이었으며,  주로 왕실 가족들의 생활공간으로 사용하였다. 창경궁은 1592년(선조 25) 임진왜란으로 소실된 것을 1616년(광해군 8) 중건하였으며, 1830년(순조 30) 대화재로 대부분의 건물들이 소실되었다가 4년 뒤에 중건하였다.\n그러나 1907년 순종이 황위에 오른 후 창경궁 내에 동물원과 식물원을 조성하면서 궁궐로서의 모습을 잃기 시작하였다. 1911년에는 일제에 의해 궁의 이름마저 창경원(昌慶苑)으로 격하되어 궁궐이 아닌 공원화가 되어 훼손이 심하였다. 광복 후 1983년에 다시 창경궁으로 명칭을 회복한 후 궁궐 경내에 있던 동물원을 이전하고 본래 궁궐의 모습으로 복원공사가 진행되어 현재의 모습이 되었다. 창경궁은 남향으로 있는 다른 궁궐과 달리 정문과 정전이 동향으로 배치되어 있다.",
+                "region": "서울",
+                "city": "종로",
+                "category": "관광지"
+              }
+            ],
+            "modelData": {
+              "searchCriteria": {
+                "query": "고마워. 오늘은 여기까지 할게.",
+                "region": "서울",
+                "city": "종로",
+                "category": "관광지",
+                "excludePlaceIds": [],
+                "area": null,
+                "limit": 10,
+                "rankingMode": "RERANKED"
+              },
+              "candidates": [
+                {
+                  "placeId": 378,
+                  "name": "창경궁",
+                  "description": "관광지. 고궁. 창경궁(昌慶宮)은 성종이 세 명의 대비를 위해 옛 수강궁에 창건한 궁이다. 창경궁은 원래 1418년(세종 즉위) 세종이 상왕 태종을 위해 창건한 수강궁(壽康宮)이 있던 자리이다. 이후 1483년(성종 14) 성종이 세 명의 대비인 세조의 왕비 정희왕후, 덕종의 왕비 소혜왕후, 예종의 왕비 안순왕후를 위해 수강궁을 크게 확장하고 궁의 이름을 창경궁이라 하였다. \n창경궁은 창덕궁과 경계 없이 동궐(東闕)이라는 하나의 궁궐 영역이었으며,  주로 왕실 가족들의 생활공간으로 사용하였다. 창경궁은 1592년(선조 25) 임진왜란으로 소실된 것을 1616년(광해군 8) 중건하였으며, 1830년(순조 30) 대화재로 대부분의 건물들이 소실되었다가 4년 뒤에 중건하였다.\n그러나 1907년 순종이 황위에 오른",
+                  "selectedEvidence": [
+                    {
+                      "evidenceId": "fixture-E378",
+                      "original": {
+                        "source_id": "fixture-frozen-source-378",
+                        "chunk_text": "관광지. 고궁. 창경궁(昌慶宮)은 성종이 세 명의 대비를 위해 옛 수강궁에 창건한 궁이다. 창경궁은 원래 1418년(세종 즉위) 세종이 상왕 태종을 위해 창건한 수강궁(壽康宮)이 있던 자리이다. 이후 1483년(성종 14) 성종이 세 명의 대비인 세조의 왕비 정희왕후, 덕종의 왕비 소혜왕후, 예종의 왕비 안순왕후를 위해 수강궁을 크게 확장하고 궁의 이름을 창경궁이라 하였다. \n창경궁은 창덕궁과 경계 없이 동궐(東闕)이라는 하나의 궁궐 영역이었으며,  주로 왕실 가족들의 생활공간으로 사용하였다. 창경궁은 1592년(선조 25) 임진왜란으로 소실된 것을 1616년(광해군 8) 중건하였으며, 1830년(순조 30) 대화재로 대부분의 건물들이 소실되었다가 4년 뒤에 중건하였다.\n그러나 1907년 순종이 황위에 오른 후 창경궁 내에 동물원과 식물원을 조성하면서 궁궐로서의 모습을 잃기 시작하였다. 1911년에는 일제에 의해 궁의 이름마저 창경원(昌慶苑)으로 격하되어 궁궐이 아닌 공원화가 되어 훼손이 심하였다. 광복 후 1983년에 다시 창경궁으로 명칭을 회복한 후 궁궐 경내에 있던 동물원을 이전하고 본래 궁궐의 모습으로 복원공사가 진행되어 현재의 모습이 되었다. 창경궁은 남향으로 있는 다른 궁궐과 달리 정문과 정전이 동향으로 배치되어 있다."
+                      },
+                      "generatedSupplement": {}
+                    }
+                  ]
+                }
+              ]
+            },
+            "durationMs": 1
+          }
+        },
+        {
+          "schemaVersion": 1,
+          "eventId": "953eb122-fc02-5812-b048-ec4651b743a3",
+          "event": "MODEL_CALL",
+          "timestamp": "2026-11-04T00:00:00Z",
+          "requestId": "97872f45-bd39-59cf-bae0-f2b89d040b9e",
+          "turnId": "63bdebf2-e8a8-502f-8106-104117995452",
+          "conversationId": "c47acd62-6bd7-5d24-8564-a11638bb1065",
+          "caseId": "CONV-SOCIAL-thanks",
+          "inputSha256": "7f7d0483cffa30aeb829c6eb866e057e8dba6fa01166eba79e6265408e42290d",
+          "mode": "MOCK",
+          "phase": "CONVERSATION",
+          "payload": {
+            "stage": "FINISHED",
+            "status": "SUCCEEDED",
+            "dispatched": false,
+            "fixture_only": true,
+            "provider": "OPENAI",
+            "model": "offline-fixture"
+          }
+        },
+        {
+          "schemaVersion": 1,
+          "eventId": "ebc81303-f940-5fba-90bb-d169db1d569e",
+          "event": "MODEL_TURN",
+          "timestamp": "2026-11-04T00:00:00Z",
+          "requestId": "97872f45-bd39-59cf-bae0-f2b89d040b9e",
+          "turnId": "63bdebf2-e8a8-502f-8106-104117995452",
+          "conversationId": "c47acd62-6bd7-5d24-8564-a11638bb1065",
+          "caseId": "CONV-SOCIAL-thanks",
+          "inputSha256": "7f7d0483cffa30aeb829c6eb866e057e8dba6fa01166eba79e6265408e42290d",
+          "mode": "MOCK",
+          "phase": "CONVERSATION",
+          "payload": {
+            "content": "{\"message\": \"도움이 됐다니 다행이에요. 다음 여행 준비할 때 또 이야기해요.\", \"citations\": [], \"answerKind\": \"CONVERSATION\", \"emotion\": \"HAPPY\", \"intent\": \"CONVERSATION\"}",
+            "toolCalls": [],
+            "modelTurn": 1
+          }
+        },
+        {
+          "schemaVersion": 1,
+          "eventId": "cd9c9e7c-5fa7-5fd8-9863-bb088e029d54",
+          "event": "TURN_RESULT",
+          "timestamp": "2026-11-04T00:00:00Z",
+          "requestId": "97872f45-bd39-59cf-bae0-f2b89d040b9e",
+          "turnId": "63bdebf2-e8a8-502f-8106-104117995452",
+          "conversationId": "c47acd62-6bd7-5d24-8564-a11638bb1065",
+          "caseId": "CONV-SOCIAL-thanks",
+          "inputSha256": "7f7d0483cffa30aeb829c6eb866e057e8dba6fa01166eba79e6265408e42290d",
+          "mode": "MOCK",
+          "phase": "CONVERSATION",
+          "payload": {
+            "type": "TEXT",
+            "data": null,
+            "message": "도움이 됐다니 다행이에요. 다음 여행 준비할 때 또 이야기해요.",
+            "citations": [],
+            "termination": "COMPLETED",
+            "modelTurns": 1,
+            "toolResults": [],
+            "requestId": "97872f45-bd39-59cf-bae0-f2b89d040b9e",
+            "turnId": "63bdebf2-e8a8-502f-8106-104117995452",
+            "conversationId": "c47acd62-6bd7-5d24-8564-a11638bb1065",
+            "primaryResultId": null,
+            "messageSource": "LLM",
+            "intent": "CONVERSATION",
+            "emotion": "HAPPY",
+            "items": []
+          }
+        },
+        {
+          "schemaVersion": 1,
+          "eventId": "8d959c38-dee3-52be-b6fc-a383a041e6d0",
+          "event": "API_REQUEST",
+          "timestamp": "2026-11-04T00:00:00Z",
+          "requestId": "97872f45-bd39-59cf-bae0-f2b89d040b9e",
+          "turnId": "63bdebf2-e8a8-502f-8106-104117995452",
+          "conversationId": "c47acd62-6bd7-5d24-8564-a11638bb1065",
+          "caseId": "CONV-SOCIAL-thanks",
+          "inputSha256": "7f7d0483cffa30aeb829c6eb866e057e8dba6fa01166eba79e6265408e42290d",
+          "mode": "MOCK",
+          "phase": "CONVERSATION",
+          "payload": {
+            "method": "POST",
+            "path": "/api/v1/conversation/turns",
+            "rawBody": "{\"message\":\"고마워. 오늘은 여기까지 할게.\",\"planningRequest\":null,\"history\":[],\"searchContext\":{\"region\":\"서울\",\"city\":\"종로\",\"category\":\"관광지\",\"excludePlaceIds\":[],\"area\":null}}",
+            "bodySha256": "c8ef1ddc4582c7264d493bff5bc72eee1098bb33cb91d6af4612e6b38829d5f5"
+          }
+        },
+        {
+          "schemaVersion": 1,
+          "eventId": "c2151ea7-f2f1-5e36-8f28-add3f426cbce",
+          "event": "API_RESPONSE",
+          "timestamp": "2026-11-04T00:00:00Z",
+          "requestId": "97872f45-bd39-59cf-bae0-f2b89d040b9e",
+          "turnId": "63bdebf2-e8a8-502f-8106-104117995452",
+          "conversationId": "c47acd62-6bd7-5d24-8564-a11638bb1065",
+          "caseId": "CONV-SOCIAL-thanks",
+          "inputSha256": "7f7d0483cffa30aeb829c6eb866e057e8dba6fa01166eba79e6265408e42290d",
+          "mode": "MOCK",
+          "phase": "CONVERSATION",
+          "payload": {
+            "httpStatus": 200,
+            "response": {
+              "type": "TEXT",
+              "data": null,
+              "message": "도움이 됐다니 다행이에요. 다음 여행 준비할 때 또 이야기해요.",
+              "citations": [],
+              "termination": "COMPLETED",
+              "modelTurns": 1,
+              "toolResults": [],
+              "requestId": "97872f45-bd39-59cf-bae0-f2b89d040b9e",
+              "turnId": "63bdebf2-e8a8-502f-8106-104117995452",
+              "conversationId": "c47acd62-6bd7-5d24-8564-a11638bb1065",
+              "primaryResultId": null,
+              "messageSource": "LLM",
+              "intent": "CONVERSATION",
+              "emotion": "HAPPY",
+              "items": []
+            },
+            "durationMs": 1
+          }
+        }
+      ]
+    },
+    "CONV-CLARIFY-plan": {
+      "identity": {
+        "turn_id": "fbf6b32e-9b5d-5b9a-b541-9665158e34c1",
+        "conversation_id": "8bc53eb3-f945-5652-9366-f168f6bf7b85"
+      },
+      "input_sha256": "802be53eee8f67d92da5c9c4364b620ef8481e3180b29ca210adf14d5421a968",
+      "body_sha256": "c2695a4eb1d989140ff0062357511c984c0f7f3cb3234dfd477d4fd72bd66f60",
+      "response": {
+        "status_code": 200,
+        "raw_body": "{\"type\": \"TEXT\", \"data\": null, \"message\": \"여행 날짜와 시작·종료 시간, 출발 위치를 알려주세요. 조건을 확인한 뒤 초안 생성을 요청할 수 있어요.\", \"citations\": [], \"termination\": \"COMPLETED\", \"modelTurns\": 1, \"toolResults\": [], \"requestId\": \"ce469465-44f3-5a14-99a5-558a4f99c1d0\", \"turnId\": \"fbf6b32e-9b5d-5b9a-b541-9665158e34c1\", \"conversationId\": \"8bc53eb3-f945-5652-9366-f168f6bf7b85\", \"primaryResultId\": null, \"messageSource\": \"LLM\", \"intent\": \"PLAN\", \"emotion\": \"NEUTRAL\", \"items\": []}",
+        "server_request_id": "ce469465-44f3-5a14-99a5-558a4f99c1d0"
+      },
+      "events": [
+        {
+          "schemaVersion": 1,
+          "eventId": "092d3b74-4218-552b-b5b3-5cb33936af0c",
+          "event": "EVIDENCE_PREPARATION",
+          "timestamp": "2026-11-04T00:00:00Z",
+          "requestId": "ce469465-44f3-5a14-99a5-558a4f99c1d0",
+          "turnId": "fbf6b32e-9b5d-5b9a-b541-9665158e34c1",
+          "conversationId": "8bc53eb3-f945-5652-9366-f168f6bf7b85",
+          "caseId": "CONV-CLARIFY-plan",
+          "inputSha256": "802be53eee8f67d92da5c9c4364b620ef8481e3180b29ca210adf14d5421a968",
+          "mode": "MOCK",
+          "phase": "CONVERSATION",
+          "payload": {
+            "state": "READY",
+            "sourceTool": "search_places",
+            "publicData": [
+              {
+                "placeId": 378,
+                "name": "창경궁",
+                "description": "관광지. 고궁. 창경궁(昌慶宮)은 성종이 세 명의 대비를 위해 옛 수강궁에 창건한 궁이다. 창경궁은 원래 1418년(세종 즉위) 세종이 상왕 태종을 위해 창건한 수강궁(壽康宮)이 있던 자리이다. 이후 1483년(성종 14) 성종이 세 명의 대비인 세조의 왕비 정희왕후, 덕종의 왕비 소혜왕후, 예종의 왕비 안순왕후를 위해 수강궁을 크게 확장하고 궁의 이름을 창경궁이라 하였다. \n창경궁은 창덕궁과 경계 없이 동궐(東闕)이라는 하나의 궁궐 영역이었으며,  주로 왕실 가족들의 생활공간으로 사용하였다. 창경궁은 1592년(선조 25) 임진왜란으로 소실된 것을 1616년(광해군 8) 중건하였으며, 1830년(순조 30) 대화재로 대부분의 건물들이 소실되었다가 4년 뒤에 중건하였다.\n그러나 1907년 순종이 황위에 오른 후 창경궁 내에 동물원과 식물원을 조성하면서 궁궐로서의 모습을 잃기 시작하였다. 1911년에는 일제에 의해 궁의 이름마저 창경원(昌慶苑)으로 격하되어 궁궐이 아닌 공원화가 되어 훼손이 심하였다. 광복 후 1983년에 다시 창경궁으로 명칭을 회복한 후 궁궐 경내에 있던 동물원을 이전하고 본래 궁궐의 모습으로 복원공사가 진행되어 현재의 모습이 되었다. 창경궁은 남향으로 있는 다른 궁궐과 달리 정문과 정전이 동향으로 배치되어 있다.",
+                "region": "서울",
+                "city": "종로",
+                "category": "관광지"
+              }
+            ],
+            "modelData": {
+              "searchCriteria": {
+                "query": "서울 여행 일정을 만들어줘.",
+                "region": "서울",
+                "city": "종로",
+                "category": "관광지",
+                "excludePlaceIds": [],
+                "area": null,
+                "limit": 10,
+                "rankingMode": "RERANKED"
+              },
+              "candidates": [
+                {
+                  "placeId": 378,
+                  "name": "창경궁",
+                  "description": "관광지. 고궁. 창경궁(昌慶宮)은 성종이 세 명의 대비를 위해 옛 수강궁에 창건한 궁이다. 창경궁은 원래 1418년(세종 즉위) 세종이 상왕 태종을 위해 창건한 수강궁(壽康宮)이 있던 자리이다. 이후 1483년(성종 14) 성종이 세 명의 대비인 세조의 왕비 정희왕후, 덕종의 왕비 소혜왕후, 예종의 왕비 안순왕후를 위해 수강궁을 크게 확장하고 궁의 이름을 창경궁이라 하였다. \n창경궁은 창덕궁과 경계 없이 동궐(東闕)이라는 하나의 궁궐 영역이었으며,  주로 왕실 가족들의 생활공간으로 사용하였다. 창경궁은 1592년(선조 25) 임진왜란으로 소실된 것을 1616년(광해군 8) 중건하였으며, 1830년(순조 30) 대화재로 대부분의 건물들이 소실되었다가 4년 뒤에 중건하였다.\n그러나 1907년 순종이 황위에 오른",
+                  "selectedEvidence": [
+                    {
+                      "evidenceId": "fixture-E378",
+                      "original": {
+                        "source_id": "fixture-frozen-source-378",
+                        "chunk_text": "관광지. 고궁. 창경궁(昌慶宮)은 성종이 세 명의 대비를 위해 옛 수강궁에 창건한 궁이다. 창경궁은 원래 1418년(세종 즉위) 세종이 상왕 태종을 위해 창건한 수강궁(壽康宮)이 있던 자리이다. 이후 1483년(성종 14) 성종이 세 명의 대비인 세조의 왕비 정희왕후, 덕종의 왕비 소혜왕후, 예종의 왕비 안순왕후를 위해 수강궁을 크게 확장하고 궁의 이름을 창경궁이라 하였다. \n창경궁은 창덕궁과 경계 없이 동궐(東闕)이라는 하나의 궁궐 영역이었으며,  주로 왕실 가족들의 생활공간으로 사용하였다. 창경궁은 1592년(선조 25) 임진왜란으로 소실된 것을 1616년(광해군 8) 중건하였으며, 1830년(순조 30) 대화재로 대부분의 건물들이 소실되었다가 4년 뒤에 중건하였다.\n그러나 1907년 순종이 황위에 오른 후 창경궁 내에 동물원과 식물원을 조성하면서 궁궐로서의 모습을 잃기 시작하였다. 1911년에는 일제에 의해 궁의 이름마저 창경원(昌慶苑)으로 격하되어 궁궐이 아닌 공원화가 되어 훼손이 심하였다. 광복 후 1983년에 다시 창경궁으로 명칭을 회복한 후 궁궐 경내에 있던 동물원을 이전하고 본래 궁궐의 모습으로 복원공사가 진행되어 현재의 모습이 되었다. 창경궁은 남향으로 있는 다른 궁궐과 달리 정문과 정전이 동향으로 배치되어 있다."
+                      },
+                      "generatedSupplement": {}
+                    }
+                  ]
+                }
+              ]
+            },
+            "durationMs": 1
+          }
+        },
+        {
+          "schemaVersion": 1,
+          "eventId": "6a3f2314-58bd-5435-a293-c5638d747cbe",
+          "event": "MODEL_CALL",
+          "timestamp": "2026-11-04T00:00:00Z",
+          "requestId": "ce469465-44f3-5a14-99a5-558a4f99c1d0",
+          "turnId": "fbf6b32e-9b5d-5b9a-b541-9665158e34c1",
+          "conversationId": "8bc53eb3-f945-5652-9366-f168f6bf7b85",
+          "caseId": "CONV-CLARIFY-plan",
+          "inputSha256": "802be53eee8f67d92da5c9c4364b620ef8481e3180b29ca210adf14d5421a968",
+          "mode": "MOCK",
+          "phase": "CONVERSATION",
+          "payload": {
+            "stage": "FINISHED",
+            "status": "SUCCEEDED",
+            "dispatched": false,
+            "fixture_only": true,
+            "provider": "OPENAI",
+            "model": "offline-fixture"
+          }
+        },
+        {
+          "schemaVersion": 1,
+          "eventId": "8647868f-0173-554e-888d-23e33c860410",
+          "event": "MODEL_TURN",
+          "timestamp": "2026-11-04T00:00:00Z",
+          "requestId": "ce469465-44f3-5a14-99a5-558a4f99c1d0",
+          "turnId": "fbf6b32e-9b5d-5b9a-b541-9665158e34c1",
+          "conversationId": "8bc53eb3-f945-5652-9366-f168f6bf7b85",
+          "caseId": "CONV-CLARIFY-plan",
+          "inputSha256": "802be53eee8f67d92da5c9c4364b620ef8481e3180b29ca210adf14d5421a968",
+          "mode": "MOCK",
+          "phase": "CONVERSATION",
+          "payload": {
+            "content": "{\"message\": \"여행 날짜와 시작·종료 시간, 출발 위치를 알려주세요. 조건을 확인한 뒤 초안 생성을 요청할 수 있어요.\", \"citations\": [], \"answerKind\": \"CLARIFICATION\", \"emotion\": \"NEUTRAL\", \"intent\": \"PLAN\"}",
+            "toolCalls": [],
+            "modelTurn": 1
+          }
+        },
+        {
+          "schemaVersion": 1,
+          "eventId": "58bd58dc-2be9-5f69-bb51-3da540e85ecd",
+          "event": "TURN_RESULT",
+          "timestamp": "2026-11-04T00:00:00Z",
+          "requestId": "ce469465-44f3-5a14-99a5-558a4f99c1d0",
+          "turnId": "fbf6b32e-9b5d-5b9a-b541-9665158e34c1",
+          "conversationId": "8bc53eb3-f945-5652-9366-f168f6bf7b85",
+          "caseId": "CONV-CLARIFY-plan",
+          "inputSha256": "802be53eee8f67d92da5c9c4364b620ef8481e3180b29ca210adf14d5421a968",
+          "mode": "MOCK",
+          "phase": "CONVERSATION",
+          "payload": {
+            "type": "TEXT",
+            "data": null,
+            "message": "여행 날짜와 시작·종료 시간, 출발 위치를 알려주세요. 조건을 확인한 뒤 초안 생성을 요청할 수 있어요.",
+            "citations": [],
+            "termination": "COMPLETED",
+            "modelTurns": 1,
+            "toolResults": [],
+            "requestId": "ce469465-44f3-5a14-99a5-558a4f99c1d0",
+            "turnId": "fbf6b32e-9b5d-5b9a-b541-9665158e34c1",
+            "conversationId": "8bc53eb3-f945-5652-9366-f168f6bf7b85",
+            "primaryResultId": null,
+            "messageSource": "LLM",
+            "intent": "PLAN",
+            "emotion": "NEUTRAL",
+            "items": []
+          }
+        },
+        {
+          "schemaVersion": 1,
+          "eventId": "d605d632-6c80-5448-93b4-fc2101474dd5",
+          "event": "API_REQUEST",
+          "timestamp": "2026-11-04T00:00:00Z",
+          "requestId": "ce469465-44f3-5a14-99a5-558a4f99c1d0",
+          "turnId": "fbf6b32e-9b5d-5b9a-b541-9665158e34c1",
+          "conversationId": "8bc53eb3-f945-5652-9366-f168f6bf7b85",
+          "caseId": "CONV-CLARIFY-plan",
+          "inputSha256": "802be53eee8f67d92da5c9c4364b620ef8481e3180b29ca210adf14d5421a968",
+          "mode": "MOCK",
+          "phase": "CONVERSATION",
+          "payload": {
+            "method": "POST",
+            "path": "/api/v1/conversation/turns",
+            "rawBody": "{\"message\":\"서울 여행 일정을 만들어줘.\",\"planningRequest\":null,\"history\":[],\"searchContext\":{\"region\":\"서울\",\"city\":\"종로\",\"category\":\"관광지\",\"excludePlaceIds\":[],\"area\":null}}",
+            "bodySha256": "c2695a4eb1d989140ff0062357511c984c0f7f3cb3234dfd477d4fd72bd66f60"
+          }
+        },
+        {
+          "schemaVersion": 1,
+          "eventId": "f7963d25-2e21-5d7a-bcda-a981ae9b6a3f",
+          "event": "API_RESPONSE",
+          "timestamp": "2026-11-04T00:00:00Z",
+          "requestId": "ce469465-44f3-5a14-99a5-558a4f99c1d0",
+          "turnId": "fbf6b32e-9b5d-5b9a-b541-9665158e34c1",
+          "conversationId": "8bc53eb3-f945-5652-9366-f168f6bf7b85",
+          "caseId": "CONV-CLARIFY-plan",
+          "inputSha256": "802be53eee8f67d92da5c9c4364b620ef8481e3180b29ca210adf14d5421a968",
+          "mode": "MOCK",
+          "phase": "CONVERSATION",
+          "payload": {
+            "httpStatus": 200,
+            "response": {
+              "type": "TEXT",
+              "data": null,
+              "message": "여행 날짜와 시작·종료 시간, 출발 위치를 알려주세요. 조건을 확인한 뒤 초안 생성을 요청할 수 있어요.",
+              "citations": [],
+              "termination": "COMPLETED",
+              "modelTurns": 1,
+              "toolResults": [],
+              "requestId": "ce469465-44f3-5a14-99a5-558a4f99c1d0",
+              "turnId": "fbf6b32e-9b5d-5b9a-b541-9665158e34c1",
+              "conversationId": "8bc53eb3-f945-5652-9366-f168f6bf7b85",
+              "primaryResultId": null,
+              "messageSource": "LLM",
+              "intent": "PLAN",
+              "emotion": "NEUTRAL",
+              "items": []
+            },
+            "durationMs": 1
+          }
+        }
+      ]
+    },
+    "CONV-CLARIFY-job": {
+      "identity": {
+        "turn_id": "120fcdf4-aa34-5a56-b1e8-7c269f0baebf",
+        "conversation_id": "1d3c57ca-b422-50ae-abd5-b3d2d39bb2c3"
+      },
+      "input_sha256": "54f9a64aa4cf54e8068e65917789159c2f39de32cf25696f769ef121397a7a4c",
+      "body_sha256": "51bd595c7912b36732664e1c8100f32f92a01c0d053856686d63414af72c48fd",
+      "response": {
+        "status_code": 200,
+        "raw_body": "{\"type\": \"TEXT\", \"data\": null, \"message\": \"확인할 작업 ID를 알려주세요. 지금 대화에는 조회할 생성 작업 정보가 없어요.\", \"citations\": [], \"termination\": \"COMPLETED\", \"modelTurns\": 1, \"toolResults\": [], \"requestId\": \"38b50fc4-2803-51f4-a02a-53ab91721e3b\", \"turnId\": \"120fcdf4-aa34-5a56-b1e8-7c269f0baebf\", \"conversationId\": \"1d3c57ca-b422-50ae-abd5-b3d2d39bb2c3\", \"primaryResultId\": null, \"messageSource\": \"LLM\", \"intent\": \"PLAN\", \"emotion\": \"NEUTRAL\", \"items\": []}",
+        "server_request_id": "38b50fc4-2803-51f4-a02a-53ab91721e3b"
+      },
+      "events": [
+        {
+          "schemaVersion": 1,
+          "eventId": "0cbcb2a2-cc9f-5078-89b5-28784e8584f6",
+          "event": "EVIDENCE_PREPARATION",
+          "timestamp": "2026-11-04T00:00:00Z",
+          "requestId": "38b50fc4-2803-51f4-a02a-53ab91721e3b",
+          "turnId": "120fcdf4-aa34-5a56-b1e8-7c269f0baebf",
+          "conversationId": "1d3c57ca-b422-50ae-abd5-b3d2d39bb2c3",
+          "caseId": "CONV-CLARIFY-job",
+          "inputSha256": "54f9a64aa4cf54e8068e65917789159c2f39de32cf25696f769ef121397a7a4c",
+          "mode": "MOCK",
+          "phase": "CONVERSATION",
+          "payload": {
+            "state": "READY",
+            "sourceTool": "search_places",
+            "publicData": [
+              {
+                "placeId": 378,
+                "name": "창경궁",
+                "description": "관광지. 고궁. 창경궁(昌慶宮)은 성종이 세 명의 대비를 위해 옛 수강궁에 창건한 궁이다. 창경궁은 원래 1418년(세종 즉위) 세종이 상왕 태종을 위해 창건한 수강궁(壽康宮)이 있던 자리이다. 이후 1483년(성종 14) 성종이 세 명의 대비인 세조의 왕비 정희왕후, 덕종의 왕비 소혜왕후, 예종의 왕비 안순왕후를 위해 수강궁을 크게 확장하고 궁의 이름을 창경궁이라 하였다. \n창경궁은 창덕궁과 경계 없이 동궐(東闕)이라는 하나의 궁궐 영역이었으며,  주로 왕실 가족들의 생활공간으로 사용하였다. 창경궁은 1592년(선조 25) 임진왜란으로 소실된 것을 1616년(광해군 8) 중건하였으며, 1830년(순조 30) 대화재로 대부분의 건물들이 소실되었다가 4년 뒤에 중건하였다.\n그러나 1907년 순종이 황위에 오른 후 창경궁 내에 동물원과 식물원을 조성하면서 궁궐로서의 모습을 잃기 시작하였다. 1911년에는 일제에 의해 궁의 이름마저 창경원(昌慶苑)으로 격하되어 궁궐이 아닌 공원화가 되어 훼손이 심하였다. 광복 후 1983년에 다시 창경궁으로 명칭을 회복한 후 궁궐 경내에 있던 동물원을 이전하고 본래 궁궐의 모습으로 복원공사가 진행되어 현재의 모습이 되었다. 창경궁은 남향으로 있는 다른 궁궐과 달리 정문과 정전이 동향으로 배치되어 있다.",
+                "region": "서울",
+                "city": "종로",
+                "category": "관광지"
+              }
+            ],
+            "modelData": {
+              "searchCriteria": {
+                "query": "내 일정 생성 작업이 어디까지 됐어?",
+                "region": "서울",
+                "city": "종로",
+                "category": "관광지",
+                "excludePlaceIds": [],
+                "area": null,
+                "limit": 10,
+                "rankingMode": "RERANKED"
+              },
+              "candidates": [
+                {
+                  "placeId": 378,
+                  "name": "창경궁",
+                  "description": "관광지. 고궁. 창경궁(昌慶宮)은 성종이 세 명의 대비를 위해 옛 수강궁에 창건한 궁이다. 창경궁은 원래 1418년(세종 즉위) 세종이 상왕 태종을 위해 창건한 수강궁(壽康宮)이 있던 자리이다. 이후 1483년(성종 14) 성종이 세 명의 대비인 세조의 왕비 정희왕후, 덕종의 왕비 소혜왕후, 예종의 왕비 안순왕후를 위해 수강궁을 크게 확장하고 궁의 이름을 창경궁이라 하였다. \n창경궁은 창덕궁과 경계 없이 동궐(東闕)이라는 하나의 궁궐 영역이었으며,  주로 왕실 가족들의 생활공간으로 사용하였다. 창경궁은 1592년(선조 25) 임진왜란으로 소실된 것을 1616년(광해군 8) 중건하였으며, 1830년(순조 30) 대화재로 대부분의 건물들이 소실되었다가 4년 뒤에 중건하였다.\n그러나 1907년 순종이 황위에 오른",
+                  "selectedEvidence": [
+                    {
+                      "evidenceId": "fixture-E378",
+                      "original": {
+                        "source_id": "fixture-frozen-source-378",
+                        "chunk_text": "관광지. 고궁. 창경궁(昌慶宮)은 성종이 세 명의 대비를 위해 옛 수강궁에 창건한 궁이다. 창경궁은 원래 1418년(세종 즉위) 세종이 상왕 태종을 위해 창건한 수강궁(壽康宮)이 있던 자리이다. 이후 1483년(성종 14) 성종이 세 명의 대비인 세조의 왕비 정희왕후, 덕종의 왕비 소혜왕후, 예종의 왕비 안순왕후를 위해 수강궁을 크게 확장하고 궁의 이름을 창경궁이라 하였다. \n창경궁은 창덕궁과 경계 없이 동궐(東闕)이라는 하나의 궁궐 영역이었으며,  주로 왕실 가족들의 생활공간으로 사용하였다. 창경궁은 1592년(선조 25) 임진왜란으로 소실된 것을 1616년(광해군 8) 중건하였으며, 1830년(순조 30) 대화재로 대부분의 건물들이 소실되었다가 4년 뒤에 중건하였다.\n그러나 1907년 순종이 황위에 오른 후 창경궁 내에 동물원과 식물원을 조성하면서 궁궐로서의 모습을 잃기 시작하였다. 1911년에는 일제에 의해 궁의 이름마저 창경원(昌慶苑)으로 격하되어 궁궐이 아닌 공원화가 되어 훼손이 심하였다. 광복 후 1983년에 다시 창경궁으로 명칭을 회복한 후 궁궐 경내에 있던 동물원을 이전하고 본래 궁궐의 모습으로 복원공사가 진행되어 현재의 모습이 되었다. 창경궁은 남향으로 있는 다른 궁궐과 달리 정문과 정전이 동향으로 배치되어 있다."
+                      },
+                      "generatedSupplement": {}
+                    }
+                  ]
+                }
+              ]
+            },
+            "durationMs": 1
+          }
+        },
+        {
+          "schemaVersion": 1,
+          "eventId": "e619fbb1-b493-5966-a216-40aee247d36c",
+          "event": "MODEL_CALL",
+          "timestamp": "2026-11-04T00:00:00Z",
+          "requestId": "38b50fc4-2803-51f4-a02a-53ab91721e3b",
+          "turnId": "120fcdf4-aa34-5a56-b1e8-7c269f0baebf",
+          "conversationId": "1d3c57ca-b422-50ae-abd5-b3d2d39bb2c3",
+          "caseId": "CONV-CLARIFY-job",
+          "inputSha256": "54f9a64aa4cf54e8068e65917789159c2f39de32cf25696f769ef121397a7a4c",
+          "mode": "MOCK",
+          "phase": "CONVERSATION",
+          "payload": {
+            "stage": "FINISHED",
+            "status": "SUCCEEDED",
+            "dispatched": false,
+            "fixture_only": true,
+            "provider": "OPENAI",
+            "model": "offline-fixture"
+          }
+        },
+        {
+          "schemaVersion": 1,
+          "eventId": "3c98164c-4119-5328-ae11-c91538886963",
+          "event": "MODEL_TURN",
+          "timestamp": "2026-11-04T00:00:00Z",
+          "requestId": "38b50fc4-2803-51f4-a02a-53ab91721e3b",
+          "turnId": "120fcdf4-aa34-5a56-b1e8-7c269f0baebf",
+          "conversationId": "1d3c57ca-b422-50ae-abd5-b3d2d39bb2c3",
+          "caseId": "CONV-CLARIFY-job",
+          "inputSha256": "54f9a64aa4cf54e8068e65917789159c2f39de32cf25696f769ef121397a7a4c",
+          "mode": "MOCK",
+          "phase": "CONVERSATION",
+          "payload": {
+            "content": "{\"message\": \"확인할 작업 ID를 알려주세요. 지금 대화에는 조회할 생성 작업 정보가 없어요.\", \"citations\": [], \"answerKind\": \"CLARIFICATION\", \"emotion\": \"NEUTRAL\", \"intent\": \"PLAN\"}",
+            "toolCalls": [],
+            "modelTurn": 1
+          }
+        },
+        {
+          "schemaVersion": 1,
+          "eventId": "23e27233-0299-53b7-9285-e0168efcfc66",
+          "event": "TURN_RESULT",
+          "timestamp": "2026-11-04T00:00:00Z",
+          "requestId": "38b50fc4-2803-51f4-a02a-53ab91721e3b",
+          "turnId": "120fcdf4-aa34-5a56-b1e8-7c269f0baebf",
+          "conversationId": "1d3c57ca-b422-50ae-abd5-b3d2d39bb2c3",
+          "caseId": "CONV-CLARIFY-job",
+          "inputSha256": "54f9a64aa4cf54e8068e65917789159c2f39de32cf25696f769ef121397a7a4c",
+          "mode": "MOCK",
+          "phase": "CONVERSATION",
+          "payload": {
+            "type": "TEXT",
+            "data": null,
+            "message": "확인할 작업 ID를 알려주세요. 지금 대화에는 조회할 생성 작업 정보가 없어요.",
+            "citations": [],
+            "termination": "COMPLETED",
+            "modelTurns": 1,
+            "toolResults": [],
+            "requestId": "38b50fc4-2803-51f4-a02a-53ab91721e3b",
+            "turnId": "120fcdf4-aa34-5a56-b1e8-7c269f0baebf",
+            "conversationId": "1d3c57ca-b422-50ae-abd5-b3d2d39bb2c3",
+            "primaryResultId": null,
+            "messageSource": "LLM",
+            "intent": "PLAN",
+            "emotion": "NEUTRAL",
+            "items": []
+          }
+        },
+        {
+          "schemaVersion": 1,
+          "eventId": "f83de47e-6d47-5d96-9429-2a03719a70c5",
+          "event": "API_REQUEST",
+          "timestamp": "2026-11-04T00:00:00Z",
+          "requestId": "38b50fc4-2803-51f4-a02a-53ab91721e3b",
+          "turnId": "120fcdf4-aa34-5a56-b1e8-7c269f0baebf",
+          "conversationId": "1d3c57ca-b422-50ae-abd5-b3d2d39bb2c3",
+          "caseId": "CONV-CLARIFY-job",
+          "inputSha256": "54f9a64aa4cf54e8068e65917789159c2f39de32cf25696f769ef121397a7a4c",
+          "mode": "MOCK",
+          "phase": "CONVERSATION",
+          "payload": {
+            "method": "POST",
+            "path": "/api/v1/conversation/turns",
+            "rawBody": "{\"message\":\"내 일정 생성 작업이 어디까지 됐어?\",\"planningRequest\":null,\"history\":[],\"searchContext\":{\"region\":\"서울\",\"city\":\"종로\",\"category\":\"관광지\",\"excludePlaceIds\":[],\"area\":null}}",
+            "bodySha256": "51bd595c7912b36732664e1c8100f32f92a01c0d053856686d63414af72c48fd"
+          }
+        },
+        {
+          "schemaVersion": 1,
+          "eventId": "4c6c8585-199f-5acf-a125-aa37f9c86bf0",
+          "event": "API_RESPONSE",
+          "timestamp": "2026-11-04T00:00:00Z",
+          "requestId": "38b50fc4-2803-51f4-a02a-53ab91721e3b",
+          "turnId": "120fcdf4-aa34-5a56-b1e8-7c269f0baebf",
+          "conversationId": "1d3c57ca-b422-50ae-abd5-b3d2d39bb2c3",
+          "caseId": "CONV-CLARIFY-job",
+          "inputSha256": "54f9a64aa4cf54e8068e65917789159c2f39de32cf25696f769ef121397a7a4c",
+          "mode": "MOCK",
+          "phase": "CONVERSATION",
+          "payload": {
+            "httpStatus": 200,
+            "response": {
+              "type": "TEXT",
+              "data": null,
+              "message": "확인할 작업 ID를 알려주세요. 지금 대화에는 조회할 생성 작업 정보가 없어요.",
+              "citations": [],
+              "termination": "COMPLETED",
+              "modelTurns": 1,
+              "toolResults": [],
+              "requestId": "38b50fc4-2803-51f4-a02a-53ab91721e3b",
+              "turnId": "120fcdf4-aa34-5a56-b1e8-7c269f0baebf",
+              "conversationId": "1d3c57ca-b422-50ae-abd5-b3d2d39bb2c3",
+              "primaryResultId": null,
+              "messageSource": "LLM",
+              "intent": "PLAN",
+              "emotion": "NEUTRAL",
+              "items": []
+            },
+            "durationMs": 1
+          }
+        }
+      ]
+    },
+    "CONV-UNSUPPORTED-booking": {
+      "identity": {
+        "turn_id": "aec5c376-b269-5280-b185-300e9f7e6db3",
+        "conversation_id": "a53fc0e9-875e-59b4-a22e-44382677897a"
+      },
+      "input_sha256": "cfe82f56b7ca2ec89cce55bba1ae336d59856460e92d7898424804187358342c",
+      "body_sha256": "f3116bdc501d8ed3f1cbb9416b68442207ecb5ffcb8b95069dd80e7aca09a62f",
+      "response": {
+        "status_code": 200,
+        "raw_body": "{\"type\": \"TEXT\", \"data\": null, \"message\": \"현재 연결된 도구로는 일정 확정이나 예약을 실행할 수 없어요. 일정 초안 생성은 도와드릴 수 있어요.\", \"citations\": [], \"termination\": \"COMPLETED\", \"modelTurns\": 1, \"toolResults\": [], \"requestId\": \"a215fe37-95a5-5564-b35a-c8bf2ac53bef\", \"turnId\": \"aec5c376-b269-5280-b185-300e9f7e6db3\", \"conversationId\": \"a53fc0e9-875e-59b4-a22e-44382677897a\", \"primaryResultId\": null, \"messageSource\": \"LLM\", \"intent\": \"PLAN\", \"emotion\": \"NEUTRAL\", \"items\": []}",
+        "server_request_id": "a215fe37-95a5-5564-b35a-c8bf2ac53bef"
+      },
+      "events": [
+        {
+          "schemaVersion": 1,
+          "eventId": "bf8007c6-a82a-5ead-b68e-dd62f4ab7e5b",
+          "event": "EVIDENCE_PREPARATION",
+          "timestamp": "2026-11-04T00:00:00Z",
+          "requestId": "a215fe37-95a5-5564-b35a-c8bf2ac53bef",
+          "turnId": "aec5c376-b269-5280-b185-300e9f7e6db3",
+          "conversationId": "a53fc0e9-875e-59b4-a22e-44382677897a",
+          "caseId": "CONV-UNSUPPORTED-booking",
+          "inputSha256": "cfe82f56b7ca2ec89cce55bba1ae336d59856460e92d7898424804187358342c",
+          "mode": "MOCK",
+          "phase": "CONVERSATION",
+          "payload": {
+            "state": "READY",
+            "sourceTool": "search_places",
+            "publicData": [
+              {
+                "placeId": 378,
+                "name": "창경궁",
+                "description": "관광지. 고궁. 창경궁(昌慶宮)은 성종이 세 명의 대비를 위해 옛 수강궁에 창건한 궁이다. 창경궁은 원래 1418년(세종 즉위) 세종이 상왕 태종을 위해 창건한 수강궁(壽康宮)이 있던 자리이다. 이후 1483년(성종 14) 성종이 세 명의 대비인 세조의 왕비 정희왕후, 덕종의 왕비 소혜왕후, 예종의 왕비 안순왕후를 위해 수강궁을 크게 확장하고 궁의 이름을 창경궁이라 하였다. \n창경궁은 창덕궁과 경계 없이 동궐(東闕)이라는 하나의 궁궐 영역이었으며,  주로 왕실 가족들의 생활공간으로 사용하였다. 창경궁은 1592년(선조 25) 임진왜란으로 소실된 것을 1616년(광해군 8) 중건하였으며, 1830년(순조 30) 대화재로 대부분의 건물들이 소실되었다가 4년 뒤에 중건하였다.\n그러나 1907년 순종이 황위에 오른 후 창경궁 내에 동물원과 식물원을 조성하면서 궁궐로서의 모습을 잃기 시작하였다. 1911년에는 일제에 의해 궁의 이름마저 창경원(昌慶苑)으로 격하되어 궁궐이 아닌 공원화가 되어 훼손이 심하였다. 광복 후 1983년에 다시 창경궁으로 명칭을 회복한 후 궁궐 경내에 있던 동물원을 이전하고 본래 궁궐의 모습으로 복원공사가 진행되어 현재의 모습이 되었다. 창경궁은 남향으로 있는 다른 궁궐과 달리 정문과 정전이 동향으로 배치되어 있다.",
+                "region": "서울",
+                "city": "종로",
+                "category": "관광지"
+              }
+            ],
+            "modelData": {
+              "searchCriteria": {
+                "query": "내 여행 일정을 확정하고 관광지 예약까지 완료해줘.",
+                "region": "서울",
+                "city": "종로",
+                "category": "관광지",
+                "excludePlaceIds": [],
+                "area": null,
+                "limit": 10,
+                "rankingMode": "RERANKED"
+              },
+              "candidates": [
+                {
+                  "placeId": 378,
+                  "name": "창경궁",
+                  "description": "관광지. 고궁. 창경궁(昌慶宮)은 성종이 세 명의 대비를 위해 옛 수강궁에 창건한 궁이다. 창경궁은 원래 1418년(세종 즉위) 세종이 상왕 태종을 위해 창건한 수강궁(壽康宮)이 있던 자리이다. 이후 1483년(성종 14) 성종이 세 명의 대비인 세조의 왕비 정희왕후, 덕종의 왕비 소혜왕후, 예종의 왕비 안순왕후를 위해 수강궁을 크게 확장하고 궁의 이름을 창경궁이라 하였다. \n창경궁은 창덕궁과 경계 없이 동궐(東闕)이라는 하나의 궁궐 영역이었으며,  주로 왕실 가족들의 생활공간으로 사용하였다. 창경궁은 1592년(선조 25) 임진왜란으로 소실된 것을 1616년(광해군 8) 중건하였으며, 1830년(순조 30) 대화재로 대부분의 건물들이 소실되었다가 4년 뒤에 중건하였다.\n그러나 1907년 순종이 황위에 오른",
+                  "selectedEvidence": [
+                    {
+                      "evidenceId": "fixture-E378",
+                      "original": {
+                        "source_id": "fixture-frozen-source-378",
+                        "chunk_text": "관광지. 고궁. 창경궁(昌慶宮)은 성종이 세 명의 대비를 위해 옛 수강궁에 창건한 궁이다. 창경궁은 원래 1418년(세종 즉위) 세종이 상왕 태종을 위해 창건한 수강궁(壽康宮)이 있던 자리이다. 이후 1483년(성종 14) 성종이 세 명의 대비인 세조의 왕비 정희왕후, 덕종의 왕비 소혜왕후, 예종의 왕비 안순왕후를 위해 수강궁을 크게 확장하고 궁의 이름을 창경궁이라 하였다. \n창경궁은 창덕궁과 경계 없이 동궐(東闕)이라는 하나의 궁궐 영역이었으며,  주로 왕실 가족들의 생활공간으로 사용하였다. 창경궁은 1592년(선조 25) 임진왜란으로 소실된 것을 1616년(광해군 8) 중건하였으며, 1830년(순조 30) 대화재로 대부분의 건물들이 소실되었다가 4년 뒤에 중건하였다.\n그러나 1907년 순종이 황위에 오른 후 창경궁 내에 동물원과 식물원을 조성하면서 궁궐로서의 모습을 잃기 시작하였다. 1911년에는 일제에 의해 궁의 이름마저 창경원(昌慶苑)으로 격하되어 궁궐이 아닌 공원화가 되어 훼손이 심하였다. 광복 후 1983년에 다시 창경궁으로 명칭을 회복한 후 궁궐 경내에 있던 동물원을 이전하고 본래 궁궐의 모습으로 복원공사가 진행되어 현재의 모습이 되었다. 창경궁은 남향으로 있는 다른 궁궐과 달리 정문과 정전이 동향으로 배치되어 있다."
+                      },
+                      "generatedSupplement": {}
+                    }
+                  ]
+                }
+              ]
+            },
+            "durationMs": 1
+          }
+        },
+        {
+          "schemaVersion": 1,
+          "eventId": "5a10cac5-db86-5746-a36f-a12bc5838d9c",
+          "event": "MODEL_CALL",
+          "timestamp": "2026-11-04T00:00:00Z",
+          "requestId": "a215fe37-95a5-5564-b35a-c8bf2ac53bef",
+          "turnId": "aec5c376-b269-5280-b185-300e9f7e6db3",
+          "conversationId": "a53fc0e9-875e-59b4-a22e-44382677897a",
+          "caseId": "CONV-UNSUPPORTED-booking",
+          "inputSha256": "cfe82f56b7ca2ec89cce55bba1ae336d59856460e92d7898424804187358342c",
+          "mode": "MOCK",
+          "phase": "CONVERSATION",
+          "payload": {
+            "stage": "FINISHED",
+            "status": "SUCCEEDED",
+            "dispatched": false,
+            "fixture_only": true,
+            "provider": "OPENAI",
+            "model": "offline-fixture"
+          }
+        },
+        {
+          "schemaVersion": 1,
+          "eventId": "d74fec78-bed2-5d7e-8c6c-670c3e83d686",
+          "event": "MODEL_TURN",
+          "timestamp": "2026-11-04T00:00:00Z",
+          "requestId": "a215fe37-95a5-5564-b35a-c8bf2ac53bef",
+          "turnId": "aec5c376-b269-5280-b185-300e9f7e6db3",
+          "conversationId": "a53fc0e9-875e-59b4-a22e-44382677897a",
+          "caseId": "CONV-UNSUPPORTED-booking",
+          "inputSha256": "cfe82f56b7ca2ec89cce55bba1ae336d59856460e92d7898424804187358342c",
+          "mode": "MOCK",
+          "phase": "CONVERSATION",
+          "payload": {
+            "content": "{\"message\": \"현재 연결된 도구로는 일정 확정이나 예약을 실행할 수 없어요. 일정 초안 생성은 도와드릴 수 있어요.\", \"citations\": [], \"answerKind\": \"CONVERSATION\", \"emotion\": \"NEUTRAL\", \"intent\": \"PLAN\"}",
+            "toolCalls": [],
+            "modelTurn": 1
+          }
+        },
+        {
+          "schemaVersion": 1,
+          "eventId": "310346d2-9f4c-5791-a4b1-adfb01f7b230",
+          "event": "TURN_RESULT",
+          "timestamp": "2026-11-04T00:00:00Z",
+          "requestId": "a215fe37-95a5-5564-b35a-c8bf2ac53bef",
+          "turnId": "aec5c376-b269-5280-b185-300e9f7e6db3",
+          "conversationId": "a53fc0e9-875e-59b4-a22e-44382677897a",
+          "caseId": "CONV-UNSUPPORTED-booking",
+          "inputSha256": "cfe82f56b7ca2ec89cce55bba1ae336d59856460e92d7898424804187358342c",
+          "mode": "MOCK",
+          "phase": "CONVERSATION",
+          "payload": {
+            "type": "TEXT",
+            "data": null,
+            "message": "현재 연결된 도구로는 일정 확정이나 예약을 실행할 수 없어요. 일정 초안 생성은 도와드릴 수 있어요.",
+            "citations": [],
+            "termination": "COMPLETED",
+            "modelTurns": 1,
+            "toolResults": [],
+            "requestId": "a215fe37-95a5-5564-b35a-c8bf2ac53bef",
+            "turnId": "aec5c376-b269-5280-b185-300e9f7e6db3",
+            "conversationId": "a53fc0e9-875e-59b4-a22e-44382677897a",
+            "primaryResultId": null,
+            "messageSource": "LLM",
+            "intent": "PLAN",
+            "emotion": "NEUTRAL",
+            "items": []
+          }
+        },
+        {
+          "schemaVersion": 1,
+          "eventId": "bc88c397-d55e-50b1-acc5-233747069dd8",
+          "event": "API_REQUEST",
+          "timestamp": "2026-11-04T00:00:00Z",
+          "requestId": "a215fe37-95a5-5564-b35a-c8bf2ac53bef",
+          "turnId": "aec5c376-b269-5280-b185-300e9f7e6db3",
+          "conversationId": "a53fc0e9-875e-59b4-a22e-44382677897a",
+          "caseId": "CONV-UNSUPPORTED-booking",
+          "inputSha256": "cfe82f56b7ca2ec89cce55bba1ae336d59856460e92d7898424804187358342c",
+          "mode": "MOCK",
+          "phase": "CONVERSATION",
+          "payload": {
+            "method": "POST",
+            "path": "/api/v1/conversation/turns",
+            "rawBody": "{\"message\":\"내 여행 일정을 확정하고 관광지 예약까지 완료해줘.\",\"planningRequest\":null,\"history\":[],\"searchContext\":{\"region\":\"서울\",\"city\":\"종로\",\"category\":\"관광지\",\"excludePlaceIds\":[],\"area\":null}}",
+            "bodySha256": "f3116bdc501d8ed3f1cbb9416b68442207ecb5ffcb8b95069dd80e7aca09a62f"
+          }
+        },
+        {
+          "schemaVersion": 1,
+          "eventId": "9991dfba-6d95-53ea-b02a-a1d619f9e3dd",
+          "event": "API_RESPONSE",
+          "timestamp": "2026-11-04T00:00:00Z",
+          "requestId": "a215fe37-95a5-5564-b35a-c8bf2ac53bef",
+          "turnId": "aec5c376-b269-5280-b185-300e9f7e6db3",
+          "conversationId": "a53fc0e9-875e-59b4-a22e-44382677897a",
+          "caseId": "CONV-UNSUPPORTED-booking",
+          "inputSha256": "cfe82f56b7ca2ec89cce55bba1ae336d59856460e92d7898424804187358342c",
+          "mode": "MOCK",
+          "phase": "CONVERSATION",
+          "payload": {
+            "httpStatus": 200,
+            "response": {
+              "type": "TEXT",
+              "data": null,
+              "message": "현재 연결된 도구로는 일정 확정이나 예약을 실행할 수 없어요. 일정 초안 생성은 도와드릴 수 있어요.",
+              "citations": [],
+              "termination": "COMPLETED",
+              "modelTurns": 1,
+              "toolResults": [],
+              "requestId": "a215fe37-95a5-5564-b35a-c8bf2ac53bef",
+              "turnId": "aec5c376-b269-5280-b185-300e9f7e6db3",
+              "conversationId": "a53fc0e9-875e-59b4-a22e-44382677897a",
+              "primaryResultId": null,
+              "messageSource": "LLM",
+              "intent": "PLAN",
+              "emotion": "NEUTRAL",
+              "items": []
+            },
+            "durationMs": 1
+          }
+        }
+      ]
+    },
+    "CONV-SEARCH-exclude-first": {
+      "identity": {
+        "turn_id": "ec0a6629-65a8-5e75-a7ed-c2866f682436",
+        "conversation_id": "69952c51-cd13-5b39-9a38-9d4cf09a2a20"
+      },
+      "input_sha256": "0136b31a5078af39e041e54069931e4ab92bc899562696b9c11be18ad08a8f34",
+      "body_sha256": "be658272bcef1bdf105f552c9311ea2476ccfbdc4816172c12f5d085a73b6289",
+      "response": {
+        "status_code": 200,
+        "raw_body": "{\"type\": \"PLACES\", \"data\": [{\"placeId\": 208, \"name\": \"서울 운현궁\", \"description\": \"관광지. 고궁. 운현궁은 경복궁과 같은 궁궐이 아니라 왕족의 친족들이 거주하던 궁으로 종로구 운니동에 위치한 사적이다. 흥선대원군의 일가가 거주하고 생활한 사저였으며, 고종이 임금이 되기 전까지 태어나고 자란 곳이다. 운현궁은 조선조 말기의 역사적 사건들 대부분이 시작된 곳이며 수많은 개혁정책과 쇄국정책이 시행된 곳이었기에 역사적 상징성이 남다르다. 운현궁의 대표적인 건물은 1864년 9월에 준공한 노안당과 노락당, 그리고 6년 후에 증축한 이로당이 있고, 지금은 한 개뿐이지만 그 당시 네 개였던 대문이 있다. 노락당은 운현궁에서 가장 중심이 되는 건물로서 가족들의 회갑이나 잔치 등 큰 행사때 주로 이용되었다. 노안당은 대원군이 사랑채로 사용하던 건물이다. 노안당은 전형적인 한식 기와집으로 추녀 끝이 섬세하고 아름다운 것이 특징이다.\", \"region\": \"서울\", \"city\": \"종로\", \"category\": \"관광지\"}], \"message\": \"제외 조건으로 검색한 장소 목록을 확인했습니다.\", \"citations\": [], \"termination\": \"COMPLETED\", \"modelTurns\": 1, \"toolResults\": [{\"callId\": \"fixture-call-CONV-SEARCH-exclude-first\", \"name\": \"search_places\", \"arguments\": \"{\\\"query\\\":\\\"종로 관광지\\\",\\\"region\\\":\\\"서울\\\",\\\"city\\\":\\\"종로\\\",\\\"category\\\":\\\"관광지\\\",\\\"exclude_place_ids\\\":[378],\\\"area\\\":null,\\\"limit\\\":10}\", \"status\": \"SUCCEEDED\", \"type\": \"PLACES\", \"publicData\": [{\"placeId\": 208, \"name\": \"서울 운현궁\", \"description\": \"관광지. 고궁. 운현궁은 경복궁과 같은 궁궐이 아니라 왕족의 친족들이 거주하던 궁으로 종로구 운니동에 위치한 사적이다. 흥선대원군의 일가가 거주하고 생활한 사저였으며, 고종이 임금이 되기 전까지 태어나고 자란 곳이다. 운현궁은 조선조 말기의 역사적 사건들 대부분이 시작된 곳이며 수많은 개혁정책과 쇄국정책이 시행된 곳이었기에 역사적 상징성이 남다르다. 운현궁의 대표적인 건물은 1864년 9월에 준공한 노안당과 노락당, 그리고 6년 후에 증축한 이로당이 있고, 지금은 한 개뿐이지만 그 당시 네 개였던 대문이 있다. 노락당은 운현궁에서 가장 중심이 되는 건물로서 가족들의 회갑이나 잔치 등 큰 행사때 주로 이용되었다. 노안당은 대원군이 사랑채로 사용하던 건물이다. 노안당은 전형적인 한식 기와집으로 추녀 끝이 섬세하고 아름다운 것이 특징이다.\", \"region\": \"서울\", \"city\": \"종로\", \"category\": \"관광지\"}], \"resultId\": \"0cbe2d17-579a-575b-b218-03767e5cc025\"}], \"requestId\": \"19bba850-8a51-526a-9c58-f1002452bd0d\", \"turnId\": \"ec0a6629-65a8-5e75-a7ed-c2866f682436\", \"conversationId\": \"69952c51-cd13-5b39-9a38-9d4cf09a2a20\", \"primaryResultId\": \"0cbe2d17-579a-575b-b218-03767e5cc025\", \"messageSource\": \"SERVER_RECEIPT\", \"intent\": \"RECOMMENDATION\", \"emotion\": \"GUIDING\", \"items\": [{\"placeId\": 208, \"name\": \"서울 운현궁\", \"description\": \"관광지. 고궁. 운현궁은 경복궁과 같은 궁궐이 아니라 왕족의 친족들이 거주하던 궁으로 종로구 운니동에 위치한 사적이다. 흥선대원군의 일가가 거주하고 생활한 사저였으며, 고종이 임금이 되기 전까지 태어나고 자란 곳이다. 운현궁은 조선조 말기의 역사적 사건들 대부분이 시작된 곳이며 수많은 개혁정책과 쇄국정책이 시행된 곳이었기에 역사적 상징성이 남다르다. 운현궁의 대표적인 건물은 1864년 9월에 준공한 노안당과 노락당, 그리고 6년 후에 증축한 이로당이 있고, 지금은 한 개뿐이지만 그 당시 네 개였던 대문이 있다. 노락당은 운현궁에서 가장 중심이 되는 건물로서 가족들의 회갑이나 잔치 등 큰 행사때 주로 이용되었다. 노안당은 대원군이 사랑채로 사용하던 건물이다. 노안당은 전형적인 한식 기와집으로 추녀 끝이 섬세하고 아름다운 것이 특징이다.\", \"region\": \"서울\", \"city\": \"종로\", \"category\": \"관광지\"}]}",
+        "server_request_id": "19bba850-8a51-526a-9c58-f1002452bd0d"
+      },
+      "events": [
+        {
+          "schemaVersion": 1,
+          "eventId": "74ad5b53-3264-55ef-b230-4f3b15e56278",
+          "event": "EVIDENCE_PREPARATION",
+          "timestamp": "2026-11-04T00:00:00Z",
+          "requestId": "19bba850-8a51-526a-9c58-f1002452bd0d",
+          "turnId": "ec0a6629-65a8-5e75-a7ed-c2866f682436",
+          "conversationId": "69952c51-cd13-5b39-9a38-9d4cf09a2a20",
+          "caseId": "CONV-SEARCH-exclude-first",
+          "inputSha256": "0136b31a5078af39e041e54069931e4ab92bc899562696b9c11be18ad08a8f34",
+          "mode": "MOCK",
+          "phase": "CONVERSATION",
+          "payload": {
+            "state": "READY",
+            "sourceTool": "search_places",
+            "publicData": [
+              {
+                "placeId": 378,
+                "name": "창경궁",
+                "description": "관광지. 고궁. 창경궁(昌慶宮)은 성종이 세 명의 대비를 위해 옛 수강궁에 창건한 궁이다. 창경궁은 원래 1418년(세종 즉위) 세종이 상왕 태종을 위해 창건한 수강궁(壽康宮)이 있던 자리이다. 이후 1483년(성종 14) 성종이 세 명의 대비인 세조의 왕비 정희왕후, 덕종의 왕비 소혜왕후, 예종의 왕비 안순왕후를 위해 수강궁을 크게 확장하고 궁의 이름을 창경궁이라 하였다. \n창경궁은 창덕궁과 경계 없이 동궐(東闕)이라는 하나의 궁궐 영역이었으며,  주로 왕실 가족들의 생활공간으로 사용하였다. 창경궁은 1592년(선조 25) 임진왜란으로 소실된 것을 1616년(광해군 8) 중건하였으며, 1830년(순조 30) 대화재로 대부분의 건물들이 소실되었다가 4년 뒤에 중건하였다.\n그러나 1907년 순종이 황위에 오른 후 창경궁 내에 동물원과 식물원을 조성하면서 궁궐로서의 모습을 잃기 시작하였다. 1911년에는 일제에 의해 궁의 이름마저 창경원(昌慶苑)으로 격하되어 궁궐이 아닌 공원화가 되어 훼손이 심하였다. 광복 후 1983년에 다시 창경궁으로 명칭을 회복한 후 궁궐 경내에 있던 동물원을 이전하고 본래 궁궐의 모습으로 복원공사가 진행되어 현재의 모습이 되었다. 창경궁은 남향으로 있는 다른 궁궐과 달리 정문과 정전이 동향으로 배치되어 있다.",
+                "region": "서울",
+                "city": "종로",
+                "category": "관광지"
+              }
+            ],
+            "modelData": {
+              "searchCriteria": {
+                "query": "지금 제시된 후보 중 첫 번째 장소는 빼고, 그 장소를 제외 조건에 넣어 종로의 다른 관광지를 다시 검색해줘.",
+                "region": "서울",
+                "city": "종로",
+                "category": "관광지",
+                "excludePlaceIds": [],
+                "area": null,
+                "limit": 10,
+                "rankingMode": "RERANKED"
+              },
+              "candidates": [
+                {
+                  "placeId": 378,
+                  "name": "창경궁",
+                  "description": "관광지. 고궁. 창경궁(昌慶宮)은 성종이 세 명의 대비를 위해 옛 수강궁에 창건한 궁이다. 창경궁은 원래 1418년(세종 즉위) 세종이 상왕 태종을 위해 창건한 수강궁(壽康宮)이 있던 자리이다. 이후 1483년(성종 14) 성종이 세 명의 대비인 세조의 왕비 정희왕후, 덕종의 왕비 소혜왕후, 예종의 왕비 안순왕후를 위해 수강궁을 크게 확장하고 궁의 이름을 창경궁이라 하였다. \n창경궁은 창덕궁과 경계 없이 동궐(東闕)이라는 하나의 궁궐 영역이었으며,  주로 왕실 가족들의 생활공간으로 사용하였다. 창경궁은 1592년(선조 25) 임진왜란으로 소실된 것을 1616년(광해군 8) 중건하였으며, 1830년(순조 30) 대화재로 대부분의 건물들이 소실되었다가 4년 뒤에 중건하였다.\n그러나 1907년 순종이 황위에 오른",
+                  "selectedEvidence": [
+                    {
+                      "evidenceId": "fixture-E378",
+                      "original": {
+                        "source_id": "fixture-frozen-source-378",
+                        "chunk_text": "관광지. 고궁. 창경궁(昌慶宮)은 성종이 세 명의 대비를 위해 옛 수강궁에 창건한 궁이다. 창경궁은 원래 1418년(세종 즉위) 세종이 상왕 태종을 위해 창건한 수강궁(壽康宮)이 있던 자리이다. 이후 1483년(성종 14) 성종이 세 명의 대비인 세조의 왕비 정희왕후, 덕종의 왕비 소혜왕후, 예종의 왕비 안순왕후를 위해 수강궁을 크게 확장하고 궁의 이름을 창경궁이라 하였다. \n창경궁은 창덕궁과 경계 없이 동궐(東闕)이라는 하나의 궁궐 영역이었으며,  주로 왕실 가족들의 생활공간으로 사용하였다. 창경궁은 1592년(선조 25) 임진왜란으로 소실된 것을 1616년(광해군 8) 중건하였으며, 1830년(순조 30) 대화재로 대부분의 건물들이 소실되었다가 4년 뒤에 중건하였다.\n그러나 1907년 순종이 황위에 오른 후 창경궁 내에 동물원과 식물원을 조성하면서 궁궐로서의 모습을 잃기 시작하였다. 1911년에는 일제에 의해 궁의 이름마저 창경원(昌慶苑)으로 격하되어 궁궐이 아닌 공원화가 되어 훼손이 심하였다. 광복 후 1983년에 다시 창경궁으로 명칭을 회복한 후 궁궐 경내에 있던 동물원을 이전하고 본래 궁궐의 모습으로 복원공사가 진행되어 현재의 모습이 되었다. 창경궁은 남향으로 있는 다른 궁궐과 달리 정문과 정전이 동향으로 배치되어 있다."
+                      },
+                      "generatedSupplement": {}
+                    }
+                  ]
+                }
+              ]
+            },
+            "durationMs": 1
+          }
+        },
+        {
+          "schemaVersion": 1,
+          "eventId": "4134b52c-8533-5f2f-82ab-89396685a54d",
+          "event": "MODEL_CALL",
+          "timestamp": "2026-11-04T00:00:00Z",
+          "requestId": "19bba850-8a51-526a-9c58-f1002452bd0d",
+          "turnId": "ec0a6629-65a8-5e75-a7ed-c2866f682436",
+          "conversationId": "69952c51-cd13-5b39-9a38-9d4cf09a2a20",
+          "caseId": "CONV-SEARCH-exclude-first",
+          "inputSha256": "0136b31a5078af39e041e54069931e4ab92bc899562696b9c11be18ad08a8f34",
+          "mode": "MOCK",
+          "phase": "CONVERSATION",
+          "payload": {
+            "stage": "FINISHED",
+            "status": "SUCCEEDED",
+            "dispatched": false,
+            "fixture_only": true,
+            "provider": "OPENAI",
+            "model": "offline-fixture"
+          }
+        },
+        {
+          "schemaVersion": 1,
+          "eventId": "36f80986-1f3e-51e7-8d6f-0bf1a1d91ac2",
+          "event": "MODEL_TURN",
+          "timestamp": "2026-11-04T00:00:00Z",
+          "requestId": "19bba850-8a51-526a-9c58-f1002452bd0d",
+          "turnId": "ec0a6629-65a8-5e75-a7ed-c2866f682436",
+          "conversationId": "69952c51-cd13-5b39-9a38-9d4cf09a2a20",
+          "caseId": "CONV-SEARCH-exclude-first",
+          "inputSha256": "0136b31a5078af39e041e54069931e4ab92bc899562696b9c11be18ad08a8f34",
+          "mode": "MOCK",
+          "phase": "CONVERSATION",
+          "payload": {
+            "content": "",
+            "toolCalls": [
+              {
+                "id": "fixture-call-CONV-SEARCH-exclude-first",
+                "name": "search_places",
+                "arguments": "{\"query\":\"종로 관광지\",\"region\":\"서울\",\"city\":\"종로\",\"category\":\"관광지\",\"exclude_place_ids\":[378],\"area\":null,\"limit\":10}"
+              }
+            ],
+            "modelTurn": 1
+          }
+        },
+        {
+          "schemaVersion": 1,
+          "eventId": "087b28e6-4b47-5d76-aa8a-4a9373b86bbc",
+          "event": "TOOL_RESULT",
+          "timestamp": "2026-11-04T00:00:00Z",
+          "requestId": "19bba850-8a51-526a-9c58-f1002452bd0d",
+          "turnId": "ec0a6629-65a8-5e75-a7ed-c2866f682436",
+          "conversationId": "69952c51-cd13-5b39-9a38-9d4cf09a2a20",
+          "caseId": "CONV-SEARCH-exclude-first",
+          "inputSha256": "0136b31a5078af39e041e54069931e4ab92bc899562696b9c11be18ad08a8f34",
+          "mode": "MOCK",
+          "phase": "CONVERSATION",
+          "payload": {
+            "result": {
+              "callId": "fixture-call-CONV-SEARCH-exclude-first",
+              "name": "search_places",
+              "arguments": "{\"query\":\"종로 관광지\",\"region\":\"서울\",\"city\":\"종로\",\"category\":\"관광지\",\"exclude_place_ids\":[378],\"area\":null,\"limit\":10}",
+              "status": "SUCCEEDED",
+              "type": "PLACES",
+              "publicData": [
+                {
+                  "placeId": 208,
+                  "name": "서울 운현궁",
+                  "description": "관광지. 고궁. 운현궁은 경복궁과 같은 궁궐이 아니라 왕족의 친족들이 거주하던 궁으로 종로구 운니동에 위치한 사적이다. 흥선대원군의 일가가 거주하고 생활한 사저였으며, 고종이 임금이 되기 전까지 태어나고 자란 곳이다. 운현궁은 조선조 말기의 역사적 사건들 대부분이 시작된 곳이며 수많은 개혁정책과 쇄국정책이 시행된 곳이었기에 역사적 상징성이 남다르다. 운현궁의 대표적인 건물은 1864년 9월에 준공한 노안당과 노락당, 그리고 6년 후에 증축한 이로당이 있고, 지금은 한 개뿐이지만 그 당시 네 개였던 대문이 있다. 노락당은 운현궁에서 가장 중심이 되는 건물로서 가족들의 회갑이나 잔치 등 큰 행사때 주로 이용되었다. 노안당은 대원군이 사랑채로 사용하던 건물이다. 노안당은 전형적인 한식 기와집으로 추녀 끝이 섬세하고 아름다운 것이 특징이다.",
+                  "region": "서울",
+                  "city": "종로",
+                  "category": "관광지"
+                }
+              ],
+              "resultId": "0cbe2d17-579a-575b-b218-03767e5cc025"
+            },
+            "modelData": {
+              "searchCriteria": {
+                "query": "종로 관광지",
+                "region": "서울",
+                "city": "종로",
+                "category": "관광지",
+                "excludePlaceIds": [
+                  378
+                ],
+                "area": null,
+                "limit": 10,
+                "rankingMode": "RERANKED"
+              },
+              "candidates": [
+                {
+                  "placeId": 208,
+                  "name": "서울 운현궁",
+                  "description": "관광지. 고궁. 운현궁은 경복궁과 같은 궁궐이 아니라 왕족의 친족들이 거주하던 궁으로 종로구 운니동에 위치한 사적이다. 흥선대원군의 일가가 거주하고 생활한 사저였으며, 고종이 임금이 되기 전까지 태어나고 자란 곳이다. 운현궁은 조선조 말기의 역사적 사건들 대부분이 시작된 곳이며 수많은 개혁정책과 쇄국정책이 시행된 곳이었기에 역사적 상징성이 남다르다. 운현궁의 대표적인 건물은 1864년 9월에 준공한 노안당과 노락당, 그리고 6년 후에 증축한 이로당이 있고, 지금은 한 개뿐이지만 그 당시 네 개였던 대문이 있다. 노락당은 운현궁에서 가장 중심이 되는 건물로서 가족들의 회갑이나 잔치 등 큰 행사때 주로 이용되었다. 노안당은 대원군이 사랑채로 사용하던 건물이다. 노안당은 전형적인 한식 기와집으로 추녀 끝이 섬세하",
+                  "selectedEvidence": [
+                    {
+                      "evidenceId": "fixture-E208",
+                      "original": {
+                        "source_id": "fixture-frozen-source-208",
+                        "chunk_text": "관광지. 고궁. 운현궁은 경복궁과 같은 궁궐이 아니라 왕족의 친족들이 거주하던 궁으로 종로구 운니동에 위치한 사적이다. 흥선대원군의 일가가 거주하고 생활한 사저였으며, 고종이 임금이 되기 전까지 태어나고 자란 곳이다. 운현궁은 조선조 말기의 역사적 사건들 대부분이 시작된 곳이며 수많은 개혁정책과 쇄국정책이 시행된 곳이었기에 역사적 상징성이 남다르다. 운현궁의 대표적인 건물은 1864년 9월에 준공한 노안당과 노락당, 그리고 6년 후에 증축한 이로당이 있고, 지금은 한 개뿐이지만 그 당시 네 개였던 대문이 있다. 노락당은 운현궁에서 가장 중심이 되는 건물로서 가족들의 회갑이나 잔치 등 큰 행사때 주로 이용되었다. 노안당은 대원군이 사랑채로 사용하던 건물이다. 노안당은 전형적인 한식 기와집으로 추녀 끝이 섬세하고 아름다운 것이 특징이다."
+                      },
+                      "generatedSupplement": {}
+                    }
+                  ]
+                }
+              ]
+            },
+            "durationMs": 1
+          }
+        },
+        {
+          "schemaVersion": 1,
+          "eventId": "d50232ec-2587-5be3-afde-e55f4f3f3e7a",
+          "event": "TURN_RESULT",
+          "timestamp": "2026-11-04T00:00:00Z",
+          "requestId": "19bba850-8a51-526a-9c58-f1002452bd0d",
+          "turnId": "ec0a6629-65a8-5e75-a7ed-c2866f682436",
+          "conversationId": "69952c51-cd13-5b39-9a38-9d4cf09a2a20",
+          "caseId": "CONV-SEARCH-exclude-first",
+          "inputSha256": "0136b31a5078af39e041e54069931e4ab92bc899562696b9c11be18ad08a8f34",
+          "mode": "MOCK",
+          "phase": "CONVERSATION",
+          "payload": {
+            "type": "PLACES",
+            "data": [
+              {
+                "placeId": 208,
+                "name": "서울 운현궁",
+                "description": "관광지. 고궁. 운현궁은 경복궁과 같은 궁궐이 아니라 왕족의 친족들이 거주하던 궁으로 종로구 운니동에 위치한 사적이다. 흥선대원군의 일가가 거주하고 생활한 사저였으며, 고종이 임금이 되기 전까지 태어나고 자란 곳이다. 운현궁은 조선조 말기의 역사적 사건들 대부분이 시작된 곳이며 수많은 개혁정책과 쇄국정책이 시행된 곳이었기에 역사적 상징성이 남다르다. 운현궁의 대표적인 건물은 1864년 9월에 준공한 노안당과 노락당, 그리고 6년 후에 증축한 이로당이 있고, 지금은 한 개뿐이지만 그 당시 네 개였던 대문이 있다. 노락당은 운현궁에서 가장 중심이 되는 건물로서 가족들의 회갑이나 잔치 등 큰 행사때 주로 이용되었다. 노안당은 대원군이 사랑채로 사용하던 건물이다. 노안당은 전형적인 한식 기와집으로 추녀 끝이 섬세하고 아름다운 것이 특징이다.",
+                "region": "서울",
+                "city": "종로",
+                "category": "관광지"
+              }
+            ],
+            "message": "제외 조건으로 검색한 장소 목록을 확인했습니다.",
+            "citations": [],
+            "termination": "COMPLETED",
+            "modelTurns": 1,
+            "toolResults": [
+              {
+                "callId": "fixture-call-CONV-SEARCH-exclude-first",
+                "name": "search_places",
+                "arguments": "{\"query\":\"종로 관광지\",\"region\":\"서울\",\"city\":\"종로\",\"category\":\"관광지\",\"exclude_place_ids\":[378],\"area\":null,\"limit\":10}",
+                "status": "SUCCEEDED",
+                "type": "PLACES",
+                "publicData": [
+                  {
+                    "placeId": 208,
+                    "name": "서울 운현궁",
+                    "description": "관광지. 고궁. 운현궁은 경복궁과 같은 궁궐이 아니라 왕족의 친족들이 거주하던 궁으로 종로구 운니동에 위치한 사적이다. 흥선대원군의 일가가 거주하고 생활한 사저였으며, 고종이 임금이 되기 전까지 태어나고 자란 곳이다. 운현궁은 조선조 말기의 역사적 사건들 대부분이 시작된 곳이며 수많은 개혁정책과 쇄국정책이 시행된 곳이었기에 역사적 상징성이 남다르다. 운현궁의 대표적인 건물은 1864년 9월에 준공한 노안당과 노락당, 그리고 6년 후에 증축한 이로당이 있고, 지금은 한 개뿐이지만 그 당시 네 개였던 대문이 있다. 노락당은 운현궁에서 가장 중심이 되는 건물로서 가족들의 회갑이나 잔치 등 큰 행사때 주로 이용되었다. 노안당은 대원군이 사랑채로 사용하던 건물이다. 노안당은 전형적인 한식 기와집으로 추녀 끝이 섬세하고 아름다운 것이 특징이다.",
+                    "region": "서울",
+                    "city": "종로",
+                    "category": "관광지"
+                  }
+                ],
+                "resultId": "0cbe2d17-579a-575b-b218-03767e5cc025"
+              }
+            ],
+            "requestId": "19bba850-8a51-526a-9c58-f1002452bd0d",
+            "turnId": "ec0a6629-65a8-5e75-a7ed-c2866f682436",
+            "conversationId": "69952c51-cd13-5b39-9a38-9d4cf09a2a20",
+            "primaryResultId": "0cbe2d17-579a-575b-b218-03767e5cc025",
+            "messageSource": "SERVER_RECEIPT",
+            "intent": "RECOMMENDATION",
+            "emotion": "GUIDING",
+            "items": [
+              {
+                "placeId": 208,
+                "name": "서울 운현궁",
+                "description": "관광지. 고궁. 운현궁은 경복궁과 같은 궁궐이 아니라 왕족의 친족들이 거주하던 궁으로 종로구 운니동에 위치한 사적이다. 흥선대원군의 일가가 거주하고 생활한 사저였으며, 고종이 임금이 되기 전까지 태어나고 자란 곳이다. 운현궁은 조선조 말기의 역사적 사건들 대부분이 시작된 곳이며 수많은 개혁정책과 쇄국정책이 시행된 곳이었기에 역사적 상징성이 남다르다. 운현궁의 대표적인 건물은 1864년 9월에 준공한 노안당과 노락당, 그리고 6년 후에 증축한 이로당이 있고, 지금은 한 개뿐이지만 그 당시 네 개였던 대문이 있다. 노락당은 운현궁에서 가장 중심이 되는 건물로서 가족들의 회갑이나 잔치 등 큰 행사때 주로 이용되었다. 노안당은 대원군이 사랑채로 사용하던 건물이다. 노안당은 전형적인 한식 기와집으로 추녀 끝이 섬세하고 아름다운 것이 특징이다.",
+                "region": "서울",
+                "city": "종로",
+                "category": "관광지"
+              }
+            ]
+          }
+        },
+        {
+          "schemaVersion": 1,
+          "eventId": "ab8519f4-2704-5a0d-bcf0-46cbb8214dc7",
+          "event": "API_REQUEST",
+          "timestamp": "2026-11-04T00:00:00Z",
+          "requestId": "19bba850-8a51-526a-9c58-f1002452bd0d",
+          "turnId": "ec0a6629-65a8-5e75-a7ed-c2866f682436",
+          "conversationId": "69952c51-cd13-5b39-9a38-9d4cf09a2a20",
+          "caseId": "CONV-SEARCH-exclude-first",
+          "inputSha256": "0136b31a5078af39e041e54069931e4ab92bc899562696b9c11be18ad08a8f34",
+          "mode": "MOCK",
+          "phase": "CONVERSATION",
+          "payload": {
+            "method": "POST",
+            "path": "/api/v1/conversation/turns",
+            "rawBody": "{\"message\":\"지금 제시된 후보 중 첫 번째 장소는 빼고, 그 장소를 제외 조건에 넣어 종로의 다른 관광지를 다시 검색해줘.\",\"planningRequest\":null,\"history\":[],\"searchContext\":{\"region\":\"서울\",\"city\":\"종로\",\"category\":\"관광지\",\"excludePlaceIds\":[],\"area\":null}}",
+            "bodySha256": "be658272bcef1bdf105f552c9311ea2476ccfbdc4816172c12f5d085a73b6289"
+          }
+        },
+        {
+          "schemaVersion": 1,
+          "eventId": "c29415d2-c7bc-5cf0-9d2b-7f6a50bc9fae",
+          "event": "API_RESPONSE",
+          "timestamp": "2026-11-04T00:00:00Z",
+          "requestId": "19bba850-8a51-526a-9c58-f1002452bd0d",
+          "turnId": "ec0a6629-65a8-5e75-a7ed-c2866f682436",
+          "conversationId": "69952c51-cd13-5b39-9a38-9d4cf09a2a20",
+          "caseId": "CONV-SEARCH-exclude-first",
+          "inputSha256": "0136b31a5078af39e041e54069931e4ab92bc899562696b9c11be18ad08a8f34",
+          "mode": "MOCK",
+          "phase": "CONVERSATION",
+          "payload": {
+            "httpStatus": 200,
+            "response": {
+              "type": "PLACES",
+              "data": [
+                {
+                  "placeId": 208,
+                  "name": "서울 운현궁",
+                  "description": "관광지. 고궁. 운현궁은 경복궁과 같은 궁궐이 아니라 왕족의 친족들이 거주하던 궁으로 종로구 운니동에 위치한 사적이다. 흥선대원군의 일가가 거주하고 생활한 사저였으며, 고종이 임금이 되기 전까지 태어나고 자란 곳이다. 운현궁은 조선조 말기의 역사적 사건들 대부분이 시작된 곳이며 수많은 개혁정책과 쇄국정책이 시행된 곳이었기에 역사적 상징성이 남다르다. 운현궁의 대표적인 건물은 1864년 9월에 준공한 노안당과 노락당, 그리고 6년 후에 증축한 이로당이 있고, 지금은 한 개뿐이지만 그 당시 네 개였던 대문이 있다. 노락당은 운현궁에서 가장 중심이 되는 건물로서 가족들의 회갑이나 잔치 등 큰 행사때 주로 이용되었다. 노안당은 대원군이 사랑채로 사용하던 건물이다. 노안당은 전형적인 한식 기와집으로 추녀 끝이 섬세하고 아름다운 것이 특징이다.",
+                  "region": "서울",
+                  "city": "종로",
+                  "category": "관광지"
+                }
+              ],
+              "message": "제외 조건으로 검색한 장소 목록을 확인했습니다.",
+              "citations": [],
+              "termination": "COMPLETED",
+              "modelTurns": 1,
+              "toolResults": [
+                {
+                  "callId": "fixture-call-CONV-SEARCH-exclude-first",
+                  "name": "search_places",
+                  "arguments": "{\"query\":\"종로 관광지\",\"region\":\"서울\",\"city\":\"종로\",\"category\":\"관광지\",\"exclude_place_ids\":[378],\"area\":null,\"limit\":10}",
+                  "status": "SUCCEEDED",
+                  "type": "PLACES",
+                  "publicData": [
+                    {
+                      "placeId": 208,
+                      "name": "서울 운현궁",
+                      "description": "관광지. 고궁. 운현궁은 경복궁과 같은 궁궐이 아니라 왕족의 친족들이 거주하던 궁으로 종로구 운니동에 위치한 사적이다. 흥선대원군의 일가가 거주하고 생활한 사저였으며, 고종이 임금이 되기 전까지 태어나고 자란 곳이다. 운현궁은 조선조 말기의 역사적 사건들 대부분이 시작된 곳이며 수많은 개혁정책과 쇄국정책이 시행된 곳이었기에 역사적 상징성이 남다르다. 운현궁의 대표적인 건물은 1864년 9월에 준공한 노안당과 노락당, 그리고 6년 후에 증축한 이로당이 있고, 지금은 한 개뿐이지만 그 당시 네 개였던 대문이 있다. 노락당은 운현궁에서 가장 중심이 되는 건물로서 가족들의 회갑이나 잔치 등 큰 행사때 주로 이용되었다. 노안당은 대원군이 사랑채로 사용하던 건물이다. 노안당은 전형적인 한식 기와집으로 추녀 끝이 섬세하고 아름다운 것이 특징이다.",
+                      "region": "서울",
+                      "city": "종로",
+                      "category": "관광지"
+                    }
+                  ],
+                  "resultId": "0cbe2d17-579a-575b-b218-03767e5cc025"
+                }
+              ],
+              "requestId": "19bba850-8a51-526a-9c58-f1002452bd0d",
+              "turnId": "ec0a6629-65a8-5e75-a7ed-c2866f682436",
+              "conversationId": "69952c51-cd13-5b39-9a38-9d4cf09a2a20",
+              "primaryResultId": "0cbe2d17-579a-575b-b218-03767e5cc025",
+              "messageSource": "SERVER_RECEIPT",
+              "intent": "RECOMMENDATION",
+              "emotion": "GUIDING",
+              "items": [
+                {
+                  "placeId": 208,
+                  "name": "서울 운현궁",
+                  "description": "관광지. 고궁. 운현궁은 경복궁과 같은 궁궐이 아니라 왕족의 친족들이 거주하던 궁으로 종로구 운니동에 위치한 사적이다. 흥선대원군의 일가가 거주하고 생활한 사저였으며, 고종이 임금이 되기 전까지 태어나고 자란 곳이다. 운현궁은 조선조 말기의 역사적 사건들 대부분이 시작된 곳이며 수많은 개혁정책과 쇄국정책이 시행된 곳이었기에 역사적 상징성이 남다르다. 운현궁의 대표적인 건물은 1864년 9월에 준공한 노안당과 노락당, 그리고 6년 후에 증축한 이로당이 있고, 지금은 한 개뿐이지만 그 당시 네 개였던 대문이 있다. 노락당은 운현궁에서 가장 중심이 되는 건물로서 가족들의 회갑이나 잔치 등 큰 행사때 주로 이용되었다. 노안당은 대원군이 사랑채로 사용하던 건물이다. 노안당은 전형적인 한식 기와집으로 추녀 끝이 섬세하고 아름다운 것이 특징이다.",
+                  "region": "서울",
+                  "city": "종로",
+                  "category": "관광지"
+                }
+              ]
+            },
+            "durationMs": 1
+          }
+        }
+      ]
+    },
+    "CONV-JOB-owned": {
+      "identity": {
+        "turn_id": "d5418486-bc51-5717-a116-2723d8937c9c",
+        "conversation_id": "5bc09cdb-2d15-5276-b744-1027833a4a86"
+      },
+      "input_sha256": "7d6717e10031870fcc6d10c64d9265ddc37513f0e424771a31a18ac08e0af6c6",
+      "body_sha256": "cfa1c66b5953b9c647eca180b7cd6db5b92b01485ebc247560da55083ce3a43a",
+      "response": {
+        "status_code": 200,
+        "raw_body": "{\"type\": \"PLANNING_JOB\", \"data\": {\"jobId\": \"00000000-0000-4000-8000-000000000001\", \"status\": \"RUNNING\", \"planId\": null, \"errorMessage\": null}, \"message\": \"작업의 실제 현재 상태를 안내합니다. 진행 중이면 아직 초안이 완성되지 않았다고 설명합니다.\", \"citations\": [], \"termination\": \"COMPLETED\", \"modelTurns\": 1, \"toolResults\": [{\"callId\": \"fixture-call-CONV-JOB-owned\", \"name\": \"get_planning_job\", \"arguments\": \"{\\\"job_id\\\":\\\"00000000-0000-4000-8000-000000000001\\\"}\", \"status\": \"SUCCEEDED\", \"type\": \"PLANNING_JOB\", \"publicData\": {\"jobId\": \"00000000-0000-4000-8000-000000000001\", \"status\": \"RUNNING\", \"planId\": null, \"errorMessage\": null}, \"resultId\": \"6f8c6c1a-5c37-50e6-9b99-cf8e833050f1\"}], \"requestId\": \"c4219e21-3715-5ab4-8476-10244d5a8cb1\", \"turnId\": \"d5418486-bc51-5717-a116-2723d8937c9c\", \"conversationId\": \"5bc09cdb-2d15-5276-b744-1027833a4a86\", \"primaryResultId\": \"6f8c6c1a-5c37-50e6-9b99-cf8e833050f1\", \"messageSource\": \"SERVER_RECEIPT\", \"intent\": \"PLAN\", \"emotion\": \"THINKING\", \"items\": []}",
+        "server_request_id": "c4219e21-3715-5ab4-8476-10244d5a8cb1"
+      },
+      "events": [
+        {
+          "schemaVersion": 1,
+          "eventId": "17670b40-a317-5e31-a62b-1e95ca500c7a",
+          "event": "EVIDENCE_PREPARATION",
+          "timestamp": "2026-11-04T00:00:00Z",
+          "requestId": "c4219e21-3715-5ab4-8476-10244d5a8cb1",
+          "turnId": "d5418486-bc51-5717-a116-2723d8937c9c",
+          "conversationId": "5bc09cdb-2d15-5276-b744-1027833a4a86",
+          "caseId": "CONV-JOB-owned",
+          "inputSha256": "7d6717e10031870fcc6d10c64d9265ddc37513f0e424771a31a18ac08e0af6c6",
+          "mode": "MOCK",
+          "phase": "CONVERSATION",
+          "payload": {
+            "state": "READY",
+            "sourceTool": "search_places",
+            "publicData": [
+              {
+                "placeId": 378,
+                "name": "창경궁",
+                "description": "관광지. 고궁. 창경궁(昌慶宮)은 성종이 세 명의 대비를 위해 옛 수강궁에 창건한 궁이다. 창경궁은 원래 1418년(세종 즉위) 세종이 상왕 태종을 위해 창건한 수강궁(壽康宮)이 있던 자리이다. 이후 1483년(성종 14) 성종이 세 명의 대비인 세조의 왕비 정희왕후, 덕종의 왕비 소혜왕후, 예종의 왕비 안순왕후를 위해 수강궁을 크게 확장하고 궁의 이름을 창경궁이라 하였다. \n창경궁은 창덕궁과 경계 없이 동궐(東闕)이라는 하나의 궁궐 영역이었으며,  주로 왕실 가족들의 생활공간으로 사용하였다. 창경궁은 1592년(선조 25) 임진왜란으로 소실된 것을 1616년(광해군 8) 중건하였으며, 1830년(순조 30) 대화재로 대부분의 건물들이 소실되었다가 4년 뒤에 중건하였다.\n그러나 1907년 순종이 황위에 오른 후 창경궁 내에 동물원과 식물원을 조성하면서 궁궐로서의 모습을 잃기 시작하였다. 1911년에는 일제에 의해 궁의 이름마저 창경원(昌慶苑)으로 격하되어 궁궐이 아닌 공원화가 되어 훼손이 심하였다. 광복 후 1983년에 다시 창경궁으로 명칭을 회복한 후 궁궐 경내에 있던 동물원을 이전하고 본래 궁궐의 모습으로 복원공사가 진행되어 현재의 모습이 되었다. 창경궁은 남향으로 있는 다른 궁궐과 달리 정문과 정전이 동향으로 배치되어 있다.",
+                "region": "서울",
+                "city": "종로",
+                "category": "관광지"
+              }
+            ],
+            "modelData": {
+              "searchCriteria": {
+                "query": "내 생성 작업 00000000-0000-4000-8000-000000000001의 현재 상태를 한 번 확인해줘.",
+                "region": "서울",
+                "city": "종로",
+                "category": "관광지",
+                "excludePlaceIds": [],
+                "area": null,
+                "limit": 10,
+                "rankingMode": "RERANKED"
+              },
+              "candidates": [
+                {
+                  "placeId": 378,
+                  "name": "창경궁",
+                  "description": "관광지. 고궁. 창경궁(昌慶宮)은 성종이 세 명의 대비를 위해 옛 수강궁에 창건한 궁이다. 창경궁은 원래 1418년(세종 즉위) 세종이 상왕 태종을 위해 창건한 수강궁(壽康宮)이 있던 자리이다. 이후 1483년(성종 14) 성종이 세 명의 대비인 세조의 왕비 정희왕후, 덕종의 왕비 소혜왕후, 예종의 왕비 안순왕후를 위해 수강궁을 크게 확장하고 궁의 이름을 창경궁이라 하였다. \n창경궁은 창덕궁과 경계 없이 동궐(東闕)이라는 하나의 궁궐 영역이었으며,  주로 왕실 가족들의 생활공간으로 사용하였다. 창경궁은 1592년(선조 25) 임진왜란으로 소실된 것을 1616년(광해군 8) 중건하였으며, 1830년(순조 30) 대화재로 대부분의 건물들이 소실되었다가 4년 뒤에 중건하였다.\n그러나 1907년 순종이 황위에 오른",
+                  "selectedEvidence": [
+                    {
+                      "evidenceId": "fixture-E378",
+                      "original": {
+                        "source_id": "fixture-frozen-source-378",
+                        "chunk_text": "관광지. 고궁. 창경궁(昌慶宮)은 성종이 세 명의 대비를 위해 옛 수강궁에 창건한 궁이다. 창경궁은 원래 1418년(세종 즉위) 세종이 상왕 태종을 위해 창건한 수강궁(壽康宮)이 있던 자리이다. 이후 1483년(성종 14) 성종이 세 명의 대비인 세조의 왕비 정희왕후, 덕종의 왕비 소혜왕후, 예종의 왕비 안순왕후를 위해 수강궁을 크게 확장하고 궁의 이름을 창경궁이라 하였다. \n창경궁은 창덕궁과 경계 없이 동궐(東闕)이라는 하나의 궁궐 영역이었으며,  주로 왕실 가족들의 생활공간으로 사용하였다. 창경궁은 1592년(선조 25) 임진왜란으로 소실된 것을 1616년(광해군 8) 중건하였으며, 1830년(순조 30) 대화재로 대부분의 건물들이 소실되었다가 4년 뒤에 중건하였다.\n그러나 1907년 순종이 황위에 오른 후 창경궁 내에 동물원과 식물원을 조성하면서 궁궐로서의 모습을 잃기 시작하였다. 1911년에는 일제에 의해 궁의 이름마저 창경원(昌慶苑)으로 격하되어 궁궐이 아닌 공원화가 되어 훼손이 심하였다. 광복 후 1983년에 다시 창경궁으로 명칭을 회복한 후 궁궐 경내에 있던 동물원을 이전하고 본래 궁궐의 모습으로 복원공사가 진행되어 현재의 모습이 되었다. 창경궁은 남향으로 있는 다른 궁궐과 달리 정문과 정전이 동향으로 배치되어 있다."
+                      },
+                      "generatedSupplement": {}
+                    }
+                  ]
+                }
+              ]
+            },
+            "durationMs": 1
+          }
+        },
+        {
+          "schemaVersion": 1,
+          "eventId": "1e3b3dc4-3b62-5522-af70-fb037bf2e0ad",
+          "event": "MODEL_CALL",
+          "timestamp": "2026-11-04T00:00:00Z",
+          "requestId": "c4219e21-3715-5ab4-8476-10244d5a8cb1",
+          "turnId": "d5418486-bc51-5717-a116-2723d8937c9c",
+          "conversationId": "5bc09cdb-2d15-5276-b744-1027833a4a86",
+          "caseId": "CONV-JOB-owned",
+          "inputSha256": "7d6717e10031870fcc6d10c64d9265ddc37513f0e424771a31a18ac08e0af6c6",
+          "mode": "MOCK",
+          "phase": "CONVERSATION",
+          "payload": {
+            "stage": "FINISHED",
+            "status": "SUCCEEDED",
+            "dispatched": false,
+            "fixture_only": true,
+            "provider": "OPENAI",
+            "model": "offline-fixture"
+          }
+        },
+        {
+          "schemaVersion": 1,
+          "eventId": "e45230fd-61b3-583c-b25f-9a0776a301f5",
+          "event": "MODEL_TURN",
+          "timestamp": "2026-11-04T00:00:00Z",
+          "requestId": "c4219e21-3715-5ab4-8476-10244d5a8cb1",
+          "turnId": "d5418486-bc51-5717-a116-2723d8937c9c",
+          "conversationId": "5bc09cdb-2d15-5276-b744-1027833a4a86",
+          "caseId": "CONV-JOB-owned",
+          "inputSha256": "7d6717e10031870fcc6d10c64d9265ddc37513f0e424771a31a18ac08e0af6c6",
+          "mode": "MOCK",
+          "phase": "CONVERSATION",
+          "payload": {
+            "content": "",
+            "toolCalls": [
+              {
+                "id": "fixture-call-CONV-JOB-owned",
+                "name": "get_planning_job",
+                "arguments": "{\"job_id\":\"00000000-0000-4000-8000-000000000001\"}"
+              }
+            ],
+            "modelTurn": 1
+          }
+        },
+        {
+          "schemaVersion": 1,
+          "eventId": "5c66ea51-6aa5-51c8-aaae-b81ac645631d",
+          "event": "TOOL_RESULT",
+          "timestamp": "2026-11-04T00:00:00Z",
+          "requestId": "c4219e21-3715-5ab4-8476-10244d5a8cb1",
+          "turnId": "d5418486-bc51-5717-a116-2723d8937c9c",
+          "conversationId": "5bc09cdb-2d15-5276-b744-1027833a4a86",
+          "caseId": "CONV-JOB-owned",
+          "inputSha256": "7d6717e10031870fcc6d10c64d9265ddc37513f0e424771a31a18ac08e0af6c6",
+          "mode": "MOCK",
+          "phase": "CONVERSATION",
+          "payload": {
+            "result": {
+              "callId": "fixture-call-CONV-JOB-owned",
+              "name": "get_planning_job",
+              "arguments": "{\"job_id\":\"00000000-0000-4000-8000-000000000001\"}",
+              "status": "SUCCEEDED",
+              "type": "PLANNING_JOB",
+              "publicData": {
+                "jobId": "00000000-0000-4000-8000-000000000001",
+                "status": "RUNNING",
+                "planId": null,
+                "errorMessage": null
+              },
+              "resultId": "6f8c6c1a-5c37-50e6-9b99-cf8e833050f1"
+            },
+            "modelData": {
+              "jobId": "00000000-0000-4000-8000-000000000001",
+              "status": "RUNNING",
+              "planId": null,
+              "errorMessage": null
+            },
+            "durationMs": 1
+          }
+        },
+        {
+          "schemaVersion": 1,
+          "eventId": "d99aae92-523e-5c67-885b-de49c5cc32ff",
+          "event": "TURN_RESULT",
+          "timestamp": "2026-11-04T00:00:00Z",
+          "requestId": "c4219e21-3715-5ab4-8476-10244d5a8cb1",
+          "turnId": "d5418486-bc51-5717-a116-2723d8937c9c",
+          "conversationId": "5bc09cdb-2d15-5276-b744-1027833a4a86",
+          "caseId": "CONV-JOB-owned",
+          "inputSha256": "7d6717e10031870fcc6d10c64d9265ddc37513f0e424771a31a18ac08e0af6c6",
+          "mode": "MOCK",
+          "phase": "CONVERSATION",
+          "payload": {
+            "type": "PLANNING_JOB",
+            "data": {
+              "jobId": "00000000-0000-4000-8000-000000000001",
+              "status": "RUNNING",
+              "planId": null,
+              "errorMessage": null
+            },
+            "message": "작업의 실제 현재 상태를 안내합니다. 진행 중이면 아직 초안이 완성되지 않았다고 설명합니다.",
+            "citations": [],
+            "termination": "COMPLETED",
+            "modelTurns": 1,
+            "toolResults": [
+              {
+                "callId": "fixture-call-CONV-JOB-owned",
+                "name": "get_planning_job",
+                "arguments": "{\"job_id\":\"00000000-0000-4000-8000-000000000001\"}",
+                "status": "SUCCEEDED",
+                "type": "PLANNING_JOB",
+                "publicData": {
+                  "jobId": "00000000-0000-4000-8000-000000000001",
+                  "status": "RUNNING",
+                  "planId": null,
+                  "errorMessage": null
+                },
+                "resultId": "6f8c6c1a-5c37-50e6-9b99-cf8e833050f1"
+              }
+            ],
+            "requestId": "c4219e21-3715-5ab4-8476-10244d5a8cb1",
+            "turnId": "d5418486-bc51-5717-a116-2723d8937c9c",
+            "conversationId": "5bc09cdb-2d15-5276-b744-1027833a4a86",
+            "primaryResultId": "6f8c6c1a-5c37-50e6-9b99-cf8e833050f1",
+            "messageSource": "SERVER_RECEIPT",
+            "intent": "PLAN",
+            "emotion": "THINKING",
+            "items": []
+          }
+        },
+        {
+          "schemaVersion": 1,
+          "eventId": "ba03eb4c-4719-5d96-9644-8ae093f1985c",
+          "event": "API_REQUEST",
+          "timestamp": "2026-11-04T00:00:00Z",
+          "requestId": "c4219e21-3715-5ab4-8476-10244d5a8cb1",
+          "turnId": "d5418486-bc51-5717-a116-2723d8937c9c",
+          "conversationId": "5bc09cdb-2d15-5276-b744-1027833a4a86",
+          "caseId": "CONV-JOB-owned",
+          "inputSha256": "7d6717e10031870fcc6d10c64d9265ddc37513f0e424771a31a18ac08e0af6c6",
+          "mode": "MOCK",
+          "phase": "CONVERSATION",
+          "payload": {
+            "method": "POST",
+            "path": "/api/v1/conversation/turns",
+            "rawBody": "{\"message\":\"내 생성 작업 00000000-0000-4000-8000-000000000001의 현재 상태를 한 번 확인해줘.\",\"planningRequest\":null,\"history\":[],\"searchContext\":{\"region\":\"서울\",\"city\":\"종로\",\"category\":\"관광지\",\"excludePlaceIds\":[],\"area\":null}}",
+            "bodySha256": "cfa1c66b5953b9c647eca180b7cd6db5b92b01485ebc247560da55083ce3a43a"
+          }
+        },
+        {
+          "schemaVersion": 1,
+          "eventId": "3146c117-6521-59fc-90f7-f38a02a257bc",
+          "event": "API_RESPONSE",
+          "timestamp": "2026-11-04T00:00:00Z",
+          "requestId": "c4219e21-3715-5ab4-8476-10244d5a8cb1",
+          "turnId": "d5418486-bc51-5717-a116-2723d8937c9c",
+          "conversationId": "5bc09cdb-2d15-5276-b744-1027833a4a86",
+          "caseId": "CONV-JOB-owned",
+          "inputSha256": "7d6717e10031870fcc6d10c64d9265ddc37513f0e424771a31a18ac08e0af6c6",
+          "mode": "MOCK",
+          "phase": "CONVERSATION",
+          "payload": {
+            "httpStatus": 200,
+            "response": {
+              "type": "PLANNING_JOB",
+              "data": {
+                "jobId": "00000000-0000-4000-8000-000000000001",
+                "status": "RUNNING",
+                "planId": null,
+                "errorMessage": null
+              },
+              "message": "작업의 실제 현재 상태를 안내합니다. 진행 중이면 아직 초안이 완성되지 않았다고 설명합니다.",
+              "citations": [],
+              "termination": "COMPLETED",
+              "modelTurns": 1,
+              "toolResults": [
+                {
+                  "callId": "fixture-call-CONV-JOB-owned",
+                  "name": "get_planning_job",
+                  "arguments": "{\"job_id\":\"00000000-0000-4000-8000-000000000001\"}",
+                  "status": "SUCCEEDED",
+                  "type": "PLANNING_JOB",
+                  "publicData": {
+                    "jobId": "00000000-0000-4000-8000-000000000001",
+                    "status": "RUNNING",
+                    "planId": null,
+                    "errorMessage": null
+                  },
+                  "resultId": "6f8c6c1a-5c37-50e6-9b99-cf8e833050f1"
+                }
+              ],
+              "requestId": "c4219e21-3715-5ab4-8476-10244d5a8cb1",
+              "turnId": "d5418486-bc51-5717-a116-2723d8937c9c",
+              "conversationId": "5bc09cdb-2d15-5276-b744-1027833a4a86",
+              "primaryResultId": "6f8c6c1a-5c37-50e6-9b99-cf8e833050f1",
+              "messageSource": "SERVER_RECEIPT",
+              "intent": "PLAN",
+              "emotion": "THINKING",
+              "items": []
+            },
+            "durationMs": 1
+          }
+        }
+      ]
+    },
+    "CONV-PLAN-create": {
+      "identity": {
+        "turn_id": "5023bef5-4b4c-5a37-a12c-66cfd9bf8099",
+        "conversation_id": "030c3c92-5655-54dd-a095-c335da5640bd"
+      },
+      "input_sha256": "90f3c578a6f4cc2cecf15598d4b3b162e7d7d05cfd966499cc98e79145f2d241",
+      "body_sha256": "dc2589e22546bc125d9c2498ce15b3aa17eef9d83c4e19eb3817b60dbe793447",
+      "response": {
+        "status_code": 200,
+        "raw_body": "{\"type\": \"PLANNING_JOB\", \"data\": {\"jobId\": \"1022250a-1815-56aa-899e-874deeb6e417\", \"status\": \"QUEUED\", \"planId\": null, \"errorMessage\": null}, \"message\": \"일정 초안 생성 작업을 접수했습니다. 아직 완성된 일정이나 예약 확정은 아닙니다.\", \"citations\": [], \"termination\": \"COMPLETED\", \"modelTurns\": 1, \"toolResults\": [{\"callId\": \"fixture-call-CONV-PLAN-create\", \"name\": \"generate_plan\", \"arguments\": \"{}\", \"status\": \"SUCCEEDED\", \"type\": \"PLANNING_JOB\", \"publicData\": {\"jobId\": \"1022250a-1815-56aa-899e-874deeb6e417\", \"status\": \"QUEUED\", \"planId\": null, \"errorMessage\": null}, \"resultId\": \"1397d6d2-e110-5d73-88be-f83c0c32d4cc\"}], \"requestId\": \"b88dfb77-edbd-528a-a46f-2135558b0771\", \"turnId\": \"5023bef5-4b4c-5a37-a12c-66cfd9bf8099\", \"conversationId\": \"030c3c92-5655-54dd-a095-c335da5640bd\", \"primaryResultId\": \"1397d6d2-e110-5d73-88be-f83c0c32d4cc\", \"messageSource\": \"SERVER_RECEIPT\", \"intent\": \"PLAN\", \"emotion\": \"THINKING\", \"items\": []}",
+        "server_request_id": "b88dfb77-edbd-528a-a46f-2135558b0771"
+      },
+      "events": [
+        {
+          "schemaVersion": 1,
+          "eventId": "4fc5a7f4-8cd2-576c-9b3c-3bc02f0091e8",
+          "event": "EVIDENCE_PREPARATION",
+          "timestamp": "2026-11-04T00:00:00Z",
+          "requestId": "b88dfb77-edbd-528a-a46f-2135558b0771",
+          "turnId": "5023bef5-4b4c-5a37-a12c-66cfd9bf8099",
+          "conversationId": "030c3c92-5655-54dd-a095-c335da5640bd",
+          "caseId": "CONV-PLAN-create",
+          "inputSha256": "90f3c578a6f4cc2cecf15598d4b3b162e7d7d05cfd966499cc98e79145f2d241",
+          "mode": "MOCK",
+          "phase": "CONVERSATION",
+          "payload": {
+            "state": "READY",
+            "sourceTool": "search_places",
+            "publicData": [
+              {
+                "placeId": 378,
+                "name": "창경궁",
+                "description": "관광지. 고궁. 창경궁(昌慶宮)은 성종이 세 명의 대비를 위해 옛 수강궁에 창건한 궁이다. 창경궁은 원래 1418년(세종 즉위) 세종이 상왕 태종을 위해 창건한 수강궁(壽康宮)이 있던 자리이다. 이후 1483년(성종 14) 성종이 세 명의 대비인 세조의 왕비 정희왕후, 덕종의 왕비 소혜왕후, 예종의 왕비 안순왕후를 위해 수강궁을 크게 확장하고 궁의 이름을 창경궁이라 하였다. \n창경궁은 창덕궁과 경계 없이 동궐(東闕)이라는 하나의 궁궐 영역이었으며,  주로 왕실 가족들의 생활공간으로 사용하였다. 창경궁은 1592년(선조 25) 임진왜란으로 소실된 것을 1616년(광해군 8) 중건하였으며, 1830년(순조 30) 대화재로 대부분의 건물들이 소실되었다가 4년 뒤에 중건하였다.\n그러나 1907년 순종이 황위에 오른 후 창경궁 내에 동물원과 식물원을 조성하면서 궁궐로서의 모습을 잃기 시작하였다. 1911년에는 일제에 의해 궁의 이름마저 창경원(昌慶苑)으로 격하되어 궁궐이 아닌 공원화가 되어 훼손이 심하였다. 광복 후 1983년에 다시 창경궁으로 명칭을 회복한 후 궁궐 경내에 있던 동물원을 이전하고 본래 궁궐의 모습으로 복원공사가 진행되어 현재의 모습이 되었다. 창경궁은 남향으로 있는 다른 궁궐과 달리 정문과 정전이 동향으로 배치되어 있다.",
+                "region": "서울",
+                "city": "종로",
+                "category": "관광지"
+              }
+            ],
+            "modelData": {
+              "searchCriteria": {
+                "query": "입력한 조건 그대로 일정 초안 생성을 요청해줘. 창경궁은 반드시 포함해줘.",
+                "region": "서울",
+                "city": "종로",
+                "category": "관광지",
+                "excludePlaceIds": [],
+                "area": null,
+                "limit": 10,
+                "rankingMode": "RERANKED"
+              },
+              "candidates": [
+                {
+                  "placeId": 378,
+                  "name": "창경궁",
+                  "description": "관광지. 고궁. 창경궁(昌慶宮)은 성종이 세 명의 대비를 위해 옛 수강궁에 창건한 궁이다. 창경궁은 원래 1418년(세종 즉위) 세종이 상왕 태종을 위해 창건한 수강궁(壽康宮)이 있던 자리이다. 이후 1483년(성종 14) 성종이 세 명의 대비인 세조의 왕비 정희왕후, 덕종의 왕비 소혜왕후, 예종의 왕비 안순왕후를 위해 수강궁을 크게 확장하고 궁의 이름을 창경궁이라 하였다. \n창경궁은 창덕궁과 경계 없이 동궐(東闕)이라는 하나의 궁궐 영역이었으며,  주로 왕실 가족들의 생활공간으로 사용하였다. 창경궁은 1592년(선조 25) 임진왜란으로 소실된 것을 1616년(광해군 8) 중건하였으며, 1830년(순조 30) 대화재로 대부분의 건물들이 소실되었다가 4년 뒤에 중건하였다.\n그러나 1907년 순종이 황위에 오른",
+                  "selectedEvidence": [
+                    {
+                      "evidenceId": "fixture-E378",
+                      "original": {
+                        "source_id": "fixture-frozen-source-378",
+                        "chunk_text": "관광지. 고궁. 창경궁(昌慶宮)은 성종이 세 명의 대비를 위해 옛 수강궁에 창건한 궁이다. 창경궁은 원래 1418년(세종 즉위) 세종이 상왕 태종을 위해 창건한 수강궁(壽康宮)이 있던 자리이다. 이후 1483년(성종 14) 성종이 세 명의 대비인 세조의 왕비 정희왕후, 덕종의 왕비 소혜왕후, 예종의 왕비 안순왕후를 위해 수강궁을 크게 확장하고 궁의 이름을 창경궁이라 하였다. \n창경궁은 창덕궁과 경계 없이 동궐(東闕)이라는 하나의 궁궐 영역이었으며,  주로 왕실 가족들의 생활공간으로 사용하였다. 창경궁은 1592년(선조 25) 임진왜란으로 소실된 것을 1616년(광해군 8) 중건하였으며, 1830년(순조 30) 대화재로 대부분의 건물들이 소실되었다가 4년 뒤에 중건하였다.\n그러나 1907년 순종이 황위에 오른 후 창경궁 내에 동물원과 식물원을 조성하면서 궁궐로서의 모습을 잃기 시작하였다. 1911년에는 일제에 의해 궁의 이름마저 창경원(昌慶苑)으로 격하되어 궁궐이 아닌 공원화가 되어 훼손이 심하였다. 광복 후 1983년에 다시 창경궁으로 명칭을 회복한 후 궁궐 경내에 있던 동물원을 이전하고 본래 궁궐의 모습으로 복원공사가 진행되어 현재의 모습이 되었다. 창경궁은 남향으로 있는 다른 궁궐과 달리 정문과 정전이 동향으로 배치되어 있다."
+                      },
+                      "generatedSupplement": {}
+                    }
+                  ]
+                }
+              ]
+            },
+            "durationMs": 1
+          }
+        },
+        {
+          "schemaVersion": 1,
+          "eventId": "b8a2a932-2a13-5958-9a8f-775b7bc86555",
+          "event": "MODEL_CALL",
+          "timestamp": "2026-11-04T00:00:00Z",
+          "requestId": "b88dfb77-edbd-528a-a46f-2135558b0771",
+          "turnId": "5023bef5-4b4c-5a37-a12c-66cfd9bf8099",
+          "conversationId": "030c3c92-5655-54dd-a095-c335da5640bd",
+          "caseId": "CONV-PLAN-create",
+          "inputSha256": "90f3c578a6f4cc2cecf15598d4b3b162e7d7d05cfd966499cc98e79145f2d241",
+          "mode": "MOCK",
+          "phase": "CONVERSATION",
+          "payload": {
+            "stage": "FINISHED",
+            "status": "SUCCEEDED",
+            "dispatched": false,
+            "fixture_only": true,
+            "provider": "OPENAI",
+            "model": "offline-fixture"
+          }
+        },
+        {
+          "schemaVersion": 1,
+          "eventId": "7cbfa6bf-845e-5320-8b8b-c066d0caf9d8",
+          "event": "MODEL_TURN",
+          "timestamp": "2026-11-04T00:00:00Z",
+          "requestId": "b88dfb77-edbd-528a-a46f-2135558b0771",
+          "turnId": "5023bef5-4b4c-5a37-a12c-66cfd9bf8099",
+          "conversationId": "030c3c92-5655-54dd-a095-c335da5640bd",
+          "caseId": "CONV-PLAN-create",
+          "inputSha256": "90f3c578a6f4cc2cecf15598d4b3b162e7d7d05cfd966499cc98e79145f2d241",
+          "mode": "MOCK",
+          "phase": "CONVERSATION",
+          "payload": {
+            "content": "",
+            "toolCalls": [
+              {
+                "id": "fixture-call-CONV-PLAN-create",
+                "name": "generate_plan",
+                "arguments": "{}"
+              }
+            ],
+            "modelTurn": 1
+          }
+        },
+        {
+          "schemaVersion": 1,
+          "eventId": "0197174b-9350-5831-8856-a6e53598f6b7",
+          "event": "TOOL_RESULT",
+          "timestamp": "2026-11-04T00:00:00Z",
+          "requestId": "b88dfb77-edbd-528a-a46f-2135558b0771",
+          "turnId": "5023bef5-4b4c-5a37-a12c-66cfd9bf8099",
+          "conversationId": "030c3c92-5655-54dd-a095-c335da5640bd",
+          "caseId": "CONV-PLAN-create",
+          "inputSha256": "90f3c578a6f4cc2cecf15598d4b3b162e7d7d05cfd966499cc98e79145f2d241",
+          "mode": "MOCK",
+          "phase": "CONVERSATION",
+          "payload": {
+            "result": {
+              "callId": "fixture-call-CONV-PLAN-create",
+              "name": "generate_plan",
+              "arguments": "{}",
+              "status": "SUCCEEDED",
+              "type": "PLANNING_JOB",
+              "publicData": {
+                "jobId": "1022250a-1815-56aa-899e-874deeb6e417",
+                "status": "QUEUED",
+                "planId": null,
+                "errorMessage": null
+              },
+              "resultId": "1397d6d2-e110-5d73-88be-f83c0c32d4cc"
+            },
+            "modelData": {
+              "jobId": "1022250a-1815-56aa-899e-874deeb6e417",
+              "status": "QUEUED",
+              "planId": null,
+              "errorMessage": null
+            },
+            "durationMs": 1
+          }
+        },
+        {
+          "schemaVersion": 1,
+          "eventId": "b012c1d6-3f90-5f5e-99f4-bd271b4bafeb",
+          "event": "TURN_RESULT",
+          "timestamp": "2026-11-04T00:00:00Z",
+          "requestId": "b88dfb77-edbd-528a-a46f-2135558b0771",
+          "turnId": "5023bef5-4b4c-5a37-a12c-66cfd9bf8099",
+          "conversationId": "030c3c92-5655-54dd-a095-c335da5640bd",
+          "caseId": "CONV-PLAN-create",
+          "inputSha256": "90f3c578a6f4cc2cecf15598d4b3b162e7d7d05cfd966499cc98e79145f2d241",
+          "mode": "MOCK",
+          "phase": "CONVERSATION",
+          "payload": {
+            "type": "PLANNING_JOB",
+            "data": {
+              "jobId": "1022250a-1815-56aa-899e-874deeb6e417",
+              "status": "QUEUED",
+              "planId": null,
+              "errorMessage": null
+            },
+            "message": "일정 초안 생성 작업을 접수했습니다. 아직 완성된 일정이나 예약 확정은 아닙니다.",
+            "citations": [],
+            "termination": "COMPLETED",
+            "modelTurns": 1,
+            "toolResults": [
+              {
+                "callId": "fixture-call-CONV-PLAN-create",
+                "name": "generate_plan",
+                "arguments": "{}",
+                "status": "SUCCEEDED",
+                "type": "PLANNING_JOB",
+                "publicData": {
+                  "jobId": "1022250a-1815-56aa-899e-874deeb6e417",
+                  "status": "QUEUED",
+                  "planId": null,
+                  "errorMessage": null
+                },
+                "resultId": "1397d6d2-e110-5d73-88be-f83c0c32d4cc"
+              }
+            ],
+            "requestId": "b88dfb77-edbd-528a-a46f-2135558b0771",
+            "turnId": "5023bef5-4b4c-5a37-a12c-66cfd9bf8099",
+            "conversationId": "030c3c92-5655-54dd-a095-c335da5640bd",
+            "primaryResultId": "1397d6d2-e110-5d73-88be-f83c0c32d4cc",
+            "messageSource": "SERVER_RECEIPT",
+            "intent": "PLAN",
+            "emotion": "THINKING",
+            "items": []
+          }
+        },
+        {
+          "schemaVersion": 1,
+          "eventId": "59807dbf-e650-5e82-8ff8-00dedb9e628f",
+          "event": "API_REQUEST",
+          "timestamp": "2026-11-04T00:00:00Z",
+          "requestId": "b88dfb77-edbd-528a-a46f-2135558b0771",
+          "turnId": "5023bef5-4b4c-5a37-a12c-66cfd9bf8099",
+          "conversationId": "030c3c92-5655-54dd-a095-c335da5640bd",
+          "caseId": "CONV-PLAN-create",
+          "inputSha256": "90f3c578a6f4cc2cecf15598d4b3b162e7d7d05cfd966499cc98e79145f2d241",
+          "mode": "MOCK",
+          "phase": "CONVERSATION",
+          "payload": {
+            "method": "POST",
+            "path": "/api/v1/conversation/turns",
+            "rawBody": "{\"message\":\"입력한 조건 그대로 일정 초안 생성을 요청해줘. 창경궁은 반드시 포함해줘.\",\"planningRequest\":{\"context\":{\"area\":{\"type\":\"CIRCLE\",\"center\":{\"lat\":37.58,\"lon\":126.99},\"radiusMeters\":2000,\"regionId\":null},\"origin\":{\"coordinate\":{\"lat\":37.58,\"lon\":126.99},\"label\":\"종로 출발 지점\",\"source\":\"SELECTED_POINT\"},\"destination\":null,\"startAt\":\"2027-01-15T10:00:00+09:00\",\"endAt\":\"2027-01-15T12:00:00+09:00\",\"transportMode\":\"WALK\",\"objective\":\"DURATION\",\"preferences\":{\"themes\":[\"역사\"],\"avoid\":[],\"pace\":\"RELAXED\",\"partySize\":2,\"budgetKrw\":null},\"categoryRequirements\":[],\"additionalRequest\":\"왕실 생활공간을 둘러보는 초안을 요청합니다.\",\"unknownHoursPolicy\":\"ALLOW_WITH_WARNING\"},\"inputMethod\":\"TEXT\",\"requiredStops\":[{\"placeId\":378,\"stayMinutes\":60,\"fixedStartAt\":null}]},\"history\":[],\"searchContext\":{\"region\":\"서울\",\"city\":\"종로\",\"category\":\"관광지\",\"excludePlaceIds\":[],\"area\":null}}",
+            "bodySha256": "dc2589e22546bc125d9c2498ce15b3aa17eef9d83c4e19eb3817b60dbe793447"
+          }
+        },
+        {
+          "schemaVersion": 1,
+          "eventId": "16daebfd-a230-5c79-8d9e-498dcbbbc7bc",
+          "event": "API_RESPONSE",
+          "timestamp": "2026-11-04T00:00:00Z",
+          "requestId": "b88dfb77-edbd-528a-a46f-2135558b0771",
+          "turnId": "5023bef5-4b4c-5a37-a12c-66cfd9bf8099",
+          "conversationId": "030c3c92-5655-54dd-a095-c335da5640bd",
+          "caseId": "CONV-PLAN-create",
+          "inputSha256": "90f3c578a6f4cc2cecf15598d4b3b162e7d7d05cfd966499cc98e79145f2d241",
+          "mode": "MOCK",
+          "phase": "CONVERSATION",
+          "payload": {
+            "httpStatus": 200,
+            "response": {
+              "type": "PLANNING_JOB",
+              "data": {
+                "jobId": "1022250a-1815-56aa-899e-874deeb6e417",
+                "status": "QUEUED",
+                "planId": null,
+                "errorMessage": null
+              },
+              "message": "일정 초안 생성 작업을 접수했습니다. 아직 완성된 일정이나 예약 확정은 아닙니다.",
+              "citations": [],
+              "termination": "COMPLETED",
+              "modelTurns": 1,
+              "toolResults": [
+                {
+                  "callId": "fixture-call-CONV-PLAN-create",
+                  "name": "generate_plan",
+                  "arguments": "{}",
+                  "status": "SUCCEEDED",
+                  "type": "PLANNING_JOB",
+                  "publicData": {
+                    "jobId": "1022250a-1815-56aa-899e-874deeb6e417",
+                    "status": "QUEUED",
+                    "planId": null,
+                    "errorMessage": null
+                  },
+                  "resultId": "1397d6d2-e110-5d73-88be-f83c0c32d4cc"
+                }
+              ],
+              "requestId": "b88dfb77-edbd-528a-a46f-2135558b0771",
+              "turnId": "5023bef5-4b4c-5a37-a12c-66cfd9bf8099",
+              "conversationId": "030c3c92-5655-54dd-a095-c335da5640bd",
+              "primaryResultId": "1397d6d2-e110-5d73-88be-f83c0c32d4cc",
+              "messageSource": "SERVER_RECEIPT",
+              "intent": "PLAN",
+              "emotion": "THINKING",
+              "items": []
+            },
+            "durationMs": 1
+          }
+        }
+      ]
+    }
+  },
+  "search_contract": {
+    "status": "ok",
+    "source_sha256": "SYNTHETIC-MOCK-NOT-A-DEPLOYMENT-IDENTITY",
+    "embedding_device": "mock",
+    "reranker_device": "mock"
+  }
+}

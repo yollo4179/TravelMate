@@ -1,3 +1,8 @@
+> **과거 실행 기록용 환경입니다. 현재 공통 경로의 품질 검증에는 사용하지 않습니다.**
+> 새 실행: `Evaluation/evaluation_server.py`, `Evaluation/evaluation_search_server.py`,
+> `Evaluation/tracks/conversation/run.py`. Spring과 검색 서버의 실제 소스 해시가 정상 작업 폴더와 같아야 합니다.
+> `run_b.py --execute`는 차단했습니다. 과거 원본과 검사·분석 함수는 보존합니다.
+
 # B안 격리 실행 환경
 
 Spring은 **Windows 호스트**에서 실행한다. Spring이 검증된 Windows Python·libllama.dll·Go renderer를 자식 프로세스로 관리하고 `127.0.0.1:11434`의 기존 Ollama에 메타데이터/추론 요청을 보낸다. 계산기는 Linux로 이식하지 않았다. FastAPI와 두 DB·Kafka·Redis·로컬 OTLP 수집기는 전용 Compose 프로젝트 `travelmate-b-eval`에서 실행한다.

@@ -43,7 +43,11 @@ axios.interceptors.response.use(
       return Promise.reject(error)
     }
 
-    if (error.response?.status === 401 && !originalRequest._retry) {
+    if (
+      error.response?.status === 401 &&
+      !originalRequest._retry &&
+      !originalRequest.skipAuthRetry
+    ) {
       originalRequest._retry = true
 
       try {
@@ -58,10 +62,7 @@ axios.interceptors.response.use(
         const newAccessToken = refreshResponse.data.accessToken
         if (newAccessToken) {
           authStore.setAccessToken(newAccessToken)
-          DebugManager.DebugConsolelog(
-            TAG_API_INTERCEPTORS,
-            `새 Access Token 발급 성공: ${newAccessToken}`,
-          )
+          DebugManager.DebugConsolelog(TAG_API_INTERCEPTORS, '새 Access Token 발급 성공')
         } else {
           DebugManager.DebugConsolelog(
             TAG_API_INTERCEPTORS,
@@ -70,7 +71,7 @@ axios.interceptors.response.use(
           return Promise.reject(error)
         }
 
-        originalRequest.headers['Authorization'] = newAccessToken
+        originalRequest.headers['Authorization'] = `Bearer ${newAccessToken}`
         return axios(originalRequest)
       } catch (refreshError) {
         DebugManager.DebugConsolelog(

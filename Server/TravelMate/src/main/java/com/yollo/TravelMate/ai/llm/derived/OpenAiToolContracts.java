@@ -13,12 +13,12 @@ import com.yollo.TravelMate.domain.conversation.tool.ToolSchemas;
 
 public final class OpenAiToolContracts {
     private static final ObjectMapper JSON = new ObjectMapper();
-    private static final List<ContractStrategy> STRATEGIES = List.of(new StrictSearchStrategy(), new CanonicalStrategy());
+    private static final List<ContractStrategy> STRATEGIES = List.of(new StrictSearchStrategy(), new StrictToolStrategy(), new CanonicalStrategy());
     private static final String SEARCH_TOOL = "search_places";
 
     private OpenAiToolContracts() {}
 
-    public enum Mode { CANONICAL, STRICT_SEARCH_V1 }
+    public enum Mode { CANONICAL, STRICT_SEARCH_V1, STRICT_TOOLS_V1 }
     private enum AdaptationStatus { ADAPTED, REJECTED }
 
     public record PreparedTool(LlmTurn.ToolDefinition definition, JsonNode parameters, boolean strict, ContractStrategy strategy) {
@@ -44,14 +44,31 @@ public final class OpenAiToolContracts {
     }
 
     private static boolean isStrictSearch(LlmTurn.ToolDefinition tool, Mode mode) {
-        return mode == Mode.STRICT_SEARCH_V1 && SEARCH_TOOL.equals(tool.name());
+        return (mode == Mode.STRICT_SEARCH_V1 || mode == Mode.STRICT_TOOLS_V1) && SEARCH_TOOL.equals(tool.name());
     }
 
     private static final class CanonicalStrategy implements ContractStrategy {
-        public boolean supports(LlmTurn.ToolDefinition tool, Mode mode) { return !isStrictSearch(tool, mode); }
+        public boolean supports(LlmTurn.ToolDefinition tool, Mode mode) { return mode != Mode.STRICT_TOOLS_V1 && !isStrictSearch(tool, mode); }
         public JsonNode parameters(LlmTurn.ToolDefinition tool) { return tool.parameters(); }
         public boolean strict(LlmTurn.ToolDefinition tool) { return tool.schemaMode() == LlmTurn.SchemaMode.STRICT; }
         public LlmTurn.ToolCall adapt(LlmTurn.ToolCall call, JsonNode parameters) { return call; }
+    }
+
+    private static final class StrictToolStrategy implements ContractStrategy {
+        public boolean supports(LlmTurn.ToolDefinition tool, Mode mode) {
+            return mode == Mode.STRICT_TOOLS_V1 && !isStrictSearch(tool, mode);
+        }
+        public boolean strict(LlmTurn.ToolDefinition tool) { return true; }
+        public JsonNode parameters(LlmTurn.ToolDefinition tool) { return tool.parameters(); }
+        public LlmTurn.ToolCall adapt(LlmTurn.ToolCall call, JsonNode parameters) {
+            try {
+                var arguments = JSON.reader().with(DeserializationFeature.FAIL_ON_TRAILING_TOKENS).readTree(call.arguments());
+                ToolSchemas.validate(parameters, arguments);
+                return call;
+            } catch (Exception failure) {
+                throw new IllegalArgumentException("Invalid strict tool arguments", failure);
+            }
+        }
     }
 
     private static final class StrictSearchStrategy implements ContractStrategy {

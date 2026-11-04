@@ -4,6 +4,6 @@ export const STORAGE_KEYS = {
   GRANT_TYPE: 'grantType',
 }
 export const API_CONFIG = {
-  BASE_API_URL: 'https://4385-1-241-205-106.ngrok-free.app',
+  BASE_API_URL: import.meta.env.VITE_API_BASE_URL || '',
   TIMEOUT: 5000,
 }

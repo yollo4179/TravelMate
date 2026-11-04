@@ -8,10 +8,7 @@ from huggingface_hub import snapshot_download
 
 import app.config as config
 
-# Prefer CUDA when Docker exposes a GPU; model initialization falls back to CPU otherwise.
-config.MODEL_DEVICE_EMBEDDING = os.environ.get("EMBEDDING_DEVICE", "cuda")
-config.MODEL_NAME_EMBEDDING = os.environ.get("EMBEDDING_MODEL", "BAAI/bge-m3")
-config.MODEL_DEVICE_RERANKER = os.environ.get("RERANKER_DEVICE", "cuda")
+# Model names/devices come from the same app.config as the native evaluation launcher.
 
 if __name__ == "__main__":
     revision = os.environ.get("EMBEDDING_REVISION")

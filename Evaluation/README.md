@@ -1,5 +1,9 @@
 # TravelMate 평가
 
+현재 단일 LLM 경로의 [답변·추천 이유·인용·도구 호출 평가](tracks/conversation/README.md)는
+9개 기대결과 예시와 공통 HTTP 실행 모듈을 사용한다. 실제 시작 범위는 직접 답변 1개와 추가 검색 1개이며,
+형식·원문 소속 검사와 사람이 판단할 설명 의미를 구분한다. 삭제된 로컬 백업을 참조하지 않는다.
+
 별도 테스트 서버에서 구현 클래스를 선택하는 [모듈 교체 평가 실행기](experiments/README.md)를 추가했다.
 `Evaluation/experiment.py`는 검색 단독/대화 전체를 공통 `execute()` 경로로 수집하며,
 `Evaluation/evaluation_server.py`는 운영과 분리된 `evaluation` 프로필을 검사·기동한다.

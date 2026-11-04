@@ -39,7 +39,7 @@ public class OllamaLlmClient implements LlmStrategy {
             @Value("${ollama.exact-counter-timeout-seconds:90}") long counterTimeout,
             @Value("${ollama.exact-counter-queue-timeout-millis:5000}") long queueTimeoutMillis,
             @Value("${ollama.exact-counter-queue-capacity:8}") int queueCapacity,
-            @Value("${llm.provider:QWEN}") LlmProvider selectedProvider
+            @Value("${llm.provider:OPENAI}") LlmProvider selectedProvider
     ) {
         this(
                 LlmHttpClients.create(baseUrl),

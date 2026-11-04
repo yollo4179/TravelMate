@@ -230,6 +230,8 @@ async def main() -> None:
     parser.add_argument("--execute", action="store_true")
     parser.add_argument("--profile", type=BatchProfile, choices=list(BatchProfile), default=BatchProfile.ORIGINAL)
     arguments = parser.parse_args()
+    if arguments.execute:
+        parser.error("Archived B runtime cannot validate the current pipeline; use Evaluation/tracks/conversation/run.py")
     runtime = arguments.runtime.resolve()
     case_ids, _, model_cap, search_cap = batch_scope(arguments.profile)
     blockers = execution_blockers(runtime)

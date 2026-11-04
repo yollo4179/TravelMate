@@ -19,14 +19,24 @@ public final class PlanningResponse {
             PlanContext context,
             String title,
             List<Pin> pins,
-            List<String> warnings
-    ) {}
+            List<String> warnings,
+            String description
+    ) {
+        public Draft(Long planId, PlanContext context, String title, List<Pin> pins, List<String> warnings) {
+            this(planId, context, title, pins, warnings, null);
+        }
+    }
     public record Pin(
             Long placeId,
             String name,
             double latitude,
             double longitude,
             int stayMinutes,
-            int sequence
-    ) {}
+            int sequence,
+            String explanation
+    ) {
+        public Pin(Long placeId, String name, double latitude, double longitude, int stayMinutes, int sequence) {
+            this(placeId, name, latitude, longitude, stayMinutes, sequence, null);
+        }
+    }
 }

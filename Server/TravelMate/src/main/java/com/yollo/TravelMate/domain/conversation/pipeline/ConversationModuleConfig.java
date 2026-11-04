@@ -13,7 +13,7 @@ public record ConversationModuleConfig(
         @Value("${travelmate.conversation.modules.prompt:RESOURCE_V1}") PromptModule.Version prompt,
         @Value("${travelmate.conversation.modules.model:GUARDED_V1}") ModelModule.Version model,
         @Value("${travelmate.conversation.modules.search-ranking:REQUEST_DEFAULT}") SearchRanking searchRanking,
-        @Value("${travelmate.conversation.modules.prompt-resource:classpath:conversation/prompts/v1-grounded-system.txt}") String promptResource
+        @Value("${travelmate.conversation.modules.prompt-resource:classpath:conversation/prompts/v2-grounded-system.txt}") String promptResource
 ) {
     public enum SearchRanking {
         REQUEST_DEFAULT(null),
@@ -52,7 +52,7 @@ public record ConversationModuleConfig(
                 PromptModule.Version.RESOURCE_V1,
                 ModelModule.Version.GUARDED_V1,
                 SearchRanking.REQUEST_DEFAULT,
-                "classpath:conversation/prompts/v1-grounded-system.txt"
+                "classpath:conversation/prompts/v2-grounded-system.txt"
         );
     }
 }

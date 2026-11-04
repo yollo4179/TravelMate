@@ -12,7 +12,7 @@ public class StrategyLlmClient implements LlmClient {
 
     public StrategyLlmClient(
             List<LlmStrategy> strategies,
-            @Value("${llm.provider:QWEN}") LlmProvider provider
+            @Value("${llm.provider:OPENAI}") LlmProvider provider
     ) {
         var matches = strategies.stream().filter(strategy -> strategy.supports(provider)).toList();
         if (matches.size() != 1) {

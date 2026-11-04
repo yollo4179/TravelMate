@@ -227,7 +227,7 @@ class SupportingRelationTests(unittest.IsolatedAsyncioTestCase):
         methods = [node for node in runtime.body if isinstance(node, ast.AsyncFunctionDef) and node.name in ("_retrieve_candidates", "_retrieve_evidence")]
         trace = MagicMock()
         from app.contextual.retrieval import resolve_retrieval_strategy
-        namespace = {"Any": Any, "ObservationFilter": ObservationFilter, "EvidenceCount": EvidenceCount,
+        namespace = {"PlaceMetadataFilter": __import__("app.contextual.metadata_filter", fromlist=["PlaceMetadataFilter"]).PlaceMetadataFilter, "Any": Any, "ObservationFilter": ObservationFilter, "EvidenceCount": EvidenceCount,
                      "resolve_retrieval_strategy": resolve_retrieval_strategy,
                      "time": time, "tracer": lambda: trace, "RETRIEVE_TOP_K": 30}
         exec(compile(ast.Module(body=methods, type_ignores=[]), '<runtime-search>', 'exec'), namespace)
@@ -235,6 +235,7 @@ class SupportingRelationTests(unittest.IsolatedAsyncioTestCase):
         chunk, = parsed(bundle, raw)
         pool, connection = mock_database({})
         target = MagicMock(database_pool=pool)
+        target._attach_original_fields = AsyncMock(side_effect=lambda rows, _: rows)
         connection.fetch.return_value = [{"place_id": 395, "source_version": 1, "semantic_score": 0.7,
             "evidence": {**chunk.to_dict(), "context_version": chunk.context_version}}]
         condition = ObservationFilter.from_mapping({"origin_place_id": 394, "relation_importance": ["supporting"]})

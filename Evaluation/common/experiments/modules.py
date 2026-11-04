@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import copy
 from typing import Any
 
 from common.execution.control import AttemptStatus, Operation, RunMode
@@ -51,6 +52,10 @@ class ConversationApiModule:
         filters = search_filters(conditions)
         body = {"message": supplied.case["input"]["query"], "planningRequest": None, "history": [],
                 "searchContext": {name: filters[name] for name in ("region", "city", "category", "excludePlaceIds", "area")}}
+        if "api_request" in supplied.case:
+            body = copy.deepcopy(supplied.case["api_request"])
+            if (set(body) - {"intentHint"}) != {"message", "planningRequest", "history", "searchContext"} or body["message"] != query:
+                raise ValueError("Explicit conversation inputs must preserve the original message and native envelope")
         request = http_request("/api/v1/conversation/turns", body, server_url)
         request["headers"] = {"Idempotency-Key": supplied.turn_key, "X-Conversation-Id": supplied.conversation_id,
                               "X-Evaluation-Case-Id": supplied.case["case_id"], "X-Evaluation-Input-Sha256": supplied.input_sha256}
@@ -78,7 +83,7 @@ class ConversationApiModule:
             record["http_response"] = response
             native = json.loads(response["raw_body"])
             record["native_response"] = native
-            checks = conversation_checks(native, config)
+            checks = conversation_checks(native, config, supplied.case.get("expected"))
             record["contract_checks"] = checks
             if response["status_code"] != 200 or not all(checks.values()):
                 raise ValueError("Conversation HTTP response did not meet the explicit completion contract")
@@ -95,10 +100,22 @@ class ConversationApiModule:
         return record
 
 
-def conversation_checks(native: Any, config: ModuleConfig) -> dict[str, bool]:
+def conversation_checks(native: Any, config: ModuleConfig, expected: dict[str, Any] | None = None) -> dict[str, bool]:
     if not isinstance(native, dict):
         return {"response_object": False}
     citations = native.get("citations")
+    if expected is not None:
+        tools = native.get("toolResults")
+        return {
+            "completed": native.get("termination") == "COMPLETED",
+            "message_present": isinstance(native.get("message"), str) and bool(native["message"].strip()),
+            "message_source": native.get("messageSource") in expected["message_sources"],
+            "one_model_turn": type(native.get("modelTurns")) is int and native["modelTurns"] == 1,
+            "executed_tools": isinstance(tools, list) and [item.get("name") for item in tools] == expected["tool_names"],
+            "response_type": native.get("type") in expected["response_types"],
+            "citations": isinstance(citations, list) and (bool(citations) if expected["citations"] == "REQUIRED"
+                                                         else not citations if expected["citations"] == "FORBIDDEN" else True),
+        }
     return {
         "completed": native.get("termination") == "COMPLETED",
         "llm_message": native.get("messageSource") == "LLM" and isinstance(native.get("message"), str) and bool(native["message"].strip()),

@@ -30,7 +30,11 @@ public class PlaceConversationEvidence implements ConversationEvidenceStrategy {
             ConversationRequest request,
             ConversationToolRegistry registry
     ) {
-        var arguments = mapper.createObjectNode().put("query", request.message());
+        String query = request.message();
+        if (request.searchContext() != null && !request.searchContext().themes().isEmpty()) {
+            query += "\n사용자 선호 테마: " + String.join(", ", request.searchContext().themes());
+        }
+        var arguments = mapper.createObjectNode().put("query", query);
         return registry.resolve(source().wireName()).execute(ConversationTool.Invocation.builder()
                 .userUid(userUid)
                 .turnKey(turnKey)

@@ -1,0 +1,12 @@
+{
+  "assets": [
+    {
+      "file": "busan-app-collage.png",
+      "role": "ui_reference",
+      "emotion": null,
+      "sha256": "c8210998cc6ac042df3069aa1cdd3fee10737cc7810307ecbb24317ab769660c",
+      "source_commit": "b1a08a65",
+      "description": "지도·채팅·음성 대화·추억 화면의 UI 참고 이미지. 캐릭터 감정 스프라이트가 아니므로 감정 태그를 부여하지 않는다."
+    }
+  ]
+}
