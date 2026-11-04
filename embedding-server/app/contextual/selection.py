@@ -24,9 +24,13 @@ class AspectRule(Protocol):
     def aspect(self, chunk: SearchChunk) -> ChunkAspect: ...
 
 
+def _is_reviewed_excerpt(chunk: SearchChunk) -> bool:
+    return chunk.generation.get("provider") == ReviewedExcerptModule.PROVIDER
+
+
 class ReviewedExcerptAspect:
     def is_applicable(self, chunk: SearchChunk) -> bool:
-        return chunk.generation.get("provider") == ReviewedExcerptModule.PROVIDER
+        return _is_reviewed_excerpt(chunk)
 
     def aspect(self, chunk: SearchChunk) -> ChunkAspect:
         return ChunkAspect(chunk.generation["aspect"])
@@ -34,7 +38,8 @@ class ReviewedExcerptAspect:
 
 class TourApiDescriptionAspect:
     def is_applicable(self, chunk: SearchChunk) -> bool:
-        return chunk.source.source_type == SourceType.TOURAPI
+        # A reviewer may quote TourAPI text as parking or experience; the reviewed aspect outranks the source default.
+        return chunk.source.source_type == SourceType.TOURAPI and not _is_reviewed_excerpt(chunk)
 
     def aspect(self, chunk: SearchChunk) -> ChunkAspect:
         return ChunkAspect.DESCRIPTION

@@ -82,6 +82,21 @@ class ActiveSelectionTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             select_active(1, self.chunks(), 'invented-v9')
 
+    def test_reviewed_tourapi_quote_keeps_the_reviewed_aspect(self) -> None:
+        text = '주차장은 정문 옆에 있다. 궁궐 전각을 둘러볼 수 있다.'
+        tourapi = SourceDocument.from_mapping({'source_type': 'tourapi', 'title': '관광공사 설명', 'text': text,
+                                               'metadata': {'source_url': 'https://example.org/t', 'capture_scope': 'full_text'}})
+        reviewed, = ReviewedExcerptModule().execute(
+            tourapi,
+            [ExcerptInput('주차장은 정문 옆에 있다.', 1, ChunkAspect.PARKING, '주차', reviewer='reviewer')],
+        ).chunks
+        description = SearchChunk(tourapi, 0, len(text), 'TourAPI 설명', [{'place_id': 1, 'role': PlaceRole.SUBJECT}],
+                                  {'provider': 'tourapi', 'model': None, 'prompt_version': 'test'})
+        self.assertEqual(chunk_aspect(reviewed), ChunkAspect.PARKING)
+        self.assertEqual(chunk_aspect(description), ChunkAspect.DESCRIPTION)
+        selected = select_active(1, [reviewed, description], ActiveSelectionVersion.ASPECT_ROUND_ROBIN_V2)
+        self.assertEqual({chunk_aspect(chunk) for chunk in selected}, {ChunkAspect.PARKING, ChunkAspect.DESCRIPTION})
+
 
 class CoverageTests(unittest.TestCase):
     def test_places_below_fifteen_are_listed_without_filling(self) -> None:
