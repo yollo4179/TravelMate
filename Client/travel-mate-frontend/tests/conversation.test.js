@@ -6,6 +6,9 @@ import {
   searchContext,
   planningRequest,
   validateReply,
+  displayedResult,
+  dialogueCuts,
+  MAX_DISPLAYED_PLACES,
   Intent,
 } from '../src/conversation/contracts.js'
 const radiusBounds = { min: 500, max: 10000 }
@@ -89,4 +92,29 @@ test('each character expression has one original image with preserved bytes', as
         .digest('hex'),
       item.sha256,
     )
+})
+test('the displayed list keeps screen order so position 1 is the first card the user sees', () => {
+  const places = [{ placeId: 173 }, { placeId: 188 }, { placeId: 272 }]
+  assert.deepEqual(displayedResult('fc4a7e8f-6fa7-46d6-9254-542ef2d7c342', places), {
+    resultId: 'fc4a7e8f-6fa7-46d6-9254-542ef2d7c342',
+    placeIds: [173, 188, 272],
+  })
+})
+test('no list is sent rather than a guessed or truncated one', () => {
+  assert.equal(displayedResult('result', []), null)
+  assert.equal(displayedResult(null, [{ placeId: 1 }]), null)
+  const tooMany = Array.from({ length: MAX_DISPLAYED_PLACES + 1 }, (_, index) => ({
+    placeId: index + 1,
+  }))
+  assert.equal(displayedResult('result', tooMany), null)
+})
+test('each LiLi cut becomes its own bubble, older replies keep their single message', () => {
+  const cuts = [
+    { text: '찾았어!', emotion: 'HAPPY' },
+    { text: '카드에서 봐 줘.', emotion: 'GUIDING' },
+  ]
+  assert.deepEqual(dialogueCuts({ message: '찾았어!', emotion: 'HAPPY', dialogue: cuts }), cuts)
+  assert.deepEqual(dialogueCuts({ message: '안내', emotion: 'NEUTRAL' }), [
+    { text: '안내', emotion: 'NEUTRAL' },
+  ])
 })

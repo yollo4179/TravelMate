@@ -8,6 +8,7 @@ export async function conversationTurn({
   intentHint,
   plan,
   conversationId,
+  displayed,
 }) {
   const response = await axios.post(
     '/api/v1/conversation/turns',
@@ -17,6 +18,7 @@ export async function conversationTurn({
       searchContext: filters,
       intentHint,
       planningRequest: plan,
+      displayedResult: displayed,
     },
     {
       timeout: Number(import.meta.env.VITE_CONVERSATION_TIMEOUT_MS || 120000),
@@ -28,4 +30,7 @@ export async function conversationTurn({
 }
 export async function conversationOptions() {
   return (await axios.get('/api/v1/conversation/options')).data
+}
+export async function recommendationJob(jobId) {
+  return (await axios.get(`/api/v1/recommendation-jobs/${encodeURIComponent(jobId)}`)).data
 }

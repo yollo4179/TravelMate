@@ -2,9 +2,20 @@
 import { computed, onMounted, reactive, ref } from 'vue'
 import { RouterLink } from 'vue-router'
 import { useAuthStore } from '@/piniaStores/AuthStore'
-import { Intent, IntentOptions, searchContext, planningRequest } from '@/conversation/contracts'
-import { EmotionAssets } from '@/conversation/character'
-import { conversationTurn, conversationOptions } from '@/conversation/service'
+import {
+  Intent,
+  IntentOptions,
+  ReplyType,
+  TerminalJobStatuses,
+  JobStatus,
+  searchContext,
+  planningRequest,
+  displayedResult,
+  dialogueCuts,
+  validateReply,
+} from '@/conversation/contracts'
+import { EmotionAssets, EmotionTags } from '@/conversation/character'
+import { conversationTurn, conversationOptions, recommendationJob } from '@/conversation/service'
 import RangeMap from '@/conversation/RangeMap.vue'
 import KakaoRangeMap from '@/conversation/KakaoRangeMap.vue'
 import { KakaoMapKey } from '@/conversation/kakaoMap'
@@ -34,7 +45,11 @@ const error = ref('')
 const messages = ref([])
 const categories = ref([])
 const reply = ref(null)
+// The recommendation the user is looking at; LiLi's "첫 번째" refers to this list, never to a new search.
+const shown = ref(null)
 const conversationId = crypto.randomUUID()
+const RECOMMENDATION_POLL_MS = 2000
+const RECOMMENDATION_WAIT_MS = 180000
 const avatar = computed(
   () => EmotionAssets[busy.value ? 'THINKING' : reply.value?.emotion || 'HAPPY'],
 )
@@ -63,21 +78,50 @@ async function send() {
       intentHint: intent.value,
       plan: planning,
       conversationId,
+      displayed: shown.value,
     })
-    messages.value.push(
-      { role: 'USER', text },
-      { role: 'ASSISTANT', text: result.message, citations: result.citations },
-    )
-    reply.value = result
+    messages.value.push({ role: 'USER', text })
+    showReply(result)
     draft.value = ''
     if (result.messageSource === 'SERVER_FALLBACK')
       error.value = '서버 대체 응답입니다. 모델 설명은 생성되지 않았습니다.'
+    if (result.type === ReplyType.RECOMMENDATION_JOB) await followRecommendation(result.data.jobId)
   } catch (failure) {
     error.value =
       failure.response?.data?.message || failure.message || '요청을 완료하지 못했습니다.'
   } finally {
     busy.value = false
   }
+}
+function showReply(result, resultId = null) {
+  const cuts = dialogueCuts(result)
+  cuts.forEach((cut, index) =>
+    messages.value.push({
+      role: 'ASSISTANT',
+      text: cut.text,
+      citations: index === cuts.length - 1 ? result.citations : [],
+    }),
+  )
+  reply.value = result
+  if (result.type === ReplyType.PLACES)
+    shown.value = displayedResult(resultId || result.primaryResultId, result.items)
+}
+// LiLi's first line is already on screen; the grounded cards and her explanation arrive when the job ends.
+async function followRecommendation(jobId) {
+  const deadline = Date.now() + RECOMMENDATION_WAIT_MS
+  while (Date.now() < deadline) {
+    const job = await recommendationJob(jobId)
+    if (TerminalJobStatuses.has(job.status)) {
+      if (job.status === JobStatus.FAILED || !job.result) {
+        error.value = job.errorMessage || '추천 결과를 만들지 못했어요. 잠시 후 다시 물어봐 줘.'
+        return
+      }
+      showReply(validateReply(job.result, EmotionTags), jobId)
+      return
+    }
+    await new Promise((resolve) => setTimeout(resolve, RECOMMENDATION_POLL_MS))
+  }
+  error.value = '추천 결과가 늦어지고 있어요. 잠시 후 다시 물어봐 줘.'
 }
 function currentLocation() {
   navigator.geolocation?.getCurrentPosition(

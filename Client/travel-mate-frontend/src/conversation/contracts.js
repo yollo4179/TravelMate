@@ -102,3 +102,31 @@ export function validateReply(reply, emotions) {
   }
   return reply
 }
+
+export const ReplyType = Object.freeze({
+  PLACES: 'PLACES',
+  RECOMMENDATION_JOB: 'RECOMMENDATION_JOB',
+})
+export const JobStatus = Object.freeze({
+  QUEUED: 'QUEUED',
+  RUNNING: 'RUNNING',
+  SUCCEEDED: 'SUCCEEDED',
+  FAILED: 'FAILED',
+})
+export const TerminalJobStatuses = Object.freeze(new Set([JobStatus.SUCCEEDED, JobStatus.FAILED]))
+export const MAX_DISPLAYED_PLACES = 20
+
+// The list the user is looking at, in screen order. LiLi's "첫 번째" is position 1 of exactly this list,
+// so it is sent as shown; a list longer than the server accepts is not truncated into a different order.
+export function displayedResult(resultId, places) {
+  if (!resultId || !Array.isArray(places) || !places.length || places.length > MAX_DISPLAYED_PLACES)
+    return null
+  return { resultId, placeIds: places.map((place) => place.placeId) }
+}
+
+// One bubble per visual-novel cut; older replies without cuts fall back to the single message.
+export function dialogueCuts(reply) {
+  return Array.isArray(reply.dialogue) && reply.dialogue.length
+    ? reply.dialogue
+    : [{ text: reply.message, emotion: reply.emotion }]
+}
