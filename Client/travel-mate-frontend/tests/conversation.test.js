@@ -8,6 +8,7 @@ import {
   validateReply,
   Intent,
 } from '../src/conversation/contracts.js'
+const radiusBounds = { min: 500, max: 10000 }
 const filters = {
   latitude: 37.58,
   longitude: 126.99,
@@ -19,7 +20,7 @@ const filters = {
   themes: '역사, 조용한 산책',
 }
 test('explicit radius/location and exact categories survive the API projection', () => {
-  const context = searchContext(filters)
+  const context = searchContext(filters, radiusBounds)
   assert.deepEqual(context.area, {
     type: 'CIRCLE',
     center: { lat: 37.58, lon: 126.99 },
@@ -30,20 +31,36 @@ test('explicit radius/location and exact categories survive the API projection',
 })
 test('no selected range means no silent coordinate restriction', () => {
   assert.equal(searchContext({ ...filters, useArea: false }).area, null)
+  assert.equal(searchContext({ ...filters, useArea: false }, null).area, null)
 })
 test('invalid coordinates cannot dispatch a request', () => {
-  assert.throws(() => searchContext({ ...filters, latitude: 91 }))
-  assert.throws(() => searchContext({ ...filters, radius: 20 }))
+  assert.throws(() => searchContext({ ...filters, latitude: 91 }, radiusBounds))
+  assert.throws(() => searchContext({ ...filters, radius: 20 }, radiusBounds))
+  assert.throws(() => searchContext({ ...filters, radius: 12000 }, radiusBounds))
+})
+test('a selected range cannot be sent before the server radius bounds are known', () => {
+  assert.throws(() => searchContext(filters, null))
+  assert.equal(
+    searchContext({ ...filters, radius: 9000 }, { min: 500, max: 9000 }).area.radiusMeters,
+    9000,
+  )
 })
 test('incomplete plan conditions are left for clarification, not fabricated', () => {
-  assert.equal(planningRequest(filters, { startAt: '', endAt: '', transportMode: 'WALK' }), null)
+  assert.equal(
+    planningRequest(filters, { startAt: '', endAt: '', transportMode: 'WALK' }, radiusBounds),
+    null,
+  )
 })
 test('plan request preserves explicit times, themes and walking preference', () => {
-  const request = planningRequest(filters, {
-    startAt: '2027-01-15T10:00:00+09:00',
-    endAt: '2027-01-15T12:00:00+09:00',
-    transportMode: 'WALK',
-  })
+  const request = planningRequest(
+    filters,
+    {
+      startAt: '2027-01-15T10:00:00+09:00',
+      endAt: '2027-01-15T12:00:00+09:00',
+      transportMode: 'WALK',
+    },
+    radiusBounds,
+  )
   assert.equal(request.context.transportMode, 'WALK')
   assert.deepEqual(request.context.preferences.themes, ['역사', '조용한 산책'])
   assert.equal(request.context.startAt, '2027-01-15T01:00:00.000Z')

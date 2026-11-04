@@ -78,7 +78,7 @@ async def check(arguments: argparse.Namespace) -> dict:
             if "/api/users/me" in url:
                 await route.fulfill(json={"uid": "offline", "nickname": "오프라인 확인", "role": "USER", "email": "offline@example.invalid", "profileImgUrl": None}); return
             if "/api/v1/conversation/options" in url:
-                await route.fulfill(json={"categories": ["관광지"]}); return
+                await route.fulfill(json={"categories": ["관광지"], "intents": ["AUTO", "CONVERSATION", "RECOMMENDATION", "PLAN"], "emotions": [], "radiusMeters": {"min": 500, "max": 10000}}); return
             if "/api/v1/conversation/turns" in url:
                 body = route.request.post_data_json
                 scenario = scenarios[len(calls)]

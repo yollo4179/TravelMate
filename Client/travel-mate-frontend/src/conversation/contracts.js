@@ -11,10 +11,14 @@ export const IntentOptions = Object.freeze([
   { value: Intent.CONVERSATION, label: '대화', icon: '💬' },
 ])
 
-export function searchContext(filters) {
+// radiusBounds is the server's { min, max } from /api/v1/conversation/options; the client keeps no copy.
+export function searchContext(filters, radiusBounds) {
   const latitude = Number(filters.latitude)
   const longitude = Number(filters.longitude)
   const radius = Number(filters.radius)
+  if (filters.useArea && !radiusBounds) {
+    throw new Error('서버의 반경 범위를 불러온 뒤 다시 시도해 주세요.')
+  }
   if (
     filters.useArea &&
     (!Number.isFinite(latitude) ||
@@ -23,10 +27,13 @@ export function searchContext(filters) {
       latitude > 90 ||
       longitude < -180 ||
       longitude > 180 ||
-      radius < 500 ||
-      radius > 10000)
+      !Number.isFinite(radius) ||
+      radius < radiusBounds.min ||
+      radius > radiusBounds.max)
   ) {
-    throw new Error('위도·경도와 반경 500~10,000m를 확인해 주세요.')
+    throw new Error(
+      `위도·경도와 반경 ${radiusBounds.min.toLocaleString()}~${radiusBounds.max.toLocaleString()}m를 확인해 주세요.`,
+    )
   }
   return {
     region: filters.region.trim() || null,
@@ -43,9 +50,9 @@ export function searchContext(filters) {
   }
 }
 
-export function planningRequest(filters, settings) {
+export function planningRequest(filters, settings, radiusBounds) {
   if (!settings.startAt || !settings.endAt) return null
-  const context = searchContext(filters)
+  const context = searchContext(filters, radiusBounds)
   if (!context.area) throw new Error('일정 생성을 위해 기준 핀과 반경을 설정해 주세요.')
   const startAt = new Date(settings.startAt)
   const endAt = new Date(settings.endAt)

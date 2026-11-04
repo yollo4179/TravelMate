@@ -1,11 +1,14 @@
 <script setup>
-import { computed, reactive, ref } from 'vue'
+import { computed, onMounted, reactive, ref } from 'vue'
 import { RouterLink } from 'vue-router'
 import { useAuthStore } from '@/piniaStores/AuthStore'
 import { Intent, IntentOptions, searchContext, planningRequest } from '@/conversation/contracts'
 import { EmotionAssets } from '@/conversation/character'
 import { conversationTurn, conversationOptions } from '@/conversation/service'
 import RangeMap from '@/conversation/RangeMap.vue'
+import KakaoRangeMap from '@/conversation/KakaoRangeMap.vue'
+import { KakaoMapKey } from '@/conversation/kakaoMap'
+import { SearchDefaults } from '@/conversation/searchDefaults'
 const auth = useAuthStore()
 const filters = reactive({
   region: '',
@@ -13,10 +16,16 @@ const filters = reactive({
   category: '',
   themes: '',
   useArea: false,
-  latitude: 35.1796,
-  longitude: 129.0756,
-  radius: 2000,
+  latitude: SearchDefaults.CENTER.latitude,
+  longitude: SearchDefaults.CENTER.longitude,
+  radius: SearchDefaults.RADIUS_METERS,
 })
+// Server-owned bounds; the range stays disabled until the options contract fills them.
+const radiusBounds = reactive({ min: null, max: null })
+const radiusLoaded = computed(
+  () => Number.isFinite(radiusBounds.min) && Number.isFinite(radiusBounds.max),
+)
+const mapUnavailable = ref(KakaoMapKey ? '' : '카카오 지도 키가 없어 좌표 보기로 표시합니다.')
 const plan = reactive({ startAt: '', endAt: '', transportMode: 'WALK' })
 const intent = ref(Intent.AUTO)
 const draft = ref('')
@@ -41,8 +50,9 @@ async function send() {
   busy.value = true
   const text = draft.value.trim()
   try {
-    const context = searchContext(filters)
-    const planning = planningRequest(filters, plan)
+    const bounds = radiusLoaded.value ? radiusBounds : null
+    const context = searchContext(filters, bounds)
+    const planning = planningRequest(filters, plan, bounds)
     const history = messages.value
       .slice(-20)
       .map((item) => ({ role: item.role, content: item.text }))
@@ -91,11 +101,19 @@ async function loadOptions() {
   if (!auth.accessToken) return
   try {
     const options = await conversationOptions()
+    const known = new Set(Object.values(Intent))
+    if (
+      options.intents?.length !== known.size ||
+      !options.intents.every((value) => known.has(value))
+    )
+      throw new Error('intent mismatch')
     categories.value = options.categories
+    Object.assign(radiusBounds, options.radiusMeters)
   } catch {
     error.value = '서버의 메타데이터 계약을 불러오지 못했습니다.'
   }
 }
+onMounted(loadOptions)
 </script>
 <template>
   <main class="travel-shell">
@@ -149,9 +167,32 @@ async function loadOptions() {
         <button class="location" @click="currentLocation">⌖ 내 위치를 기준으로</button>
         <label
           >여행 범위 <b>{{ filters.radius.toLocaleString() }}m</b
-          ><input v-model.number="filters.radius" type="range" min="500" max="10000" step="100"
+          ><input
+            v-model.number="filters.radius"
+            type="range"
+            :min="radiusBounds.min"
+            :max="radiusBounds.max"
+            :step="SearchDefaults.RADIUS_STEP_METERS"
+            :disabled="!radiusLoaded"
         /></label>
+        <KakaoRangeMap
+          v-if="!mapUnavailable"
+          :latitude="Number(filters.latitude)"
+          :longitude="Number(filters.longitude)"
+          :radius="filters.radius"
+          :places="places"
+          @unavailable="(reason) => (mapUnavailable = reason)"
+          @select="
+            (position) => {
+              filters.latitude = position.latitude
+              filters.longitude = position.longitude
+              filters.useArea = true
+            }
+          "
+        />
+        <small v-else class="muted">{{ mapUnavailable }}</small>
         <RangeMap
+          v-if="mapUnavailable"
           :latitude="Number(filters.latitude)"
           :longitude="Number(filters.longitude)"
           :radius="filters.radius"
