@@ -30,7 +30,23 @@ public class ContextPlanningService {
     private enum JobObservationOperation {
         IDEMPOTENCY_READ, INSERT_ACKNOWLEDGED, QUEUE_REJECTED, OWNER_SCOPED_READ, UPDATE_ACKNOWLEDGED
     }
-    private static final String GENERATION_UNAVAILABLE = "일정 생성 서비스가 잠시 응답하지 않아요. 잠시 후 다시 요청해 주세요.";
+    /**
+     * What users are told when the model's draft did not come through. Each line states only what the server
+     * verified; a guessed cause such as a passing outage became LiLi's explanation in live runs. The real cause
+     * stays in PLAN_DRAFT for operators.
+     */
+    private enum DraftFailure {
+        // Budget guard, provider or transport: which one, and whether retrying helps, is not known here.
+        GENERATION_UNAVAILABLE("일정 초안을 만들지 못했어요. 같은 조건으로 다시 요청하거나 조건을 바꿔 요청해 주세요."),
+        // The model answered, but the draft broke a rule the server checks, so nothing was saved.
+        DRAFT_REJECTED("만들어진 초안이 확인된 장소 정보와 맞지 않아 저장하지 않았어요. 다시 요청해 주세요.");
+
+        private final String userMessage;
+
+        DraftFailure(String userMessage) {
+            this.userMessage = userMessage;
+        }
+    }
     private final PlanningJobRepository jobs;
     private final ContextPlanRepository plans;
     private final PlaceSemanticSearchService searchService;
@@ -211,18 +227,18 @@ public class ContextPlanningService {
             if (candidates.isEmpty()) throw new IllegalStateException("선택한 여행 범위에서 장소를 찾지 못했습니다.");
             var preparedPrompt = promptFactory.prepare(request, candidates, searchResults);
             String prompt = preparedPrompt.userPrompt();
+            attempt.prompt = prompt;
             log.info("planning job={} stage=GENERATING candidateIds={} contextIncluded=true promptCharacters={}",
                     jobId, candidatesById.keySet(), prompt.length());
             String output;
             try {
                 output = llmClient.generate(promptFactory.systemPrompt(), prompt);
             } catch (RuntimeException exception) {
-                throw new GenerationUnavailableException(exception);
+                throw new DraftFailureException(DraftFailure.GENERATION_UNAVAILABLE, exception);
             }
             attempt.output = output;
             log.info("planning job={} stage=VALIDATING_RESULT responseCharacters={}", jobId, output == null ? 0 : output.length());
-            var generated = DraftPlanValidator.validate(planValidator.parse(output), candidates, request);
-            PlanEvidenceCitationValidator.validate(generated, preparedPrompt);
+            var generated = validatedDraft(output, candidates, request, preparedPrompt);
             var normalized = new GeneratedPlan(
                     generated.planTitle(),
                     generated.planDescription(),
@@ -239,8 +255,8 @@ public class ContextPlanningService {
             recordDraft(attempt, PlanningResponse.JobStatus.SUCCEEDED, null);
         } catch (Exception exception) {
             log.warn("planning job={} stage=FAILED exception={}", jobId, exception.toString());
-            // The job's error is shown to users and read aloud by LiLi; anything the model call raised stays internal.
-            String message = exception instanceof GenerationUnavailableException ? GENERATION_UNAVAILABLE
+            // The job's error is shown to users and read aloud by LiLi; what the model call or its draft raised stays internal.
+            String message = exception instanceof DraftFailureException failure ? failure.kind.userMessage
                     : exception instanceof ResponseStatusException status ? status.getReason()
                     : exception instanceof IllegalStateException ? exception.getMessage()
                     : exception instanceof com.yollo.TravelMate.exceptions.cumtom.ErrorCodeException known ? known.getErrorCode().getMessage()
@@ -251,10 +267,28 @@ public class ContextPlanningService {
         }
     }
 
+    private GeneratedPlan validatedDraft(
+            String output,
+            List<PlaceResult> candidates,
+            GeneratePlanRequest request,
+            com.yollo.TravelMate.domain.plan.prompts.ContextPlanPromptFactory.PreparedPrompt preparedPrompt
+    ) {
+        try {
+            var generated = DraftPlanValidator.validate(planValidator.parse(output), candidates, request);
+            PlanEvidenceCitationValidator.validate(generated, preparedPrompt);
+            return generated;
+        } catch (RuntimeException exception) {
+            throw new DraftFailureException(DraftFailure.DRAFT_REJECTED, exception);
+        }
+    }
+
     private void recordDraft(DraftAttempt attempt, PlanningResponse.JobStatus status, Exception rejected) {
-        Throwable failure = rejected instanceof GenerationUnavailableException unavailable ? unavailable.getCause() : rejected;
+        Throwable failure = rejected instanceof DraftFailureException wrapped ? wrapped.getCause() : rejected;
         var event = objectMapper.createObjectNode().put("status", status.name()).put("query", attempt.query)
+                .put("prompt", attempt.prompt)
+                .put("systemPromptSha256", com.yollo.TravelMate.ai.llm.budget.LlmCallGuard.sha256(promptFactory.systemPrompt()))
                 .put("output", attempt.output)
+                .put("failureKind", rejected instanceof DraftFailureException known ? known.kind.name() : null)
                 .put("failureType", failure == null ? null : failure.getClass().getSimpleName())
                 .put("failureMessage", failure == null ? null : failure instanceof ResponseStatusException statusFailure
                         ? statusFailure.getReason() : failure.getMessage());
@@ -263,10 +297,13 @@ public class ContextPlanningService {
         ObservationContext.record(ObservationContext.Event.PLAN_DRAFT, event);
     }
 
-    /** The model call itself failed (budget, provider, transport); its cause is for operators, not users. */
-    private static final class GenerationUnavailableException extends RuntimeException {
-        private GenerationUnavailableException(RuntimeException cause) {
+    /** The model call or its draft failed; the cause is for operators, the kind decides what users are told. */
+    private static final class DraftFailureException extends RuntimeException {
+        private final DraftFailure kind;
+
+        private DraftFailureException(DraftFailure kind, RuntimeException cause) {
             super(cause);
+            this.kind = kind;
         }
     }
 
@@ -274,6 +311,7 @@ public class ContextPlanningService {
     private static final class DraftAttempt {
         private String query;
         private List<Long> candidateIds = List.of();
+        private String prompt;
         private String output;
     }
 

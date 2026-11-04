@@ -26,7 +26,9 @@ class ContextPlanPipelineTest {
         assertEquals(request, mapper.treeToValue(payload.get("request"), GeneratePlanRequest.class));
         assertEquals(1, payload.get("candidates").size());
         assertEquals(101, payload.get("candidates").get(0).get("placeId").asLong());
-        assertTrue(payload.get("candidates").get(0).get("description").asText().length() <= 400);
+        assertTrue(payload.get("candidates").get(0).get("description").isNull(),
+                "a candidate without selected evidence goes by name and position only");
+        assertEquals("NONE_SELECTED", payload.get("candidates").get(0).get("evidenceAvailability").asText());
     }
 
     @Test

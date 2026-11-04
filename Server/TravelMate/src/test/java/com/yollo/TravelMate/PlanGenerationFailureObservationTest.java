@@ -105,6 +105,31 @@ class PlanGenerationFailureObservationTest {
         assertEquals("FAILED", draft.path("status").asText());
         assertEquals("not a plan", draft.path("output").asText());
         assertFalse(draft.path("failureType").asText().isBlank());
+        assertEquals("DRAFT_REJECTED", draft.path("failureKind").asText());
+        assertTrue(draft.path("prompt").asText().contains("\"candidates\""), "the exact model input is kept for review");
+    }
+
+    // Live var2/var3: the planner shortened a quote with "...", and the validator's own wording became the job's public error.
+    @Test
+    void aDraftRejectedByTheCitationCheckShowsUsersAPlainReasonNotTheValidatorText() throws Exception {
+        when(llm.generate(anyString(), anyString())).thenReturn("""
+                {"planTitle":"초안","planDescription":"설명","dialogue":[],
+                 "pins":[{"placeId":101,"sequence":1,"activity":"둘러보기","reason":"요청 장소",
+                          "citations":[{"evidenceId":"E101-0","sourceId":"source","quote":"모의 ... 카페"}]}]}""");
+        var draft = runUntilFailed();
+        assertEquals("DRAFT_REJECTED", draft.path("failureKind").asText());
+        assertTrue(draft.path("failureMessage").asText().contains("인용"), "operators keep the validator's reason");
+        assertFalse(storedError.get().contains("인용"), "users do not see the validator's wording");
+        assertFalse(storedError.get().contains("원문 근거"));
+    }
+
+    @Test
+    void aModelCallFailureDoesNotClaimACauseNobodyVerified() throws Exception {
+        when(llm.generate(anyString(), anyString())).thenThrow(new TokenBudgetException(TokenBudgetException.Reason.COUNT_UNAVAILABLE));
+        var draft = runUntilFailed();
+        assertEquals("GENERATION_UNAVAILABLE", draft.path("failureKind").asText());
+        assertFalse(storedError.get().contains("응답하지 않"), "a passing outage was never verified");
+        assertFalse(storedError.get().contains("잠시 후"), "nor that waiting fixes it");
     }
 
     private JsonNode runUntilFailed() throws Exception {
