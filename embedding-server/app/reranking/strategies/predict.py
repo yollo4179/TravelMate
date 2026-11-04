@@ -20,10 +20,12 @@ class CrossEncoderPredictStrategy(RerankingStrategy):
         batch_size: int,
         span: Span,
     ) -> list[float]:
-        del batch_size
         pairs = [[query, text] for text in texts]
         started_at = time.perf_counter()
-        scores = model.predict(pairs)
+        scores = model.predict(
+            pairs,
+            batch_size=batch_size,
+        )
         elapsed_ms = (time.perf_counter() - started_at) * 1000
         span.set_attribute("reranking.execution_mode", self.strategy_type.value)
         span.set_attribute("reranking.predict_wall_ms", elapsed_ms)
@@ -41,7 +43,6 @@ class InstrumentedCrossEncoderPredictStrategy(RerankingStrategy):
         batch_size: int,
         span: Span,
     ) -> list[float]:
-        del batch_size
         pairs = [[query, text] for text in texts]
         use_cuda = str(model.device).startswith("cuda") and torch.cuda.is_available()
         device = torch.device(model.device)
@@ -50,7 +51,10 @@ class InstrumentedCrossEncoderPredictStrategy(RerankingStrategy):
             torch.cuda.synchronize(device)
             sync_count += 1
         started_at = time.perf_counter()
-        scores = model.predict(pairs)
+        scores = model.predict(
+            pairs,
+            batch_size=batch_size,
+        )
         if use_cuda:
             torch.cuda.synchronize(device)
             sync_count += 1
@@ -72,7 +76,6 @@ class AutocastFp16CrossEncoderPredictStrategy(RerankingStrategy):
         batch_size: int,
         span: Span,
     ) -> list[float]:
-        del batch_size
         pairs = [[query, text] for text in texts]
         use_cuda = str(model.device).startswith("cuda") and torch.cuda.is_available()
         device_type = torch.device(model.device).type
@@ -81,7 +84,10 @@ class AutocastFp16CrossEncoderPredictStrategy(RerankingStrategy):
             dtype=torch.float16,
             enabled=use_cuda,
         ):
-            scores = model.predict(pairs)
+            scores = model.predict(
+                pairs,
+                batch_size=batch_size,
+            )
         span.set_attribute("reranking.execution_mode", self.strategy_type.value)
         span.set_attribute("reranking.autocast.enabled", use_cuda)
         span.set_attribute("reranking.autocast.dtype", "float16" if use_cuda else "disabled")

@@ -1,0 +1,32 @@
+{
+  "status": "COMPLETED",
+  "source_commit": "4ced99c57276669d9d581d611b1d79815e961581",
+  "blog_commit": "e7cadc2025edf75432f0c9819a60f160ad16d7d5",
+  "retained_archive": "C:\\ssafy\\Travelmate\\.local-backups\\openai-strict-local-only.zip",
+  "retained_archive_sha256": "b07b82fd76b149b4b598a54d44f55bbbeef3609cb89f7f41b67eb1a76450f948",
+  "retained_archive_bytes": 5308846,
+  "original_runtime_bytes": 560524958,
+  "runtime_files": 724,
+  "retained_unique_files": 106,
+  "net_runtime_bytes_reclaimed": 555216112,
+  "removed_roots": [
+    "C:\\ssafy\\Travelmate\\.local-backups\\openai-strict-live-20261103-01",
+    "C:\\ssafy\\Travelmate\\.local-backups\\openai-strict-live-20261103-02",
+    "C:\\ssafy\\Travelmate\\.local-backups\\openai-strict-live-20261103-03",
+    "C:\\ssafy\\Travelmate\\.local-backups\\openai-strict-live-20261103-04",
+    "C:\\ssafy\\Travelmate\\.local-backups\\openai-strict-local-only"
+  ],
+  "completed_at": "2026-11-03T12:04:46.5299052+09:00",
+  "unchanged_scope": [
+    "original_working_files",
+    "C02",
+    "C03",
+    "omitted_C05",
+    "DB",
+    "shared_model_cache",
+    "other_worktrees"
+  ],
+  "original_working_files_verified_unchanged": 83,
+  "unmerged_backup_files_verified_unchanged": 73,
+  "original_worktree_status_unchanged": true
+}

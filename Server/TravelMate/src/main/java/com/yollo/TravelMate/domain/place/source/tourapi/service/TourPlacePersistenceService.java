@@ -27,7 +27,7 @@ public class TourPlacePersistenceService {
             List<TourPlaceCandidate> candidates,
             List<PlaceCreateCommand> createCommands
     ) {
-        placeCatalogRepository.insertBatch(createCommands);
+        placeCatalogRepository.upsertBatch(createCommands);
         candidates.forEach(this::savePrograms);
         candidates.stream()
                 .map(candidate -> candidate.item().contentId())

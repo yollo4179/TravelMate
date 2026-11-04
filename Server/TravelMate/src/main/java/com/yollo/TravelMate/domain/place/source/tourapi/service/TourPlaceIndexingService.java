@@ -12,6 +12,8 @@ import com.yollo.TravelMate.ai.embedding.base.EmbeddingClient;
 import com.yollo.TravelMate.domain.place.data.internal.PlaceCreateCommand;
 import com.yollo.TravelMate.domain.place.source.tourapi.data.TourPlaceCandidate;
 import com.yollo.TravelMate.domain.place.source.tourapi.mapper.TourPlaceRawMapper;
+import com.yollo.TravelMate.domain.place.source.tourapi.mapper.TourPlaceCoordinateValidator;
+import com.yollo.TravelMate.domain.place.source.tourapi.code.TourCoordinateStatus;
 import com.yollo.TravelMate.domain.place.source.tourapi.repository.TourPlaceRawRepository;
 import com.yollo.TravelMate.domain.place.source.tourapi.repository.TourPlaceRawRepository.RawRow;
 
@@ -26,18 +28,20 @@ public class TourPlaceIndexingService {
 
     private final TourPlaceRawRepository rawRepository;
     private final TourPlaceRawMapper rawMapper;
+    private final TourPlaceCoordinateValidator coordinateValidator;
     private final EmbeddingClient embeddingClient;
     private final TourPlacePersistenceService persistenceService;
 
     public ProcessResult processRaw(int limit) {
         List<RawRow> rawRows = rawRepository.findUnprocessed(limit);
         if (rawRows.isEmpty()) {
-            return new ProcessResult(0, 0, 0, 0);
+            return new ProcessResult(0, 0, 0, 0, 0);
         }
 
         List<TourPlaceCandidate> candidates = new ArrayList<>(rawRows.size());
         int skippedWithoutOverview = 0;
         int skippedUnparseable = 0;
+        int skippedInvalidCoordinates = 0;
 
         for (RawRow rawRow : rawRows) {
             Optional<TourPlaceCandidate> candidate = rawMapper.map(rawRow);
@@ -45,7 +49,18 @@ public class TourPlaceIndexingService {
                 skippedUnparseable++;
                 continue;
             }
-            if (candidate.get().common().overview() == null) {
+            TourPlaceCandidate mappedCandidate = candidate.get();
+            TourCoordinateStatus coordinateStatus = coordinateValidator.validate(
+                    mappedCandidate.item().mapY(),
+                    mappedCandidate.item().mapX()
+            );
+            if (coordinateStatus != TourCoordinateStatus.VALID) {
+                skippedInvalidCoordinates++;
+                log.warn("좌표 검증 실패로 원본을 미처리 상태로 보존합니다: tourContentId={}, status={}",
+                        rawRow.tourContentId(), coordinateStatus);
+                continue;
+            }
+            if (!mappedCandidate.hasSearchableContent()) {
                 skippedWithoutOverview++;
             }
             candidates.add(candidate.get());
@@ -60,7 +75,8 @@ public class TourPlaceIndexingService {
                 rawRows.size(),
                 candidates.size(),
                 skippedWithoutOverview,
-                skippedUnparseable
+                skippedUnparseable,
+                skippedInvalidCoordinates
         );
     }
 
@@ -70,7 +86,7 @@ public class TourPlaceIndexingService {
 
         for (int index = 0; index < candidates.size(); index++) {
             TourPlaceCandidate candidate = candidates.get(index);
-            if (candidate.common().overview() == null) {
+            if (!candidate.hasSearchableContent()) {
                 continue;
             }
             embeddingTargetIndexes.add(index);
@@ -143,7 +159,8 @@ public class TourPlaceIndexingService {
             int read,
             int indexed,
             int skippedWithoutOverview,
-            int skippedUnparseable
+            int skippedUnparseable,
+            int skippedInvalidCoordinates
     ) {
     }
 }

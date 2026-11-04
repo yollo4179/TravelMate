@@ -23,6 +23,8 @@ evaluate는 저장된 응답을 채점하며 앱 API·도구·DB를 실행하지
 ## 실제 구현된 파일
 
 - search/score_ranking.py → common/metrics/ranking.py: 임베딩 전용과 리랭킹 후 순서를 동일 기준으로 계산
+- search/batch_experiment.py: 조건을 완전히 적용할 수 있는 기존 검색 문항의 Top-30을 고정하고, 등록된 FP32·FP16 전략의 배치 8·16·32를 비교한다. 토큰 입력 일치와 문항별 지표 하락 여부를 검사하고 입력 길이별 일부 문항을 반복 측정한다.
+- search/publish_batch_experiment.py: 배치 실험 요약과 설정별 평균 지표를 LangSmith Outputs·Feedback으로 게시하고 조회 검증한다.
 - tool_call/score_args.py: 도구 호출 정규화·이름/인자/스키마 비교
 - plan/score_rules.py, score_route.py: 후보·조건·제공 비용 행렬의 경로/시간
 - state/score.py: 실제 backend_observation 확인
@@ -32,7 +34,9 @@ evaluate는 저장된 응답을 채점하며 앱 API·도구·DB를 실행하지
 
 ## 아직 없는 기능
 
-실제 검색 API 수집과 두 전략의 자동 대조·지연 p50/p95, 오케스트레이터 1스텝 실행,
-여러 턴 대화 재생·DB 기억 추출 실행, 실제 도로 비용 연동, V1.4 LangSmith 자동 게시,
+실제 검색 API 수집은 search/collect_live.py에서 두 순위 모드의 응답·요청 지연 p50/p95를 기록한다.
+search/run.py evaluate는 이 수집기의 원본 장소 ID 순위를 직접 채점할 수 있다. 미지원 조건이
+있는 문항은 완전 조건 품질 평균에서 제외한다. 서버 내부 단계별 지연 p50/p95 수집과 오케스트레이터 1스텝 실행,
+여러 턴 대화 재생·DB 기억 추출 실행, 실제 도로 비용 연동, 검색 외 트랙의 V1.4 LangSmith 자동 게시,
 V1.4 Ragas ID 전용 실행기와 후보별 place_relevance Judge는 미구현이다.
 따라서 이 이름의 비어 있는 Python 실행 파일을 만들거나 완료로 표시하지 않았다.

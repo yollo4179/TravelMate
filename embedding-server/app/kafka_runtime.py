@@ -316,6 +316,8 @@ class KafkaRuntime:
                 LOGGER.exception("Recommendation job failed: %s", request["request_id"])
                 await self._save_recommendation_result(request, self._failed_result(request))
 
+
+    #비동기로 : 메시지큐 -> 임베딩 + 리랭킹 작업 수행합니다.
     async def _complete_recommendation(self, request: Any) -> None:
         payload = json.loads(request["payload"])
         if not 1 <= int(payload["limit"]) <= 20:

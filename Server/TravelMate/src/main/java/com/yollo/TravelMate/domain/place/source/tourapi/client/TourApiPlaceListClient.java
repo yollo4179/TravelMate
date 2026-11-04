@@ -31,15 +31,19 @@ public class TourApiPlaceListClient {
     private final TourApiUrlBuilder urlBuilder;
 
     // RestClient는 이 클라이언트 전용으로 생성 (Kakao 등 다른 RestClient 빈과 설정이 섞이지 않도록 분리)
-    public TourApiPlaceListClient(ObjectMapper objectMapper, TourApiUrlBuilder urlBuilder) {
-        this.restClient = RestClient.create();
+    public TourApiPlaceListClient(
+            ObjectMapper objectMapper,
+            TourApiUrlBuilder urlBuilder,
+            RestClient.Builder restClientBuilder
+    ) {
+        this.restClient = restClientBuilder.build();
         this.objectMapper = objectMapper;
         this.urlBuilder = urlBuilder;
     }
 
     /**
      * 특정 지역·타입의 한 페이지를 조회한다.
-     * 실패하거나 결과가 없으면 빈 페이지(items 비어있음, totalCount 0)를 반환한다.
+     * 정상적인 결과 없음은 빈 페이지로 반환하고, 호출·응답 오류는 수집을 중단한다.
      */
     public TourApiListPage fetchPage(
             String areaCode,
@@ -73,10 +77,15 @@ public class TourApiPlaceListClient {
                     .uri(url)
                     .retrieve()
                     .body(String.class);
-            JsonNode body = objectMapper.readTree(rawResponse)
-                    .path("response").path("body");
+            JsonNode body = objectMapper.readTree(rawResponse).path("response").path("body");
+            if (!body.isObject() || !body.hasNonNull("totalCount")) {
+                throw new IllegalStateException("TourAPI 목록 응답에 유효한 body/totalCount가 없습니다.");
+            }
 
-            totalCount = body.path("totalCount").asInt(0);
+            totalCount = Integer.parseInt(body.path("totalCount").asText());
+            if (totalCount < 0) {
+                throw new IllegalStateException("TourAPI 목록의 totalCount가 음수입니다.");
+            }
 
             JsonNode itemNode = body.path("items").path("item");
             if (itemNode.isArray()) {
@@ -86,10 +95,16 @@ public class TourApiPlaceListClient {
             } else if (itemNode.isObject() && !itemNode.isMissingNode()) {
                 items.add(toListItem(itemNode));
             }
+            if (totalCount > 0 && items.isEmpty()) {
+                throw new IllegalStateException("TourAPI가 결과 수를 반환했지만 목록 페이지가 비어 있습니다.");
+            }
+            if (items.stream().anyMatch(item -> item.contentId() == null || item.contentId().isBlank())) {
+                throw new IllegalStateException("TourAPI 목록에 식별자가 없는 항목이 있습니다.");
+            }
         } catch (Exception e) {
-            log.error("areaBasedList1 호출/파싱 실패: areaCode={}, contentTypeId={}, pageNo={}",
-                    areaCode, contentTypeId, pageNo, e);
-            return new TourApiListPage(List.of(), 0, pageNo);
+            log.error("TourAPI 목록 수집 중단: areaCode={}, contentTypeId={}, pageNo={}",
+                    areaCode, contentTypeId, pageNo);
+            throw new IllegalStateException("TourAPI 목록 수집에 실패했습니다. 실패한 페이지부터 재개해야 합니다.", e);
         }
 
         return new TourApiListPage(items, totalCount, pageNo);

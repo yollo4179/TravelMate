@@ -69,3 +69,9 @@ Evaluation/datasets/v1.3.0/.phoenix-evaluation/
 /embedding-server/enrichment-data/
 /LocationReview/*/
 /embedding-server/LocationReview/*/
+
+# Live evaluation records are local run artifacts and can include user queries.
+/Evaluation/runs/*/*/
+
+# Local preservation archives can contain credentials and private evaluation records.
+/.local-backups/

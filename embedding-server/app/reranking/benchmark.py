@@ -338,9 +338,9 @@ async def run_benchmark(query: str, warmup_runs: int, measured_runs: int) -> dic
         "score_and_rank_comparison_to_original_predict": equivalence,
         "captured_run_output_comparison_to_original_predict": captured_equivalence,
         "execution_differences": {
-            strategies[0].strategy_type.value: "Direct CrossEncoder.predict(pairs) call with library defaults; no explicit synchronization added by the strategy.",
-            strategies[1].strategy_type.value: "Same CrossEncoder.predict(pairs) call, with CUDA synchronization before and after for an isolated wall-time measurement.",
-            strategies[2].strategy_type.value: "Original CrossEncoder.predict(pairs) under CUDA float16 autocast; experimental optimization candidate.",
+            strategies[0].strategy_type.value: "Direct CrossEncoder.predict(pairs, batch_size=configured_batch_size); no explicit synchronization added by the strategy.",
+            strategies[1].strategy_type.value: "Same configured-batch CrossEncoder.predict call, with CUDA synchronization before and after for an isolated wall-time measurement.",
+            strategies[2].strategy_type.value: "Configured-batch CrossEncoder.predict under CUDA float16 autocast; experimental optimization candidate.",
             strategies[3].strategy_type.value: "Manual batching, preprocessing, device transfer, forward, activation, and original-order restoration; CUDA synchronization and events split the stages.",
         },
         "ranked_place_ids": {

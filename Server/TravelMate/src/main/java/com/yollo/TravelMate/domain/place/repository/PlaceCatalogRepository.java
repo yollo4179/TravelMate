@@ -39,7 +39,7 @@ public class PlaceCatalogRepository {
         return placeIds.isEmpty() ? null : placeIds.get(0);
     }
 
-    public void insertBatch(List<PlaceCreateCommand> commands) {
+    public void upsertBatch(List<PlaceCreateCommand> commands) {
         if (commands.isEmpty()) {
             return;
         }
@@ -49,7 +49,19 @@ public class PlaceCatalogRepository {
                                     latitude, longitude, tour_content_id, tour_content_type_id,
                                     image_url, homepage_url, embedding)
                 values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?::vector)
-                on conflict (tour_content_id) do nothing
+                on conflict (tour_content_id) do update
+                set name = excluded.name,
+                    description = excluded.description,
+                    region = excluded.region,
+                    city = excluded.city,
+                    category = excluded.category,
+                    source_category = excluded.source_category,
+                    latitude = excluded.latitude,
+                    longitude = excluded.longitude,
+                    tour_content_type_id = excluded.tour_content_type_id,
+                    image_url = excluded.image_url,
+                    homepage_url = excluded.homepage_url,
+                    embedding = excluded.embedding
                 """;
 
         jdbcTemplate.batchUpdate(

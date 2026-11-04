@@ -1,0 +1,31 @@
+{
+  "dataset_id": "search-holdout-v1.0.0",
+  "authorship": "AI-authored draft; not sampled from real user traffic; human question review pending",
+  "independence_scope": "New query holdout against the existing Seoul tourism corpus; not an unseen-corpus or external-domain benchmark",
+  "lifecycle": "frozen_queries_pending_human_review_and_judgments",
+  "corpus_path": "../v1.4.0/generated/corpus.json",
+  "corpus_snapshot_path": "../v1.4.0/source/snapshot.json",
+  "case_counts": {"primary": 60, "challenge": 20},
+  "query_types": ["entity", "semantic", "multi_constraint", "negation", "noisy_input", "multilingual", "evidence_sensitive", "out_of_scope"],
+  "comparison": {
+    "modes": ["SEMANTIC_ONLY", "RERANKED"],
+    "embedding_model": "BAAI/bge-m3",
+    "reranking_model": "BAAI/bge-reranker-v2-m3",
+    "reranking_strategy": "autocast_fp16",
+    "reranking_batch_size": 8,
+    "reranking_diagnostics_enabled": false,
+    "retrieval_candidate_limit": 30,
+    "response_limit": 20,
+    "review_pool_depth_per_mode": 10,
+    "model_revisions": "Must record installed revisions and runtime configuration before collection; not inferred from model names"
+  },
+  "primary_metric": "paired mean NDCG@10 on primary cases with at least one human-confirmed relevant pooled result",
+  "secondary_metrics": ["Top-1", "MRR@10", "Precision@5", "pooled-known-relevant Recall@10"],
+  "uncertainty": "Paired cluster bootstrap by query family, not by individual paraphrase; report a 95% interval, evaluated counts and win/tie/loss",
+  "family_policy": "Related entity, theme, noisy and translated questions share a family; equal family weight for aggregate inference",
+  "challenge_policy": "Report evidence_sensitive and out_of_scope separately; no assumed zero relevance labels and no addition to primary ranking means",
+  "no_relevant_policy": "Report count and returned-result behavior separately. No relevant pooled result does not prove no relevant place exists in the full corpus",
+  "label_policy": "Blind pooled top-10 union, 0..3 relevance or unknown; missing evidence remains unknown, never automatic zero; all pooled rows require review",
+  "success_policy": "No automatic pass threshold. Assess effect size and uncertainty together; no positive superiority conclusion if the interval crosses zero",
+  "reuse_policy": "Once results influence settings, this dataset becomes development data. A subsequent final evaluation requires new questions"
+}

@@ -1,5 +1,11 @@
 # TravelMate 평가
 
+새 질문으로 검색 품질을 확인하는 독립 평가셋은
+[search-holdout-v1.0.1](datasets/search-holdout-v1.0.1/README.md)에 있다.
+사람의 질문 검수를 반영한 기본 60문항·도전 13문항이며, 장소 적합도 판정 전까지 품질 점수를 산출하지 않는다.
+[원본 80문항 초안](datasets/search-holdout-v1.0.0/README.md)과 제외 판정은 보존한다.
+기존 v1.4.0 평가와 별도로 질문 동결·검수·블라인드 후보 풀을 관리한다.
+
 대화·제어 LLM 하나가 장소 검색·일정 생성·수정·기억 조회 도구를 호출한다.
 데이터와 채점 기준은 버전별로, 코드는 공통/트랙별로, 실행 결과는 실행별로 관리한다.
 
@@ -51,7 +57,7 @@ Evaluation/
 .\.venv-ragas\Scripts\python.exe Evaluation/common/dataset/build.py --build
 ```
 
-입력을 내보내고 **별도 수집기가** 실제 Agent/API를 실행해 응답을 기록한다.
+입력을 내보내고 별도 수집기가 실제 Agent/API를 실행해 응답을 기록한다.
 내보낸 model_input만 LLM에 전달하고 harness_fixtures는 도구 테스트 실행기만 읽는다.
 기대값·reference·사람 점수는 모델 입력에 들어가지 않는다.
 
@@ -63,7 +69,33 @@ Evaluation/
 .\.venv-ragas\Scripts\python.exe Evaluation/tracks/persona/run.py evaluate --split development --responses agent_records.jsonl --judge --env-file .env
 ```
 
-위 파일명은 사용 예시이며 실제 측정 결과를 미리 넣은 것이 아니다.
+검색 API 전용 실측 수집기는 기존 관리자 UID와 로컬 Docker의 JWT 비밀값을 사용해
+Spring → Kafka → FastAPI를 호출한다. 임베딩 전용과 리랭킹 요청을 같은 질문으로
+각각 실행하고 원본 API 결과를 별도 파일에 기록한다. `--group plannerLLM --split all`은
+기존 답변 가능 검색 문항 80개를 선택한다. 85개 전체에는 `--group all`을 쓴다.
+아래 명령의 `<ADMIN_UID>`는 로컬 관리자 계정의 UID다.
+
+```powershell
+.\.venv-ragas\Scripts\python.exe -m pip install -r Evaluation/requirements/search-live.txt
+.\.venv-ragas\Scripts\python.exe Evaluation/tracks/search/collect_live.py --split all --group plannerLLM --admin-uid <ADMIN_UID>
+.\.venv-ragas\Scripts\python.exe Evaluation/tracks/search/run.py evaluate --split all --group plannerLLM --responses <RUN_DIR>/embedding_records.jsonl
+.\.venv-ragas\Scripts\python.exe Evaluation/tracks/search/run.py evaluate --split all --group plannerLLM --responses <RUN_DIR>/reranked_records.jsonl
+.\.venv-ragas\Scripts\python.exe Evaluation/tracks/search/summarize_langsmith.py --collection-dir <RUN_DIR>
+.\.venv-ragas\Scripts\python.exe Evaluation/tracks/search/publish_metrics.py --collection-dir <RUN_DIR> --embedding-run <EMBEDDING_SCORE_DIR> --reranking-run <RERANKING_SCORE_DIR>
+```
+
+수집기는 `Evaluation/runs/search/v1.4.0/<run_id>/`에 두 응답 파일과
+`collection_summary.json`을 남긴다. 같은 폴더의 trace ID로 LangSmith
+`travelmate-search-observability` 프로젝트에서 각 요청과 품질 지표를 찾을 수 있다.
+현재 Spring API는 제외 장소 ID와 대화 이력을 전달하지 않으므로 해당 문항은
+`condition_coverage=partial`로 기록하고 완전 조건 품질 평균에서 제외한다.
+전체 요청 지연은 실측하며 서버 내부 단계별 시간은 LangSmith의 중첩 span을 참고한다.
+`publish_metrics.py`는 저장된 채점 결과의 평균을 `travelmate.search.metrics.summary`의
+Outputs와 숫자 Feedback으로 게시하고 조회 검증한다. 이 요약 run의 실행시간은 게시 시간이다.
+검색 API 응답에는 Agent 발화나 도구 선택이 없으므로 이 수집 결과로 Agent 품질을 채점하지 않는다.
+
+위의 `embedding_records.jsonl`, `reranked_records.jsonl`은 수집 결과 파일명이며
+실행 전에 존재하는 예시 응답 파일은 아니다.
 
 --type PLACES/PLAN/PLAN_DIFF/CLARIFICATION/TEXT로 기대 응답 타입을 지정할 수 있다.
 --track은 평가 문항을 추가로 좁힌다. --group plannerLLM/managerLLM은 이동 전 문항 묶음의
@@ -77,7 +109,7 @@ GPT는 .env의 OPENAI_API_KEY를 읽으며 기존 설정인 gpt-4.1-mini로 발�
 결과는 새로운 runs/<트랙>/v1.4.0/<실행ID>/에 쓴다. 기존 결과 디렉터리는 덮어쓰지 않는다.
 run.json에 Git SHA·데이터/페르소나 해시·명시한 범위를, outputs/에 채점 입력,
 scores/에 채점 결과를 기록한다. summary.json은 평균과 평가 건수, latest.json은 최신 실행 참조다.
-실제 API 호출·여러 턴 재생·지연 p50/p95·V1.4용 LangSmith 자동 게시는 아직 미구현이다.
+여러 턴 재생과 전체 단계별 p50/p95 자동 수집은 아직 미구현이다.
 
 ## 이전 버전
 

@@ -90,3 +90,16 @@ dependencies {
 tasks.named('test') {
 	useJUnitPlatform()
 }
+
+tasks.register('previewTourPlaceData', JavaExec) {
+    group = 'verification'
+    description = '보관된 TourAPI 스냅샷의 데이터 가공 결과를 DB 변경과 외부 호출 없이 확인합니다.'
+    classpath = sourceSets.main.runtimeClasspath
+    mainClass = 'com.yollo.TravelMate.tools.TourPlaceDataPreview'
+    doFirst {
+        if (!project.hasProperty('snapshotPath') || !project.hasProperty('previewOutput')) {
+            throw new GradleException('snapshotPath와 previewOutput 프로젝트 속성이 필요합니다.')
+        }
+        args project.property('snapshotPath').toString(), project.property('previewOutput').toString()
+    }
+}

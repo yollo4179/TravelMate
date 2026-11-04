@@ -37,7 +37,8 @@ public class TourPlaceRawRepository {
                 set raw_list = excluded.raw_list,
                     raw_common = excluded.raw_common,
                     raw_info = excluded.raw_info,
-                    fetched_at = now()
+                    fetched_at = now(),
+                    processed_at = null
                 """;
         jdbc.update(sql, tourContentId, tourContentTypeId, rawList, rawCommon, rawInfo);
     }

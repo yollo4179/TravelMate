@@ -12,6 +12,7 @@ import org.springframework.web.client.RestClient;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.yollo.TravelMate.util.UrlUtil;
+import com.yollo.TravelMate.domain.place.source.tourapi.support.TourPlaceTextNormalizer;
  
 //디테일 클라이언트
 @Component
@@ -179,7 +180,12 @@ public class TourApiPlaceDetailClient {
         String infoName,
         String infoText,
         String serialNum
-    ) {}
+    ) {
+        public boolean hasContent() {
+            return !TourPlaceTextNormalizer.normalizeHeading(infoName).isBlank()
+                    && !TourPlaceTextNormalizer.normalize(infoText).isBlank();
+        }
+    }
 
     public record TourApiInfoResult(
         List<TourApiInfoItem> items,

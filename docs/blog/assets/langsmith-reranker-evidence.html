@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>LangSmith API 검증: 리랭커 파라미터 비교</title>
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #eef3f9; color: #17243b; font-family: "Malgun Gothic", "Segoe UI", sans-serif; }
+    main { width: 1480px; min-height: 1060px; margin: 0 auto; padding: 54px 66px; background: #fff; }
+    .eyebrow { color: #3567a4; font-size: 19px; font-weight: 700; letter-spacing: .05em; }
+    h1 { margin: 15px 0 8px; font-size: 44px; line-height: 1.2; }
+    .subtitle { margin: 0; color: #52617a; font-size: 22px; }
+    .rule { height: 1px; margin: 31px 0; background: #dce5f1; }
+    .summary { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin-bottom: 35px; }
+    .summary article { border: 1px solid #dce5f1; border-radius: 15px; padding: 22px 25px; background: #f8fbff; }
+    .summary strong { display: block; margin-top: 9px; color: #0f4e93; font-size: 32px; }
+    .summary span { color: #52617a; font-size: 17px; }
+    h2 { margin: 0 0 20px; font-size: 26px; }
+    .chart { display: grid; gap: 19px; }
+    .row { display: grid; grid-template-columns: 204px 1fr 148px; gap: 19px; align-items: center; font-size: 20px; }
+    .track { height: 35px; border-radius: 7px; background: #edf2f8; overflow: hidden; }
+    .bar { height: 100%; border-radius: 7px; }
+    .bar.base { width: 100%; background: #7291b9; }
+    .bar.batch { width: 11.12%; background: #3d83bd; }
+    .bar.selected { width: 3.98%; min-width: 24px; background: #0eae94; }
+    .row .value { font-weight: 800; text-align: right; }
+    .selected-label { color: #007d6b; font-weight: 800; }
+    .axis { margin: 12px 167px 0 223px; display: flex; justify-content: space-between; color: #748199; font-size: 14px; }
+    .details { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; margin-top: 38px; }
+    .details article { border-top: 1px solid #dce5f1; padding-top: 25px; }
+    table { border-collapse: collapse; width: 100%; font-size: 17px; }
+    th, td { padding: 11px 5px; border-bottom: 1px solid #e5ebf3; text-align: right; }
+    th:first-child, td:first-child { text-align: left; }
+    th { color: #52617a; font-weight: 600; }
+    tr.highlight { color: #007d6b; font-weight: 800; background: #eafaf6; }
+    .quality { display: grid; gap: 14px; font-size: 19px; }
+    .quality div { display: flex; justify-content: space-between; border-bottom: 1px solid #e5ebf3; padding: 8px 0 13px; }
+    .quality strong { color: #0f4e93; }
+    footer { margin-top: 34px; padding-top: 21px; border-top: 1px solid #dce5f1; color: #64718a; font-size: 15px; line-height: 1.55; }
+  </style>
+</head>
+<body>
+  <main>
+    <div class="eyebrow">LANGSMITH API 조회 결과 기반 시각화 · 2026-10-27</div>
+    <h1>리랭커 파라미터 조정으로 지연시간 줄이기</h1>
+    <p class="subtitle">동일한 60개 검색 문항과 후보를 고정한 GPU 실험 · 리랭커 호출 시간</p>
+    <div class="rule"></div>
+    <section class="summary" aria-label="주요 결과">
+      <article><span>평균 리랭커 시간</span><strong>13.728초 → 0.547초</strong></article>
+      <article><span>평균 시간 개선</span><strong>약 25.1배</strong></article>
+      <article><span>품질 기준</span><strong>60 / 60문항 통과</strong></article>
+    </section>
+    <section aria-label="대표 설정 비교">
+      <h2>대표 설정의 평균 시간</h2>
+      <div class="chart">
+        <div class="row"><span>FP32 · 배치 32</span><div class="track"><div class="bar base"></div></div><span class="value">13.728초</span></div>
+        <div class="row"><span>FP32 · 배치 8</span><div class="track"><div class="bar batch"></div></div><span class="value">1.527초</span></div>
+        <div class="row"><span class="selected-label">FP16 · 배치 8</span><div class="track"><div class="bar selected"></div></div><span class="value selected-label">0.547초</span></div>
+      </div>
+      <div class="axis"><span>0초</span><span>7초</span><span>14초</span></div>
+    </section>
+    <section class="details">
+      <article>
+        <h2>6개 설정 전체 비교</h2>
+        <table>
+          <thead><tr><th>연산 · 배치</th><th>평균</th><th>p95</th></tr></thead>
+          <tbody>
+            <tr><td>FP32 · 8</td><td>1.527초</td><td>2.187초</td></tr>
+            <tr><td>FP32 · 16</td><td>2.760초</td><td>12.395초</td></tr>
+            <tr><td>FP32 · 32</td><td>13.728초</td><td>24.258초</td></tr>
+            <tr class="highlight"><td>FP16 · 8</td><td>0.547초</td><td>0.717초</td></tr>
+            <tr><td>FP16 · 16</td><td>0.656초</td><td>0.865초</td></tr>
+            <tr><td>FP16 · 32</td><td>1.530초</td><td>3.559초</td></tr>
+          </tbody>
+        </table>
+      </article>
+      <article>
+        <h2>선택 설정의 품질 확인</h2>
+        <div class="quality">
+          <div><span>Top-1 정확도</span><strong>88.33%</strong></div>
+          <div><span>NDCG@10</span><strong>0.9066</strong></div>
+          <div><span>문항별 평가 지표 하락</span><strong>0건</strong></div>
+          <div><span>전체 순위 완전 일치</span><strong>41 / 60문항</strong></div>
+        </div>
+      </article>
+    </section>
+    <footer>
+      출처: LangSmith <strong>travelmate.reranking.batch_comparison.summary</strong> 실행 결과를 2026-10-27 API로 재조회해 시각화했습니다.<br>
+      실행 ID: a16c61e5-a021-54b1-bacf-ed72ebaf9d0e · GPU: RTX 4050 Laptop · 후보 상한 30개 · 각 설정 60문항 1회 측정.<br>
+      이 이미지는 LangSmith 웹 UI 스크린샷이 아닙니다. 미판정 후보의 실제 적합도까지 동일함을 뜻하지 않습니다.
+    </footer>
+  </main>
+</body>
+</html>

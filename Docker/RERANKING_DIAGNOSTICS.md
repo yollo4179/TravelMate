@@ -2,7 +2,7 @@
 
 Reranking execution is selected through strategy classes under `embedding-server/app/reranking/strategies/`:
 
-- `cross_encoder_predict` calls the original `CrossEncoder.predict(pairs)` API.
+- `cross_encoder_predict` calls `CrossEncoder.predict(pairs, batch_size=configured_batch_size)`.
 - `instrumented_predict` calls that same API and adds CUDA synchronization around it to measure its completed wall time.
 - `autocast_fp16` calls that same API under CUDA float16 autocast as an optimization candidate; use it only if ranking evaluation passes.
 - `manual_diagnostic` runs the equivalent preprocessing, batching, transfer, forward, and output steps separately to expose stage timings.
@@ -25,9 +25,25 @@ bash Docker/stack-up.sh --build
 bash Docker/stack-wait.sh
 ```
 
-The batch size defaults to 32, matching the installed Sentence Transformers default. Keep it fixed while measuring the current 30-candidate flow. Change it only in a later optimization experiment.
+The batch size defaults to 32, matching the installed Sentence Transformers default. All strategies now use `RERANK_BATCH_SIZE`, including the three `predict` strategies. The archived 2026-10-25 benchmark used the library default of 32 in the predict paths; those paths did not forward a nondefault batch setting at that time. Changing the batch size keeps the retrieval candidate count separate: 30 candidates with batch size 8 are evaluated in four batches. Keep it fixed while measuring the current 30-candidate flow. Change it only in a later optimization experiment.
+
+The 2026-10-26 regression check captured actual preprocessing batches with `RERANK_BATCH_SIZE=8`: original predict, FP16 autocast, and manual diagnostics all processed `[8, 8, 8, 6]` over the same 30 candidates. The query/body fingerprint matched the archived batch-32 run, and its full baseline ranking was unchanged. Predict and manual scores matched exactly; FP16 preserved the full ranking with a maximum score delta of 0.000396. This is one fixed-query check, not a rerun of the 60-case quality evaluation. See `embedding-server/reports/reranker-batch8-verification-20261026.json`.
+
+The subsequent judged comparison on 2026-10-26 froze candidate IDs and complete bodies for all 60 fully supported V1.4 search queries and compared FP32/FP16 batches 8/16/32. All settings retained the 15 ranking metrics per query and identical unpadded token IDs. FP16 batch 8 was selected: reranking-only mean 547 ms and p95 717 ms; a length-stratified 12-query, three-repeat confirmation also passed. Full rank order matched FP32 batch 32 for 41/60 queries; metric equality does not establish quality equality for unjudged candidates. The subsequent 80-query live API run recorded mean 1.607 s and p95 2.015 s, with all 60 eligible-case quality means unchanged. These are RTX 4050 Laptop GPU measurements, not general performance guarantees.
+
+The validated local profile is:
+
+```dotenv
+RERANK_EXECUTION_STRATEGY=autocast_fp16
+RERANK_BATCH_SIZE=8
+RERANK_DIAGNOSTICS_ENABLED=false
+```
+
+The deployed container and all 80 live reranking spans confirmed that profile on CUDA. The versioned dataset was not changed; local artifacts are under `Evaluation/runs/search/v1.4.0/batch-fp16-20261026/` and the corresponding live collection directory.
 
 ## Fixed-input strategy comparison
+
+For a judged batch comparison across the V1.4 search cases, `Evaluation/tracks/search/batch_experiment.py` runs inside the GPU embedding image with `Evaluation` mounted at `/evaluation`. It freezes the live top-30 candidates once per fully supported query, then evaluates the registered `cross_encoder_predict` and `autocast_fp16` strategies at batch sizes 8, 16, and 32 without changing candidate count or token limits. It records scores, ranks, unpadded token hashes, batch shapes, and reranking-only wall time. The quality gate rejects any setting with a per-query ranking metric decrease relative to FP32 batch 32. A length-stratified subset is repeated for confirmation. Its results belong in `Evaluation/runs/`, outside the frozen dataset. API/Kafka end-to-end timing must still be measured after deploying a selected configuration.
 
 The benchmark uses the current embedding and pgvector retrieval once, freezes the resulting ordered candidate texts, warms each strategy, and repeats each strategy with that same input. It reports uninstrumented `predict`, synchronized `predict`, CUDA FP16 autocast, and manual diagnostic timings separately. It captures the actual preprocessing tensors outside the timed runs to verify token IDs, truncation, padding, and batch parity. Score deltas, rank equality, and top-10 overlap show whether a faster path preserves the ranking.
 
