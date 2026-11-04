@@ -2,11 +2,13 @@
 from __future__ import annotations
 
 import json
+import re
 from typing import Any
 
 from jsonschema import Draft202012Validator
 
 from common.dataset.io import canonical_digest
+from tracks.conversation.plan_checks import draft_checks
 
 BRANCH_TOOLS = {
     "CHAT": [],
@@ -17,10 +19,17 @@ BRANCH_TOOLS = {
 }
 QUERY_BRANCHES = {"SEARCH_PLACES", "GENERATE_PLAN"}
 LEGACY_ONLY_CHECKS = {"response_type", "message_source", "intent_type", "array_result_preserved"}
+DRAFT_COMPLETED = "DRAFT_COMPLETED"
 ROUTER_LINE_CRITERION = {
     "id": "router_line_no_place_facts",
     "guidance": "LiLi의 첫 대사는 장소 근거를 받기 전에 쓴 것이므로 반응과 예고만 하고 장소의 특징·위치·주차·운영시간 같은 사실을 말하지 않는다.",
 }
+# What a user must never hear from LiLi: server codes (JOB_ID_NOT_FOUND, COUNT_UNAVAILABLE) and pipeline vocabulary.
+# Lookarounds, not \b: Hangul counts as a word character, so "JOB_ID_NOT_FOUND라고" would slip past \b.
+INTERNAL_CODE = re.compile(r"(?<![A-Za-z0-9_])[A-Z]{2,}(?:_[A-Z]{2,})+(?![A-Za-z0-9_])")
+INTERNAL_TERMS = ("토큰", "예산", "LLM", "API", "evidence", "셀렉트", "selectedEvidence", "서버",
+                  "QUEUED", "RUNNING", "SUCCEEDED", "FAILED")
+PARENTHESIZED = re.compile(r"\([^)]*\)")
 
 
 def _payloads(selected: list[dict[str, Any]], event: str, phase: str | None = None) -> list[dict[str, Any]]:
@@ -38,6 +47,30 @@ def _decision(route: dict[str, Any] | None) -> dict[str, Any] | None:
         return None
 
 
+def _texts(dialogue: Any) -> list[str]:
+    return [cut.get("text", "") for cut in dialogue if isinstance(cut, dict)] if isinstance(dialogue, list) else []
+
+
+def internal_terms(texts: list[str]) -> list[str]:
+    found = [match for text in texts for match in INTERNAL_CODE.findall(text)]
+    return found + [term for term in INTERNAL_TERMS if any(term in text for text in texts)]
+
+
+def _spoken_name(name: str) -> str:
+    # "사직공원(서울)" is said as "사직공원"; the bracket only disambiguates the catalog entry.
+    return PARENTHESIZED.sub("", name).strip()
+
+
+def unevidenced_places_named(texts: list[str], candidates: list[dict[str, Any]]) -> list[str]:
+    spoken = " ".join(texts)
+    grounded = sorted({_spoken_name(item.get("name") or "") for item in candidates if item.get("selectedEvidence")}, key=len, reverse=True)
+    # Remove grounded names first so "창경궁" inside a grounded "창경궁 홍화문" is not blamed on another candidate.
+    for name in filter(None, grounded):
+        spoken = spoken.replace(name, " ")
+    names = {_spoken_name(item.get("name") or "") for item in candidates if not item.get("selectedEvidence")}
+    return sorted(name for name in names if len(name) >= 2 and name in spoken)
+
+
 def _sources(preparations: list[dict[str, Any]]) -> tuple[dict[str, dict[str, Any]], list[dict[str, Any]]]:
     sources: dict[str, dict[str, Any]] = {}
     supplied = []
@@ -51,25 +84,23 @@ def _sources(preparations: list[dict[str, Any]]) -> tuple[dict[str, dict[str, An
     return sources, supplied
 
 
-def _job_checks(
-    record: dict[str, Any],
+def _recommendation_checks(
+    followed: dict[str, Any],
     expected: dict[str, Any],
     decision: dict[str, Any],
     job_preparations: list[dict[str, Any]],
-    contract: dict[str, Any],
+    cut_schema: dict[str, Any] | None,
 ) -> tuple[dict[str, bool | None], dict[str, Any], list[dict[str, Any]]]:
-    job = record.get("recommendation_job") or {}
+    job = followed.get("job") or {}
     result = job.get("result") or {}
     checks: dict[str, bool | None] = {
-        "job_completed": job.get("status") == "SUCCEEDED",
+        "job_completed": job.get("status") == "SUCCEEDED" and not followed.get("timed_out"),
         "job_single_retrieval": len(job_preparations) == 1,
         "job_query_is_lili_query": len(job_preparations) == 1 and job_preparations[0].get("query") == decision.get("search_query"),
         "job_result_places": result.get("type") == "PLACES",
         "job_result_by_lili": result.get("messageSource") == "LLM" and result.get("termination") == "COMPLETED",
     }
-    cuts = result.get("dialogue") or []
-    cut_schema = contract.get("lili", {}).get("recommendation_schema", {}).get("properties", {}).get("dialogue")
-    checks["job_dialogue_cuts"] = _valid(cut_schema, cuts) if cut_schema else None
+    checks["job_dialogue_cuts"] = _valid(cut_schema, result.get("dialogue") or []) if cut_schema else None
     sources, supplied = _sources(job_preparations)
     citations = result.get("citations") or []
     checks["job_citation_membership"] = all(
@@ -78,81 +109,154 @@ def _job_checks(
         and isinstance(source["text"], str) and citation.get("quote", "") in source["text"] for citation in citations)
     if expected.get("citations") == "REQUIRED":
         checks["job_citations_required"] = bool(citations)
+    candidates = [candidate for item in job_preparations for candidate in (item.get("modelData") or {}).get("candidates", [])]
+    checks["job_dialogue_no_unevidenced_places"] = not unevidenced_places_named(_texts(result.get("dialogue")), candidates)
     return checks, result, supplied
+
+
+def _exclusion_checks(
+    expected_exclusion: dict[str, Any] | None,
+    decision: dict[str, Any],
+    exclusions: list[dict[str, Any]],
+    job_preparations: list[dict[str, Any]],
+    result: dict[str, Any],
+) -> dict[str, bool | None]:
+    """Requested position → server-resolved ID → applied search filter → absent from what the job returned."""
+    if expected_exclusion is None:
+        return {"no_unrequested_exclusion": not decision.get("exclude_positions")}
+    wanted = expected_exclusion["place_ids"]
+    resolved = exclusions[0] if len(exclusions) == 1 else {}
+    criteria = (job_preparations[0].get("modelData") or {}).get("searchCriteria") or {} if len(job_preparations) == 1 else {}
+    returned = [item.get("placeId") for item in result.get("data") or [] if isinstance(item, dict)]
+    return {
+        "exclusion_positions": decision.get("exclude_positions") == expected_exclusion["positions"],
+        "exclusion_resolved": resolved.get("status") == "RESOLVED" and resolved.get("placeIds") == wanted,
+        "exclusion_filter_applied": set(wanted) <= set(criteria.get("excludePlaceIds") or []),
+        "exclusion_absent_from_result": bool(returned) and not set(wanted) & set(returned),
+    }
+
+
+def _plan_checks(
+    case: dict[str, Any],
+    followed: dict[str, Any],
+    native: dict[str, Any],
+    tool_events: list[dict[str, Any]],
+    cut_schema: dict[str, Any] | None,
+) -> tuple[dict[str, bool | None], dict[str, Any]]:
+    """Accepting the job and finishing the draft are separate results; a failure or timeout is never a draft."""
+    job = followed.get("job") or {}
+    draft = followed.get("result") if isinstance(followed.get("result"), dict) else None
+    accepted = native.get("type") == "PLANNING_JOB" and bool((native.get("data") or {}).get("jobId")) and any(
+        (event.get("result") or {}).get("name") == "generate_plan" and (event.get("result") or {}).get("status") == "SUCCEEDED"
+        for event in tool_events)
+    checks: dict[str, bool | None] = {
+        "plan_job_accepted": accepted,
+        "plan_job_succeeded": followed.get("kind") == "PLANNING" and not followed.get("timed_out") and job.get("status") == "SUCCEEDED",
+        "plan_draft_retrieved": draft is not None and draft.get("planId") == job.get("planId") and bool(draft.get("pins")),
+        "plan_draft_dialogue": _valid(cut_schema, draft.get("dialogue") or []) if draft is not None and cut_schema else False,
+    }
+    content = draft_checks(case["api_request"], {"type": "DRAFT", "data": draft}) if draft is not None else {
+        "status": "not_ready", "checks": {}, "route_time_verified": False, "opening_hours_verified": False}
+    checks["plan_draft_conditions"] = None if content["status"] == "not_assessed" else content["status"] == "passed"
+    return checks, content
 
 
 def score_lili_case(case: dict[str, Any], record: dict[str, Any], selected: list[dict[str, Any]],
                     contract: dict[str, Any], base_checks: dict[str, bool | None], trace_error: str | None) -> dict[str, Any]:
     expected = case["expected"]
+    expected_branch = expected.get("lili_branch")
     native = record.get("native_response") if isinstance(record.get("native_response"), dict) else {}
+    followed = record.get("followed_job") or {}
     # Legacy checks assume pre-retrieved places in the chat turn; LiLi's turn is judged by its own rules below.
     checks = {name: value for name, value in base_checks.items() if name not in LEGACY_ONLY_CHECKS}
     routes = _payloads(selected, "ROUTE")
     route = routes[0] if len(routes) == 1 else None
     decision = _decision(route) or {}
     lili = contract.get("lili", {})
+    cut_schema = lili.get("recommendation_schema", {}).get("properties", {}).get("dialogue")
     branch = decision.get("branch")
     checks["route_observed"] = route is not None and route.get("stage") == "ROUTER"
     checks["route_schema"] = _valid(lili["router_schema"], decision) if route and "router_schema" in lili else None
-    checks["lili_branch"] = branch == expected.get("lili_branch")
+    checks["lili_branch"] = branch == expected_branch
     checks["search_query_present"] = bool((decision.get("search_query") or "").strip()) if branch in QUERY_BRANCHES else None
     checks["no_evidence_before_lili"] = not _payloads(selected, "EVIDENCE_PREPARATION", "CONVERSATION")
-    tool_events = [item for item in _payloads(selected, "TOOL_RESULT", "CONVERSATION")]
+    tool_events = _payloads(selected, "TOOL_RESULT", "CONVERSATION")
     executed = [item.get("result", {}) for item in tool_events]
-    checks["tool_selection"] = [item.get("name") for item in executed] == BRANCH_TOOLS.get(expected.get("lili_branch"), [])
+    checks["tool_selection"] = [item.get("name") for item in executed] == BRANCH_TOOLS.get(expected_branch, [])
     checks["tools_run_by_server"] = all(item.get("initiator") == "LILI" for item in tool_events)
     arguments = [json.loads(item.get("arguments") or "{}") for item in executed]
-    if expected.get("lili_branch") == "GET_PLANNING_JOB":
+    expected_exclusion = expected.get("exclusion")
+    if expected_branch == "GET_PLANNING_JOB":
         checks["tool_arguments"] = len(arguments) == 1 and bool(arguments[0].get("job_id")) and arguments[0]["job_id"] in case["api_request"]["message"]
-    elif expected.get("lili_branch") == "GENERATE_PLAN":
+    elif expected_branch == "GENERATE_PLAN":
         checks["tool_arguments"] = arguments == [{}]
-    elif expected.get("lili_branch") == "SEARCH_PLACES":
-        checks["tool_arguments"] = len(arguments) == 1 and arguments[0].get("query") == decision.get("search_query")
+    elif expected_branch == "SEARCH_PLACES":
+        wanted = expected_exclusion["place_ids"] if expected_exclusion else []
+        checks["tool_arguments"] = len(arguments) == 1 and arguments[0].get("query") == decision.get("search_query") \
+            and arguments[0].get("exclude_place_ids", []) == wanted
     checks["intent_type"] = native.get("intent") == expected.get("intent")
     checks["message_source"] = native.get("messageSource") == "LLM"
     checks["dialogue_present"] = bool(native.get("dialogue")) and native.get("message") == native["dialogue"][0].get("text")
     expected_type = {"SEARCH_PLACES": "RECOMMENDATION_JOB", "GENERATE_PLAN": "PLANNING_JOB", "GET_PLANNING_JOB": "PLANNING_JOB"}
-    checks["response_type"] = native.get("type") == expected_type.get(expected.get("lili_branch"), "TEXT") or (
-        expected.get("lili_branch") == "GET_PLANNING_JOB" and native.get("type") in {"PLANNING_JOB", "DRAFT"})
-    checks["choices_only_when_clarifying"] = bool(native.get("choices")) == (branch == "CLARIFY") if branch else None
+    checks["response_type"] = native.get("type") == expected_type.get(expected_branch, "TEXT") or (
+        expected_branch == "GET_PLANNING_JOB" and native.get("type") in {"PLANNING_JOB", "DRAFT"})
+    follow_ups = [item for item in _payloads(selected, "MODEL_TURN") if item.get("stage") == "FOLLOW_UP"]
+    # A server-side ask-back (missing job ID or list) is a clarification even when the router picked another branch.
+    asked_back = bool(follow_ups) and native.get("type") == "TEXT"
+    checks["choices_only_when_clarifying"] = bool(native.get("choices")) <= (branch == "CLARIFY" or asked_back) if branch else None
     citations: list[dict[str, Any]] = []
     supplied: list[dict[str, Any]] = []
+    job_result: dict[str, Any] = {}
     job_preparations = _payloads(selected, "EVIDENCE_PREPARATION", "RECOMMENDATION_GENERATION")
-    if expected.get("lili_branch") == "SEARCH_PLACES":
-        job_checks, result, supplied = _job_checks(record, expected, decision, job_preparations, contract)
+    if expected_branch == "SEARCH_PLACES":
+        job_checks, job_result, supplied = _recommendation_checks(followed, expected, decision, job_preparations, cut_schema)
         checks.update(job_checks)
-        citations = result.get("citations") or []
+        checks.update(_exclusion_checks(expected_exclusion, decision, _payloads(selected, "EXCLUSION"), job_preparations, job_result))
+        citations = job_result.get("citations") or []
+    plan_content = {"status": "not_applicable", "checks": {}, "route_time_verified": False, "opening_hours_verified": False}
+    draft = followed.get("result") if isinstance(followed.get("result"), dict) else {}
+    if expected.get("plan_outcome") == DRAFT_COMPLETED:
+        plan_check_values, plan_content = _plan_checks(case, followed, native, tool_events, cut_schema)
+        checks.update(plan_check_values)
+    spoken = _texts(native.get("dialogue")) + _texts(job_result.get("dialogue")) + _texts(draft.get("dialogue"))
+    leaked = internal_terms(spoken)
+    checks["no_internal_terms"] = not leaked
     model_calls = [item for item in _payloads(selected, "MODEL_CALL") if item.get("stage") == "FINISHED"]
     checks["provider_identity"] = all(call.get("provider") == contract["provider"] and call.get("model") == contract["model"]
                                       for call in model_calls) if model_calls else None
     automated = "failed" if any(value is False for value in checks.values()) else "not_assessed" if any(
         value is None for name, value in checks.items() if name in {"route_observed", "trace_binding", "lili_branch"}) else "passed"
     live = record.get("execution_mode") == "LIVE"
-    follow_ups = [item for item in _payloads(selected, "MODEL_TURN") if item.get("stage") == "FOLLOW_UP"]
     job_turns = [item for item in _payloads(selected, "MODEL_TURN") if item.get("stage") == "RECOMMENDATION"]
-    job = record.get("recommendation_job") or {}
+    plan_drafts = _payloads(selected, "PLAN_DRAFT", "PLAN_GENERATION")
     criteria = list(expected["semantic_criteria"])
     if branch in QUERY_BRANCHES:
         criteria.append(ROUTER_LINE_CRITERION)
     usage = [call.get("receipt", {}).get("usage") for call in model_calls]
     return {"case_id": case["case_id"], "input_sha256": case["input_sha256"], "automated_status": automated,
             "checks": checks, "not_applicable_checks": [name for name, value in checks.items() if value is None],
-            "trace_error": trace_error, "lili_decision": decision,
-            "response_text": " / ".join(cut.get("text", "") for cut in native.get("dialogue") or []) or native.get("message"),
-            "job_response_text": " / ".join(cut.get("text", "") for cut in (job.get("result") or {}).get("dialogue") or []) or None,
+            "trace_error": trace_error, "lili_decision": decision, "internal_terms_found": leaked,
+            "stage_results": {"plan_accepted": checks.get("plan_job_accepted"),
+                              "plan_draft_completed": checks.get("plan_draft_retrieved")} if "plan_job_accepted" in checks else None,
+            "plan_generation": [{"status": item.get("status"), "failureType": item.get("failureType"),
+                                 "failureMessage": item.get("failureMessage"), "outputPresent": bool(item.get("output")),
+                                 "candidateIds": item.get("candidateIds")} for item in plan_drafts],
+            "response_text": " / ".join(_texts(native.get("dialogue"))) or native.get("message"),
+            "job_response_text": " / ".join(_texts(job_result.get("dialogue"))) or None,
+            "draft_dialogue_text": " / ".join(_texts(draft.get("dialogue"))) or None,
             "citations": citations, "model_tool_calls": [], "supplied_evidence": supplied,
             "question": case["api_request"]["message"], "semantic_criteria": criteria,
             "acceptable_response_example": expected["message_example"], "semantic_status": "not_reviewed",
             "quality_observed": live and bool(model_calls) and all(call.get("status") == "SUCCEEDED" for call in model_calls),
-            "plan_content": {"status": "not_applicable", "checks": {}, "route_time_verified": False, "opening_hours_verified": False},
+            "plan_content": plan_content,
             "observed_calls": {"model_calls": len(model_calls), "router_calls": len(routes), "follow_up_calls": len(follow_ups),
                                "recommendation_calls": len(job_turns), "server_tool_executions": len(tool_events),
-                               "job_retrievals": len(job_preparations), "job_polls": record.get("recommendation_job_polls")},
+                               "job_retrievals": len(job_preparations), "job_polls": followed.get("polls")},
             "latency_ms": {"conversation_http": record.get("duration_ms") if live else None,
                            "router": route.get("durationMs") if live and route else None,
                            "follow_up": [item.get("durationMs") for item in follow_ups] if live else None,
                            "tool_execution": [item.get("durationMs") for item in tool_events] if live else None,
-                           "job_wait": record.get("recommendation_job_wait_ms") if live else None,
+                           "job_wait": followed.get("wait_ms") if live else None,
                            "job_pre_retrieval": job_preparations[0].get("durationMs") if live and len(job_preparations) == 1 else None,
                            "job_inference": [item.get("durationMs") for item in job_turns] if live else None},
             "observed_usage": usage if live else None,

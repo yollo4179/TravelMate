@@ -14,6 +14,19 @@ from tracks.search.collect_live import selected_v14_inputs
 
 
 DEFAULT_SUITE = DEFAULT_DATASET.parent / "conversation-smoke-v1/cases.json"
+LILI_SUITE = DEFAULT_DATASET.parent / "conversation-smoke-v2/cases.json"
+MAX_DISPLAYED_PLACES = 20
+OPTIONAL_REQUEST_FIELDS = {"intentHint", "displayedResult"}
+
+
+class SuiteVersion(StrEnum):
+    SINGLE_LLM_V1 = "conversation-smoke-v1"
+    LILI_ROUTER_V2 = "conversation-smoke-v2"
+
+
+class PlanOutcome(StrEnum):
+    ACCEPTED = "ACCEPTED"
+    DRAFT_COMPLETED = "DRAFT_COMPLETED"
 
 
 class DecisionType(StrEnum):
@@ -47,8 +60,7 @@ def load_cases(path: Path, selected: tuple[str, ...], bindings: dict[str, str]) 
     if bindings.get("owned_job_id"):
         uuid.UUID(bindings["owned_job_id"])
     suite = read_json(path)
-    if suite.get("schema_version") != "conversation-smoke-v1":
-        raise ValueError("Unknown conversation suite")
+    SuiteVersion(suite.get("schema_version"))
     index = {case["case_id"]: case for case in suite["cases"]}
     if len(index) != len(suite["cases"]) or not selected or len(set(selected)) != len(selected) or not set(selected) <= index.keys():
         raise ValueError("Select unique, existing conversation cases")
@@ -77,9 +89,31 @@ def load_cases(path: Path, selected: tuple[str, ...], bindings: dict[str, str]) 
             case.update(input={"query": request["message"], "conditions": conditions},
                         input_sha256=canonical_digest({"api_request": request}))
         request = case["api_request"]
-        if (set(request) - {"intentHint"}) != {"message", "planningRequest", "history", "searchContext"}:
+        if (set(request) - OPTIONAL_REQUEST_FIELDS) != {"message", "planningRequest", "history", "searchContext"}:
             raise ValueError("The suite must use the current native conversation request envelope")
+        validate_exclusion(request.get("displayedResult"), expected.get("exclusion"))
+        if "plan_outcome" in expected:
+            PlanOutcome(expected["plan_outcome"])
         if not isinstance(request["message"], str) or not request["message"].strip() or len(request["message"]) > 4000:
             raise ValueError("The original conversation question must fit the server contract")
         result.append(case)
     return result
+
+
+def validate_exclusion(displayed: dict[str, Any] | None, exclusion: dict[str, Any] | None) -> None:
+    """The expected IDs must be exactly what the positions name in the list the app displayed."""
+    if displayed is not None:
+        uuid.UUID(displayed["resultId"])
+        places = displayed["placeIds"]
+        if not 1 <= len(places) <= MAX_DISPLAYED_PLACES or len(set(places)) != len(places) or any(
+                type(place) is not int or place <= 0 for place in places):
+            raise ValueError("A displayed result is 1..20 distinct positive place IDs in screen order")
+    if exclusion is None:
+        return
+    if displayed is None:
+        raise ValueError("An expected exclusion needs the displayed list it refers to")
+    positions = exclusion["positions"]
+    if not positions or any(type(position) is not int or not 1 <= position <= len(displayed["placeIds"]) for position in positions):
+        raise ValueError("Exclusion positions must point inside the displayed list")
+    if exclusion["place_ids"] != [displayed["placeIds"][position - 1] for position in positions]:
+        raise ValueError("Expected excluded IDs must be the displayed IDs at those positions")
