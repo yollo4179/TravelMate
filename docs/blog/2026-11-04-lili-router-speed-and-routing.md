@@ -2,6 +2,7 @@
 
 > 블로그 초안. 같은 9문항·같은 모델·같은 평가 인프라에서 구조를 바꾸기 전과 후를 비교한 기록이다.
 > 자동 검사 기준의 결과이며, 답변 문장의 의미 검수는 아직 하지 않았다.
+> **정정 (2026-11-05):** 자동 통과 8/9 중 2건은 판정 범위가 좁아 성공으로 볼 수 없다(첫 후보 제외 미검증, 계획은 접수만 성공). 성공으로 볼 수 있는 것은 6/9다. 글 끝의 "정정"을 본다.
 
 TravelMate의 대화 서버는 모든 질문에 같은 경로를 썼다. 질문이 들어오면 먼저 장소를 검색하고 리랭킹한 뒤, 그 근거와 도구 목록을 LLM 하나에 넘겼다.
 그 LLM이 의도를 판단하고, 직접 답하거나 도구를 호출했다.
@@ -105,7 +106,8 @@ sequenceDiagram
 - **대화 응답 시간:** 중앙값이 17.4초에서 2.06초로, 최대가 36.1초에서 4.35초로 줄었다. 4초대 두 건은 작업 조회 뒤 LiLi 후속 대사를 한 번 더 부른 경우다.
 - **입력 토큰:** 라우터 호출 입력은 1,134~1,170 토큰이다. 이전에 매 턴 들어가던 장소 근거가 빠졌다.
 - **도구 선택:** 이전에 도구를 부르지 않던 3문항(제외 재검색·일정 생성·작업 조회)이 모두 맞는 branch로 갔고, 서버가 해당 도구를 실행했다. 조건 없는 일정 요청은 CLARIFY로 되물었다.
-- **자동 검사:** 8/9 통과.
+  - 다만 branch와 도구 실행이 맞았다는 뜻일 뿐, 제외 재검색은 실제로 아무것도 제외하지 않았다. 일정 생성도 접수만 됐고 초안은 실패했다(아래 정정).
+- **자동 검사:** 8/9 통과로 기록됐다. 이 중 2건은 판정 범위가 좁았으므로, 성공으로 볼 수 있는 것은 **6/9**다.
 - **비용:** 9문항에 15회 호출(라우터·후속·추천·계획 포함), 사용량 기준 약 $0.035였다.
 
 ## 그대로 남은 것과 새로 드러난 것
@@ -120,7 +122,7 @@ sequenceDiagram
 
 - 이전 실행은 단일 LLM 기준의 검사(턴 안의 인용, 모델의 도구 호출)로 채점했다.
 - 이번 실행은 라우터 기준의 검사(branch, 서버 실행 도구, 작업 결과의 인용과 컷)로 채점했다.
-- 그래서 2/9 → 8/9는 같은 채점표의 점수 차이가 아니다. 각 구조가 자기 계약을 지켰는지의 결과다.
+- 그래서 2/9와 이번 결과는 같은 채점표의 점수 차이가 아니다. 두 결과는 직접 비교하지 않는다.
 - 시간과 토큰은 같은 방식으로 쟀다.
 
 이번 실행에서 새로 발견한 문제도 있다.
@@ -136,6 +138,25 @@ sequenceDiagram
 
 다음 단계는 위 문제를 고친 뒤, 라우팅 경계 50문항 세트로 30~50개 표본을 다시 재는 것이다.
 
+## 정정 (2026-11-05)
+
+자동 통과 8건 중 2건은 당시 채점기가 확인한 범위가 좁아서 성공을 입증하지 못한다.
+
+- **첫 후보 제외**
+  - 입력에 이전 후보 목록이 없었다(`history=[]`, `excludePlaceIds=[]`).
+  - 서버는 새 검색어로 다시 찾았을 뿐 아무 장소도 제외하지 않았다.
+  - 채점기는 검색어만 비교했다.
+- **일정 생성**
+  - 작업 접수만 확인했다.
+  - 실제 작업은 체류시간 초과로 실패했다.
+
+후속으로 평가셋을 `conversation-smoke-v2`로 올렸다. 바뀐 점은 세 가지다.
+- 앱이 보여 준 목록의 순번을 서버가 장소 ID로 바꾼다. 그 ID가 검색 필터와 결과에 반영됐는지 대조한다.
+- 계획은 접수와 초안 완성을 따로 판정한다.
+- 목록 없이 "첫 번째를 빼 줘"라고 하면 되묻는 것이 정답이다.
+
+v2 결과는 이 글의 수치와 직접 비교하지 않는다. 지연 시간 비교(대화 응답 17.4초 → 2.06초)는 측정 방식이 같아 그대로 유효하다.
+
 ## 참고 문서
 
 | 내용 | 위치 |
@@ -147,7 +168,7 @@ sequenceDiagram
 | 이번 실행 기록 | `Evaluation/runs/conversation-smoke/20261104-lili-r2`, `20261104-lili-r2-rest` |
 | 이전 실행 기록 | `Evaluation/runs/conversation-smoke/20261104-live-a-04` ~ `live-a-09`, `live-b-01`, `live-b-02` |
 | 실행 설정 | `Evaluation/experiments/conversation-smoke/live.lili-regression.json`, `live.lili-regression-r2-rest.json` |
-| 회귀 문항 (기대 branch 포함) | `Evaluation/datasets/conversation-smoke-v1/cases.json` |
+| 회귀 문항 (기대 branch 포함) | `Evaluation/datasets/conversation-smoke-v1/cases.json` (이 글의 실행), `conversation-smoke-v2/cases.json` (정정 후 판정) |
 | LiLi 채점기 | `Evaluation/tracks/conversation/lili_score.py` |
 | 페르소나·프롬프트 | `Server/TravelMate/src/main/resources/conversation/persona/lili-v1.txt`, `conversation/prompts/v1-lili-router-system.txt`, `v1-lili-followup-system.txt`, `v1-recommendation-system.txt` |
 | 라우터·분기 구현 | `Server/TravelMate/src/main/java/com/yollo/TravelMate/domain/conversation/service/LiliRouterV1.java`, `Lili*Handler.java`, `RecommendationJobService.java` |
