@@ -1,0 +1,35 @@
+{
+  "mode": "LIVE",
+  "case_ids": [
+    "PLR-TM-palaces-01",
+    "PLR-TM-palaces-03",
+    "CONV-SOCIAL-thanks",
+    "CONV-CLARIFY-plan",
+    "CONV-CLARIFY-job",
+    "CONV-UNSUPPORTED-booking",
+    "CONV-SEARCH-exclude-first"
+  ],
+  "max_calls": {
+    "runtime_read": 2,
+    "conversation": 7
+  },
+  "timeout_seconds": 120,
+  "model": null,
+  "max_output_tokens": null,
+  "parameters": {
+    "server_url": "http://127.0.0.1:18080",
+    "suite_sha256": "c62fa77f961b8901b2ebef5353cff227da06ed886a6182da3ce4f9ed28e67762",
+    "bindings_sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+    "token_env": "TRAVELMATE_EVAL_ACCESS_TOKEN",
+    "expected_provider": "OPENAI",
+    "expected_model": "gpt-5.4-mini-2026-03-17",
+    "max_model_turns": 6,
+    "max_tool_calls": 8,
+    "allow_plan_creation": false,
+    "expected_user_id": "aDMINuser",
+    "expected_search_devices": {
+      "embedding_device": "cuda",
+      "reranker_device": "cuda"
+    }
+  }
+}

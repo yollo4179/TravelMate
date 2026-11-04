@@ -52,8 +52,12 @@ python Evaluation/tracks/conversation/run.py --config Evaluation/experiments/con
 1. `PLR-TM-palaces-03`: 제공된 청크로 이유·인용을 포함해 직접 답변.
 2. `CONV-SEARCH-exclude-first`: 첫 후보를 실제 제외 조건에 넣어 추가 검색 도구 한 번 실행.
 
-본인 Job ID나 새 계획 생성이 필요하지 않다. LLM을 매 요청 한 턴만 사용한다. 두 번째는 새 도구 결과를 LLM이 다시 읽는 단계 없이 서버 영수증으로 종료하는 범위다.
+본인 Job ID나 새 계획 생성이 필요하지 않다. 서버 상한은 운영과 같은 6턴·8도구이며, 이 사례들은 모델 한 턴으로 끝나는지 `one_model_turn_observed`로 따로 기록한다.
+두 번째는 새 도구 결과를 LLM이 다시 읽는 단계 없이 서버 영수증으로 종료하는 범위다.
 그 영수증을 LLM이 새 결과를 읽고 작성한 상세 추천 설명으로 채점하지 않는다.
+
+9사례 전체 실행은 `live.batch-a*.json`(조회·대화 7개), `live.batch-b-*.json`(일정 생성·Job 조회)을 사용한다.
+B안 인프라 재사용 구성과 결과는 [2026-11-04 실행 기록](../../../docs/evaluation/tool-calling-live-20261104.md)을 따른다.
 
 ### 1. 같은 테스트 서버의 설정 확인
 

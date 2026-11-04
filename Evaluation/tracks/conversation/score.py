@@ -210,7 +210,9 @@ def score_case(case: dict[str, Any], record: dict[str, Any], events: list[dict[s
             "latency_ms": {"conversation_http": record.get("duration_ms") if live else None,
                            "pre_retrieval": preparations[0].get("durationMs") if live and len(preparations) == 1 else None,
                            "inference_http": timing.get("inferenceDurationMs") if live else None,
-                           "token_count_http": timing.get("countDurationMs") if live else None},
+                           "token_count_http": timing.get("countDurationMs") if live else None,
+                           # One entry per model-selected tool; separates search/job latency from model latency.
+                           "tool_execution": [item.get("durationMs") for item in tool_events] if live else None},
             "observed_usage": timing.get("receipt", {}).get("usage") if live else None,
             "quality_status": "mock_regression_only" if record.get("execution_mode") == "MOCK" else "semantic_review_required",
             "record_sha256": canonical_digest(record), "events_sha256": canonical_digest(selected)}
