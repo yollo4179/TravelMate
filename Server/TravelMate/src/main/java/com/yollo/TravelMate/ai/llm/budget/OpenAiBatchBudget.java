@@ -22,6 +22,7 @@ public class OpenAiBatchBudget {
     private BigDecimal reservedUsd = BigDecimal.ZERO;
     private BigDecimal reservedInferenceUsd = BigDecimal.ZERO;
     private int reservations;
+    private int planGenerationReservations;
     private boolean ledgerCreated;
     private boolean halted;
 
@@ -46,7 +47,9 @@ public class OpenAiBatchBudget {
             Map<String, String> caseInputHashes,
             String ledgerFile,
             InputCountCostPolicy inputCountCostPolicy,
-            int maxInputCountRequests
+            int maxInputCountRequests,
+            // Async draft generation of an approved case; 0 (absent) keeps the conversation-only allowance.
+            int maxPlanGenerationCalls
     ) {
         public Policy {
             inputCountCostPolicy = inputCountCostPolicy == null
@@ -91,7 +94,7 @@ public class OpenAiBatchBudget {
             throw new IllegalStateException("OpenAI evaluation model/token configuration mismatch");
         }
         var context = ObservationContext.capture();
-        if (context == null || context.phase() != ObservationContext.Phase.CONVERSATION || context.jobId() != null
+        if (context == null || !(isConversation(context) || isPlanGeneration(context))
                 || context.caseId() == null || context.requestId() == null
                 || policy.caseInputHashes() == null || context.inputSha256() == null
                 || !context.inputSha256().equals(policy.caseInputHashes().get(context.caseId()))) {
@@ -102,7 +105,8 @@ public class OpenAiBatchBudget {
             throw new IllegalStateException("OpenAI evaluation case cannot be retried");
         }
         if (reservations >= policy.maxCalls() || reservations >= policy.maxInputCountRequests()
-                || caseCalls.getOrDefault(context.caseId(), 0) >= policy.maxCallsPerCase()) {
+                || caseCalls.getOrDefault(context.caseId(), 0) >= policy.maxCallsPerCase()
+                || isPlanGeneration(context) && planGenerationReservations >= policy.maxPlanGenerationCalls()) {
             throw new IllegalStateException("OpenAI evaluation call cap reached");
         }
         requireNonNegative(policy.inputUsdPerMillion());
@@ -123,6 +127,7 @@ public class OpenAiBatchBudget {
         // Persist before either counting or inference; failed/unknown requests keep their entire reservation.
         var event = JSON.createObjectNode().put("stage", "RESERVED").put("ordinal", reservation.ordinal())
                 .put("caseId", context.caseId()).put("requestId", context.requestId()).put("model", limits.model())
+                .put("phase", context.phase().name()).put("jobId", context.jobId())
                 .put("mode", context.mode().name())
                 .put("inputCountCostPolicy", policy.inputCountCostPolicy().name())
                 .put("inputCountBillingConfirmed", policy.inputCountBillingConfirmed())
@@ -138,7 +143,18 @@ public class OpenAiBatchBudget {
         reservations++;
         caseRequests.put(context.caseId(), context.requestId());
         caseCalls.merge(context.caseId(), 1, Integer::sum);
+        if (isPlanGeneration(context)) planGenerationReservations++;
         return reservation;
+    }
+
+    private static boolean isConversation(ObservationContext.Context context) {
+        return context.phase() == ObservationContext.Phase.CONVERSATION && context.jobId() == null;
+    }
+
+    // The job inherits the case, input hash and request of the conversation turn that queued it.
+    private boolean isPlanGeneration(ObservationContext.Context context) {
+        return context.phase() == ObservationContext.Phase.PLAN_GENERATION && context.jobId() != null
+                && policy.maxPlanGenerationCalls() > 0;
     }
 
     private void requireInputCountCostPolicy() {

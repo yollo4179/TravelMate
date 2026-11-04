@@ -206,6 +206,28 @@ class OpenAiBatchBudgetTest {
     }
 
     @Test
+    void explicitPlanAllowanceAdmitsOnlyTheQueuingCaseUpToItsCap() throws Exception {
+        var budget = budget(policy().put("maxPlanGenerationCalls", 1));
+        try (var scope = planGeneration("C1", "H1", "R1")) {
+            assertNotNull(budget.reserve(limits));
+            assertThrows(IllegalStateException.class, () -> budget.reserve(limits));
+        }
+        try (var scope = planGeneration("C2", "WRONG-HASH", "R2")) {
+            assertThrows(IllegalStateException.class, () -> budget.reserve(limits));
+        }
+        var ledger = Files.readAllLines(directory.resolve("ledger.jsonl"));
+        assertEquals(1, ledger.size());
+        assertEquals("PLAN_GENERATION", mapper.readTree(ledger.get(0)).path("phase").asText());
+        assertEquals("MOCK-JOB", mapper.readTree(ledger.get(0)).path("jobId").asText());
+    }
+
+    private ObservationContext.Scope planGeneration(String caseId, String inputSha256, String requestId) {
+        return ObservationContext.open(ObservationContext.Context.builder().requestId(requestId)
+                .caseId(caseId).inputSha256(inputSha256).phase(ObservationContext.Phase.PLAN_GENERATION).jobId("MOCK-JOB")
+                .mode(ObservationContext.Mode.MOCK).sink(event -> {}).build());
+    }
+
+    @Test
     void usageIsRecordedWithoutRefundingReservationsAndMissingUsageHaltsTheBatch() throws Exception {
         var budget = budget(policy());
         try (var scope = context("C1", "R1")) {
