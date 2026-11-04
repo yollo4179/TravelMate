@@ -116,6 +116,11 @@ class ModuleInput:
     turn_key: str
 
 
+# Native conversation request fields a case may add to the required envelope; anything else is rejected.
+CONVERSATION_OPTIONAL_FIELDS = frozenset({"intentHint", "displayedResult"})
+CONVERSATION_REQUIRED_FIELDS = frozenset({"message", "planningRequest", "history", "searchContext"})
+
+
 class ConversationRouting(StrEnum):
     SINGLE_LLM_V1 = "SINGLE_LLM_V1"
     LILI_ROUTER_V1 = "LILI_ROUTER_V1"

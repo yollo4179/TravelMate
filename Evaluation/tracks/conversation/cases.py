@@ -8,6 +8,7 @@ from typing import Any
 import uuid
 
 from common.dataset.io import canonical_digest, read_json
+from common.experiments.contracts import CONVERSATION_OPTIONAL_FIELDS, CONVERSATION_REQUIRED_FIELDS
 from common.paths import DEFAULT_DATASET
 from tracks.search.api_contract import search_body, RankingMode
 from tracks.search.collect_live import selected_v14_inputs
@@ -16,7 +17,6 @@ from tracks.search.collect_live import selected_v14_inputs
 DEFAULT_SUITE = DEFAULT_DATASET.parent / "conversation-smoke-v1/cases.json"
 LILI_SUITE = DEFAULT_DATASET.parent / "conversation-smoke-v2/cases.json"
 MAX_DISPLAYED_PLACES = 20
-OPTIONAL_REQUEST_FIELDS = {"intentHint", "displayedResult"}
 
 
 class SuiteVersion(StrEnum):
@@ -89,7 +89,7 @@ def load_cases(path: Path, selected: tuple[str, ...], bindings: dict[str, str]) 
             case.update(input={"query": request["message"], "conditions": conditions},
                         input_sha256=canonical_digest({"api_request": request}))
         request = case["api_request"]
-        if (set(request) - OPTIONAL_REQUEST_FIELDS) != {"message", "planningRequest", "history", "searchContext"}:
+        if (set(request) - CONVERSATION_OPTIONAL_FIELDS) != CONVERSATION_REQUIRED_FIELDS:
             raise ValueError("The suite must use the current native conversation request envelope")
         validate_exclusion(request.get("displayedResult"), expected.get("exclusion"))
         if "plan_outcome" in expected:

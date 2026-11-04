@@ -14,8 +14,8 @@ from typing import Any
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from common.execution.control import RunMode
-from common.experiments.contracts import ConversationRouting
-from common.experiments.modules import conversation_checks
+from common.experiments.contracts import ConversationRouting, ModuleInput
+from common.experiments.modules import ConversationApiModule, conversation_checks
 from tracks.conversation.cases import LILI_SUITE, load_cases
 from tracks.conversation.job_follow import FollowedJobKind, follow_job, select_follower
 from tracks.conversation.score import score_case
@@ -256,6 +256,13 @@ class LiliScoreTests(unittest.TestCase):
         scored = self.score(self.plan_trace({"status": "SUCCEEDED", "planId": 77}, draft))
         self.assertEqual([], [name for name, value in scored["checks"].items() if value is False])
         self.assertEqual({"plan_accepted": True, "plan_draft_completed": True}, scored["stage_results"])
+
+    def test_the_displayed_list_reaches_the_server_unchanged(self) -> None:
+        case = self.cases[EXCLUDE_SHOWN]
+        supplied = ModuleInput(case=case, input_sha256=case["input_sha256"], conversation_id="c", turn_key="t")
+        body = json.loads(ConversationApiModule().request(supplied, None, "http://server")["raw_body"])
+        self.assertEqual(case["api_request"]["displayedResult"], body["displayedResult"])
+        self.assertEqual(EXCLUDED_PLACE, body["displayedResult"]["placeIds"][0])
 
     def test_queued_search_turn_meets_the_lili_completion_contract_only(self) -> None:
         trace = self.search_trace()

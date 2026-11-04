@@ -8,6 +8,8 @@ from typing import Any
 
 from common.execution.control import AttemptStatus, Operation, RunMode
 from common.experiments.contracts import (
+    CONVERSATION_OPTIONAL_FIELDS,
+    CONVERSATION_REQUIRED_FIELDS,
     ConversationRouting,
     ModuleConfig,
     ModuleContext,
@@ -62,7 +64,7 @@ class ConversationApiModule:
                 "searchContext": {name: filters[name] for name in ("region", "city", "category", "excludePlaceIds", "area")}}
         if "api_request" in supplied.case:
             body = copy.deepcopy(supplied.case["api_request"])
-            if (set(body) - {"intentHint"}) != {"message", "planningRequest", "history", "searchContext"} or body["message"] != query:
+            if (set(body) - CONVERSATION_OPTIONAL_FIELDS) != CONVERSATION_REQUIRED_FIELDS or body["message"] != query:
                 raise ValueError("Explicit conversation inputs must preserve the original message and native envelope")
         request = http_request("/api/v1/conversation/turns", body, server_url)
         request["headers"] = {"Idempotency-Key": supplied.turn_key, "X-Conversation-Id": supplied.conversation_id,
