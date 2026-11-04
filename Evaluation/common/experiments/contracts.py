@@ -5,7 +5,7 @@ from dataclasses import dataclass
 from enum import StrEnum
 from pathlib import Path
 import re
-from typing import Any, Protocol
+from typing import Any, Protocol, TypeVar
 from urllib.parse import urlsplit
 
 from common.dataset.io import canonical_digest, digest, read_json
@@ -114,6 +114,33 @@ class ModuleInput:
     input_sha256: str
     conversation_id: str
     turn_key: str
+
+
+class ConversationRouting(StrEnum):
+    SINGLE_LLM_V1 = "SINGLE_LLM_V1"
+    LILI_ROUTER_V1 = "LILI_ROUTER_V1"
+
+    @classmethod
+    def of(cls, server_contract: dict[str, Any]) -> ConversationRouting:
+        # Contracts recorded before routing was selectable all came from the single-LLM loop.
+        return cls(server_contract.get("routing") or cls.SINGLE_LLM_V1)
+
+
+class RoutingStrategy(Protocol):
+    def supports(self, routing: ConversationRouting) -> bool: ...
+
+
+RoutingStrategyType = TypeVar("RoutingStrategyType", bound=RoutingStrategy)
+
+
+def select_for_routing(
+    strategies: tuple[RoutingStrategyType, ...],
+    routing: ConversationRouting,
+) -> RoutingStrategyType:
+    matching = [strategy for strategy in strategies if strategy.supports(routing)]
+    if len(matching) != 1:
+        raise ValueError(f"Exactly one implementation must support {routing}; found {len(matching)}")
+    return matching[0]
 
 
 @dataclass(kw_only=True)

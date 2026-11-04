@@ -11,6 +11,8 @@ from typing import Any
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
+from common.experiments.contracts import ConversationRouting
+from common.experiments.modules import conversation_checks
 from tracks.conversation.cases import DEFAULT_SUITE, load_cases
 from tracks.conversation.score import score_case
 
@@ -163,6 +165,15 @@ class LiliScoreTests(unittest.TestCase):
         tool_event = next(event for event in trace.events if event["event"] == "TOOL_RESULT")
         tool_event["payload"] = {**copy.deepcopy(tool_event["payload"]), "initiator": "MODEL"}
         self.assertFalse(self.score(trace)["checks"]["tools_run_by_server"])
+
+    def test_queued_search_turn_meets_the_lili_completion_contract_only(self) -> None:
+        trace = self.search_trace()
+        expected = trace.case["expected"]
+        lili = conversation_checks(trace.native, None, expected, ConversationRouting.LILI_ROUTER_V1)
+        self.assertTrue(all(lili.values()))
+        self.assertFalse(all(conversation_checks(trace.native, None, expected).values()))
+        silent = {**trace.native, "dialogue": []}
+        self.assertFalse(conversation_checks(silent, None, expected, ConversationRouting.LILI_ROUTER_V1)["dialogue_present"])
 
 
 if __name__ == "__main__":

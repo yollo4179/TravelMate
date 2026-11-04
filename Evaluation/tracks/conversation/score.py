@@ -5,10 +5,11 @@ import json
 import argparse
 import hashlib
 import re
+from dataclasses import dataclass
 from functools import cache
 from pathlib import Path
 import sys
-from typing import Any
+from typing import Any, Callable
 from jsonschema import Draft202012Validator
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
@@ -16,6 +17,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 from tracks.conversation.lili_score import score_lili_case
 from tracks.conversation.plan_checks import draft_checks
 from common.dataset.io import canonical_digest, digest, read_json, read_jsonl
+from common.experiments.contracts import ConversationRouting, select_for_routing
 from common.paths import EVALUATION_ROOT
 
 # Same resource the Spring pre-retrieval reads; the check fails if the server uses a different template.
@@ -90,10 +92,21 @@ def score_case(case: dict[str, Any], record: dict[str, Any], events: list[dict[s
     except (ValueError, KeyError, TypeError) as exception:
         trace_error = str(exception)
         checks["trace_binding"] = None if not events else False
-    if contract.get("routing") == "LILI_ROUTER_V1":
-        # LiLi decides before any evidence and the server runs her tool, so the single-LLM rules below do not apply.
-        return score_lili_case(case, record, selected, contract, checks, trace_error)
+    # LiLi decides before any evidence and the server runs her tool, so each routing has its own trace rules.
+    scorer = select_for_routing(CASE_SCORERS, ConversationRouting.of(contract))
+    return scorer.score(case, record, selected, contract, checks, trace_error)
 
+
+def score_single_llm_case(
+    case: dict[str, Any],
+    record: dict[str, Any],
+    selected: list[dict[str, Any]],
+    contract: dict[str, Any],
+    checks: dict[str, bool | None],
+    trace_error: str | None,
+) -> dict[str, Any]:
+    expected = case["expected"]
+    native = record.get("native_response") if isinstance(record.get("native_response"), dict) else {}
     preparations = [event["payload"] for event in selected if event["event"] == "EVIDENCE_PREPARATION"]
     turns = [event["payload"] for event in selected if event["event"] == "MODEL_TURN"]
     tool_events = [event["payload"] for event in selected if event["event"] == "TOOL_RESULT"]
@@ -220,6 +233,21 @@ def score_case(case: dict[str, Any], record: dict[str, Any], events: list[dict[s
             "observed_usage": timing.get("receipt", {}).get("usage") if live else None,
             "quality_status": "mock_regression_only" if record.get("execution_mode") == "MOCK" else "semantic_review_required",
             "record_sha256": canonical_digest(record), "events_sha256": canonical_digest(selected)}
+
+
+@dataclass(frozen=True)
+class RoutingCaseScorer:
+    routing: ConversationRouting
+    score: Callable[..., dict[str, Any]]
+
+    def supports(self, routing: ConversationRouting) -> bool:
+        return routing == self.routing
+
+
+CASE_SCORERS = (
+    RoutingCaseScorer(ConversationRouting.SINGLE_LLM_V1, score_single_llm_case),
+    RoutingCaseScorer(ConversationRouting.LILI_ROUTER_V1, score_lili_case),
+)
 
 
 def main() -> None:

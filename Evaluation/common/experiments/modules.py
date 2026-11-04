@@ -7,7 +7,15 @@ import copy
 from typing import Any
 
 from common.execution.control import AttemptStatus, Operation, RunMode
-from common.experiments.contracts import ModuleConfig, ModuleContext, ModuleInput, ModuleKind, ModuleRegistry
+from common.experiments.contracts import (
+    ConversationRouting,
+    ModuleConfig,
+    ModuleContext,
+    ModuleInput,
+    ModuleKind,
+    ModuleRegistry,
+    select_for_routing,
+)
 from tracks.search.api_contract import search_body, search_filters, unsupported_conditions
 from tracks.search.collect_live import request_search
 
@@ -83,7 +91,12 @@ class ConversationApiModule:
             record["http_response"] = response
             native = json.loads(response["raw_body"])
             record["native_response"] = native
-            checks = conversation_checks(native, config, supplied.case.get("expected"))
+            checks = conversation_checks(
+                native,
+                config,
+                supplied.case.get("expected"),
+                ConversationRouting.of(context.runtime or {}),
+            )
             record["contract_checks"] = checks
             if response["status_code"] != 200 or not all(checks.values()):
                 raise ValueError("Conversation HTTP response did not meet the explicit completion contract")
@@ -100,11 +113,12 @@ class ConversationApiModule:
         return record
 
 
-def conversation_checks(native: Any, config: ModuleConfig, expected: dict[str, Any] | None = None) -> dict[str, bool]:
-    if not isinstance(native, dict):
-        return {"response_object": False}
-    citations = native.get("citations")
-    if expected is not None:
+class SingleLlmCompletion:
+    def supports(self, routing: ConversationRouting) -> bool:
+        return routing == ConversationRouting.SINGLE_LLM_V1
+
+    def checks(self, native: dict[str, Any], expected: dict[str, Any]) -> dict[str, bool]:
+        citations = native.get("citations")
         tools = native.get("toolResults")
         return {
             "completed": native.get("termination") == "COMPLETED",
@@ -116,6 +130,38 @@ def conversation_checks(native: Any, config: ModuleConfig, expected: dict[str, A
             "citations": isinstance(citations, list) and (bool(citations) if expected["citations"] == "REQUIRED"
                                                          else not citations if expected["citations"] == "FORBIDDEN" else True),
         }
+
+
+class LiliCompletion:
+    """LiLi answers the turn with her line at once; branch, tool and job results are scored afterwards."""
+
+    def supports(self, routing: ConversationRouting) -> bool:
+        return routing == ConversationRouting.LILI_ROUTER_V1
+
+    def checks(self, native: dict[str, Any], expected: dict[str, Any]) -> dict[str, bool]:
+        dialogue = native.get("dialogue")
+        return {
+            "completed": native.get("termination") == "COMPLETED",
+            "message_present": isinstance(native.get("message"), str) and bool(native["message"].strip()),
+            "message_source": native.get("messageSource") == "LLM",
+            "dialogue_present": isinstance(dialogue, list) and bool(dialogue),
+        }
+
+
+COMPLETION_CONTRACTS = (SingleLlmCompletion(), LiliCompletion())
+
+
+def conversation_checks(
+    native: Any,
+    config: ModuleConfig,
+    expected: dict[str, Any] | None = None,
+    routing: ConversationRouting = ConversationRouting.SINGLE_LLM_V1,
+) -> dict[str, bool]:
+    if not isinstance(native, dict):
+        return {"response_object": False}
+    citations = native.get("citations")
+    if expected is not None:
+        return select_for_routing(COMPLETION_CONTRACTS, routing).checks(native, expected)
     return {
         "completed": native.get("termination") == "COMPLETED",
         "llm_message": native.get("messageSource") == "LLM" and isinstance(native.get("message"), str) and bool(native["message"].strip()),
