@@ -33,7 +33,7 @@ class DraftPlanValidationTest {
 
     private enum Outcome {
         ACCEPT(null),
-        STAY("방문 체류시간이 여행 가능 시간을 초과합니다."),
+        STAY("방문 체류시간과 이동 여유를 합하면 여행 가능 시간을 초과합니다."),
         CAFE("선택한 범위에서 필수 카페 조건을 충족하지 못했습니다."),
         AREA("필수 장소가 선택한 여행 범위를 벗어납니다."),
         HOURS("현재 장소의 운영시간을 검증할 수 없습니다. 미확인 장소 포함을 선택하면 확인이 필요한 초안으로 저장할 수 있습니다.");
@@ -43,13 +43,14 @@ class DraftPlanValidationTest {
         Outcome(String reason) { this.reason = reason; }
     }
 
+    // Stay limits include one 15-minute walking leg per stop (the fixture has an origin and no destination).
     @ParameterizedTest(name = "{0}")
     @CsvSource({
             "unknown_hours_allowed,1,60,420,카페,,35.8395,1,ALLOW_WITH_WARNING,ACCEPT",
-            "stay_at_limit,1,60,60,카페,,35.8395,1,ALLOW_WITH_WARNING,ACCEPT",
-            "stay_over_limit,1,61,60,카페,,35.8395,1,ALLOW_WITH_WARNING,STAY",
-            "stay_sum_at_limit,2,60,120,카페,,35.8395,2,ALLOW_WITH_WARNING,ACCEPT",
-            "stay_sum_over_limit,2,60,119,카페,,35.8395,2,ALLOW_WITH_WARNING,STAY",
+            "stay_at_limit,1,60,75,카페,,35.8395,1,ALLOW_WITH_WARNING,ACCEPT",
+            "stay_over_limit,1,61,75,카페,,35.8395,1,ALLOW_WITH_WARNING,STAY",
+            "stay_sum_at_limit,2,60,150,카페,,35.8395,2,ALLOW_WITH_WARNING,ACCEPT",
+            "stay_sum_over_limit,2,60,149,카페,,35.8395,2,ALLOW_WITH_WARNING,STAY",
             "missing_cafe,1,60,420,공원,,35.8395,1,ALLOW_WITH_WARNING,CAFE",
             "source_category_cafe,1,60,420,시설,카페,35.8395,1,ALLOW_WITH_WARNING,ACCEPT",
             "cafe_minimum_two,1,60,420,카페,,35.8395,2,ALLOW_WITH_WARNING,CAFE",
@@ -149,7 +150,8 @@ class DraftPlanValidationTest {
     }
 
     @ParameterizedTest
-    @CsvSource({"RELAXED,100,false", "RELAXED,120,true", "NORMAL,100,true"})
+    // 60 required + 60 relaxed or 40 normal default stay + two walking legs.
+    @CsvSource({"RELAXED,149,false", "RELAXED,150,true", "NORMAL,130,true"})
     void extraSelectedPlacesUseTheSameStayDefaultsAsPersistence(
             String pace,
             int availableMinutes,

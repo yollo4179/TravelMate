@@ -10,7 +10,7 @@ import com.yollo.TravelMate.domain.plan.validator.PlanStayBudget;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
-/** The plan prompt asks for exactly as many stops as the validator's stay-time rule accepts. */
+/** The plan prompt asks for exactly as many stops as the validator's stay-and-walk rule accepts. */
 class PlanStayBudgetTest {
     // The live CONV-PLAN-create conditions: two hours, a relaxed pace, 창경궁 required for 60 minutes.
     private static final String TWO_HOUR_REQUEST = """
@@ -24,21 +24,40 @@ class PlanStayBudgetTest {
             """;
     private final ObjectMapper mapper = JsonMapper.builder().addModule(new JavaTimeModule()).build();
 
+    // r3 and var4 drafts: 창경궁 60 min + another 60 min filled all 120 minutes and left no time to walk between them.
     @Test
-    void twoHoursWithAnHourAlreadyRequiredLeavesRoomForOneMoreRelaxedStop() throws Exception {
+    void twoHoursWithAnHourAlreadyRequiredLeaveNoRoomForASecondStopOnceWalkingIsCounted() throws Exception {
         var request = mapper.readValue(TWO_HOUR_REQUEST, GeneratePlanRequest.class);
-        assertEquals(2, PlanStayBudget.maxStops(request));
-        assertTrue(PlanStayBudget.totalStayMinutes(List.of(378L, 380L), request) <= PlanStayBudget.availableMinutes(request));
-        assertTrue(PlanStayBudget.totalStayMinutes(List.of(378L, 380L, 379L), request) > PlanStayBudget.availableMinutes(request),
-                "one stop past the budget is exactly what the validator rejects");
+        assertEquals(1, PlanStayBudget.maxStops(request));
+        assertEquals(60 + PlanStayBudget.WALKING_LEG_MINUTES, PlanStayBudget.requiredMinutes(List.of(378L), request));
+        assertTrue(PlanStayBudget.requiredMinutes(List.of(378L, 380L), request) > PlanStayBudget.availableMinutes(request),
+                "the live two-stop draft is exactly what the validator now rejects");
     }
 
     @Test
-    void thePromptStatesTheBudgetInsteadOfAFixedSixStops() throws Exception {
+    void threeHoursFitTwoRelaxedStopsWithTheirWalks() throws Exception {
+        var request = mapper.readValue(TWO_HOUR_REQUEST.replace("12:00:00", "13:00:00"), GeneratePlanRequest.class);
+        assertEquals(2, PlanStayBudget.maxStops(request));
+    }
+
+    @Test
+    void aDestinationAddsTheLastLeg() throws Exception {
+        String toDestination = TWO_HOUR_REQUEST.replace("12:00:00", "12:30:00").replace("\"destination\":null",
+                "\"destination\":{\"coordinate\":{\"lat\":37.57,\"lon\":126.98},\"label\":\"도착\",\"source\":\"SELECTED_POINT\"}");
+        var request = mapper.readValue(toDestination, GeneratePlanRequest.class);
+        assertEquals(2, PlanStayBudget.legs(1, request));
+        assertEquals(1, PlanStayBudget.maxStops(request), "two stops would need 60 + 60 + three 15-minute legs in 150 minutes");
+    }
+
+    @Test
+    void thePromptStatesTheBudgetAndThatTheWalkIsNotMeasured() throws Exception {
         var request = mapper.readValue(TWO_HOUR_REQUEST, GeneratePlanRequest.class);
         String prompt = new ContextPlanPromptFactory(mapper).prepare(request, List.of(), List.of()).userPrompt();
-        assertTrue(prompt.contains("최대 2개 장소"), prompt);
+        assertTrue(prompt.contains("최대 1개 장소"), prompt);
         assertTrue(prompt.contains("120분"));
+        assertTrue(prompt.contains("구간마다 " + PlanStayBudget.WALKING_LEG_MINUTES + "분"));
+        assertTrue(prompt.contains("실제 경로로 확인한 값이 아니다"));
+        assertTrue(prompt.contains("빡빡하지 않다"), "the draft may not call an unchecked schedule relaxed");
         assertFalse(prompt.contains("최대 6개 장소"));
     }
 

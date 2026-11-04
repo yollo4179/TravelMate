@@ -68,9 +68,9 @@ public final class DraftPlanValidator {
     }
 
     private static void validateStayMinutes(Set<Long> selectedIds, GeneratePlanRequest request) {
-        // 체류시간만으로도 불가능한 초안을 막는다. 남은 시간이 실제 이동에 충분하다는 판정은 아니다.
-        if (PlanStayBudget.totalStayMinutes(selectedIds, request) > PlanStayBudget.availableMinutes(request)) {
-            throw invalid("방문 체류시간이 여행 가능 시간을 초과합니다.");
+        // 체류시간과 구간별 도보 여유분으로 불가능한 초안을 막는다. 여유분은 측정한 경로가 아니므로 실제 이동이 맞는다는 판정은 아니다.
+        if (PlanStayBudget.requiredMinutes(selectedIds, request) > PlanStayBudget.availableMinutes(request)) {
+            throw invalid("방문 체류시간과 이동 여유를 합하면 여행 가능 시간을 초과합니다.");
         }
     }
 
