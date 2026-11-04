@@ -89,7 +89,8 @@ def main() -> None:
         return
     server = EVALUATION_ROOT.parent / "Server/TravelMate"
     # The repository tracks gradlew as 100644; Unix launch must not rely on chmod outside Git.
-    wrapper = ["gradlew.bat"] if os.name == "nt" else ["bash", "./gradlew"]
+    # Windows CreateProcess does not search cwd for the executable, so the batch wrapper needs its full path.
+    wrapper = [str(server / "gradlew.bat")] if os.name == "nt" else ["bash", "./gradlew"]
     environment = isolated_environment(environment)
     subprocess.run([*wrapper, "bootRun", "--args=--spring.profiles.active=evaluation"], cwd=server, env=environment, check=True)
 

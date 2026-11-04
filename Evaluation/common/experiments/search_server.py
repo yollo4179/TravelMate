@@ -17,9 +17,9 @@ def search_environment(environment: dict[str, str]) -> tuple[dict[str, str], int
     if any(not environment.get(key) for key in required):
         raise ValueError("Set an evaluation-only DATABASE_URL and explicit model devices")
     database = urlsplit(environment["EVAL_EMBEDDING_DATABASE_URL"])
-    spring_database = urlsplit(environment["EVAL_DB_URL"][5:])
-    if database.scheme not in {"postgresql", "postgres"} or (database.hostname, database.port or 5432, database.path) != (spring_database.hostname, spring_database.port or 5432, spring_database.path):
-        raise ValueError("Evaluation Spring and search must target the same dedicated database")
+    # Operation keeps Spring and search in separate databases, so evaluation mirrors that with its own search DB.
+    if database.scheme not in {"postgresql", "postgres"} or not database.path.endswith("_evaluation"):
+        raise ValueError("Use a dedicated PostgreSQL search database name ending in _evaluation")
     endpoint = urlsplit(environment["EVAL_EMBEDDING_SERVER_URL"])
     if endpoint.hostname not in {"127.0.0.1", "localhost"} or endpoint.scheme != "http" or not endpoint.port:
         raise ValueError("Launch the evaluation search process on an explicit loopback port")
