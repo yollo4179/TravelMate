@@ -8,5 +8,7 @@ Evaluation/runs/contextual/openai-strict-search-two-case-v1/** -text -whitespace
 Server/TravelMate/src/main/** text eol=lf
 embedding-server/app/**/*.py text eol=lf
 embedding-server/app/**/*.sql text eol=lf
+# Docker init copies of the search schema are compared byte-for-byte with embedding-server/app SQL.
+Docker/search-init/*.sql text eol=lf
 embedding-server/routers/*.py text eol=lf
 Evaluation/runs/conversation-smoke/** -text -whitespace
