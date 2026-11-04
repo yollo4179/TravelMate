@@ -85,6 +85,10 @@ public class LlmCallGuard {
                 event.put("countDurationMs", countDuration).put("inferenceDurationMs", inferenceDuration);
                 event.set("count", mapper.valueToTree(count));
                 event.set("receipt", mapper.valueToTree(observed));
+                // A local bound is only an argument until the provider reports usage; this keeps every call's check.
+                if (count != null && observed.usage().inputTokens() != null) {
+                    event.put("countCoversUsage", observed.usage().inputTokens() <= count.inputTokens());
+                }
                 ObservationContext.record(ObservationContext.Event.MODEL_CALL, event);
             }
         }

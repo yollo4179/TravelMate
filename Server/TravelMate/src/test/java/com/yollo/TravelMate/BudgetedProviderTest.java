@@ -64,6 +64,78 @@ class BudgetedProviderTest {
         server.verify();
     }
 
+    // The provider's count request cost about 0.5 s of every first LiLi line, 19.7 s once.
+    @Test
+    void aRequestThatFitsTheWindowByByteLengthIsBoundedWithoutTheCountRequest() {
+        var builder = RestClient.builder().baseUrl("https://mock.invalid/v1");
+        var server = MockRestServiceServer.bindTo(builder).build();
+        List<JsonNode> events = new ArrayList<>();
+        var client = new OpenAiLlmClient(builder.build(), "test-key", limits(10_000, 100),
+                new LlmCallGuard(mapper, mock(ExecutionRecorder.class))).inputCountPolicy(InputCountPolicy.LOCAL_BOUND_FIRST);
+        server.expect(requestTo("https://mock.invalid/v1/responses"))
+                .andRespond(withSuccess("""
+                        {"status":"completed","id":"response-mock","usage":{"input_tokens":40,"output_tokens":5},
+                         "output":[{"type":"message","content":[{"type":"output_text","text":"응"}]}]}
+                        """, MediaType.APPLICATION_JSON));
+        try (var scope = ObservationContext.open(TokenBudgetGuardTest.context(events))) {
+            assertEquals("응", client.chat(List.of(LlmMessage.text(LlmMessage.Role.USER, "창경궁 찾아줘")), List.of()).content());
+        }
+        JsonNode finished = events.get(events.size() - 1).get("payload");
+        assertEquals("CONSERVATIVE_BOUND", finished.path("count").path("quality").asText());
+        assertEquals("UTF8_BYTE_BOUND", finished.path("count").path("method").asText());
+        assertTrue(finished.path("count").path("inputTokens").longValue() >= 40);
+        assertTrue(finished.path("countCoversUsage").booleanValue(), "the provider's usage is still checked against the bound");
+        server.verify();
+    }
+
+    @Test
+    void aRequestTooLargeForTheByteBoundStillAsksTheProvider() {
+        var builder = RestClient.builder().baseUrl("https://mock.invalid/v1");
+        var server = MockRestServiceServer.bindTo(builder).build();
+        List<JsonNode> events = new ArrayList<>();
+        var client = new OpenAiLlmClient(builder.build(), "test-key", limits(1_000, 100),
+                new LlmCallGuard(mapper, mock(ExecutionRecorder.class))).inputCountPolicy(InputCountPolicy.LOCAL_BOUND_FIRST);
+        String evidence = "창경궁은 창덕궁과 경계 없이 동궐이라는 하나의 궁궐 영역이었다. ".repeat(20);
+        assertTrue(evidence.getBytes(StandardCharsets.UTF_8).length > 900);
+        server.expect(requestTo("https://mock.invalid/v1/responses/input_tokens"))
+                .andRespond(withSuccess("{\"object\":\"response.input_tokens\",\"input_tokens\":500}", MediaType.APPLICATION_JSON));
+        server.expect(requestTo("https://mock.invalid/v1/responses"))
+                .andRespond(withSuccess("""
+                        {"status":"completed","id":"response-mock","usage":{"input_tokens":500,"output_tokens":5},
+                         "output":[{"type":"message","content":[{"type":"output_text","text":"응"}]}]}
+                        """, MediaType.APPLICATION_JSON));
+        try (var scope = ObservationContext.open(TokenBudgetGuardTest.context(events))) {
+            client.chat(List.of(LlmMessage.text(LlmMessage.Role.USER, evidence)), List.of());
+        }
+        assertEquals("CONFIRMED_API", events.get(events.size() - 1).get("payload").path("count").path("quality").asText());
+        server.verify();
+    }
+
+    @Test
+    void theDefaultPolicyKeepsTheProviderCountOnEveryCall() {
+        var builder = RestClient.builder().baseUrl("https://mock.invalid/v1");
+        var server = MockRestServiceServer.bindTo(builder).build();
+        var client = new OpenAiLlmClient(builder.build(), "test-key", limits(10_000, 100),
+                new LlmCallGuard(mapper, mock(ExecutionRecorder.class)));
+        server.expect(requestTo("https://mock.invalid/v1/responses/input_tokens"))
+                .andRespond(withSuccess("{\"object\":\"response.input_tokens\",\"input_tokens\":12}", MediaType.APPLICATION_JSON));
+        server.expect(requestTo("https://mock.invalid/v1/responses"))
+                .andRespond(withSuccess("""
+                        {"status":"completed","id":"response-mock","usage":{"input_tokens":12,"output_tokens":5},
+                         "output":[{"type":"message","content":[{"type":"output_text","text":"응"}]}]}
+                        """, MediaType.APPLICATION_JSON));
+        try (var scope = ObservationContext.open(TokenBudgetGuardTest.context(new ArrayList<>()))) {
+            client.chat(List.of(LlmMessage.text(LlmMessage.Role.USER, "창경궁 찾아줘")), List.of());
+        }
+        server.verify();
+    }
+
+    private static TokenBudget.Limits limits(long contextTokens, long outputReservation) {
+        return TokenBudget.Limits.builder().provider(LlmProvider.OPENAI).model("gpt-mock")
+                .contextTokens(contextTokens).outputReservation(outputReservation).modelOutputLimit(outputReservation)
+                .limitsModel("gpt-mock").limitsSource("MOCK model limits").build();
+    }
+
     @Test
     void openAiContextOverflowNeverReachesResponsesEndpoint() {
         var builder = RestClient.builder().baseUrl("https://mock.invalid/v1");

@@ -30,6 +30,7 @@ public class OpenAiLlmClient implements LlmStrategy {
     private final ConversationResponseFormat responseFormat;
     private BatchBudgetRequirement budgetRequirement;
     private ReasoningMode reasoningMode = ReasoningMode.DISABLED;
+    private InputCountPolicy inputCountPolicy = InputCountPolicy.PROVIDER_ALWAYS;
 
     @Autowired
     public OpenAiLlmClient(
@@ -45,6 +46,7 @@ public class OpenAiLlmClient implements LlmStrategy {
             @Value("${openai.conversation-response-format:PROMPT_ONLY}") ConversationResponseFormat responseFormat,
             @Value("${openai.reasoning-mode:DISABLED}") ReasoningMode reasoningMode,
             @Value("${openai.evaluation-budget-requirement:OPTIONAL}") BatchBudgetRequirement budgetRequirement,
+            @Value("${openai.input-count-policy:PROVIDER_ALWAYS}") InputCountPolicy inputCountPolicy,
             OpenAiBatchBudget batchBudget,
             LlmCallGuard guard
     ) {
@@ -53,6 +55,13 @@ public class OpenAiLlmClient implements LlmStrategy {
                 .modelOutputLimit(modelOutputLimit).limitsModel(limitsModel).limitsSource(limitsSource).build(), guard, toolContractMode, batchBudget, responseFormat);
         this.reasoningMode = java.util.Objects.requireNonNull(reasoningMode);
         this.budgetRequirement = java.util.Objects.requireNonNull(budgetRequirement);
+        this.inputCountPolicy = java.util.Objects.requireNonNull(inputCountPolicy);
+    }
+
+    /** Selects how inputs are bounded before dispatch; the default keeps the provider count on every call. */
+    public OpenAiLlmClient inputCountPolicy(InputCountPolicy policy) {
+        this.inputCountPolicy = java.util.Objects.requireNonNull(policy);
+        return this;
     }
 
     public OpenAiLlmClient(
@@ -220,11 +229,15 @@ public class OpenAiLlmClient implements LlmStrategy {
     }
 
     private TokenBudget.Count countInput(JsonNode wireRequest) {
-        if (apiKey.isBlank()) throw new IllegalStateException("OpenAI API 키 설정이 필요합니다.");
         var countRequest = JSON.createObjectNode();
         for (String name : List.of("model", "input", "tools", "text", "parallel_tool_calls")) {
             if (wireRequest.has(name)) countRequest.set(name, wireRequest.get(name));
         }
+        return InputCountMethod.count(inputCountPolicy, countRequest, limits, () -> providerCount(countRequest));
+    }
+
+    private TokenBudget.Count providerCount(JsonNode countRequest) {
+        if (apiKey.isBlank()) throw new IllegalStateException("OpenAI API 키 설정이 필요합니다.");
         JsonNode count = restClient.post().uri("/responses/input_tokens")
                 .header("Authorization", "Bearer " + apiKey).body(countRequest).retrieve().body(JsonNode.class);
         Long tokens = count == null ? null : TokenBudget.reported(count, "input_tokens");

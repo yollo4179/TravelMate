@@ -60,6 +60,7 @@ public class EvaluationConversationContractController {
         result.put("search_endpoint", environment.getProperty("embedding.server.url", "http://127.0.0.1:18000"));
         result.put("source_sha256", com.yollo.TravelMate.domain.conversation.pipeline.RuntimeBuildIdentity.sourceSha256());
         result.put("reasoning_mode", environment.getProperty("openai.reasoning-mode", "DISABLED"));
+        result.put("input_count_policy", environment.getProperty("openai.input-count-policy", "PROVIDER_ALWAYS"));
         result.put("evaluation_budget_requirement", environment.getProperty("openai.evaluation-budget-requirement", "REQUIRED"));
         result.put("tool_contract_mode", environment.getProperty("openai.tool-contract-mode", "STRICT_TOOLS_V1"));
         result.put("observation_file", java.nio.file.Path.of(environment.getProperty(
