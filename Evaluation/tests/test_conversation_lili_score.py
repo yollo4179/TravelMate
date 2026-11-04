@@ -265,6 +265,16 @@ class LiliScoreTests(unittest.TestCase):
         self.assertEqual([], [name for name, value in scored["checks"].items() if value is False])
         self.assertEqual({"plan_accepted": True, "plan_draft_completed": True}, scored["stage_results"])
 
+    def test_a_field_name_in_the_shown_plan_description_fails(self) -> None:
+        context = self.cases[PLAN_CASE]["api_request"]["planningRequest"]["context"]
+        pin = {"placeId": 378, "sequence": 1, "stayMinutes": 60, "latitude": context["area"]["center"]["lat"],
+               "longitude": context["area"]["center"]["lon"], "explanation": "왕실 생활공간 둘러보기"}
+        draft = {"planId": 77, "pins": [pin], "dialogue": TWO_CUTS,
+                 "description": "requiredStops를 정확히 한 번 포함하도록 구성했어."}
+        scored = self.score(self.plan_trace({"status": "SUCCEEDED", "planId": 77}, draft))
+        self.assertFalse(scored["checks"]["no_internal_terms"])
+        self.assertIn("requiredStops", scored["internal_terms_found"])
+
     # Codex r3 review: the CSV carried only LiLi's first line, so a reviewer missed the final explanation and plan.
     def test_review_export_carries_the_final_answer_the_draft_and_what_the_model_was_given(self) -> None:
         import csv

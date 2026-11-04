@@ -14,6 +14,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 final class LiliEvidenceView {
     static final String CANDIDATES = "candidates";
     static final String CARD_ONLY_COUNT = "cardOnlyCandidateCount";
+    static final String SHOWN_CARD_COUNT = "shownCardCount";
     private static final String SELECTED_EVIDENCE = "selectedEvidence";
 
     private LiliEvidenceView() {}
@@ -27,6 +28,8 @@ final class LiliEvidenceView {
         ArrayNode kept = view.arrayNode().addAll(citable);
         view.set(CANDIDATES, kept);
         view.put(CARD_ONLY_COUNT, candidates.size() - citable.size());
+        // With only an empty candidate list she said the search found nothing while ten cards were on screen.
+        view.put(SHOWN_CARD_COUNT, candidates.size());
         return view;
     }
 

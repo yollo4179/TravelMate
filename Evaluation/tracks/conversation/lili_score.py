@@ -27,6 +27,8 @@ ROUTER_LINE_CRITERION = {
 # What a user must never hear from LiLi: server codes (JOB_ID_NOT_FOUND, COUNT_UNAVAILABLE) and pipeline vocabulary.
 # Lookarounds, not \b: Hangul counts as a word character, so "JOB_ID_NOT_FOUND라고" would slip past \b.
 INTERNAL_CODE = re.compile(r"(?<![A-Za-z0-9_])[A-Z]{2,}(?:_[A-Z]{2,})+(?![A-Za-z0-9_])")
+# Input field names such as requiredStops or selectedEvidence; a plan description said "requiredStops" to the user.
+INTERNAL_IDENTIFIER = re.compile(r"(?<![A-Za-z0-9_])[a-z]+(?:[A-Z][a-z0-9]*)+(?![A-Za-z0-9_])")
 INTERNAL_TERMS = ("토큰", "예산", "LLM", "API", "evidence", "셀렉트", "selectedEvidence", "서버",
                   "QUEUED", "RUNNING", "SUCCEEDED", "FAILED")
 PARENTHESIZED = re.compile(r"\([^)]*\)")
@@ -52,7 +54,7 @@ def _texts(dialogue: Any) -> list[str]:
 
 
 def internal_terms(texts: list[str]) -> list[str]:
-    found = [match for text in texts for match in INTERNAL_CODE.findall(text)]
+    found = [match for text in texts for pattern in (INTERNAL_CODE, INTERNAL_IDENTIFIER) for match in pattern.findall(text)]
     return found + [term for term in INTERNAL_TERMS if any(term in text for text in texts)]
 
 
@@ -256,7 +258,10 @@ def score_lili_case(case: dict[str, Any], record: dict[str, Any], selected: list
     if expected.get("plan_outcome") == DRAFT_COMPLETED:
         plan_check_values, plan_content = _plan_checks(case, followed, native, tool_events, cut_schema)
         checks.update(plan_check_values)
-    spoken = _texts(native.get("dialogue")) + _texts(job_result.get("dialogue")) + _texts(draft.get("dialogue"))
+    # The draft's title, description and pin explanations are shown to the user as they are, like LiLi's lines.
+    shown_plan = [draft.get("title") or "", draft.get("description") or ""] + [
+        pin.get("explanation") or "" for pin in draft.get("pins") or []]
+    spoken = _texts(native.get("dialogue")) + _texts(job_result.get("dialogue")) + _texts(draft.get("dialogue")) + shown_plan
     leaked = internal_terms(spoken)
     checks["no_internal_terms"] = not leaked
     model_calls = [item for item in _payloads(selected, "MODEL_CALL") if item.get("stage") == "FINISHED"]

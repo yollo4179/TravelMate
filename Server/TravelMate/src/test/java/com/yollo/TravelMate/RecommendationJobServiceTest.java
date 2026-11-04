@@ -79,6 +79,7 @@ class RecommendationJobServiceTest {
         assertFalse(sent.contains("낙선재"), "an uncitable candidate's name is not sent");
         assertFalse(sent.contains("대한제국 마지막 황실"), "nor its description");
         assertTrue(sent.contains("\"cardOnlyCandidateCount\":1"));
+        assertTrue(sent.contains("\"shownCardCount\":2"), "she knows the cards are on screen even when she can cite none");
     }
 
     private com.fasterxml.jackson.databind.JsonNode run(String recommendation) throws Exception {

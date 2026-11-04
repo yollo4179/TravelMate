@@ -58,6 +58,8 @@ class PlanStayBudgetTest {
         assertTrue(prompt.contains("구간마다 " + PlanStayBudget.WALKING_LEG_MINUTES + "분"));
         assertTrue(prompt.contains("실제 경로로 확인한 값이 아니다"));
         assertTrue(prompt.contains("빡빡하지 않다"), "the draft may not call an unchecked schedule relaxed");
+        assertTrue(prompt.contains("초안 수정 기능은 없다"), "fx drafts offered to polish the plan, which no endpoint does");
+        assertTrue(prompt.contains("입력 필드 이름을 쓰지 마라"), "an fx draft description said requiredStops to the user");
         assertFalse(prompt.contains("최대 6개 장소"));
     }
 
