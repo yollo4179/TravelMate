@@ -133,12 +133,11 @@ public class LiliTurns {
         JsonNode node = strict(content, LiliTurnContract.recommendationSchema());
         List<Citation> citations = new ArrayList<>();
         for (JsonNode item : node.get("citations")) {
-            var citation = new Citation(item.get("placeId").asLong(), item.get("evidenceId").asText(),
-                    item.get("sourceId").asText(), item.get("quote").asText());
-            // The same exact-membership rule as grounded answers: a quote must belong to the cited place's original.
-            PlanEvidenceCitationValidator.validate(citation.placeId(),
-                    new GeneratedPlan.SourceCitation(citation.evidenceId(), citation.sourceId(), citation.quote()), sources);
-            citations.add(citation);
+            long placeId = item.get("placeId").asLong();
+            // The same membership rule as grounded answers; the stored quote is the original's own span.
+            var verified = PlanEvidenceCitationValidator.validate(placeId, new GeneratedPlan.SourceCitation(
+                    item.get("evidenceId").asText(), item.get("sourceId").asText(), item.get("quote").asText()), sources);
+            citations.add(new Citation(placeId, verified.evidenceId(), verified.sourceId(), verified.quote()));
         }
         List<DialogueCut> dialogue = new ArrayList<>();
         node.get("dialogue").forEach(cut -> dialogue.add(new DialogueCut(cut.get("text").asText().strip(),

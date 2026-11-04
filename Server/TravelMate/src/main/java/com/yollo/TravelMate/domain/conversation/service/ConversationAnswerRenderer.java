@@ -5,6 +5,7 @@ import com.yollo.TravelMate.domain.conversation.data.CharacterEmotion;
 import com.yollo.TravelMate.domain.conversation.data.ConversationAnswerKind;
 import com.yollo.TravelMate.domain.conversation.data.ConversationIntent;
 import com.yollo.TravelMate.domain.conversation.data.DialogueCut;
+import com.yollo.TravelMate.domain.conversation.pipeline.LiliFixedLines;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
@@ -116,14 +117,30 @@ public class ConversationAnswerRenderer {
             }
         }
         var answer = mapper.treeToValue(parsed, Answer.class);
-        for (var citation : answer.citations()) {
-            PlanEvidenceCitationValidator.validate(
+        var verified = answer.citations().stream().map(citation -> {
+            var checked = PlanEvidenceCitationValidator.validate(
                     citation.placeId(),
                     new GeneratedPlan.SourceCitation(citation.evidenceId(), citation.sourceId(), citation.quote()),
                     sources
             );
-        }
-        return answer;
+            return new Citation(citation.placeId(), checked.evidenceId(), checked.sourceId(), checked.quote());
+        }).toList();
+        return new Answer(answer.message(), verified, answer.answerKind(), answer.emotion(), answer.intent());
+    }
+
+    /**
+     * The server fallback for LiLi paths. Status, data and the SERVER_FALLBACK source stay as they are, but the
+     * line is LiLi's fixed cut instead of a notice written for operators.
+     */
+    public ConversationResponse liliFallback(
+            ConversationTool.Result primary,
+            Termination termination,
+            int modelTurns,
+            List<ToolObservation> observations
+    ) {
+        var fallback = render(primary, null, termination, modelTurns, observations);
+        var cut = LiliFixedLines.line(primary == null ? LiliFixedLines.Line.REPLY_UNAVAILABLE : LiliFixedLines.Line.EXPLANATION_UNAVAILABLE);
+        return fallback.toBuilder().message(cut.text()).emotion(cut.emotion()).dialogue(List.of(cut)).build();
     }
 
     public ConversationResponse render(

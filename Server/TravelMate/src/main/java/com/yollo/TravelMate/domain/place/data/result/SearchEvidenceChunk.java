@@ -3,6 +3,7 @@ package com.yollo.TravelMate.domain.place.data.result;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Optional;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -45,21 +46,30 @@ public final class SearchEvidenceChunk {
     }
 
     public boolean permitsQuote(long placeId, String quote) {
-        if (quote == null || quote.isBlank()) return false;
+        return originalQuote(placeId, quote).isPresent();
+    }
+
+    /**
+     * The quote as the original actually writes it, when it belongs to this place's permitted text.
+     * Callers store this instead of the model's copy, so a citation is always an exact span of the source.
+     */
+    public Optional<String> originalQuote(long placeId, String quote) {
+        if (quote == null || quote.isBlank()) return Optional.empty();
         boolean relationOnly = document.path("retrieval_scope").asText().equals(RetrievalScope.RELATION.name().toLowerCase(Locale.ROOT))
                 || document.has("retrieved_relation_index");
         if (!relationOnly && isObservationSubject(placeId)) {
-            return document.get("chunk_text").textValue().contains(quote);
+            return QuoteLocator.locate(document.get("chunk_text").textValue(), quote);
         }
         for (JsonNode relation : selectedRelations()) {
             boolean participant = relation.path("origin").path("place_id").asLong(-1) == placeId
                     || relation.path("destination").path("place_id").asLong(-1) == placeId;
             JsonNode evidence = relation.path("evidence");
-            if (participant && evidence.path("quote").isTextual() && evidence.get("quote").textValue().contains(quote)) {
-                return true;
+            if (participant && evidence.path("quote").isTextual()) {
+                var located = QuoteLocator.locate(evidence.get("quote").textValue(), quote);
+                if (located.isPresent()) return located;
             }
         }
-        return false;
+        return Optional.empty();
     }
 
     private boolean isObservationSubject(long placeId) {

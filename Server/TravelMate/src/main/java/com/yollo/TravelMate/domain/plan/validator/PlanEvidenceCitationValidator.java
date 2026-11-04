@@ -16,7 +16,8 @@ public final class PlanEvidenceCitationValidator {
         }
     }
 
-    public static void validate(
+    /** Returns the citation with the quote exactly as the original writes it; a quote from elsewhere is rejected. */
+    public static GeneratedPlan.SourceCitation validate(
             long placeId,
             GeneratedPlan.SourceCitation citation,
             Map<String, CitationSource> sources
@@ -25,10 +26,11 @@ public final class PlanEvidenceCitationValidator {
             throw new IllegalStateException("인용에 출처 식별자가 없습니다.");
         }
         var source = sources.get(citation.evidenceId());
-        if (source == null || source.placeId() != placeId
-                || !source.evidence().sourceId().equals(citation.sourceId())
-                || !source.evidence().permitsQuote(placeId, citation.quote())) {
+        if (source == null || source.placeId() != placeId || !source.evidence().sourceId().equals(citation.sourceId())) {
             throw new IllegalStateException("인용이 해당 장소에 실제 전달한 원문 근거에 속하지 않습니다.");
         }
+        return source.evidence().originalQuote(placeId, citation.quote())
+                .map(quote -> new GeneratedPlan.SourceCitation(citation.evidenceId(), citation.sourceId(), quote))
+                .orElseThrow(() -> new IllegalStateException("인용이 해당 장소에 실제 전달한 원문 근거에 속하지 않습니다."));
     }
 }
