@@ -1,4 +1,7 @@
-"""One enum/function pair per artifact, shared by every evaluation stage."""
+"""TestLogPath 하나마다 기록 함수 하나. 모든 평가 단위가 같은 표를 쓴다.
+
+대주제·소주제 구성과 순서는 log_types.TestLogPath와 같다. 다르면 불러올 때 실패한다.
+"""
 from __future__ import annotations
 from pathlib import Path
 from types import MappingProxyType
@@ -10,26 +13,39 @@ from tracks.conversation.review import export_review
 
 
 class TestLogs:
-        # JSON identities and final summaries. Each lambda receives a resolved output path.
-        _JSON = (
-            (TestLogPath.RUN, lambda path, value: write_json(path, value)),
-            (TestLogPath.SEARCH_CONTRACT, lambda path, value: write_json(path, value)),
-            (TestLogPath.SERVER_CONTRACT, lambda path, value: write_json(path, value)),
+        # 각 람다는 (실행 폴더 기준으로 해석된 경로, 기록할 값)을 받는다.
+
+        # [1. 실행 식별]
+        _RUN_IDENTITY = (
+            #      (1-1) 실행 설정
+            (TestLogPath.RUN, lambda path, value: write_json(path, value)),             # 시작 시 status=started로 쓰고, 종료 시 최종 상태로 다시 쓴다
+            (TestLogPath.INPUTS, lambda path, value: write_jsonl(path, value)),         # 전송 전 한 번만 쓴다
+            #      (1-2) 호출 원장: 파일을 직접 쓰지 않고 공통 RunControl을 만든다. 원장·횟수 상한을 구현체가 우회하지 못하게 한다
+            (TestLogPath.ATTEMPTS, lambda path, value: RunControl(value["settings"], path, mock_responses=value["mock_responses"])),
+            #      (1-3) 실행 서버 계약
+            (TestLogPath.SERVER_CONTRACT, lambda path, value: write_json(path, value)), # 대화 요청 전에 받은 서버 계약
+            (TestLogPath.SEARCH_CONTRACT, lambda path, value: write_json(path, value)), # 대화 요청 전에 받은 검색 서버 상태
+        )
+
+        # [2. 관측 원본]
+        _OBSERVATIONS = (
+            #      (2-1) 응답
+            (TestLogPath.RECORDS, lambda path, value: write_jsonl(path, value)),        # 문항이 끝날 때마다 누적본 전체를 다시 쓴다
+            #      (2-2) 서버 내부 관측
+            (TestLogPath.EVENTS, lambda path, value: write_jsonl(path, value)),         # 종료 시 이번 실행의 requestId에 해당하는 이벤트만 쓴다
+        )
+
+        # [3. 판정]
+        _JUDGMENTS = (
+            #      (3-1) 기계적 검사
+            (TestLogPath.SCORES, lambda path, value: write_jsonl(path, value)),
+            #      (3-2) 의미 검수: 이미 있는 검수표는 덮어쓰지 않는다(export_review가 배타적 생성)
+            (TestLogPath.REVIEW, lambda path, value: export_review(path, value)),
+            #      (3-3) 요약
             (TestLogPath.SUMMARY, lambda path, value: write_json(path, value)),
         )
-        # 이 쌍은 공통 RunControl을 생성한다. 전송 전 원장 기록·횟수 상한은 동일 실행 경로에서 관리한다.
-        _RECORDS = (
-            (TestLogPath.ATTEMPTS, lambda path, value: RunControl(value["settings"], path, mock_responses=value["mock_responses"])),
-            (TestLogPath.INPUTS, lambda path, value: write_jsonl(path, value)),
-            (TestLogPath.RECORDS, lambda path, value: write_jsonl(path, value)),
-            (TestLogPath.EVENTS, lambda path, value: write_jsonl(path, value)),
-        )
-        # Deterministic scores and separate, hash-bound human semantic review.
-        _JUDGMENTS = (
-            (TestLogPath.SCORES, lambda path, value: write_jsonl(path, value)),
-            (TestLogPath.REVIEW, lambda path, value: export_review(path, value)),
-        )
-        ENTRIES = (*_JSON, *_RECORDS, *_JUDGMENTS)
+
+        ENTRIES = (*_RUN_IDENTITY, *_OBSERVATIONS, *_JUDGMENTS)
         WRITERS = MappingProxyType(dict(ENTRIES))
 
         @staticmethod
@@ -42,5 +58,7 @@ class TestLogs:
             return writer(cls.path(root, kind), value)
 
 
-if len(TestLogPath.__members__) != len(TestLogPath) or len(TestLogs.ENTRIES) != len(TestLogPath) or set(TestLogs.WRITERS) != set(TestLogPath):
-    raise RuntimeError("Every TestLogPath must have exactly one paired log function")
+if (len(TestLogPath.__members__) != len(TestLogPath)
+        or tuple(kind for kind, _ in TestLogs.ENTRIES) != tuple(TestLogPath)
+        or len(TestLogs.WRITERS) != len(TestLogPath)):
+    raise RuntimeError("TestLogs.ENTRIES must pair every TestLogPath exactly once, in the same group order")

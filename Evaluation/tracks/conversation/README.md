@@ -64,13 +64,13 @@ OpenAI 평가에서는 기존 `EVAL_OPENAI_*` 모델·키·공식 한도 설정�
 {
   "EVAL_LLM_PROVIDER": "OPENAI",
   "EVAL_OPENAI_MODEL": "gpt-5.4-mini-2026-03-17",
-  "EVAL_OPENAI_RESPONSE_FORMAT": "JSON_SCHEMA_V1",
-  "EVAL_MAX_MODEL_TURNS": "1",
-  "EVAL_MAX_TOOL_CALLS": "2"
+  "EVAL_OPENAI_RESPONSE_FORMAT": "JSON_SCHEMA_V1"
 }
 ```
 
-사전 검색 1회와 추가 도구 1회가 같은 한도에 포함되므로 `EVAL_MAX_TOOL_CALLS=2`가 필요하다. 가드를 끄지 않는다.
+대화 호출 상한(`max-model-turns`·`max-tool-calls`)은 평가 프로필에서 덮어쓰지 않고 `application.properties`의 운영 값을 그대로 쓴다.
+실험 설정의 `max_model_turns`·`max_tool_calls`는 실행 중인 서버가 보고한 값과 같아야 하며, 다르면 대화 요청 전에 중단한다.
+사전 검색 1회도 도구 호출 상한에 포함된다. 한 번의 모델 호출로 끝났는지는 `one_model_turn_observed` 검사로 따로 기록한다.
 기동은 기존 공통 실행기를 사용한다. `--spring.config.location`으로 기본 설정을 대체하지 않는다.
 
 ```powershell

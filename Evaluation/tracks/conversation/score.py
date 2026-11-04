@@ -4,6 +4,8 @@ from __future__ import annotations
 import json
 import argparse
 import hashlib
+import re
+from functools import cache
 from pathlib import Path
 import sys
 from typing import Any
@@ -12,7 +14,26 @@ from jsonschema import Draft202012Validator
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 from tracks.conversation.plan_checks import draft_checks
-from common.dataset.io import canonical_digest, digest, read_json, read_jsonl, write_json, write_jsonl
+from common.dataset.io import canonical_digest, digest, read_json, read_jsonl
+from common.paths import EVALUATION_ROOT
+
+# Same resource the Spring pre-retrieval reads; the check fails if the server uses a different template.
+THEME_HINT_TEMPLATE = EVALUATION_ROOT.parent / "Server/TravelMate/src/main/resources/conversation/queries/v1-theme-hint.txt"
+THEME_SEPARATOR = ", "
+TEMPLATE_TOKEN = re.compile(r"\{\{([A-Za-z]+)}}")
+
+
+@cache
+def theme_hint_template() -> str:
+    return THEME_HINT_TEMPLATE.read_text(encoding="utf-8").rstrip()
+
+
+def expected_pre_retrieval_query(message: str, themes: list[str]) -> str:
+    if not themes:
+        return message
+    values = {"message": message, "themes": THEME_SEPARATOR.join(themes)}
+    # One pass, like the server renderer, so braces inside the user's message are never re-expanded.
+    return TEMPLATE_TOKEN.sub(lambda match: values[match.group(1)], theme_hint_template())
 
 
 def bound_events(case: dict[str, Any], record: dict[str, Any], events: list[dict[str, Any]]) -> list[dict[str, Any]]:
@@ -88,9 +109,7 @@ def score_case(case: dict[str, Any], record: dict[str, Any], events: list[dict[s
         checks["prepared_metadata_preserved"] = bool(criteria) and area_matches and all(
             criteria.get(key) == supplied_context.get(key) for key in ("region", "city", "category")
         ) and criteria.get("excludePlaceIds") == supplied_context.get("excludePlaceIds", [])
-        expected_query = case["api_request"]["message"]
-        if supplied_context.get("themes"):
-            expected_query += "\n사용자 선호 테마: " + ", ".join(supplied_context["themes"])
+        expected_query = expected_pre_retrieval_query(case["api_request"]["message"], supplied_context.get("themes") or [])
         checks["prepared_query_preserved"] = criteria.get("query") == expected_query
     observed_results = [item["result"] for item in tool_events]
     checks["executed_tools_match_trace"] = observed_results == native.get("toolResults") if selected else None
@@ -199,7 +218,9 @@ def score_case(case: dict[str, Any], record: dict[str, Any], events: list[dict[s
 
 def main() -> None:
     from tracks.conversation.cases import DEFAULT_SUITE, load_cases
-    from tracks.conversation.review import export_review, summarize
+    from tracks.conversation.review import summarize
+    from tracks.conversation.log_types import TestLogPath
+    from tracks.conversation.test_logs import TestLogs
     from common.paths import EVALUATION_ROOT
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--run-dir", type=Path, required=True)
@@ -208,17 +229,17 @@ def main() -> None:
     parser.add_argument("--review", type=Path)
     parser.add_argument("--output-dir", type=Path, required=True)
     arguments = parser.parse_args()
-    manifest = read_json(arguments.run_dir / "run.json")
+    manifest = read_json(TestLogs.path(arguments.run_dir, TestLogPath.RUN))
     if digest(arguments.suite) != manifest["suite_sha256"]:
         raise ValueError("The expectation suite differs from the collected run")
     bindings = read_json(arguments.bindings) if arguments.bindings is not None else {}
     cases = load_cases(arguments.suite, tuple(manifest["selected_case_ids"]), bindings)
     indexed = {case["case_id"]: case for case in cases}
-    records = read_jsonl(arguments.run_dir / "records.jsonl")
+    records = read_jsonl(TestLogs.path(arguments.run_dir, TestLogPath.RECORDS))
     if len({record["case_id"] for record in records}) != len(records):
         raise ValueError("Duplicate case observations")
-    contract = read_json(arguments.run_dir / "server-contract.json")
-    events = read_jsonl(arguments.run_dir / "events.jsonl")
+    contract = read_json(TestLogs.path(arguments.run_dir, TestLogPath.SERVER_CONTRACT))
+    events = read_jsonl(TestLogs.path(arguments.run_dir, TestLogPath.EVENTS))
     scores = []
     for record in records:
         case = indexed[record["case_id"]]
@@ -230,9 +251,9 @@ def main() -> None:
     if output.is_relative_to(EVALUATION_ROOT / "datasets"):
         raise ValueError("Scores cannot modify versioned datasets")
     output.mkdir(parents=True, exist_ok=False)
-    write_jsonl(output / "scores.jsonl", scores)
-    write_json(output / "summary.json", summary)
-    export_review(output / "review.csv", scores)
+    TestLogs.write(output, TestLogPath.REVIEW, scores)
+    TestLogs.write(output, TestLogPath.SCORES, scores)
+    TestLogs.write(output, TestLogPath.SUMMARY, summary)
     print(json.dumps(summary, ensure_ascii=False, indent=2))
 
 

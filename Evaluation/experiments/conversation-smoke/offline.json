@@ -25,8 +25,8 @@
     "token_env": "TRAVELMATE_EVAL_ACCESS_TOKEN",
     "expected_provider": "OPENAI",
     "expected_model": "offline-fixture",
-    "max_model_turns": 1,
-    "max_tool_calls": 2,
+    "max_model_turns": 6,
+    "max_tool_calls": 8,
     "allow_plan_creation": true,
     "expected_user_id": "aDMINuser"
   }

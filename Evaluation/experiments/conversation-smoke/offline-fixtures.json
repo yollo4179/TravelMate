@@ -264,8 +264,8 @@
         "message"
       ]
     },
-    "max_model_turns": 1,
-    "max_tool_calls": 2,
+    "max_model_turns": 6,
+    "max_tool_calls": 8,
     "provider": "OPENAI",
     "model": "offline-fixture",
     "response_format": "JSON_SCHEMA_V1",
@@ -278,7 +278,7 @@
         "searchRanking": "REQUEST_DEFAULT",
         "promptResource": "classpath:conversation/prompts/v2-grounded-system.txt"
       },
-      "promptSha256": "463425932320c264b21ca6e08b8d48d7f61ac1ec7b4262d25e3b1a0b18742fca",
+      "promptSha256": "1e643482ded953dbaff5d1359b5ba162c2641ff9ec9c18cbc73d13d5714bd25e",
       "promptClass": "com.yollo.TravelMate.domain.conversation.pipeline.ResourcePromptV1",
       "modelClass": "com.yollo.TravelMate.domain.conversation.pipeline.GuardedModelV1"
     },

@@ -53,10 +53,11 @@ def validate_contract(contract: dict[str, Any], cases: list[dict[str, Any]], set
         if any(name not in tools or tools[name]["tool_type"] != kind for name, kind in zip(expected["tool_names"], expected["tool_types"], strict=True)):
             raise ExecutionBlocked("The actual server does not provide an expected tool/type")
     minimum = 1 + max(len(case["expected"]["tool_names"]) for case in cases)
-    if contract["max_model_turns"] != settings.parameter("max_model_turns") or contract["max_model_turns"] != 1:
-        raise ExecutionBlocked("This smoke suite requires one conversation-model turn")
-    if not minimum <= contract["max_tool_calls"] <= settings.parameter("max_tool_calls"):
-        raise ExecutionBlocked("Set EVAL_MAX_TOOL_CALLS=2 for pre-retrieval plus one requested tool; do not disable the cap")
+    # Limits are shared with the operating profile; the experiment must declare the values it measures.
+    if contract["max_model_turns"] != settings.parameter("max_model_turns") or contract["max_tool_calls"] != settings.parameter("max_tool_calls"):
+        raise ExecutionBlocked("Server conversation limits differ from the experiment configuration")
+    if contract["max_tool_calls"] < minimum:
+        raise ExecutionBlocked("Tool-call limit cannot cover pre-retrieval plus the expected tools")
     if contract["provider"] != settings.parameter("expected_provider") or contract["model"] != settings.parameter("expected_model"):
         raise ExecutionBlocked("Actual server provider/model differs from the explicit configuration")
     if settings.mode == RunMode.LIVE:
