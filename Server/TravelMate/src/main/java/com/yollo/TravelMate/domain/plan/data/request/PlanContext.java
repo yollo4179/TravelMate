@@ -4,6 +4,7 @@ import java.time.Duration;
 import java.time.OffsetDateTime;
 import java.util.List;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.yollo.TravelMate.domain.place.data.request.SearchRadius;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.*;
 
@@ -42,7 +43,7 @@ public record PlanContext(
     public record Area(
             @NotNull AreaType type,
             @Valid Coordinate center,
-            @Min(500) @Max(10000) Integer radiusMeters,
+            @Min(SearchRadius.MIN_METERS) @Max(SearchRadius.MAX_METERS) Integer radiusMeters,
             String regionId
     ) {
         @JsonIgnore

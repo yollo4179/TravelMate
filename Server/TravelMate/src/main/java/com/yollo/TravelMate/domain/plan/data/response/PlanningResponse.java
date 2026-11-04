@@ -6,7 +6,23 @@ import com.yollo.TravelMate.domain.plan.data.request.PlanContext;
 
 public final class PlanningResponse {
     private PlanningResponse() {}
-    public enum JobStatus { QUEUED, RUNNING, SUCCEEDED, FAILED }
+    public enum JobStatus {
+        QUEUED(true),
+        RUNNING(true),
+        SUCCEEDED(false),
+        FAILED(false);
+
+        private final boolean pending;
+
+        JobStatus(boolean pending) {
+            this.pending = pending;
+        }
+
+        /** Accepted or running jobs are not completed plans; the conversation prompt names exactly these. */
+        public static List<JobStatus> pendingValues() {
+            return java.util.Arrays.stream(values()).filter(status -> status.pending).toList();
+        }
+    }
     public record Job(
             UUID jobId,
             JobStatus status,

@@ -2,6 +2,7 @@ package com.yollo.TravelMate.domain.conversation.service;
 
 import java.util.List;
 import com.yollo.TravelMate.domain.conversation.data.CharacterEmotion;
+import com.yollo.TravelMate.domain.conversation.data.ConversationAnswerKind;
 import com.yollo.TravelMate.domain.conversation.data.ConversationIntent;
 import java.util.Map;
 import java.util.Set;
@@ -45,26 +46,36 @@ public class ConversationAnswerRenderer {
             ResultType.DRAFT, CharacterEmotion.EXCITED
     );
     private final ObjectMapper mapper;
-    public enum AnswerKind { PLACE_GUIDANCE, CONVERSATION, CLARIFICATION }
 
-    public record Answer(String message, List<Citation> citations, AnswerKind answerKind, CharacterEmotion emotion, ConversationIntent intent) {
+    public record Answer(
+            String message,
+            List<Citation> citations,
+            ConversationAnswerKind answerKind,
+            CharacterEmotion emotion,
+            ConversationIntent intent
+    ) {
         public Answer {
             // Older preserved answers have no kind; absence must not discard verified place data.
             emotion = emotion == null ? CharacterEmotion.NEUTRAL : emotion;
-            answerKind = answerKind == null ? AnswerKind.PLACE_GUIDANCE : answerKind;
-            intent = intent == null ? (answerKind == AnswerKind.PLACE_GUIDANCE ? ConversationIntent.RECOMMENDATION : ConversationIntent.CONVERSATION) : intent;
+            answerKind = answerKind == null ? ConversationAnswerKind.PLACE_GUIDANCE : answerKind;
+            intent = intent == null ? (answerKind == ConversationAnswerKind.PLACE_GUIDANCE ? ConversationIntent.RECOMMENDATION : ConversationIntent.CONVERSATION) : intent;
         }
 
-        public Answer(String message, List<Citation> citations, AnswerKind kind, CharacterEmotion emotion) {
+        public Answer(
+                String message,
+                List<Citation> citations,
+                ConversationAnswerKind kind,
+                CharacterEmotion emotion
+        ) {
             this(message, citations, kind, emotion, null);
         }
 
-        public Answer(String message, List<Citation> citations, AnswerKind kind) {
+        public Answer(String message, List<Citation> citations, ConversationAnswerKind kind) {
             this(message, citations, kind, CharacterEmotion.NEUTRAL);
         }
 
         public Answer(String message, List<Citation> citations) {
-            this(message, citations, AnswerKind.PLACE_GUIDANCE, CharacterEmotion.NEUTRAL);
+            this(message, citations, ConversationAnswerKind.PLACE_GUIDANCE, CharacterEmotion.NEUTRAL);
         }
     }
 
@@ -81,7 +92,7 @@ public class ConversationAnswerRenderer {
             throw new IllegalArgumentException("Unknown character emotion");
         }
         if (parsed.has("intent") && (!parsed.get("intent").isTextual()
-                || java.util.Arrays.stream(ConversationIntent.values()).filter(value -> value != ConversationIntent.AUTO)
+                || ConversationIntent.finalValues().stream()
                     .noneMatch(value -> value.name().equals(parsed.get("intent").asText())))) {
             throw new IllegalArgumentException("Unknown conversation intent");
         }

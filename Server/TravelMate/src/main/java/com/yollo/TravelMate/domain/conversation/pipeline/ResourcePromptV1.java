@@ -1,10 +1,5 @@
 package com.yollo.TravelMate.domain.conversation.pipeline;
 
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.util.HexFormat;
 import com.yollo.TravelMate.domain.conversation.data.ConversationRequest;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.stereotype.Component;
@@ -15,14 +10,9 @@ public class ResourcePromptV1 implements PromptModule {
     private final String fingerprint;
 
     public ResourcePromptV1(ConversationModuleConfig config, ResourceLoader resources) {
-        try (var stream = resources.getResource(config.promptResource()).getInputStream()) {
-            byte[] original = stream.readAllBytes();
-            prompt = new String(original, StandardCharsets.UTF_8);
-            if (prompt.isBlank()) throw new IllegalArgumentException("Conversation prompt cannot be blank");
-            fingerprint = HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256").digest(original));
-        } catch (IOException | NoSuchAlgorithmException exception) {
-            throw new IllegalStateException("Conversation prompt resource unavailable", exception);
-        }
+        prompt = PromptTemplates.render(PromptTemplates.load(resources, config.promptResource()), PromptVocabulary.tokens());
+        // Fingerprint the text the model actually receives, after enum vocabulary is filled in.
+        fingerprint = PromptTemplates.sha256(prompt);
     }
 
     @Override

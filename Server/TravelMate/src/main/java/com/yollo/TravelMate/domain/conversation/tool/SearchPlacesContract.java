@@ -5,6 +5,7 @@ import java.util.Set;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.yollo.TravelMate.domain.place.data.request.SearchRadius;
 import com.yollo.TravelMate.domain.place.enums.PlaceSearchCategories;
 
 public final class SearchPlacesContract {
@@ -51,7 +52,7 @@ public final class SearchPlacesContract {
                         "center", ToolSchemas.object(Map.of(
                                 "lat", ToolSchemas.number(-90, 90),
                                 "lon", ToolSchemas.number(-180, 180))),
-                        "radius_meters", ToolSchemas.integer(500, 10000))))
+                        "radius_meters", ToolSchemas.integer(SearchRadius.MIN_METERS, SearchRadius.MAX_METERS))))
                         .put("description", "생략 또는 null이면 searchContext의 area를 사용한다. 둘 다 없으면 반경 제한 없음.")
         ), Set.of("query"));
     }

@@ -11,6 +11,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.yollo.TravelMate.ai.llm.base.*;
 import com.yollo.TravelMate.ai.llm.budget.TokenBudgetException;
 import com.yollo.TravelMate.ai.llm.observation.ObservationContext;
+import com.yollo.TravelMate.domain.conversation.data.ConversationAnswerKind;
 import com.yollo.TravelMate.domain.conversation.data.ConversationRequest;
 import com.yollo.TravelMate.domain.conversation.pipeline.ConversationGenerationPipeline;
 import com.yollo.TravelMate.domain.conversation.pipeline.ModelModule;
@@ -170,7 +171,7 @@ public class ConversationService {
                 try {
                     var answer = renderer.parse(completion.content(), sources);
                     if (observations.isEmpty()
-                            && answer.answerKind() != ConversationAnswerRenderer.AnswerKind.PLACE_GUIDANCE) primary = null;
+                            && answer.answerKind() != ConversationAnswerKind.PLACE_GUIDANCE) primary = null;
                     return renderer.render(primary, answer, Termination.COMPLETED, turn, observations);
                 } catch (Exception exception) {
                     return renderer.render(primary, null, Termination.INVALID_RESPONSE, turn, observations);

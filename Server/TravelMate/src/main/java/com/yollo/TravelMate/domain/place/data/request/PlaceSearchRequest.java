@@ -38,7 +38,7 @@ public record PlaceSearchRequest(
     public record SearchArea(
             @NotNull AreaType type,
             @NotNull @Valid Coordinate center,
-            @NotNull @Min(500) @Max(10000) Integer radiusMeters
+            @NotNull @Min(SearchRadius.MIN_METERS) @Max(SearchRadius.MAX_METERS) Integer radiusMeters
     ) {
         @JsonAnySetter
         public void rejectUnknownField(String name, JsonNode value) {

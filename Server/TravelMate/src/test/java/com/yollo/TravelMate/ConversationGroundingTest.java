@@ -184,9 +184,9 @@ class ConversationGroundingTest {
     }
 
     @ParameterizedTest
-    @EnumSource(ConversationAnswerRenderer.AnswerKind.class)
+    @EnumSource(ConversationAnswerKind.class)
     void preparationFailureRemainsVisibleWithoutBlockingConversationOrClarification(
-            ConversationAnswerRenderer.AnswerKind answerKind
+            ConversationAnswerKind answerKind
     ) throws Exception {
         var preserved = preserved("PLR-TM-palaces-01");
         var llm = mock(LlmClient.class);
@@ -203,7 +203,7 @@ class ConversationGroundingTest {
         try (var context = context(llm, 1, 1); var scope = ObservationContext.open(observation)) {
             var response = context.getBean(ConversationService.class).respond("owner", UUID.randomUUID(), preserved.request());
             assertEquals(Termination.COMPLETED, response.termination());
-            if (answerKind == ConversationAnswerRenderer.AnswerKind.PLACE_GUIDANCE) {
+            if (answerKind == ConversationAnswerKind.PLACE_GUIDANCE) {
                 assertEquals(ResultType.ERROR, response.type());
                 assertEquals("EVIDENCE_PREPARATION_FAILED", response.data().path("code").asText());
             } else {
@@ -262,9 +262,9 @@ class ConversationGroundingTest {
     }
 
     @ParameterizedTest
-    @EnumSource(value = ConversationAnswerRenderer.AnswerKind.class, names = {"CONVERSATION", "CLARIFICATION"})
+    @EnumSource(value = ConversationAnswerKind.class, names = {"CONVERSATION", "CLARIFICATION"})
     void directConversationOrClarificationDoesNotExposeUnrelatedPreparedPlacesOrRunAnAction(
-            ConversationAnswerRenderer.AnswerKind answerKind
+            ConversationAnswerKind answerKind
     ) throws Exception {
         var preserved = preserved("PLR-TM-palaces-01");
         var llm = mock(LlmClient.class);
