@@ -41,7 +41,8 @@ class PlanGenerationFailureObservationTest {
     private final LlmClient llm = mock(LlmClient.class);
     private final List<JsonNode> events = new CopyOnWriteArrayList<>();
     private final AtomicReference<String> storedError = new AtomicReference<>();
-    private final CountDownLatch failed = new CountDownLatch(1);
+    private final AtomicReference<PlanningResponse.JobStatus> finalStatus = new AtomicReference<>();
+    private final CountDownLatch finished = new CountDownLatch(1);
     private ContextPlanningService planning;
     private GeneratePlanRequest request;
 
@@ -56,9 +57,11 @@ class PlanGenerationFailureObservationTest {
         when(jobs.get(any(), eq(OWNER))).thenAnswer(invocation -> new PlanningResponse.Job(
                 jobId.get(), PlanningResponse.JobStatus.QUEUED, "/mock-job", null, null));
         doAnswer(invocation -> {
-            if (invocation.getArgument(1) == PlanningResponse.JobStatus.FAILED) {
+            PlanningResponse.JobStatus status = invocation.getArgument(1);
+            if (status == PlanningResponse.JobStatus.FAILED || status == PlanningResponse.JobStatus.SUCCEEDED) {
                 storedError.set(invocation.getArgument(3));
-                failed.countDown();
+                finalStatus.set(status);
+                finished.countDown();
             }
             return null;
         }).when(jobs).update(any(), any(), any(), any());
@@ -109,18 +112,21 @@ class PlanGenerationFailureObservationTest {
         assertTrue(draft.path("prompt").asText().contains("\"candidates\""), "the exact model input is kept for review");
     }
 
-    // Live var2/var3: the planner shortened a quote with "...", and the validator's own wording became the job's public error.
+    // Live var2, var3, fy2: one mis-copied quote ("..." or a dropped word) used to fail the whole plan.
     @Test
-    void aDraftRejectedByTheCitationCheckShowsUsersAPlainReasonNotTheValidatorText() throws Exception {
+    void aCitationThatFailsVerificationIsDroppedAndRecordedWhileTheDraftIsSaved() throws Exception {
         when(llm.generate(anyString(), anyString())).thenReturn("""
                 {"planTitle":"초안","planDescription":"설명","dialogue":[],
                  "pins":[{"placeId":101,"sequence":1,"activity":"둘러보기","reason":"요청 장소",
                           "citations":[{"evidenceId":"E101-0","sourceId":"source","quote":"모의 ... 카페"}]}]}""");
-        var draft = runUntilFailed();
-        assertEquals("DRAFT_REJECTED", draft.path("failureKind").asText());
-        assertTrue(draft.path("failureMessage").asText().contains("인용"), "operators keep the validator's reason");
-        assertFalse(storedError.get().contains("인용"), "users do not see the validator's wording");
-        assertFalse(storedError.get().contains("원문 근거"));
+        var draft = runUntilFinished();
+        assertEquals(PlanningResponse.JobStatus.SUCCEEDED, finalStatus.get());
+        assertEquals("SUCCEEDED", draft.path("status").asText());
+        assertNull(storedError.get(), "a saved draft carries no error");
+        assertEquals(1, draft.path("droppedCitations").size());
+        assertEquals("NOT_DELIVERED_FOR_PLACE", draft.path("droppedCitations").get(0).path("reason").asText());
+        assertEquals("모의 ... 카페", draft.path("droppedCitations").get(0).path("quote").asText(), "operators keep what was removed");
+        verify(plans).save(anyString(), any(), any(), anyList(), anyString());
     }
 
     @Test
@@ -133,13 +139,19 @@ class PlanGenerationFailureObservationTest {
     }
 
     private JsonNode runUntilFailed() throws Exception {
+        var draft = runUntilFinished();
+        assertEquals(PlanningResponse.JobStatus.FAILED, finalStatus.get());
+        return draft;
+    }
+
+    private JsonNode runUntilFinished() throws Exception {
         var root = ObservationContext.Context.builder().requestId("request-one").turnId("turn-one")
                 .conversationId("conversation-mock").mode(ObservationContext.Mode.MOCK).phase(ObservationContext.Phase.REQUEST)
                 .sink(event -> events.add(event.deepCopy())).build();
         try (var scope = ObservationContext.open(root)) {
             planning.generate(OWNER, UUID.randomUUID(), request);
         }
-        assertTrue(failed.await(5, TimeUnit.SECONDS));
+        assertTrue(finished.await(5, TimeUnit.SECONDS));
         var drafts = events.stream().filter(event -> event.path("event").asText().equals("PLAN_DRAFT")).toList();
         assertEquals(1, drafts.size());
         assertEquals("request-one", drafts.get(0).path("requestId").asText(), "the draft stays bound to the turn that queued it");

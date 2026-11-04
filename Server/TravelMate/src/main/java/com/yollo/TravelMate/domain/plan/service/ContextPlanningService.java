@@ -38,7 +38,7 @@ public class ContextPlanningService {
     private enum DraftFailure {
         // Budget guard, provider or transport: which one, and whether retrying helps, is not known here.
         GENERATION_UNAVAILABLE("일정 초안을 만들지 못했어요. 같은 조건으로 다시 요청하거나 조건을 바꿔 요청해 주세요."),
-        // The model answered, but its draft could not be read or cited evidence it was not given, so nothing was saved.
+        // The model answered, but its draft could not be read, so nothing was saved. Bad citations alone no longer fail a draft.
         DRAFT_REJECTED("만들어진 초안이 확인 단계를 통과하지 못해 저장하지 않았어요. 다시 요청해 주세요.");
 
         private final String userMessage;
@@ -238,7 +238,7 @@ public class ContextPlanningService {
             }
             attempt.output = output;
             log.info("planning job={} stage=VALIDATING_RESULT responseCharacters={}", jobId, output == null ? 0 : output.length());
-            var generated = validatedDraft(output, candidates, request, preparedPrompt);
+            var generated = validatedDraft(output, candidates, request, preparedPrompt, attempt);
             var normalized = new GeneratedPlan(
                     generated.planTitle(),
                     generated.planDescription(),
@@ -249,10 +249,11 @@ public class ContextPlanningService {
                     generated.dialogue()
             );
             long planId = plans.save(userUid, request, normalized, candidates, requestJson);
+            // Recorded before the status flips, as on failure, so whoever sees SUCCEEDED can already read the draft record.
+            recordDraft(attempt, PlanningResponse.JobStatus.SUCCEEDED, null);
             jobs.update(jobId, PlanningResponse.JobStatus.SUCCEEDED, planId, null);
             recordJob(jobId, PlanningResponse.JobStatus.SUCCEEDED, planId, JobObservationOperation.UPDATE_ACKNOWLEDGED);
             log.info("planning job={} stage=SUCCEEDED planId={} pinCount={}", jobId, planId, normalized.pins().size());
-            recordDraft(attempt, PlanningResponse.JobStatus.SUCCEEDED, null);
         } catch (Exception exception) {
             log.warn("planning job={} stage=FAILED exception={}", jobId, exception.toString());
             // The job's error is shown to users and read aloud by LiLi; what the model call or its draft raised stays internal.
@@ -271,12 +272,15 @@ public class ContextPlanningService {
             String output,
             List<PlaceResult> candidates,
             GeneratePlanRequest request,
-            com.yollo.TravelMate.domain.plan.prompts.ContextPlanPromptFactory.PreparedPrompt preparedPrompt
+            com.yollo.TravelMate.domain.plan.prompts.ContextPlanPromptFactory.PreparedPrompt preparedPrompt,
+            DraftAttempt attempt
     ) {
         try {
             var generated = DraftPlanValidator.validate(planValidator.parse(output), candidates, request);
-            PlanEvidenceCitationValidator.validate(generated, preparedPrompt);
-            return generated;
+            // A citation that fails verification is removed and recorded; the rest of the draft is still saved.
+            var review = PlanEvidenceCitationValidator.review(generated, preparedPrompt);
+            attempt.droppedCitations = review.dropped();
+            return review.plan();
         } catch (ResponseStatusException conditionReason) {
             // The draft rules word their reasons for users (they also guard manual plans), e.g. a café the area lacks.
             throw conditionReason;
@@ -297,6 +301,10 @@ public class ContextPlanningService {
                         ? statusFailure.getReason() : failure.getMessage());
         var candidates = event.putArray("candidateIds");
         attempt.candidateIds.forEach(candidates::add);
+        var dropped = event.putArray("droppedCitations");
+        attempt.droppedCitations.forEach(item -> dropped.addObject().put("placeId", item.placeId())
+                .put("evidenceId", item.citation().evidenceId()).put("sourceId", item.citation().sourceId())
+                .put("quote", item.citation().quote()).put("reason", item.reason().name()));
         ObservationContext.record(ObservationContext.Event.PLAN_DRAFT, event);
     }
 
@@ -316,6 +324,7 @@ public class ContextPlanningService {
         private List<Long> candidateIds = List.of();
         private String prompt;
         private String output;
+        private List<PlanEvidenceCitationValidator.Dropped> droppedCitations = List.of();
     }
 
     private void recordJob(

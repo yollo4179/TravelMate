@@ -189,11 +189,14 @@ class SearchEvidencePipelineTest {
             assertEquals(1, saved.getValue().pins().get(0).sequence());
             verify(jobs).update(jobId, PlanningResponse.JobStatus.SUCCEEDED, 77L, null);
 
+            // A citation naming a source that was never delivered loses its mark; the rest of the draft is still saved.
             when(llm.generate(anyString(), anyString())).thenReturn(mapper.writeValueAsString(plan(101L,
                     new GeneratedPlan.SourceCitation("E101-0", "없는 출처", WALK))));
-            clearInvocations(plans);
-            ReflectionTestUtils.invokeMethod(service, "runGeneration", UUID.randomUUID(), "mock-user", input, "original-request");
-            verify(plans, never()).save(anyString(), any(), any(), anyList(), anyString());
+            clearInvocations(plans, jobs);
+            UUID droppedJob = UUID.randomUUID();
+            ReflectionTestUtils.invokeMethod(service, "runGeneration", droppedJob, "mock-user", input, "original-request");
+            verify(plans).save(eq("mock-user"), eq(input), any(), eq(List.of(results.get(0).place())), eq("original-request"));
+            verify(jobs).update(droppedJob, PlanningResponse.JobStatus.SUCCEEDED, 77L, null);
         } finally {
             ReflectionTestUtils.invokeMethod(service, "shutdown");
         }
