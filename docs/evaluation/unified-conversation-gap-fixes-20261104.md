@@ -57,7 +57,8 @@
 | 평가 Python | `test_conversation_plan`·`quality`·`registry`·`module_experiments` 50개 통과(`PYTHONUTF8=1`) |
 | 오프라인 MOCK | tool_call·recommendation·plan·conversation 4단계 모두 `collected`, 실패 없음 |
 | 기존 기록 재채점 | `20261104-offline-01`을 다시 채점하면 `scores.jsonl`·`review.csv`가 바이트 단위로 같다 |
-| Java 전체 | 425개 중 411개 통과. 실패 14개는 모두 Spring 컨텍스트 기동 실패이며 원인은 PostgreSQL(`localhost:5432`) 연결 거부다(Docker 미기동). 새 `ConversationVocabularyContractTest` 5개 통과. DB가 필요한 전체 컨텍스트에서 새 빈이 연결되는지는 확인하지 못했다 |
+| Java 전체 | 로컬 Docker 스택을 켠 상태에서 425개 중 423개 통과(첫 커밋만 적용한 상태에서도 같은 2개만 실패). 실패 2개는 환경 문제다. `RedisConnectionTest`는 스택 구성(`docker-compose.stack.yml`의 `ports: !reset []`)이 Redis를 호스트에 열지 않아서, `PlanGenerationTest` END_TO_END는 기존 계획 경로의 실제 검색 후보가 없어서(`PLAN_NO_CANDIDATES`) 실패했다. 새 `ConversationVocabularyContractTest` 5개 통과. Docker를 끈 상태에서는 Spring 컨텍스트 테스트 14개가 DB 연결 거부로 실패한다 |
+| 외부 호출 | 전체 Java 테스트에 포함된 기존 통합 테스트가 Kakao 로컬 키워드 검색과 TourAPI 관광지 조회를 실제로 호출했다. TourAPI 결과는 모두 기존 데이터라 저장 0건이다. OpenAI 키가 설정돼 있지 않고, 계획 생성 테스트는 후보가 없어 모델 호출 전에 끝났으므로 모델 호출은 0회다 |
 | 클라이언트(Vue) | 계약 테스트 8/8, ESLint·Prettier 통과, Vite 빌드 성공. Chromium 브라우저 테스트는 Playwright가 없어 미실행 |
 | 임베딩 서버 | 183개 중 오류 2개, 32개는 DB가 없어 건너뜀(`PYTHONUTF8=1`). 오류 2개는 이 PC에 `torch`·`asyncpg`가 없어 테스트 모듈을 불러오지 못한 것이다. 새 테스트를 포함한 관련 15개는 통과 |
 | Docker 스크립트 | 14개 오류는 변경 전후 동일(Linux 셸 필요) |
