@@ -21,6 +21,7 @@ import com.yollo.TravelMate.ai.llm.observation.*;
 import com.yollo.TravelMate.domain.conversation.data.*;
 import com.yollo.TravelMate.domain.conversation.data.ConversationResponse.*;
 import com.yollo.TravelMate.domain.conversation.service.*;
+import com.yollo.TravelMate.domain.conversation.pipeline.*;
 import com.yollo.TravelMate.domain.conversation.tool.*;
 import com.yollo.TravelMate.domain.place.data.request.PlaceSearchRequest;
 import com.yollo.TravelMate.domain.place.data.result.*;
@@ -57,6 +58,38 @@ class ConversationGroundingTest {
 
     static Stream<String> existingCases() {
         return Stream.of("PLR-TM-palaces-01", "PLR-TM-palaces-03");
+    }
+
+    @Test
+    void configuredPartsReachTheExistingOneModelCallPipeline() throws Exception {
+        var preserved = preserved("PLR-TM-palaces-01");
+        var client = mock(LlmClient.class);
+        var customPrompt = temporary.resolve("comparison-prompt.txt");
+        Files.writeString(customPrompt, "이 테스트에서 선택한 프롬프트 원문\n");
+        when(searches.search(any(PlaceSearchRequest.class))).thenReturn(preserved.results());
+        when(client.chat(anyList(), anyList())).thenAnswer(invocation -> {
+            List<LlmMessage> messages = invocation.getArgument(0);
+            assertEquals("이 테스트에서 선택한 프롬프트 원문\n", messages.get(0).content());
+            var grounded = envelope(messages).path("serverEvidence").path("data");
+            assertEquals("SEMANTIC_ONLY", grounded.path("searchCriteria").path("rankingMode").asText());
+            assertOriginals(preserved, grounded);
+            return LlmTurn.builder().content(answer(preserved, grounded).toString()).build();
+        });
+        try (var context = context(client, 1, 1, Map.of(
+                "travelmate.conversation.modules.search-ranking", "SEMANTIC_ONLY",
+                "travelmate.conversation.modules.prompt-resource", customPrompt.toUri().toString()
+        ))) {
+            var response = context.getBean(ConversationService.class).respond("owner", UUID.randomUUID(), preserved.request());
+            assertEquals(Termination.COMPLETED, response.termination());
+            assertEquals(MessageSource.LLM, response.messageSource());
+            assertEquals(1, response.modelTurns());
+            assertTrue(response.toolResults().isEmpty());
+            assertFalse(response.citations().isEmpty());
+            verify(searches).search(argThat(criteria -> criteria.rankingMode()
+                    == PlaceSemanticSearchService.RankingMode.SEMANTIC_ONLY));
+            verify(client).chat(anyList(), anyList());
+            verifyNoMoreInteractions(client);
+        }
     }
 
     @ParameterizedTest
@@ -441,7 +474,17 @@ class ConversationGroundingTest {
     }
 
     private AnnotationConfigApplicationContext context(LlmClient client, int turns, int tools) {
+        return context(client, turns, tools, Map.of());
+    }
+
+    private AnnotationConfigApplicationContext context(
+            LlmClient client,
+            int turns,
+            int tools,
+            Map<String, Object> moduleProperties
+    ) {
         var context = new AnnotationConfigApplicationContext();
+        context.getEnvironment().getPropertySources().addFirst(new MapPropertySource("selected-modules", moduleProperties));
         context.getEnvironment().getPropertySources().addFirst(new MapPropertySource("offline-bounds", Map.of(
                 "travelmate.conversation.max-model-turns", turns,
                 "travelmate.conversation.max-tool-calls", tools
@@ -451,6 +494,13 @@ class ConversationGroundingTest {
         context.registerBean(PlaceSemanticSearchService.class, () -> searches);
         context.registerBean(ContextPlanningService.class, () -> planning);
         context.register(
+                ConversationModuleConfig.class,
+                KafkaSearchV1.class,
+                OriginalEvidenceV1.class,
+                ResourcePromptV1.class,
+                GuardedModelV1.class,
+                ConversationSearchPipeline.class,
+                ConversationGenerationPipeline.class,
                 PlaceSearchCriteriaResolver.class,
                 ContextPlanPromptFactory.class,
                 SearchPlacesTool.class,

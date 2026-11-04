@@ -41,14 +41,17 @@ OpenAI 사용 시 `EVAL_OPENAI_*` 모델·한도·키·정책 파일을 지정�
 | 검색 단독 / 대화 전체 | `variants[].module` → 구현 클래스 | Python 평가 실행기 |
 | 임베딩 / 리랭킹 검색 | 같은 `SearchApiModule`에 `ranking_mode` 전달 | 기존 테스트 검색 서버 |
 | OpenAI / Qwen, 모델·예산 | 평가 서버의 `EVAL_LLM_PROVIDER`, `EVAL_OPENAI_*`, `EVAL_OLLAMA_*` | 기존 Spring LLM 전략 |
-| 근거 준비 | 기존 `ConversationEvidenceStrategy` 구현과 레지스트리 | 테스트 Spring |
+| 검색 실행·근거 구성 | `SearchModule` / `EvidenceModule`의 버전 enum과 구현 클래스 | 테스트 Spring |
+| 프롬프트·모델 실행 | `PromptModule` / `ModelModule`의 버전 enum과 구현 클래스 | 테스트 Spring |
 
 임의의 Python/Java 클래스 경로를 JSON에서 import하지 않는다. 새 동작은 인터페이스 구현을 추가하고 레지스트리에 등록한다.
 일치 구현이 0개 또는 여러 개면 실행 전에 실패한다. 단순 프롬프트·모델 차이를 위한 클래스 복제는 하지 않는다.
 
 **`backend_profile`은 활성 서버 설정의 기록·대조값이며 서버를 원격 재설정하는 명령이 아니다.**
 한 실행은 활성 프로필 하나만 사용한다. 모델·프롬프트·근거 구현을 바꾸려면 같은 테스트 서버의 해당 구현/설정을 변경하고 재기동한 다음, 확인한 runtime record와 해시로 새 결과를 수집한다.
-무중단 클래스 교체, 새로운 근거 알고리즘, 모델 서버 자체의 호스팅은 이번 구현 범위가 아니다.
+내부 부품은 [공통 대화 파이프라인](../../docs/architecture/conversation-components.md)으로 분리했다.
+`EVAL_CONVERSATION_*` 설정으로 구현 버전·순위 모드·프롬프트 리소스를 선택한다. 문구·공급자 차이를 위한 구현 클래스 복제는 하지 않는다.
+무중단 클래스 교체, 새로운 근거 알고리즘, 모델 서버 자체의 호스팅은 구현 범위가 아니다.
 평가 실행기 안에 또 다른 검색→근거→LLM 파이프라인을 복제하지 않는다.
 
 ## 즉시 실행 가능한 오프라인 예시
