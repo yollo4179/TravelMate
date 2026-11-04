@@ -1,5 +1,10 @@
 # TravelMate 평가
 
+별도 테스트 서버에서 구현 클래스를 선택하는 [모듈 교체 평가 실행기](experiments/README.md)를 추가했다.
+`Evaluation/experiment.py`는 검색 단독/대화 전체를 공통 `execute()` 경로로 수집하며,
+`Evaluation/evaluation_server.py`는 운영과 분리된 `evaluation` 프로필을 검사·기동한다.
+오프라인 fixture는 실제 모델·검색 품질 결과가 아니다.
+
 검색 API 수집·홀드아웃 검수는 [검색 평가 도구 계약](tracks/search/README.md)을 따른다.
 명시적 case·대상·호출 상한과 원본 HTTP 관측을 보존하며 MOCK·실패·미실행을 품질 분모에서 구분한다.
 이는 기존 native 단일 LLM 도구 관측의 대체물이 아니며 계획·설명 품질 완료를 뜻하지 않는다.

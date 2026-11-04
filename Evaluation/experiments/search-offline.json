@@ -1,0 +1,54 @@
+{
+  "schema_version": "module-experiment-v1",
+  "dataset": "../datasets/v1.4.0",
+  "dataset_manifest_sha256": "42235cfe110d208f9f30656dc90a510951e1ec6dbb8d6b861efe8f4d1e460038",
+  "execution": {
+    "mode": "MOCK",
+    "case_ids": [
+      "PLR-TM-palaces-01",
+      "PLR-TM-palaces-03"
+    ],
+    "max_calls": {
+      "search": 4
+    },
+    "timeout_seconds": 120,
+    "model": null,
+    "max_output_tokens": null,
+    "parameters": {}
+  },
+  "variants": [
+    {
+      "id": "semantic",
+      "module": "SEARCH_API",
+      "ranking_mode": "SEMANTIC_ONLY",
+      "response_limit": 5,
+      "expected_response_type": null,
+      "require_citations": false,
+      "backend_profile": {
+        "search": "existing-independent-search",
+        "evidence": "server-original-evidence",
+        "llm": "offline-fixture-only",
+        "prompt": "existing-conversation-prompt"
+      }
+    },
+    {
+      "id": "reranked",
+      "module": "SEARCH_API",
+      "ranking_mode": "RERANKED",
+      "response_limit": 5,
+      "expected_response_type": null,
+      "require_citations": false,
+      "backend_profile": {
+        "search": "existing-independent-search",
+        "evidence": "server-original-evidence",
+        "llm": "offline-fixture-only",
+        "prompt": "existing-conversation-prompt"
+      }
+    }
+  ],
+  "server_url": "http://127.0.0.1:18080",
+  "token_env": "TRAVELMATE_EVAL_ACCESS_TOKEN",
+  "runtime_record": "offline-runtime.json",
+  "runtime_sha256": "0c3691eee365b8d0d184691c500abdc5994e02ad6f3e69450c0fe2a933359827",
+  "fixtures": "offline-fixtures.json"
+}

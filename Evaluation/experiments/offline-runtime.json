@@ -1,0 +1,15 @@
+{
+  "environment": "evaluation",
+  "execution_mode": "MOCK",
+  "server_url": "http://127.0.0.1:18080",
+  "backend_profile": {
+    "search": "existing-independent-search",
+    "evidence": "server-original-evidence",
+    "llm": "offline-fixture-only",
+    "prompt": "existing-conversation-prompt"
+  },
+  "corpus_sha256": "c74e902620687cbe8b7ec61a24eb7932e95f8cf7a90762baef5e78ad0b134f9e",
+  "corpus_verified": false,
+  "configuration_verified": false,
+  "search_material_verified": false
+}

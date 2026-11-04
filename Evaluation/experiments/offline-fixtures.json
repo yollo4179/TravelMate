@@ -1,0 +1,34 @@
+{
+  "semantic:PLR-TM-palaces-01": {
+    "input_sha256": "13f07e1370f08c3962a159bbf18ff3ef60b7a5b2d03f1d550a34c96f70f9598b",
+    "body_sha256": "65eb170996dccca56002b6dc3361d240c2e2218e8f4cd7d99ed4b1bb8d8cdb5a",
+    "response": {
+      "status_code": 200,
+      "raw_body": "[{\"placeId\":378,\"description\":\"합성 fixture: 실제 검색·모델 품질 결과가 아님\"}]"
+    }
+  },
+  "semantic:PLR-TM-palaces-03": {
+    "input_sha256": "42a6a1b0fb5c40e8be6c37f1cf5e685c982b4d927151646eb6b2467478d8246d",
+    "body_sha256": "ad26df5a4cab29a852cc6114b85eb0175c9968cfa7fa1f896e64ce68d7303e93",
+    "response": {
+      "status_code": 200,
+      "raw_body": "[{\"placeId\":378,\"description\":\"합성 fixture: 실제 검색·모델 품질 결과가 아님\"}]"
+    }
+  },
+  "reranked:PLR-TM-palaces-01": {
+    "input_sha256": "13f07e1370f08c3962a159bbf18ff3ef60b7a5b2d03f1d550a34c96f70f9598b",
+    "body_sha256": "8f52b07d4fc191e6a944e0a09850ee7601436e65e6ee7c1434915259b868ca32",
+    "response": {
+      "status_code": 200,
+      "raw_body": "[{\"placeId\":378,\"description\":\"합성 fixture: 실제 검색·모델 품질 결과가 아님\"}]"
+    }
+  },
+  "reranked:PLR-TM-palaces-03": {
+    "input_sha256": "42a6a1b0fb5c40e8be6c37f1cf5e685c982b4d927151646eb6b2467478d8246d",
+    "body_sha256": "76dd3d0db94e2141123551dc5a3182ac26c08882bda090b2fd04f458e65a2eb1",
+    "response": {
+      "status_code": 200,
+      "raw_body": "[{\"placeId\":378,\"description\":\"합성 fixture: 실제 검색·모델 품질 결과가 아님\"}]"
+    }
+  }
+}

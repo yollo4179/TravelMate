@@ -25,7 +25,12 @@ def search_body(case: dict[str, Any], mode: RankingMode, limit: int) -> dict[str
         raise ValueError("The original nonblank query must fit the server contract; it is never guessed or shortened")
     if type(limit) is not int or not 1 <= limit <= 20:
         raise ValueError("The explicit response limit must be within 1..20")
-    body = {"query": query, "limit": limit, "rankingMode": mode.value}
+    return {"query": query, "limit": limit, "rankingMode": mode.value, **search_filters(conditions)}
+
+
+def search_filters(conditions: dict[str, Any]) -> dict[str, Any]:
+    """Share only filter projection with conversation; message length is a different contract."""
+    body: dict[str, Any] = {}
     for name in ("region", "city", "category"):
         value = conditions.get(name)
         if value is not None and (not isinstance(value, str) or not value.strip() or len(value) > 200):

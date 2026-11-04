@@ -25,6 +25,7 @@ class RunMode(StrEnum):
 
 class Operation(StrEnum):
     SEARCH = "search"
+    CONVERSATION = "conversation"
     JUDGE = "judge"
     RUNTIME_READ = "runtime_read"
     OBSERVATION_READ = "observation_read"
@@ -59,6 +60,11 @@ class ExecutionSettings:
     @classmethod
     def load(cls, path: Path) -> ExecutionSettings:
         configuration = read_json(path)
+        return cls.from_document(configuration, configuration_sha256=digest(path))
+
+    @classmethod
+    def from_document(cls, configuration: dict[str, Any], *, configuration_sha256: str) -> ExecutionSettings:
+        """Reuse the same bounded policy inside a module experiment configuration."""
         required = {"mode", "case_ids", "max_calls", "timeout_seconds", "model", "max_output_tokens", "parameters"}
         if not isinstance(configuration, dict) or set(configuration) != required:
             raise ValueError("Execution configuration must explicitly specify exactly the documented fields")
@@ -92,7 +98,7 @@ class ExecutionSettings:
             model=model,
             max_output_tokens=output_tokens,
             parameters=configuration["parameters"],
-            configuration_sha256=digest(path),
+            configuration_sha256=configuration_sha256,
         )
 
     def require_scope(self, case_ids: list[str]) -> None:
