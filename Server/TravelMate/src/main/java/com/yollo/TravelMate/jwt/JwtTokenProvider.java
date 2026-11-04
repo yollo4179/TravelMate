@@ -67,9 +67,9 @@ public class JwtTokenProvider {
 	/*PostConstruct: 한번만 실행 + 초기화*/
 	@PostConstruct protected void init() {
 		
-		log.debug("[init] JwtTokenProvider: Start init secretKey:${}",secretKey);
-		secretKey = Base64.getEncoder().encodeToString(secretKey.getBytes(StandardCharsets.UTF_8));		
-		log.info("[init] JwtTokenProvider: Finish init secretKey${}",secretKey);
+		// Never log the secret or its encoding: startup logs leave the process and would leak the signing key.
+		secretKey = Base64.getEncoder().encodeToString(secretKey.getBytes(StandardCharsets.UTF_8));
+		log.info("[init] JwtTokenProvider: signing key initialized");
 		/* 시크릿키 Base64로 인코딩 완료*/
 		
 		
