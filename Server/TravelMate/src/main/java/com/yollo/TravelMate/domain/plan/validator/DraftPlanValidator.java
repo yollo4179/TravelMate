@@ -1,6 +1,5 @@
 package com.yollo.TravelMate.domain.plan.validator;
 
-import java.time.Duration;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
@@ -69,15 +68,8 @@ public final class DraftPlanValidator {
     }
 
     private static void validateStayMinutes(Set<Long> selectedIds, GeneratePlanRequest request) {
-        var stayById = request.requiredStops().stream().collect(Collectors.toMap(
-                GeneratePlanRequest.RequiredStop::placeId,
-                GeneratePlanRequest.RequiredStop::stayMinutes
-        ));
-        int defaultStay = request.context().preferences().pace() == PlanContext.Pace.RELAXED ? 60 : 40;
-        int totalStay = selectedIds.stream().mapToInt(placeId -> stayById.getOrDefault(placeId, defaultStay)).sum();
-        long availableMinutes = Duration.between(request.context().startAt(), request.context().endAt()).toMinutes();
         // 체류시간만으로도 불가능한 초안을 막는다. 남은 시간이 실제 이동에 충분하다는 판정은 아니다.
-        if (totalStay > availableMinutes) {
+        if (PlanStayBudget.totalStayMinutes(selectedIds, request) > PlanStayBudget.availableMinutes(request)) {
             throw invalid("방문 체류시간이 여행 가능 시간을 초과합니다.");
         }
     }
