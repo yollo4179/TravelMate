@@ -18,12 +18,12 @@
 | #1 평가·운영 동일 | 부분 | 평가 프로필이 대화 호출 상한을 덮어쓰지 않는다. 두 환경 모두 모델 6턴·도구 8회다. 실험 설정 값과 서버가 보고한 값이 다르면 대화 요청 전에 중단한다 |
 | #9 장소별 15~20개 | 부분 | 상한 20은 유지했다. `MIN_TARGET_ACTIVE_CHUNKS=15`를 두고 `cli coverage`로 15개 미만 장소를 나열한다. 색인할 때 활성 청크 수와 미달 여부를 관측값으로 남긴다. 부족분을 복제·생성하지 않는다 |
 | #10 2~3줄 근거 | 사실상 미충족 | `cli excerpts`로 검수한 인용 파일을 청크로 만들고, `--apply`로 `retrieval_excerpt_bundles`에 저장해 재색인을 요청한다. 색인할 때 생성 청크에 **더해진다.** 인용은 기본 200자(약 2~3줄)까지만 받고, 더 길면 `held_excerpts`로 보류한다 |
-| #11 주차·후기·설명·체험 | 부분 | 관점 이름(`[주차]` 등)이 임베딩 문장에 들어간다. 관점별로 돌아가며 고르는 `aspect-source-round-robin-v2`를 추가했지만 **기본은 기존 `source-round-robin-v1`이다** |
+| #11 주차·후기·설명·체험 | 부분 | 관점 이름(`[주차]` 등)이 임베딩 문장에 들어간다. 관점별로 돌아가며 고르는 `aspect-source-round-robin-v2`를 추가했지만 **기본은 기존 `source-round-robin-v1`이다**. TourAPI 원문을 검수 인용으로 넣으면 검수한 관점이 TourAPI 기본 관점(장소 설명)보다 우선한다(두 규칙이 함께 걸려 v2에서 예외가 나던 문제를 리뷰에서 재현해 고쳤다) |
 | #13 하드코딩 | 부분 | 아래 표 |
 | #17 계획에도 감정 | 부분 | `draft_plan_v1`에 `emotion`을 필수로 넣었다(Enum에서 생성). `plans.character_emotion`에 저장하고 DRAFT 응답의 감정으로 쓴다. 값이 없는 이전 초안만 기본값 EXCITED를 쓴다 |
 | UI 지도 | 부분 | Vue 클라이언트에 카카오 지도(반경 원·끌기 핀·후보 마커)를 추가했다. 키가 없으면 좌표 보기로 바뀐다. 모바일 전환으로 중복이 됐다(5절) |
 | 이미지 감정 | 거의 충족 | SAD 설명을 실제 이미지("선 채로")에 맞췄다. 헷갈리는 쌍(EXCITED/CONCERNED, HAPPY/GUIDING)의 구분점을 설명에 넣었다. PNG와 해시는 바꾸지 않았다 |
-| 계획 감정: 기존 생성 경로 | 커밋 전 검토에서 발견 | 허용 감정 목록을 공용 계획 프롬프트(`PlanPrompts.PLANNER_SYSTEM`)로 옮겼다. 이전에는 문맥 계획 경로만 목록을 받아, 기존 `PlanGenerationService` 경로의 모델이 예시 필드만 보고 자유 문장을 쓰면 Enum 변환에서 계획 전체가 실패할 수 있었다 |
+| 계획 감정: 기존 생성 경로 | 커밋 전 검토에서 발견 | 허용 감정 목록을 공용 계획 프롬프트(`PlanPrompts.PLANNER_SYSTEM`)로 옮겼다. 이전에는 문맥 계획 경로만 목록을 받아, 기존 `PlanGenerationService` 경로의 모델이 예시 필드만 보고 자유 문장을 쓰면 Enum 변환에서 계획 전체가 실패할 수 있었다. 이 경로는 감정을 저장하지도 않았다(`PlanValidator`가 핀을 거른 뒤 감정을 빠뜨리고, `PlanRepository.saveDraft()`가 열을 쓰지 않음). 이제 `PlanValidator`가 감정을 유지하고, 모든 초안이 거치는 `PlanRepository`의 INSERT가 `character_emotion`을 저장한다. 문맥 계획 경로의 별도 UPDATE는 뺐다 |
 | AGENTS.md 규칙 | 커밋 전 검토에서 발견 | 검수 묶음 적용 결과 문자열을 `BundleApplyStatus` Enum으로 바꿨다. 매개변수가 많은 신규 선언·호출은 한 줄에 하나씩 쓰고, DRAFT 응답은 빌더로 만든다. Vue의 반경 범위 객체는 `reactive()`로 관리한다 |
 
 ### #13 하드코딩 제거
@@ -57,10 +57,10 @@
 | 평가 Python | `test_conversation_plan`·`quality`·`registry`·`module_experiments` 50개 통과(`PYTHONUTF8=1`) |
 | 오프라인 MOCK | tool_call·recommendation·plan·conversation 4단계 모두 `collected`, 실패 없음 |
 | 기존 기록 재채점 | `20261104-offline-01`을 다시 채점하면 `scores.jsonl`·`review.csv`가 바이트 단위로 같다 |
-| Java 전체 | 로컬 Docker 스택을 켠 상태에서 425개 중 423개 통과(첫 커밋만 적용한 상태에서도 같은 2개만 실패). 실패 2개는 환경 문제다. `RedisConnectionTest`는 스택 구성(`docker-compose.stack.yml`의 `ports: !reset []`)이 Redis를 호스트에 열지 않아서, `PlanGenerationTest` END_TO_END는 기존 계획 경로의 실제 검색 후보가 없어서(`PLAN_NO_CANDIDATES`) 실패했다. 새 `ConversationVocabularyContractTest` 5개 통과. Docker를 끈 상태에서는 Spring 컨텍스트 테스트 14개가 DB 연결 거부로 실패한다 |
+| Java 전체 | 로컬 Docker 스택(Redis를 `127.0.0.1:6379`로 공개한 뒤)에서 428개 중 427개 통과. 실패 1개는 `PlanGenerationTest` END_TO_END로, 기존 계획 경로의 실제 검색 후보가 없어서(`PLAN_NO_CANDIDATES`) 실패했다. Redis 공개 전에는 `RedisConnectionTest`도 연결 거부로 실패했다. 새 `PlanEmotionPersistenceTest` 3개 통과. 새 `ConversationVocabularyContractTest` 5개 통과. Docker를 끈 상태에서는 Spring 컨텍스트 테스트 14개가 DB 연결 거부로 실패한다 |
 | 외부 호출 | 전체 Java 테스트에 포함된 기존 통합 테스트가 Kakao 로컬 키워드 검색과 TourAPI 관광지 조회를 실제로 호출했다. TourAPI 결과는 모두 기존 데이터라 저장 0건이다. OpenAI 키가 설정돼 있지 않고, 계획 생성 테스트는 후보가 없어 모델 호출 전에 끝났으므로 모델 호출은 0회다 |
 | 클라이언트(Vue) | 계약 테스트 8/8, ESLint·Prettier 통과, Vite 빌드 성공. Chromium 브라우저 테스트는 Playwright가 없어 미실행 |
-| 임베딩 서버 | 183개 중 오류 2개, 32개는 DB가 없어 건너뜀(`PYTHONUTF8=1`). 오류 2개는 이 PC에 `torch`·`asyncpg`가 없어 테스트 모듈을 불러오지 못한 것이다. 새 테스트를 포함한 관련 15개는 통과 |
+| 임베딩 서버 | 184개 중 오류 2개, 32개는 DB가 없어 건너뜀(`PYTHONUTF8=1`). 오류 2개는 이 PC에 `torch`·`asyncpg`가 없어 테스트 모듈을 불러오지 못한 것이다. 새 테스트를 포함한 관련 16개는 통과 |
 | Docker 스크립트 | 14개 오류는 변경 전후 동일(Linux 셸 필요) |
 
 ## 4. 남은 것
@@ -102,6 +102,7 @@
 
 - 공유 소스 228개가 이 작업 폴더에서 CRLF다. Git에는 LF로 저장돼 있어 Windows와 Linux의 소스 해시가 달라질 수 있다.
   - 이 때문에 `v1-grounded-system.txt` 해시 검사(`ConversationModulesTest`)가 실패했다. 내용이 HEAD와 같은 파일이라 다시 체크아웃해 LF로 맞췄고, 검사는 통과한다.
+  - `Docker/search-init/*.sql`은 `embedding-server/app`의 스키마와 바이트 단위로 비교되는데 LF 규칙이 없어, Windows 체크아웃에서 CRLF가 되면 비교 검사가 실패했다. `.gitattributes`에 `eol=lf`를 추가했다.
 - Windows 기본 인코딩(cp949)에서는 UTF-8 기록을 인코딩 지정 없이 읽는 Python 테스트가 실패한다. `PYTHONUTF8=1`로 실행한다.
 - 클라이언트 `package-lock.json`이 `package.json`과 맞지 않아 `npm ci`가 거부된다. 검증에는 lock 파일을 바꾸지 않는 설치를 썼다.
 
