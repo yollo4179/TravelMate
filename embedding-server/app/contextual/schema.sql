@@ -125,3 +125,15 @@ $$;
 DROP TRIGGER IF EXISTS enforce_relation_embedding_evidence ON retrieval_relation_embeddings;
 CREATE TRIGGER enforce_relation_embedding_evidence BEFORE INSERT OR UPDATE ON retrieval_relation_embeddings
     FOR EACH ROW EXECUTE FUNCTION enforce_relation_embedding_evidence();
+-- Reviewed excerpts add to generated chunks; the latest intake per (place, source) replaces only that source's excerpts.
+CREATE TABLE IF NOT EXISTS retrieval_excerpt_bundles (
+    bundle_id VARCHAR(64) PRIMARY KEY,
+    place_id BIGINT NOT NULL REFERENCES place_embeddings,
+    source_id UUID NOT NULL,
+    place_fingerprint VARCHAR(64) NOT NULL,
+    manifest JSONB NOT NULL,
+    applied_order BIGSERIAL UNIQUE,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS idx_retrieval_excerpt_bundle_place
+    ON retrieval_excerpt_bundles(place_id, source_id, applied_order DESC);

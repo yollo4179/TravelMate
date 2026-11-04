@@ -1,13 +1,14 @@
 from __future__ import annotations
 
-from collections import defaultdict, deque
 from typing import Any, Protocol
 
 from app.enrichment.contracts import ExistingPlace, EvidenceStatus
 from app.enrichment.evidence import searchable_claims
-from .contracts import CaptureScope, MAX_ACTIVE_CHUNKS, PlaceRole, SearchChunk, SourceDocument, SourceType
+from .contracts import CaptureScope, PlaceRole, SearchChunk, SourceDocument, SourceType
 from .contracts import SPLITTER_VERSION
 from .splitting import split_document
+# Re-exported so existing imports keep the same selection entry point.
+from .selection import select_active  # noqa: F401
 
 
 class SourceStrategy(Protocol):
@@ -92,29 +93,6 @@ def legacy_evidence_chunks(place: ExistingPlace, snapshot: dict[str, Any] | None
                                        "prompt_version": snapshot.get("prompt_version", "existing-place-evidence-v1"),
                                        "snapshot_id": str(snapshot["snapshot_id"]), "scope": "provider_excerpt_matched"}))
     return chunks
-
-
-def select_active(place_id: int, chunks: list[SearchChunk]) -> list[SearchChunk]:
-    """Round-robin sources; duplicate text cannot consume multiple place slots."""
-    groups: dict[str, deque[SearchChunk]] = defaultdict(deque)
-    seen = set()
-    for chunk in chunks:
-        if place_id not in chunk.index_place_ids:
-            continue
-        key = " ".join(chunk.chunk_text.split())
-        if key in seen:
-            continue
-        seen.add(key)
-        groups[chunk.source.source_id].append(chunk)
-    active = []
-    while groups and len(active) < MAX_ACTIVE_CHUNKS:
-        for source_id in list(groups):
-            active.append(groups[source_id].popleft())
-            if not groups[source_id]:
-                del groups[source_id]
-            if len(active) == MAX_ACTIVE_CHUNKS:
-                break
-    return active
 
 
 def index_embedding_inputs(place: ExistingPlace, chunks: list[SearchChunk]) -> tuple[list[str], int]:

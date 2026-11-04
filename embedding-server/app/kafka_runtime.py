@@ -23,7 +23,9 @@ from app.enrichment.repository import latest_snapshot
 from app.contextual.metadata_filter import PlaceMetadataFilter
 from app.contextual.pipeline import tourapi_chunks, legacy_evidence_chunks, select_active, index_embedding_inputs
 from app.contextual.observation_search import ObservationFilter
-from app.contextual.repository import desired_chunks, activate_chunks, preserve_chunks, store_relation_embeddings
+from app.contextual.repository import desired_chunks, activate_chunks, preserve_chunks, store_relation_embeddings, reviewed_excerpt_chunks
+from app.contextual.selection import ActiveSelectionVersion, DEFAULT_ACTIVE_SELECTION
+from app.contextual.contracts import MIN_TARGET_ACTIVE_CHUNKS
 from app.contextual.relation_vectors import RelationRetrievalMode, relation_embedding_inputs
 from app.contextual.retrieval import resolve_retrieval_strategy
 from app.contextual.artifacts import archive_index_input
@@ -46,11 +48,15 @@ class RankingMode(StrEnum):
 
 
 class KafkaRuntime:
+    # Class default so runtimes built without __init__ (index-path tests) keep the existing selection.
+    active_selection: ActiveSelectionVersion = DEFAULT_ACTIVE_SELECTION
+
     def __init__(self, database_pool: Any) -> None:
         self.database_pool = database_pool
         self.evidence_count = EvidenceCount(int(os.environ.get("CONTEXTUAL_RERANK_EVIDENCE_PER_PLACE", "1")))
         self.use_relation_vectors = RelationRetrievalMode(os.environ.get("CONTEXTUAL_RELATION_RETRIEVAL", RelationRetrievalMode.CHUNK_ONLY.value)) == RelationRetrievalMode.CHUNK_AND_RELATION
         self.original_evidence_mode = OriginalEvidenceMode(os.environ.get("PRESERVED_ORIGINAL_EVIDENCE", OriginalEvidenceMode.DISABLED))
+        self.active_selection = ActiveSelectionVersion(os.environ.get("CONTEXTUAL_ACTIVE_SELECTION", DEFAULT_ACTIVE_SELECTION.value))
         self.bootstrap_servers = os.environ["KAFKA_BOOTSTRAP_SERVERS"]
         self.place_changes_topic = os.environ.get(
             "KAFKA_PLACE_CHANGES_TOPIC",
@@ -254,8 +260,13 @@ class KafkaRuntime:
         place = ExistingPlace.from_mapping({**source, "place_id": job["place_id"]})
         enrichment = await latest_snapshot(self.database_pool, place)
         chunk_generation, imported_chunks = await desired_chunks(self.database_pool, place)
-        all_chunks = imported_chunks + tourapi_chunks(place) + legacy_evidence_chunks(place, enrichment)
-        active_chunks = select_active(place.place_id, all_chunks)
+        excerpt_chunks = await reviewed_excerpt_chunks(self.database_pool, place)
+        all_chunks = imported_chunks + excerpt_chunks + tourapi_chunks(place) + legacy_evidence_chunks(place, enrichment)
+        active_chunks = select_active(
+            place.place_id,
+            all_chunks,
+            self.active_selection,
+        )
         archive_root = Path(os.environ.get("LOCATION_REVIEW_DIR", "LocationReview"))
         await to_thread.run_sync(lambda: archive_index_input(archive_root, place, all_chunks))
         augmented_description = search_description(place, enrichment["document"]) if enrichment else None
@@ -267,6 +278,8 @@ class KafkaRuntime:
             texts += [entry.text for entry in relation_inputs]
             span.set_attribute("embedding.relation_text_count", len(relation_inputs))
             span.set_attribute("embedding.text_count", len(texts))
+            span.set_attribute("embedding.active_chunk_count", len(active_chunks))
+            span.set_attribute("embedding.active_chunks_below_target", len(active_chunks) < MIN_TARGET_ACTIVE_CHUNKS)
             vectors = await to_thread.run_sync(lambda: embedder.embed(texts))
             vector = vectors[primary_index]
             chunk_vectors = vectors[:len(active_chunks)]

@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import argparse
 import asyncio
+import hashlib
 from contextlib import nullcontext
 import json
 import os
@@ -21,7 +22,8 @@ from .profiles import ExecutionProfileId
 from .replay import GenerationBaseline, revalidate_batch
 from .input_format import InputVersion
 from .input_replay import InputFormatComparison
-from .repository import apply_bundle
+from .repository import BundleApplyStatus, apply_bundle, apply_excerpts, coverage_report
+from .excerpts import ExcerptConfig, ExcerptIntake
 from .contracts import SplitterVersion, SPLITTER_VERSION
 from .review import approval_document, reviewed_chunks, selection_report
 from .validation import ValidationVersion
@@ -29,6 +31,47 @@ from app.enrichment.artifacts import write_json
 
 
 async def run(args: argparse.Namespace) -> int:
+    if args.command == "excerpts":
+        original = args.input.read_bytes()
+        intake = ExcerptIntake.from_mapping(json.loads(original.decode("utf-8")))
+        result = intake.execute(ExcerptConfig(max_quote_characters=args.max_quote_characters))
+        intake_sha256 = hashlib.sha256(original).hexdigest()
+        write_json(args.output, {
+            "version": intake.version.value,
+            "intake_sha256": intake_sha256,
+            "source": intake.source.to_dict(),
+            "chunks": [chunk.to_dict() for chunk in result.chunks],
+            "held_relations": list(result.held_relations),
+            "held_excerpts": list(result.held_excerpts),
+        })
+        status = BundleApplyStatus.NOT_APPLIED
+        if args.apply:
+            async with database_pool() as pool:
+                await ensure_enrichment_schema(pool)
+                status = await apply_excerpts(
+                    pool,
+                    intake.source,
+                    result,
+                    intake_sha256=intake_sha256,
+                )
+        print(json.dumps({
+            "output": str(args.output),
+            "chunks": len(result.chunks),
+            "held_excerpts": len(result.held_excerpts),
+            "held_relations": len(result.held_relations),
+            "status": status,
+        }, ensure_ascii=False))
+        return 0
+    if args.command == "coverage":
+        async with database_pool() as pool:
+            report = await coverage_report(pool)
+        write_json(args.output, report)
+        print(json.dumps({
+            "output": str(args.output),
+            "ready_places": report["ready_places"],
+            "below_target": len(report["below_target"]),
+        }, ensure_ascii=False))
+        return 0
     if args.command == "review":
         write_json(args.output, approval_document(args.record, args.approve, args.reviewer))
         print(args.output)
@@ -62,7 +105,7 @@ async def run(args: argparse.Namespace) -> int:
     if args.command == "apply":
         review_path = getattr(args, "review", None)
         if not reviewed_chunks(args.record, review_path):
-            print("NO_INDEXABLE_CHUNKS")
+            print(BundleApplyStatus.NO_INDEXABLE_CHUNKS)
             return 0
         async with database_pool() as pool:
             await ensure_enrichment_schema(pool)
@@ -159,6 +202,13 @@ def main() -> None:
             operation.add_argument("--reviewer", required=True)
         else:
             operation.add_argument("--review", type=Path, required=True)
+    excerpts = commands.add_parser("excerpts", help="검수한 원문 인용(주차·후기·설명·체험)을 청크로 만들고, --apply 시 기존 청크에 추가")
+    excerpts.add_argument("--input", type=Path, required=True)
+    excerpts.add_argument("--output", type=Path, required=True)
+    excerpts.add_argument("--max-quote-characters", type=int, default=ExcerptConfig().max_quote_characters)
+    excerpts.add_argument("--apply", action="store_true")
+    coverage = commands.add_parser("coverage", help="장소별 활성 청크 수가 15~20개 목표에 못 미치는 장소 목록")
+    coverage.add_argument("--output", type=Path, required=True)
     revalidation = commands.add_parser("revalidate", help="저장된 응답을 API 호출 없이 새 규칙으로 재검증")
     revalidation.add_argument("--record", type=Path, required=True, help="record.json 또는 일괄 재검증할 요청 아카이브 디렉터리")
     revalidation.add_argument("--output", type=Path, default=Path("LocationReview"))
@@ -172,7 +222,7 @@ def main() -> None:
         if not args.env_file.is_file():
             parser.error("Explicit environment file does not exist")
         load_dotenv(args.env_file, override=False)
-    if args.command in ("generate", "revalidate", "review", "selection"):
+    if args.command in ("generate", "revalidate", "review", "selection", "excerpts", "coverage"):
         datasets = Path(__file__).resolve().parents[3] / "Evaluation/datasets"
         destinations = [args.output]
         if getattr(args, "comparison_output", None) is not None:

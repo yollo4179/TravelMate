@@ -12,6 +12,8 @@ from app.enrichment.evidence import source_url
 from .relations import ActiveChunkRole, independent_relations, endpoint_ids, validate_independent_relations
 
 MAX_ACTIVE_CHUNKS = 20
+# 요구 사항: 장소마다 15~20개. 하한은 커버리지 보고 기준이며, 부족분을 복제·생성해 채우지 않는다.
+MIN_TARGET_ACTIVE_CHUNKS = 15
 
 
 class SplitterVersion(StrEnum):
