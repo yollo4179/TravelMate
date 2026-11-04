@@ -1,5 +1,8 @@
 # 요구 사항 미충족·부분 항목 수정과 모바일 전환 확인
 
+> 2026-11-04 후속: 계획의 단일 `emotion`/`plans.character_emotion`은 LiLi 컷 대사 `dialogue`/`plans.character_dialogue`로 바뀌었다([LiLi 라우터](../architecture/lili-router.md)). 아래 표는 당시 수정 기록이다.
+
+
 [공통 파이프라인 구현 기록](unified-conversation-implementation-20261104.md)의 후속 작업이다.
 그 구현을 요구 사항과 대조해 미충족·부분으로 판정한 항목을 고쳤다.
 

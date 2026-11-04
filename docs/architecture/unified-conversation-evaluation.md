@@ -77,7 +77,7 @@ python Evaluation/evaluation_server.py --environment-file .env.evaluation.json -
 
 기존 클라이언트 호환을 위해 `type/data`도 보존한다. 이미지 경로는 모델이 만들지 않는다.
 프롬프트에 나오는 Enum 값(의도·답변 종류·감정·도구 이름·작업 상태·필수 필드)은 `PromptVocabulary`가 Enum에서 채운다. 손으로 적은 목록은 없다.
-DRAFT의 감정은 계획 생성 모델이 `draft_plan_v1`의 필수 `emotion`으로 고른 값이며 `plans.character_emotion`에 저장된다. 이전 초안처럼 값이 없을 때만 서버 기본값(EXCITED)을 쓴다.
+DRAFT의 대사는 계획 생성 모델이 `draft_plan_v1`의 필수 `dialogue`(LiLi 컷 2~4개, 컷마다 text+emotion)로 쓰며 `plans.character_dialogue`(JSONB)에 저장된다. 응답의 `emotion`은 첫 컷의 감정이다. 라우팅 구조는 [LiLi 라우터](lili-router.md)를 따른다.
 서버의 감정 Enum을 클라이언트가 catalog.json과 매핑한다. 도구 영수증·실패 응답도 알려진 감정 태그를 가진다.
 일반 답변은 한 번의 대화 모델 호출로 종료할 수 있다. 추가 도구의 결과를 다시 해석할 때만 같은 모델을 다시 호출한다.
 비동기 계획 생성은 내부 생성 호출이 별도로 발생할 수 있다. 전체 계획을 무조건 추론 1회라고 세지 않는다.
@@ -130,7 +130,7 @@ ONDEVICE 한국어 WASM/BIN TTS는 사용자 지시에 따라 **확장 항목으
 현재 API는 완성 JSON 응답 방식이다. 글자 스트리밍이나 1초 내 응답을 실측·보장하지 않았다.
 
 초안 조회에는 기존 `plans.description`과 `pins.memo`에 저장된 설명·활동/선택 이유를 그대로 노출한다.
-감정 태그를 위해 `plans.character_emotion` 열을 추가했다(`Docker/migrations/20261104_add_plan_character_emotion.sql`). 이미 만든 DB에는 직접 적용해야 한다.
+LiLi 대사를 위해 `plans.character_dialogue` 열과 `recommendation_jobs` 표를 추가하고 `plans.character_emotion`은 지웠다(`Docker/migrations/20261105_lili_dialogue_and_recommendation_jobs.sql`). 이미 만든 DB에는 직접 적용해야 한다.
 **계획 생성 시 검사한 구조화 인용을 DB에서 다시 돌려주는 저장 경로는 아직 없다.**
 계획 설명을 검색 결과의 완전한 출처 인용과 동등하다고 판정하지 않는다. 계획 내용과 근거의 의미 검수는 실제 생성·조회 후 별도로 필요하다.
 
