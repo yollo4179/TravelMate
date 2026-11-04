@@ -2,7 +2,7 @@ package com.yollo.TravelMate.domain.plan.data.response;
 
 import java.util.List;
 import java.util.UUID;
-import com.yollo.TravelMate.domain.conversation.data.CharacterEmotion;
+import com.yollo.TravelMate.domain.conversation.data.DialogueCut;
 import com.yollo.TravelMate.domain.plan.data.request.PlanContext;
 import lombok.Builder;
 
@@ -40,7 +40,7 @@ public final class PlanningResponse {
             List<Pin> pins,
             List<String> warnings,
             String description,
-            CharacterEmotion emotion
+            List<DialogueCut> dialogue
     ) {
         public Draft(Long planId, PlanContext context, String title, List<Pin> pins, List<String> warnings) {
             this(planId, context, title, pins, warnings, null, null);

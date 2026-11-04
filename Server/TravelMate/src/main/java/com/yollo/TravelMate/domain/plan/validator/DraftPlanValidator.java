@@ -43,7 +43,7 @@ public final class DraftPlanValidator {
                 draft.planTitle(),
                 draft.planDescription(),
                 draft.pins().stream().sorted(Comparator.comparing(GeneratedPlan.GeneratedPin::sequence)).toList(),
-                draft.emotion()
+                draft.dialogue()
         );
     }
 

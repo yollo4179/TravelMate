@@ -9,6 +9,7 @@ import java.util.stream.StreamSupport;
 import com.yollo.TravelMate.domain.conversation.data.CharacterEmotion;
 import com.yollo.TravelMate.domain.conversation.data.ConversationAnswerKind;
 import com.yollo.TravelMate.domain.conversation.data.ConversationIntent;
+import com.yollo.TravelMate.domain.conversation.data.LiliBranch;
 import com.yollo.TravelMate.domain.conversation.service.ConversationAnswerContract;
 import com.yollo.TravelMate.domain.conversation.service.ConversationEvidencePreparation;
 import com.yollo.TravelMate.domain.conversation.tool.ConversationTool;
@@ -36,7 +37,15 @@ public enum PromptVocabulary {
         ANSWER_FIELDS("answerFields", PromptVocabulary::answerFields),                             // Strict JSON 필수 필드
         ANSWER_KINDS("answerKinds", () -> names(Arrays.asList(ConversationAnswerKind.values()))),
         FINAL_INTENTS("finalIntents", () -> names(ConversationIntent.finalValues())),
-        EMOTIONS("emotions", () -> names(Arrays.asList(CharacterEmotion.values())));                // LiLi catalog.json 태그와 같은 집합
+        EMOTIONS("emotions", () -> names(Arrays.asList(CharacterEmotion.values()))),                // LiLi catalog.json 태그와 같은 집합
+
+        // [LiLi]
+        PERSONA("persona", LiliPersona::text),                                                      // 라우터·추천·계획이 함께 쓰는 단일 페르소나
+        BRANCH_CHAT("branchChat", LiliBranch.CHAT::name),
+        BRANCH_CLARIFY("branchClarify", LiliBranch.CLARIFY::name),
+        BRANCH_SEARCH("branchSearch", LiliBranch.SEARCH_PLACES::name),
+        BRANCH_PLAN("branchPlan", LiliBranch.GENERATE_PLAN::name),
+        BRANCH_JOB("branchJob", LiliBranch.GET_PLANNING_JOB::name);
 
         private static final String SEPARATOR = "/";
         private final String token;

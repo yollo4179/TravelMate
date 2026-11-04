@@ -15,6 +15,10 @@ import org.springframework.stereotype.Component;
 public class OpenAiBatchBudget {
     private static final ObjectMapper JSON = new ObjectMapper();
     private static final BigDecimal MILLION = new BigDecimal("1000000");
+    private static final Map<ObservationContext.Phase, java.util.function.ToIntFunction<Policy>> BACKGROUND_CAPS = Map.of(
+            ObservationContext.Phase.PLAN_GENERATION, Policy::maxPlanGenerationCalls,
+            ObservationContext.Phase.RECOMMENDATION_GENERATION, Policy::maxRecommendationGenerationCalls
+    );
     private final Policy policy;
     private final Path ledger;
     private final Map<String, String> caseRequests = new HashMap<>();
@@ -22,7 +26,7 @@ public class OpenAiBatchBudget {
     private BigDecimal reservedUsd = BigDecimal.ZERO;
     private BigDecimal reservedInferenceUsd = BigDecimal.ZERO;
     private int reservations;
-    private int planGenerationReservations;
+    private final Map<ObservationContext.Phase, Integer> backgroundReservations = new java.util.EnumMap<>(ObservationContext.Phase.class);
     private boolean ledgerCreated;
     private boolean halted;
 
@@ -48,8 +52,9 @@ public class OpenAiBatchBudget {
             String ledgerFile,
             InputCountCostPolicy inputCountCostPolicy,
             int maxInputCountRequests,
-            // Async draft generation of an approved case; 0 (absent) keeps the conversation-only allowance.
-            int maxPlanGenerationCalls
+            // Async jobs of an approved case; 0 (absent) keeps the conversation-only allowance.
+            int maxPlanGenerationCalls,
+            int maxRecommendationGenerationCalls
     ) {
         public Policy {
             inputCountCostPolicy = inputCountCostPolicy == null
@@ -94,7 +99,7 @@ public class OpenAiBatchBudget {
             throw new IllegalStateException("OpenAI evaluation model/token configuration mismatch");
         }
         var context = ObservationContext.capture();
-        if (context == null || !(isConversation(context) || isPlanGeneration(context))
+        if (context == null || !(isConversation(context) || isBackgroundGeneration(context))
                 || context.caseId() == null || context.requestId() == null
                 || policy.caseInputHashes() == null || context.inputSha256() == null
                 || !context.inputSha256().equals(policy.caseInputHashes().get(context.caseId()))) {
@@ -106,7 +111,8 @@ public class OpenAiBatchBudget {
         }
         if (reservations >= policy.maxCalls() || reservations >= policy.maxInputCountRequests()
                 || caseCalls.getOrDefault(context.caseId(), 0) >= policy.maxCallsPerCase()
-                || isPlanGeneration(context) && planGenerationReservations >= policy.maxPlanGenerationCalls()) {
+                || isBackgroundGeneration(context)
+                    && backgroundReservations.getOrDefault(context.phase(), 0) >= BACKGROUND_CAPS.get(context.phase()).applyAsInt(policy)) {
             throw new IllegalStateException("OpenAI evaluation call cap reached");
         }
         requireNonNegative(policy.inputUsdPerMillion());
@@ -143,7 +149,7 @@ public class OpenAiBatchBudget {
         reservations++;
         caseRequests.put(context.caseId(), context.requestId());
         caseCalls.merge(context.caseId(), 1, Integer::sum);
-        if (isPlanGeneration(context)) planGenerationReservations++;
+        if (isBackgroundGeneration(context)) backgroundReservations.merge(context.phase(), 1, Integer::sum);
         return reservation;
     }
 
@@ -151,10 +157,10 @@ public class OpenAiBatchBudget {
         return context.phase() == ObservationContext.Phase.CONVERSATION && context.jobId() == null;
     }
 
-    // The job inherits the case, input hash and request of the conversation turn that queued it.
-    private boolean isPlanGeneration(ObservationContext.Context context) {
-        return context.phase() == ObservationContext.Phase.PLAN_GENERATION && context.jobId() != null
-                && policy.maxPlanGenerationCalls() > 0;
+    // A job inherits the case, input hash and request of the conversation turn that queued it.
+    private boolean isBackgroundGeneration(ObservationContext.Context context) {
+        var cap = BACKGROUND_CAPS.get(context.phase());
+        return context.jobId() != null && cap != null && cap.applyAsInt(policy) > 0;
     }
 
     private void requireInputCountCostPolicy() {

@@ -221,6 +221,27 @@ class OpenAiBatchBudgetTest {
         assertEquals("MOCK-JOB", mapper.readTree(ledger.get(0)).path("jobId").asText());
     }
 
+    @Test
+    void eachBackgroundJobKindHasItsOwnExplicitAllowance() throws Exception {
+        var budget = budget(policy().put("maxPlanGenerationCalls", 1).put("maxRecommendationGenerationCalls", 1));
+        try (var scope = ObservationContext.open(ObservationContext.Context.builder().requestId("R1").caseId("C1")
+                .inputSha256("H1").phase(ObservationContext.Phase.RECOMMENDATION_GENERATION).jobId("MOCK-RECOMMENDATION")
+                .mode(ObservationContext.Mode.MOCK).sink(event -> {}).build())) {
+            assertNotNull(budget.reserve(limits));
+            assertThrows(IllegalStateException.class, () -> budget.reserve(limits));
+        }
+        // The plan allowance is separate, so a spent recommendation allowance does not block the draft.
+        try (var scope = planGeneration("C1", "H1", "R1")) {
+            assertNotNull(budget.reserve(limits));
+        }
+        var unapproved = budget(policy().put("ledgerFile", "other-ledger.jsonl"));
+        try (var scope = ObservationContext.open(ObservationContext.Context.builder().requestId("R2").caseId("C2")
+                .inputSha256("H2").phase(ObservationContext.Phase.RECOMMENDATION_GENERATION).jobId("MOCK-RECOMMENDATION")
+                .mode(ObservationContext.Mode.MOCK).sink(event -> {}).build())) {
+            assertThrows(IllegalStateException.class, () -> unapproved.reserve(limits));
+        }
+    }
+
     private ObservationContext.Scope planGeneration(String caseId, String inputSha256, String requestId) {
         return ObservationContext.open(ObservationContext.Context.builder().requestId(requestId)
                 .caseId(caseId).inputSha256(inputSha256).phase(ObservationContext.Phase.PLAN_GENERATION).jobId("MOCK-JOB")

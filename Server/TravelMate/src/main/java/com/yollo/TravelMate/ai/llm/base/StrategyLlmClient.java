@@ -30,4 +30,9 @@ public class StrategyLlmClient implements LlmClient {
     public LlmTurn chat(List<LlmMessage> messages, List<LlmTurn.ToolDefinition> tools) {
         return selected.chat(messages, tools);
     }
+
+    @Override
+    public LlmTurn chat(List<LlmMessage> messages, List<LlmTurn.ToolDefinition> tools, StructuredOutput output) {
+        return selected.chat(messages, tools, output);
+    }
 }

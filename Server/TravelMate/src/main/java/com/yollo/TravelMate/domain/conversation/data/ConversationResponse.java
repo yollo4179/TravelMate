@@ -20,11 +20,19 @@ public record ConversationResponse(
         MessageSource messageSource,
         ConversationIntent intent,
         CharacterEmotion emotion,
-        List<JsonNode> items
+        List<JsonNode> items,
+        List<DialogueCut> dialogue,
+        List<String> choices
 ) {
     public ConversationResponse {
         emotion = emotion == null ? CharacterEmotion.NEUTRAL : emotion;
         intent = intent == null ? ConversationIntent.CONVERSATION : intent;
+        // message/emotion stay the first cut so clients that read one line keep working.
+        if (dialogue == null || dialogue.isEmpty()) {
+            dialogue = message == null || message.isBlank() ? List.of() : List.of(new DialogueCut(message, emotion));
+        }
+        dialogue = List.copyOf(dialogue);
+        choices = choices == null ? List.of() : List.copyOf(choices);
         // Preserve authoritative legacy data, while all candidate/plan consumers use arrays.
         if (items == null) {
             items = data == null || data.isNull() ? List.of()
@@ -34,7 +42,7 @@ public record ConversationResponse(
         items = List.copyOf(items);
     }
 
-    public enum ResultType { TEXT, PLACES, PLANNING_JOB, DRAFT, ERROR }
+    public enum ResultType { TEXT, PLACES, PLANNING_JOB, RECOMMENDATION_JOB, DRAFT, ERROR }
     public enum Termination { COMPLETED, MODEL_FAILED, INVALID_RESPONSE, MODEL_LIMIT, TOOL_LIMIT, TOOL_FAILED, BUDGET_REJECTED, COUNT_UNAVAILABLE }
     public enum ToolStatus { SUCCEEDED, FAILED, CACHED }
     public enum MessageSource { LLM, SERVER_RECEIPT, SERVER_FALLBACK }

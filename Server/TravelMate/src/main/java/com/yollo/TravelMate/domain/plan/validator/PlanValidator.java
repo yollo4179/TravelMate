@@ -62,7 +62,7 @@ public class PlanValidator {
                 plan.planTitle(),
                 plan.planDescription(),
                 validPins,
-                plan.emotion()
+                plan.dialogue()
         );
     }
 

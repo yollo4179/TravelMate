@@ -32,6 +32,10 @@ public class ConversationGenerationPipeline {
         return model.execute(input, config);
     }
 
+    public ConversationModuleConfig config() {
+        return config;
+    }
+
     public Map<String, Object> selection() {
         return Map.of(
                 "config", config,

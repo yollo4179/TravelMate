@@ -4,6 +4,7 @@ import java.util.List;
 import com.yollo.TravelMate.domain.conversation.data.CharacterEmotion;
 import com.yollo.TravelMate.domain.conversation.data.ConversationAnswerKind;
 import com.yollo.TravelMate.domain.conversation.data.ConversationIntent;
+import com.yollo.TravelMate.domain.conversation.data.DialogueCut;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
@@ -27,6 +28,7 @@ public class ConversationAnswerRenderer {
     private static final Map<ResultType, Function<JsonNode, String>> RECEIPT_MESSAGES = Map.of(
             ResultType.PLACES, places -> places.isEmpty() ? "검색 조건에 맞는 장소가 없습니다." : "장소 검색 결과 " + places.size() + "개를 확인했습니다.",
             ResultType.PLANNING_JOB, ConversationAnswerRenderer::jobMessage,
+            ResultType.RECOMMENDATION_JOB, ConversationAnswerRenderer::recommendationJobMessage,
             ResultType.DRAFT, draft -> draft.path("description").isTextual() && !draft.path("description").asText().isBlank()
                     ? draft.path("description").asText()
                     : "서버에서 확인한 일정 초안입니다. 확정 여부와 세부 내용은 반환된 상태와 데이터를 확인해 주세요.",
@@ -38,12 +40,13 @@ public class ConversationAnswerRenderer {
             ResultType.ERROR, ConversationIntent.CONVERSATION,
             ResultType.PLACES, ConversationIntent.RECOMMENDATION,
             ResultType.PLANNING_JOB, ConversationIntent.PLAN,
+            ResultType.RECOMMENDATION_JOB, ConversationIntent.RECOMMENDATION,
             ResultType.DRAFT, ConversationIntent.PLAN
     );
     private static final Map<ResultType, CharacterEmotion> RECEIPT_EMOTIONS = Map.of(
             ResultType.TEXT, CharacterEmotion.NEUTRAL, ResultType.ERROR, CharacterEmotion.CONCERNED,
             ResultType.PLACES, CharacterEmotion.GUIDING, ResultType.PLANNING_JOB, CharacterEmotion.THINKING,
-            ResultType.DRAFT, CharacterEmotion.EXCITED
+            ResultType.RECOMMENDATION_JOB, CharacterEmotion.THINKING, ResultType.DRAFT, CharacterEmotion.EXCITED
     );
     private final ObjectMapper mapper;
 
@@ -206,10 +209,51 @@ public class ConversationAnswerRenderer {
             JsonNode publicData
     ) {
         if (source == MessageSource.LLM && answer != null) return answer.emotion();
-        // A draft's text was written by the plan-generation model, so its stored tag outranks the receipt default.
-        var stored = publicData.path("emotion");
+        // A draft's cuts were written by the plan-generation model, so its first expression outranks the receipt default.
+        var stored = publicData.path("dialogue").path(0).path("emotion");
         if (type == ResultType.DRAFT && stored.isTextual()) return CharacterEmotion.valueOf(stored.asText());
         return RECEIPT_EMOTIONS.get(type);
+    }
+
+    /**
+     * LiLi turns keep the character's cuts as the message. Job status lives only in server data, so a line
+     * written before the job ran cannot replace the authoritative status.
+     */
+    public ConversationResponse dialogue(
+            ConversationTool.Result primary,
+            ConversationIntent intent,
+            List<Citation> citations,
+            List<DialogueCut> dialogue,
+            List<String> choices,
+            Termination termination,
+            int modelTurns,
+            List<ToolObservation> observations
+    ) {
+        if (dialogue.isEmpty()) throw new IllegalArgumentException("A LiLi turn needs at least one cut");
+        ResultType type = primary == null ? ResultType.TEXT : primary.type();
+        JsonNode publicData = primary == null ? mapper.nullNode() : primary.publicData();
+        var context = ObservationContext.capture();
+        return ConversationResponse.builder().type(type).data(publicData)
+                .message(dialogue.get(0).text()).emotion(dialogue.get(0).emotion())
+                .dialogue(dialogue).choices(choices)
+                .citations(type == ResultType.PLACES ? citations : List.of())
+                .termination(termination).modelTurns(modelTurns).toolResults(List.copyOf(observations))
+                .requestId(context == null ? null : context.requestId()).turnId(context == null ? null : context.turnId())
+                .conversationId(context == null ? null : context.conversationId())
+                .primaryResultId(observations.isEmpty() ? null : observations.get(observations.size() - 1).resultId())
+                .messageSource(MessageSource.LLM)
+                .intent(type == ResultType.TEXT || type == ResultType.ERROR ? intent : RESULT_INTENTS.get(type))
+                .build();
+    }
+
+    private static String recommendationJobMessage(JsonNode receipt) {
+        var status = com.yollo.TravelMate.domain.plan.data.response.PlanningResponse.JobStatus.valueOf(receipt.path("status").asText());
+        return switch (status) {
+            case QUEUED -> "추천 요청을 접수했습니다. 아직 추천 결과가 준비되지 않았습니다.";
+            case RUNNING -> "추천 결과를 준비하고 있습니다.";
+            case FAILED -> "추천 결과를 준비하지 못했습니다. 작업 기록의 실패 사유를 확인해 주세요.";
+            case SUCCEEDED -> "추천 결과가 준비됐습니다.";
+        };
     }
 
     private static String jobMessage(JsonNode receipt) {

@@ -135,13 +135,27 @@ public class OpenAiLlmClient implements LlmStrategy {
 
     @Override
     public LlmTurn chat(List<LlmMessage> messages, List<LlmTurn.ToolDefinition> tools) {
-        return complete(messages, tools, false);
+        return complete(messages, tools, false, null);
+    }
+
+    @Override
+    public LlmTurn chat(List<LlmMessage> messages, List<LlmTurn.ToolDefinition> tools, StructuredOutput output) {
+        return complete(messages, tools, false, output);
     }
 
     private LlmTurn complete(
             List<LlmMessage> messages,
             List<LlmTurn.ToolDefinition> tools,
             boolean jsonOutput
+    ) {
+        return complete(messages, tools, jsonOutput, null);
+    }
+
+    private LlmTurn complete(
+            List<LlmMessage> messages,
+            List<LlmTurn.ToolDefinition> tools,
+            boolean jsonOutput,
+            StructuredOutput output
     ) {
         var preparedTools = OpenAiToolContracts.prepare(tools, toolContractMode);
         Map<String, Object> request = new LinkedHashMap<>();
@@ -157,7 +171,15 @@ public class OpenAiLlmClient implements LlmStrategy {
                 ? Map.of("type", "json_schema", "name", "draft_plan_v1", "strict", true,
                     "schema", com.yollo.TravelMate.domain.plan.prompts.GeneratedPlanOutputContract.schema())
                 : Map.of("type", "json_object")));
-        if (!jsonOutput && !tools.isEmpty() && responseFormat == ConversationResponseFormat.JSON_SCHEMA_V1) {
+        if (output != null) {
+            // An explicit caller schema wins: the LiLi turn needs Strict JSON even when it is offered no tools.
+            request.put("text", Map.of("format", Map.of(
+                    "type", "json_schema",
+                    "name", output.name(),
+                    "strict", true,
+                    "schema", output.schema()
+            )));
+        } else if (!jsonOutput && !tools.isEmpty() && responseFormat == ConversationResponseFormat.JSON_SCHEMA_V1) {
             request.put("text", Map.of("format", Map.of(
                     "type", "json_schema",
                     "name", "conversation_answer_v1",

@@ -18,6 +18,7 @@ public class GuardedModelV1 implements ModelModule {
     @Override
     public LlmTurn execute(Input input, ConversationModuleConfig config) {
         // Keep provider selection, exact counting, reservations and usage accounting on the existing path.
-        return client.chat(input.messages(), input.tools());
+        if (input.output() == null) return client.chat(input.messages(), input.tools());
+        return client.chat(input.messages(), input.tools(), input.output());
     }
 }

@@ -14,19 +14,23 @@ import com.yollo.TravelMate.ai.llm.observation.ObservationContext;
 import com.yollo.TravelMate.domain.conversation.data.ConversationAnswerKind;
 import com.yollo.TravelMate.domain.conversation.data.ConversationRequest;
 import com.yollo.TravelMate.domain.conversation.pipeline.ConversationGenerationPipeline;
+import com.yollo.TravelMate.domain.conversation.pipeline.ConversationRoutingModule;
 import com.yollo.TravelMate.domain.conversation.pipeline.ModelModule;
+import com.yollo.TravelMate.domain.conversation.pipeline.ModuleSelection;
 import com.yollo.TravelMate.domain.conversation.data.ConversationResponse;
 import com.yollo.TravelMate.domain.conversation.data.ConversationResponse.*;
 import com.yollo.TravelMate.domain.conversation.tool.*;
 import com.yollo.TravelMate.domain.plan.prompts.ContextPlanPromptFactory.CitationSource;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
 public class ConversationService {
     private static final Map<ResultType, Integer> PRIORITY = Map.of(
-            ResultType.ERROR, 0, ResultType.TEXT, 0, ResultType.PLACES, 1, ResultType.PLANNING_JOB, 2, ResultType.DRAFT, 3
+            ResultType.ERROR, 0, ResultType.TEXT, 0, ResultType.PLACES, 1, ResultType.PLANNING_JOB, 2,
+            ResultType.RECOMMENDATION_JOB, 2, ResultType.DRAFT, 3
     );
     private final ConversationGenerationPipeline generation;
     private final ConversationToolRegistry registry;
@@ -38,6 +42,7 @@ public class ConversationService {
     private final int maxToolCalls;
     public enum ToolFailurePolicy { CONTINUE, STOP }
     private final ToolFailurePolicy toolFailurePolicy;
+    private final ConversationRoutingModule routing;
 
     public ConversationService(
             LlmClient llm,
@@ -86,6 +91,31 @@ public class ConversationService {
         );
     }
 
+    public ConversationService(
+            ConversationGenerationPipeline generation,
+            ConversationToolRegistry registry,
+            ConversationToolExecutor executor,
+            ConversationAnswerRenderer renderer,
+            ObjectMapper mapper,
+            int maxModelTurns,
+            int maxToolCalls,
+            ToolFailurePolicy toolFailurePolicy,
+            ConversationEvidencePreparation evidencePreparation
+    ) {
+        this(
+                generation,
+                registry,
+                executor,
+                renderer,
+                mapper,
+                maxModelTurns,
+                maxToolCalls,
+                toolFailurePolicy,
+                evidencePreparation,
+                List.of()
+        );
+    }
+
     @Autowired
     public ConversationService(
             ConversationGenerationPipeline generation,
@@ -96,7 +126,34 @@ public class ConversationService {
             @Value("${travelmate.conversation.max-model-turns:6}") int maxModelTurns,
             @Value("${travelmate.conversation.max-tool-calls:8}") int maxToolCalls,
             @Value("${travelmate.conversation.tool-failure-policy:CONTINUE}") ToolFailurePolicy toolFailurePolicy,
-            ConversationEvidencePreparation evidencePreparation
+            ConversationEvidencePreparation evidencePreparation,
+            ObjectProvider<ConversationRoutingModule> routings
+    ) {
+        this(
+                generation,
+                registry,
+                executor,
+                renderer,
+                mapper,
+                maxModelTurns,
+                maxToolCalls,
+                toolFailurePolicy,
+                evidencePreparation,
+                routings.orderedStream().toList()
+        );
+    }
+
+    public ConversationService(
+            ConversationGenerationPipeline generation,
+            ConversationToolRegistry registry,
+            ConversationToolExecutor executor,
+            ConversationAnswerRenderer renderer,
+            ObjectMapper mapper,
+            int maxModelTurns,
+            int maxToolCalls,
+            ToolFailurePolicy toolFailurePolicy,
+            ConversationEvidencePreparation evidencePreparation,
+            List<ConversationRoutingModule> routings
     ) {
         if (maxModelTurns < 1 || maxToolCalls < 1) throw new IllegalArgumentException("도구 루프 한도는 양수여야 합니다.");
         this.generation = java.util.Objects.requireNonNull(generation);
@@ -108,18 +165,25 @@ public class ConversationService {
         this.maxToolCalls = maxToolCalls;
         this.toolFailurePolicy = java.util.Objects.requireNonNull(toolFailurePolicy);
         this.evidencePreparation = java.util.Objects.requireNonNull(evidencePreparation);
+        // The single-LLM loop needs this service's internals, so it is built here; other routings are beans.
+        var available = new ArrayList<ConversationRoutingModule>(routings);
+        available.add(new SingleLlmRoutingV1(this::runSingleLlm));
+        this.routing = ModuleSelection.requireOne(available, module -> module.supports(generation.config().routing()), "routing");
     }
 
     public ConversationResponse respond(String userUid, UUID turnKey, ConversationRequest request) {
         try (var scope = ObservationContext.open(ObservationContext.child(
                 ObservationContext.Phase.CONVERSATION, null, null, null))) {
-            var response = run(userUid, turnKey, request);
+            var response = routing.execute(new ConversationRoutingModule.Turn(userUid, turnKey, request));
             ObservationContext.record(ObservationContext.Event.TURN_RESULT, mapper.valueToTree(response));
             return response;
         }
     }
 
-    private ConversationResponse run(String userUid, UUID turnKey, ConversationRequest request) {
+    private ConversationResponse runSingleLlm(ConversationRoutingModule.Turn routed) {
+        String userUid = routed.userUid();
+        UUID turnKey = routed.turnKey();
+        ConversationRequest request = routed.request();
         long preparationStarted = System.nanoTime();
         var prepared = evidencePreparation.prepare(userUid, turnKey, request, registry);
         var preparationEvent = mapper.createObjectNode().put("state", prepared.state().name())
@@ -227,6 +291,20 @@ public class ConversationService {
             }
         }
         return renderer.render(primary, null, Termination.MODEL_LIMIT, maxModelTurns, observations);
+    }
+
+    private record SingleLlmRoutingV1(
+            java.util.function.Function<ConversationRoutingModule.Turn, ConversationResponse> loop
+    ) implements ConversationRoutingModule {
+        @Override
+        public boolean supports(Version version) {
+            return version == Version.SINGLE_LLM_V1;
+        }
+
+        @Override
+        public ConversationResponse execute(Turn turn) {
+            return loop.apply(turn);
+        }
     }
 
     private static boolean validCallIds(List<LlmTurn.ToolCall> calls, Set<String> usedCallIds) {

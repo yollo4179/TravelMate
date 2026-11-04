@@ -26,6 +26,15 @@ public record ConversationRequest(
         this(message, planningRequest, history, searchContext, ConversationIntent.AUTO);
     }
 
+    /** LiLi's search query replaces the raw sentence for retrieval; the original turn stays in the job payload. */
+    public ConversationRequest withMessage(String replacement) {
+        return new ConversationRequest(replacement, planningRequest, history, searchContext, intentHint);
+    }
+
+    public ConversationRequest withPlanningRequest(GeneratePlanRequest replacement) {
+        return new ConversationRequest(message, replacement, history, searchContext, intentHint);
+    }
+
     public enum HistoryRole { USER, ASSISTANT }
 
     public record HistoryMessage(

@@ -49,6 +49,14 @@ public class EvaluationConversationContractController {
                 LlmProvider.QWEN, "ollama.conversation-response-format").get(provider);
         result.put("response_format", environment.getProperty(formatProperty, "PROMPT_ONLY"));
         result.put("modules", generation.selection());
+        result.put("routing", generation.config().routing().name());
+        var lili = new LinkedHashMap<String, Object>();
+        lili.put("router_schema", com.yollo.TravelMate.domain.conversation.service.LiliTurnContract.routerSchema());
+        lili.put("reply_schema", com.yollo.TravelMate.domain.conversation.service.LiliTurnContract.replySchema());
+        lili.put("recommendation_schema", com.yollo.TravelMate.domain.conversation.service.LiliTurnContract.recommendationSchema());
+        lili.put("prompt_sha256", Arrays.stream(com.yollo.TravelMate.domain.conversation.pipeline.LiliPrompts.Prompt.values())
+                .collect(java.util.stream.Collectors.toMap(Enum::name, com.yollo.TravelMate.domain.conversation.pipeline.LiliPrompts::sha256)));
+        result.put("lili", lili);
         result.put("search_endpoint", environment.getProperty("embedding.server.url", "http://127.0.0.1:18000"));
         result.put("source_sha256", com.yollo.TravelMate.domain.conversation.pipeline.RuntimeBuildIdentity.sourceSha256());
         result.put("reasoning_mode", environment.getProperty("openai.reasoning-mode", "DISABLED"));

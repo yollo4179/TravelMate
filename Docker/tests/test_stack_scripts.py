@@ -181,6 +181,10 @@ if args[0] == 'inspect':
             (self.scripts / 'build/stack/init/04-plan-character-emotion.sql').read_text(),
             (DOCKER_DIR / 'migrations/20261104_add_plan_character_emotion.sql').read_text(),
         )
+        self.assertEqual(
+            (self.scripts / 'build/stack/init/05-lili-dialogue-and-recommendation-jobs.sql').read_text(),
+            (DOCKER_DIR / 'migrations/20261105_lili_dialogue_and_recommendation_jobs.sql').read_text(),
+        )
         calls = self.calls()
         helper = next(x['args'] for x in calls if x['args'][0] == 'run')
         self.assertIn('/bootstrap.py', helper)

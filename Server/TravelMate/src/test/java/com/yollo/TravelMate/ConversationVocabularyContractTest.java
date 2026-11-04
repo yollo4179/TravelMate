@@ -8,6 +8,7 @@ import java.util.stream.Collectors;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.yollo.TravelMate.ai.llm.base.LlmTurn;
 import com.yollo.TravelMate.domain.conversation.data.*;
+import com.yollo.TravelMate.domain.conversation.pipeline.LiliPersona;
 import com.yollo.TravelMate.domain.conversation.data.ConversationResponse.*;
 import com.yollo.TravelMate.domain.conversation.pipeline.ConversationModuleConfig;
 import com.yollo.TravelMate.domain.conversation.pipeline.PromptTemplates;
@@ -77,25 +78,31 @@ class ConversationVocabularyContractTest {
     }
 
     @Test
-    void planOutputRequiresAnEmotionFromTheSameEnumAndThePromptNamesIt() throws Exception {
+    void planOutputRequiresLiliCutsFromTheSameEnumAndThePromptCarriesThePersona() throws Exception {
         var schema = GeneratedPlanOutputContract.schema();
-        assertTrue(List.of(mapper.treeToValue(schema.path("required"), String[].class)).contains("emotion"));
+        assertTrue(List.of(mapper.treeToValue(schema.path("required"), String[].class)).contains("dialogue"));
+        var cut = schema.path("properties").path("dialogue");
+        assertEquals(DialogueCut.MIN_RESULT_CUTS, cut.path("minItems").asInt());
+        assertEquals(DialogueCut.MAX_RESULT_CUTS, cut.path("maxItems").asInt());
         assertEquals(joined(Arrays.asList(CharacterEmotion.values())),
-                String.join("/", mapper.treeToValue(schema.path("properties").path("emotion").path("enum"), String[].class)));
+                String.join("/", mapper.treeToValue(cut.path("items").path("properties").path("emotion").path("enum"), String[].class)));
         String emotionRule = "emotion은 " + joined(Arrays.asList(CharacterEmotion.values()));
-        // The legacy planner path parses the same enum, so its shared prompt must list the tags too.
+        // The legacy planner path parses the same enum, so its shared prompt must list the tags and the persona too.
         assertTrue(PlanPrompts.PLANNER_SYSTEM.contains(emotionRule));
+        assertTrue(PlanPrompts.PLANNER_SYSTEM.contains(LiliPersona.text()));
         assertTrue(new ContextPlanPromptFactory(mapper).systemPrompt().contains(emotionRule));
-        var parsed = mapper.readValue("{\"planTitle\":\"t\",\"planDescription\":\"d\",\"pins\":[],\"emotion\":\"AFFECTIONATE\"}", GeneratedPlan.class);
-        assertEquals(CharacterEmotion.AFFECTIONATE, parsed.emotion());
-        assertThrows(Exception.class, () -> mapper.readValue("{\"planTitle\":\"t\",\"pins\":[],\"emotion\":\"INVENTED\"}", GeneratedPlan.class));
+        var parsed = mapper.readValue("{\"planTitle\":\"t\",\"planDescription\":\"d\",\"pins\":[],"
+                + "\"dialogue\":[{\"text\":\"어때?\",\"emotion\":\"AFFECTIONATE\"}]}", GeneratedPlan.class);
+        assertEquals(CharacterEmotion.AFFECTIONATE, parsed.dialogue().get(0).emotion());
+        assertThrows(Exception.class, () -> mapper.readValue("{\"planTitle\":\"t\",\"pins\":[],"
+                + "\"dialogue\":[{\"text\":\"어때?\",\"emotion\":\"INVENTED\"}]}", GeneratedPlan.class));
     }
 
     @Test
     void draftReceiptUsesThePlanModelEmotionAndFallsBackForOlderDrafts() throws Exception {
         var renderer = new ConversationAnswerRenderer(mapper);
         var chosen = ConversationTool.Result.builder().type(ResultType.DRAFT)
-                .publicData(mapper.readTree("{\"planId\":1,\"pins\":[],\"emotion\":\"AFFECTIONATE\"}")).build();
+                .publicData(mapper.readTree("{\"planId\":1,\"pins\":[],\"dialogue\":[{\"text\":\"어때?\",\"emotion\":\"AFFECTIONATE\"}]}")).build();
         assertEquals(CharacterEmotion.AFFECTIONATE, renderer.receipt(chosen, Termination.COMPLETED, 1, List.of()).emotion());
         var older = ConversationTool.Result.builder().type(ResultType.DRAFT)
                 .publicData(mapper.readTree("{\"planId\":1,\"pins\":[]}")).build();

@@ -3,7 +3,7 @@ package com.yollo.TravelMate.domain.plan.repository;
 import java.util.List;
 import java.util.stream.IntStream;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.yollo.TravelMate.domain.conversation.data.CharacterEmotion;
+import com.yollo.TravelMate.domain.conversation.data.DialogueCut;
 import com.yollo.TravelMate.domain.place.data.result.PlaceResult;
 import com.yollo.TravelMate.domain.plan.data.internal.GeneratedPlan;
 import com.yollo.TravelMate.domain.plan.data.request.GeneratePlanRequest;
@@ -60,12 +60,12 @@ public class ContextPlanRepository {
 
     public PlanningResponse.Draft get(long planId, String userUid) {
         var headers = jdbc.query(
-                "SELECT title, description, context::text, character_emotion FROM plans WHERE plan_id = ? AND user_uid = ?",
+                "SELECT title, description, context::text, character_dialogue::text AS character_dialogue FROM plans WHERE plan_id = ? AND user_uid = ?",
                 (row, index) -> new DraftHeader(
                         row.getString("title"),
                         readContext(row.getString("context")),
                         row.getString("description"),
-                        readEmotion(row.getString("character_emotion"))
+                        readDialogue(row.getString("character_dialogue"))
                 ),
                 planId,
                 userUid
@@ -87,13 +87,18 @@ public class ContextPlanRepository {
                 .pins(pins)
                 .warnings(List.of("운영시간과 실제 이동 경로가 검증되지 않은 초안입니다. 방문 시간과 동선은 확정되지 않았습니다."))
                 .description(header.description())
-                .emotion(header.emotion())
+                .dialogue(header.dialogue())
                 .build();
     }
 
-    // Drafts saved before the column existed, or written without a model call, have no stored tag.
-    private static CharacterEmotion readEmotion(String stored) {
-        return stored == null ? null : CharacterEmotion.valueOf(stored);
+    // Drafts saved before the column existed, or written without a model call, have no stored cuts.
+    private List<DialogueCut> readDialogue(String stored) {
+        if (stored == null) return null;
+        try {
+            return List.of(objectMapper.readValue(stored, DialogueCut[].class));
+        } catch (Exception exception) {
+            throw new IllegalStateException("저장된 초안 대사를 읽지 못했습니다.", exception);
+        }
     }
 
     private PlanContext readContext(String json) {
@@ -104,6 +109,6 @@ public class ContextPlanRepository {
             String title,
             PlanContext context,
             String description,
-            CharacterEmotion emotion
+            List<DialogueCut> dialogue
     ) {}
 }

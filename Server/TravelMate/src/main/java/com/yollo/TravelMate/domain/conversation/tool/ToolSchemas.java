@@ -70,6 +70,10 @@ public final class ToolSchemas {
             });
         }
         if (argument.isArray()) {
+            if (argument.size() < schema.path("minItems").asInt(0)
+                    || argument.size() > schema.path("maxItems").asInt(Integer.MAX_VALUE)) {
+                throw new IllegalArgumentException("Invalid tool argument size: " + path);
+            }
             if (schema.path("uniqueItems").asBoolean(false)
                     && StreamSupport.stream(argument.spliterator(), false).map(ToolSchemas::canonicalValue).distinct().count() != argument.size()) {
                 throw new IllegalArgumentException("Duplicate tool argument: " + path);

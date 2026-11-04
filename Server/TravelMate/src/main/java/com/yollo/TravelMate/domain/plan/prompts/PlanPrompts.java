@@ -3,15 +3,21 @@ package com.yollo.TravelMate.domain.plan.prompts;
 import java.util.Arrays;
 import java.util.stream.Collectors;
 import com.yollo.TravelMate.domain.conversation.data.CharacterEmotion;
+import com.yollo.TravelMate.domain.conversation.data.DialogueCut;
+import com.yollo.TravelMate.domain.conversation.pipeline.LiliPersona;
 
 public class PlanPrompts {
 
 	private PlanPrompts() {}
 
-	// Every plan path parses emotion into the enum, so each path must see the allowed tags, not only the example field.
-	private static final String EMOTION_RULE = "\nemotion은 "
+	// The draft is presented by LiLi, so the plan model writes its cuts with the one shared persona and emotion set.
+	private static final String DIALOGUE_RULE = "\n[dialogue]\n" + LiliPersona.text()
+			+ "\ndialogue는 이 초안을 사용자에게 건네는 LiLi의 대사 " + DialogueCut.MIN_RESULT_CUTS + "~" + DialogueCut.MAX_RESULT_CUTS
+			+ "컷이다. 한 컷은 1~2문장이고 emotion은 "
 			+ Arrays.stream(CharacterEmotion.values()).map(Enum::name).collect(Collectors.joining("/"))
-			+ " 중 이 초안을 전하는 캐릭터 반응 하나다. 이미지 경로는 만들지 마라.\n";
+			+ " 중 하나다. 장소 순서·시간 같은 일정 내용은 카드가 보여 주므로 대사에 나열하지 말고,"
+			+ " 반응과 구성 이유, 마음에 드는지 묻는 말을 쓴다. 운영시간·이동시간처럼 확인하지 않은 사실은 말하지 않는다."
+			+ " 이미지 경로는 만들지 마라.\n";
 
 	public static final String PLANNER_SYSTEM = """
 	        너는 여행 일정 편집자다. 아래 규칙을 반드시 지켜라.
@@ -39,11 +45,11 @@ public class PlanPrompts {
 	        {
 	          "planTitle": "여행 제목",
 	          "planDescription": "이 일정을 이렇게 구성한 이유(1-2문장)",
-	          "emotion": "이 초안을 전하는 캐릭터 감정 태그",
+	          "dialogue": [{"text": "LiLi의 대사 한 컷", "emotion": "표정 태그"}],
 	          "pins": [
 	            {"placeId": 정수, "sequence": 정수, "activity": "활동", "reason": "추천 이유"}
 	          ]
 	        }
-	        """ + EMOTION_RULE;
+	        """ + DIALOGUE_RULE;
 	
 }

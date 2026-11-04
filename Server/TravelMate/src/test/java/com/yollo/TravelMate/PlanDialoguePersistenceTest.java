@@ -5,7 +5,9 @@ import java.sql.PreparedStatement;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.yollo.TravelMate.domain.conversation.data.CharacterEmotion;
+import com.yollo.TravelMate.domain.conversation.data.DialogueCut;
 import com.yollo.TravelMate.domain.plan.data.internal.GeneratedPlan;
 import com.yollo.TravelMate.domain.plan.repository.PlanRepository;
 import com.yollo.TravelMate.domain.plan.validator.PlanValidator;
@@ -19,32 +21,39 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
-/** Both plan paths save drafts through PlanRepository, so the model's emotion must survive validation and the insert. */
-class PlanEmotionPersistenceTest {
+/** Both plan paths save drafts through PlanRepository, so LiLi's cuts must survive validation and the insert. */
+class PlanDialoguePersistenceTest {
     private static final long PLAN_ID = 77L;
+    private static final List<DialogueCut> CUTS = List.of(
+            new DialogueCut("왕실 생활공간 위주로 짜 봤어.", CharacterEmotion.EXCITED),
+            new DialogueCut("어때, 마음에 들어?", CharacterEmotion.SHY)
+    );
+    private final ObjectMapper mapper = new ObjectMapper();
 
     @Test
-    void legacyValidatorKeepsTheModelEmotionAfterDroppingHallucinatedPins() {
+    void legacyValidatorKeepsTheCutsAfterDroppingHallucinatedPins() {
         String raw = """
                 ```json
-                {"planTitle":"t","planDescription":"d","emotion":"AFFECTIONATE","pins":[
+                {"planTitle":"t","planDescription":"d","dialogue":[{"text":"어때?","emotion":"AFFECTIONATE"}],"pins":[
                   {"placeId":1,"sequence":1,"activity":"a","reason":"r"},
                   {"placeId":999,"sequence":2,"activity":"x","reason":"invented"}]}
                 ```""";
         var validated = new PlanValidator().validate(raw, Set.of(1L));
         assertEquals(1, validated.pins().size());
-        assertEquals(CharacterEmotion.AFFECTIONATE, validated.emotion());
+        assertEquals(CharacterEmotion.AFFECTIONATE, validated.dialogue().get(0).emotion());
     }
 
     @Test
-    void commonDraftInsertStoresTheEmotionColumn() throws Exception {
-        var inserted = insert(new GeneratedPlan("t", "d", List.of(), CharacterEmotion.SHY));
-        assertTrue(inserted.sql().contains("character_emotion"));
-        verify(inserted.statement()).setString(4, CharacterEmotion.SHY.name());
+    void commonDraftInsertStoresTheCutsAsOneJsonColumn() throws Exception {
+        var inserted = insert(new GeneratedPlan("t", "d", List.of(), CUTS));
+        assertTrue(inserted.sql().contains("character_dialogue"));
+        var stored = ArgumentCaptor.forClass(String.class);
+        verify(inserted.statement()).setString(eq(4), stored.capture());
+        assertEquals(CUTS, List.of(mapper.readValue(stored.getValue(), DialogueCut[].class)));
     }
 
     @Test
-    void draftWrittenWithoutModelTagStoresNullSoTheReceiptDefaultApplies() throws Exception {
+    void draftWrittenWithoutModelCutsStoresNullSoTheReceiptDefaultApplies() throws Exception {
         var inserted = insert(new GeneratedPlan("t", "d", List.of()));
         verify(inserted.statement()).setString(4, null);
     }

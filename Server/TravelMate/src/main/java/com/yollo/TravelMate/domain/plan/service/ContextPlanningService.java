@@ -188,6 +188,8 @@ public class ContextPlanningService {
             log.info("planning job={} stage=SEARCHING radiusMeters={}", jobId, request.context().area().radiusMeters());
             String query = String.join(" ", request.context().preferences().themes()) + " "
                     + Objects.toString(request.context().additionalRequest(), "");
+            // LiLi's query states what the user asked for in this turn, so it leads the candidate search.
+            if (request.searchQuery() != null && !request.searchQuery().isBlank()) query = request.searchQuery() + " " + query;
             if (query.isBlank()) query = "여행 관광 산책";
             var candidatesById = new LinkedHashMap<Long, PlaceResult>();
             var searchResults = searchService.search(
@@ -217,7 +219,7 @@ public class ContextPlanningService {
                         var pin = generated.pins().get(index);
                         return new GeneratedPlan.GeneratedPin(pin.placeId(), index + 1, pin.activity(), pin.reason());
                     }).toList(),
-                    generated.emotion()
+                    generated.dialogue()
             );
             long planId = plans.save(userUid, request, normalized, candidates, requestJson);
             jobs.update(jobId, PlanningResponse.JobStatus.SUCCEEDED, planId, null);

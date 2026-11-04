@@ -1,14 +1,14 @@
 package com.yollo.TravelMate.domain.plan.data.internal;
 
 import java.util.List;
-import com.yollo.TravelMate.domain.conversation.data.CharacterEmotion;
+import com.yollo.TravelMate.domain.conversation.data.DialogueCut;
 
-/** emotion is the plan-generation model's character tag; null only for drafts written without a model call. */
+/** dialogue is LiLi's 2-4 cuts presenting the draft; null only for drafts written without a model call. */
 public record GeneratedPlan(
         String planTitle,
         String planDescription,
         List<GeneratedPin> pins,
-        CharacterEmotion emotion
+        List<DialogueCut> dialogue
 ) {
     public GeneratedPlan(String planTitle, String planDescription, List<GeneratedPin> pins) {
         this(planTitle, planDescription, pins, null);

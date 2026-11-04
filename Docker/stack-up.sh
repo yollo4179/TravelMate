@@ -31,6 +31,7 @@ if [ -f "$repo_dir/Docker/migrations/20261013_add_planning_context.sql" ]; then
 fi
 cp "$repo_dir/Docker/migrations/20261025_place_recommendation_messaging.sql" "$state_dir/init/03-place-recommendation-messaging.sql"
 cp "$repo_dir/Docker/migrations/20261104_add_plan_character_emotion.sql" "$state_dir/init/04-plan-character-emotion.sql"
+cp "$repo_dir/Docker/migrations/20261105_lili_dialogue_and_recommendation_jobs.sql" "$state_dir/init/05-lili-dialogue-and-recommendation-jobs.sql"
 cat > "$state_dir/init/02-local-user-column.sql" <<'SQL'
 ALTER TABLE users ADD COLUMN IF NOT EXISTS provider_id VARCHAR(255);
 SQL
