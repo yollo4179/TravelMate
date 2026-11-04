@@ -13,6 +13,7 @@ from jsonschema import Draft202012Validator
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
+from tracks.conversation.lili_score import score_lili_case
 from tracks.conversation.plan_checks import draft_checks
 from common.dataset.io import canonical_digest, digest, read_json, read_jsonl
 from common.paths import EVALUATION_ROOT
@@ -89,6 +90,9 @@ def score_case(case: dict[str, Any], record: dict[str, Any], events: list[dict[s
     except (ValueError, KeyError, TypeError) as exception:
         trace_error = str(exception)
         checks["trace_binding"] = None if not events else False
+    if contract.get("routing") == "LILI_ROUTER_V1":
+        # LiLi decides before any evidence and the server runs her tool, so the single-LLM rules below do not apply.
+        return score_lili_case(case, record, selected, contract, checks, trace_error)
 
     preparations = [event["payload"] for event in selected if event["event"] == "EVIDENCE_PREPARATION"]
     turns = [event["payload"] for event in selected if event["event"] == "MODEL_TURN"]

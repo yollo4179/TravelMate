@@ -20,7 +20,7 @@
   "max_output_tokens": null,
   "parameters": {
     "server_url": "http://127.0.0.1:18080",
-    "suite_sha256": "c62fa77f961b8901b2ebef5353cff227da06ed886a6182da3ce4f9ed28e67762",
+    "suite_sha256": "616b73deea379b680f34cdc935a6bf3b5333063069cd616e8b222acd9c3c8494",
     "bindings_sha256": "c2cdb732a7537e78999bdf6e7227d1acf803b8ea5082279f57394cd215cd606f",
     "token_env": "TRAVELMATE_EVAL_ACCESS_TOKEN",
     "expected_provider": "OPENAI",

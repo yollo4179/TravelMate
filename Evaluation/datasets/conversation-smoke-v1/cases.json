@@ -36,7 +36,8 @@
           }
         ],
         "emotions": "catalog",
-        "intent": "RECOMMENDATION"
+        "intent": "RECOMMENDATION",
+        "lili_branch": "SEARCH_PLACES"
       },
       "evaluation_stage": "recommendation"
     },
@@ -75,7 +76,8 @@
           }
         ],
         "emotions": "catalog",
-        "intent": "RECOMMENDATION"
+        "intent": "RECOMMENDATION",
+        "lili_branch": "SEARCH_PLACES"
       },
       "evaluation_stage": "recommendation"
     },
@@ -125,7 +127,8 @@
           }
         ],
         "emotions": "catalog",
-        "intent": "CONVERSATION"
+        "intent": "CONVERSATION",
+        "lili_branch": "CHAT"
       },
       "evaluation_stage": "conversation"
     },
@@ -175,7 +178,8 @@
           }
         ],
         "emotions": "catalog",
-        "intent": "PLAN"
+        "intent": "PLAN",
+        "lili_branch": "CLARIFY"
       },
       "evaluation_stage": "conversation"
     },
@@ -225,7 +229,8 @@
           }
         ],
         "emotions": "catalog",
-        "intent": "PLAN"
+        "intent": "PLAN",
+        "lili_branch": "CLARIFY"
       },
       "evaluation_stage": "conversation"
     },
@@ -276,7 +281,8 @@
           }
         ],
         "emotions": "catalog",
-        "intent": "PLAN"
+        "intent": "PLAN",
+        "lili_branch": "CHAT"
       },
       "evaluation_stage": "conversation"
     },
@@ -337,7 +343,8 @@
           }
         ],
         "emotions": "catalog",
-        "intent": "RECOMMENDATION"
+        "intent": "RECOMMENDATION",
+        "lili_branch": "SEARCH_PLACES"
       },
       "evaluation_stage": "tool_call"
     },
@@ -396,7 +403,8 @@
           }
         ],
         "emotions": "catalog",
-        "intent": "PLAN"
+        "intent": "PLAN",
+        "lili_branch": "GET_PLANNING_JOB"
       },
       "evaluation_stage": "plan"
     },
@@ -498,7 +506,8 @@
           }
         ],
         "emotions": "catalog",
-        "intent": "PLAN"
+        "intent": "PLAN",
+        "lili_branch": "GENERATE_PLAN"
       },
       "evaluation_stage": "plan"
     }

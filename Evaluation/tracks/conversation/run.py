@@ -25,6 +25,46 @@ from tracks.conversation.score import score_case
 from tracks.conversation.log_types import TestLogPath, EvaluationStage
 from tracks.conversation.test_logs import TestLogs
 
+# A recommendation job finishes after the chat turn; its result is part of the case, so the runner waits for it.
+RECOMMENDATION_JOB_TYPE = "RECOMMENDATION_JOB"
+RECOMMENDATION_JOB_TERMINAL = {"SUCCEEDED", "FAILED"}
+RECOMMENDATION_JOB_WAIT_SECONDS = 180
+RECOMMENDATION_JOB_POLL_SECONDS = 2
+
+
+async def follow_recommendation_job(
+    record: dict[str, Any],
+    case_id: str,
+    context: ModuleContext,
+    control: RunControl,
+    settings: ExecutionSettings,
+) -> dict[str, Any]:
+    native = record.get("native_response")
+    if settings.mode != RunMode.LIVE or not isinstance(native, dict) or native.get("type") != RECOMMENDATION_JOB_TYPE:
+        return record
+    job_id = (native.get("data") or {}).get("jobId")
+    if not job_id:
+        return {**record, "recommendation_job": None}
+    request = {"method": "GET", "url": context.server_url + "/api/v1/recommendation-jobs/" + str(uuid.UUID(job_id))}
+
+    async def fetch() -> dict[str, Any]:
+        response = await context.client.get(request["url"], headers={"Authorization": "Bearer " + context.access_token})
+        return {"status_code": response.status_code, "raw_body": response.text}
+
+    loop = asyncio.get_running_loop()
+    started = loop.time()
+    polls = 0
+    job = None
+    while loop.time() - started < RECOMMENDATION_JOB_WAIT_SECONDS:
+        response = await control.execute(Operation.RUNTIME_READ, case_id, request, fetch)
+        polls += 1
+        job = json.loads(response["raw_body"]) if response["status_code"] == 200 else None
+        if job is not None and job.get("status") in RECOMMENDATION_JOB_TERMINAL:
+            break
+        await asyncio.sleep(RECOMMENDATION_JOB_POLL_SECONDS)
+    return {**record, "recommendation_job": job, "recommendation_job_polls": polls,
+            "recommendation_job_wait_ms": round((loop.time() - started) * 1000, 1)}
+
 
 def prepared_cases(arguments: argparse.Namespace, settings: ExecutionSettings) -> list[dict[str, Any]]:
     if digest(arguments.suite) != settings.parameter("suite_sha256"):
@@ -171,6 +211,7 @@ async def collect(arguments: argparse.Namespace) -> dict[str, Any]:
                 raise ExecutionBlocked("Run beside the test server with its accessible absolute --events path before paid calls")
             for supplied, _ in inputs:
                 record = await module.execute(supplied, config, context)
+                record = await follow_recommendation_job(record, supplied.case["case_id"], context, control, settings)
                 records.append(record)
                 TestLogs.write(output, TestLogPath.RECORDS, records)
                 if fixture is not None:
