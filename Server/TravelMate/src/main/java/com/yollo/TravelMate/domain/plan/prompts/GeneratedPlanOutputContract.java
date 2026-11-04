@@ -3,6 +3,7 @@ package com.yollo.TravelMate.domain.plan.prompts;
 import java.util.Map;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
+import com.yollo.TravelMate.domain.conversation.data.CharacterEmotion;
 import com.yollo.TravelMate.domain.conversation.tool.ToolSchemas;
 
 /** Provider formatting complements, and never replaces, the common draft validator. */
@@ -16,6 +17,14 @@ public final class GeneratedPlanOutputContract {
         pins.set("items", ToolSchemas.object(Map.of(
                 "placeId", ToolSchemas.integer(1, Long.MAX_VALUE), "sequence", ToolSchemas.integer(1, 6),
                 "activity", ToolSchemas.text(2000), "reason", ToolSchemas.text(4000), "citations", citations)));
-        return ToolSchemas.object(Map.of("planTitle", ToolSchemas.text(200), "planDescription", ToolSchemas.text(4000), "pins", pins));
+        var emotion = JsonNodeFactory.instance.objectNode().put("type", "string");
+        var emotions = emotion.putArray("enum");
+        java.util.Arrays.stream(CharacterEmotion.values()).forEach(value -> emotions.add(value.name()));
+        return ToolSchemas.object(Map.of(
+                "planTitle", ToolSchemas.text(200),
+                "planDescription", ToolSchemas.text(4000),
+                "pins", pins,
+                "emotion", emotion
+        ));
     }
 }

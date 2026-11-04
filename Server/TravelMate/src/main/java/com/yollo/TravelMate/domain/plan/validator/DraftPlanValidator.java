@@ -42,7 +42,8 @@ public final class DraftPlanValidator {
         return new GeneratedPlan(
                 draft.planTitle(),
                 draft.planDescription(),
-                draft.pins().stream().sorted(Comparator.comparing(GeneratedPlan.GeneratedPin::sequence)).toList()
+                draft.pins().stream().sorted(Comparator.comparing(GeneratedPlan.GeneratedPin::sequence)).toList(),
+                draft.emotion()
         );
     }
 

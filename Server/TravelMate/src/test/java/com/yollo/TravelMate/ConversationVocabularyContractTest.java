@@ -16,7 +16,11 @@ import com.yollo.TravelMate.domain.conversation.service.ConversationAnswerRender
 import com.yollo.TravelMate.domain.conversation.service.PlaceConversationEvidence;
 import com.yollo.TravelMate.domain.conversation.tool.*;
 import com.yollo.TravelMate.domain.place.data.request.PlaceSearchContext;
+import com.yollo.TravelMate.domain.plan.data.internal.GeneratedPlan;
 import com.yollo.TravelMate.domain.plan.data.response.PlanningResponse;
+import com.yollo.TravelMate.domain.plan.prompts.ContextPlanPromptFactory;
+import com.yollo.TravelMate.domain.plan.prompts.GeneratedPlanOutputContract;
+import com.yollo.TravelMate.domain.plan.prompts.PlanPrompts;
 import org.junit.jupiter.api.Test;
 import org.springframework.core.io.DefaultResourceLoader;
 import static org.junit.jupiter.api.Assertions.*;
@@ -70,5 +74,31 @@ class ConversationVocabularyContractTest {
         assertEquals("조용한 궁\n사용자 선호 테마: 역사, 산책", query.get());
         evidence.prepare("user", null, new ConversationRequest("조용한 궁", null, List.of()), registry);
         assertEquals("조용한 궁", query.get());
+    }
+
+    @Test
+    void planOutputRequiresAnEmotionFromTheSameEnumAndThePromptNamesIt() throws Exception {
+        var schema = GeneratedPlanOutputContract.schema();
+        assertTrue(List.of(mapper.treeToValue(schema.path("required"), String[].class)).contains("emotion"));
+        assertEquals(joined(Arrays.asList(CharacterEmotion.values())),
+                String.join("/", mapper.treeToValue(schema.path("properties").path("emotion").path("enum"), String[].class)));
+        String emotionRule = "emotion은 " + joined(Arrays.asList(CharacterEmotion.values()));
+        // The legacy planner path parses the same enum, so its shared prompt must list the tags too.
+        assertTrue(PlanPrompts.PLANNER_SYSTEM.contains(emotionRule));
+        assertTrue(new ContextPlanPromptFactory(mapper).systemPrompt().contains(emotionRule));
+        var parsed = mapper.readValue("{\"planTitle\":\"t\",\"planDescription\":\"d\",\"pins\":[],\"emotion\":\"AFFECTIONATE\"}", GeneratedPlan.class);
+        assertEquals(CharacterEmotion.AFFECTIONATE, parsed.emotion());
+        assertThrows(Exception.class, () -> mapper.readValue("{\"planTitle\":\"t\",\"pins\":[],\"emotion\":\"INVENTED\"}", GeneratedPlan.class));
+    }
+
+    @Test
+    void draftReceiptUsesThePlanModelEmotionAndFallsBackForOlderDrafts() throws Exception {
+        var renderer = new ConversationAnswerRenderer(mapper);
+        var chosen = ConversationTool.Result.builder().type(ResultType.DRAFT)
+                .publicData(mapper.readTree("{\"planId\":1,\"pins\":[],\"emotion\":\"AFFECTIONATE\"}")).build();
+        assertEquals(CharacterEmotion.AFFECTIONATE, renderer.receipt(chosen, Termination.COMPLETED, 1, List.of()).emotion());
+        var older = ConversationTool.Result.builder().type(ResultType.DRAFT)
+                .publicData(mapper.readTree("{\"planId\":1,\"pins\":[]}")).build();
+        assertEquals(CharacterEmotion.EXCITED, renderer.receipt(older, Termination.COMPLETED, 1, List.of()).emotion());
     }
 }

@@ -1,9 +1,18 @@
 package com.yollo.TravelMate.domain.plan.prompts;
 
+import java.util.Arrays;
+import java.util.stream.Collectors;
+import com.yollo.TravelMate.domain.conversation.data.CharacterEmotion;
+
 public class PlanPrompts {
-	
+
 	private PlanPrompts() {}
-	
+
+	// Every plan path parses emotion into the enum, so each path must see the allowed tags, not only the example field.
+	private static final String EMOTION_RULE = "\nemotion은 "
+			+ Arrays.stream(CharacterEmotion.values()).map(Enum::name).collect(Collectors.joining("/"))
+			+ " 중 이 초안을 전하는 캐릭터 반응 하나다. 이미지 경로는 만들지 마라.\n";
+
 	public static final String PLANNER_SYSTEM = """
 	        너는 여행 일정 편집자다. 아래 규칙을 반드시 지켜라.
 
@@ -30,10 +39,11 @@ public class PlanPrompts {
 	        {
 	          "planTitle": "여행 제목",
 	          "planDescription": "이 일정을 이렇게 구성한 이유(1-2문장)",
+	          "emotion": "이 초안을 전하는 캐릭터 감정 태그",
 	          "pins": [
 	            {"placeId": 정수, "sequence": 정수, "activity": "활동", "reason": "추천 이유"}
 	          ]
 	        }
-	        """;
+	        """ + EMOTION_RULE;
 	
 }

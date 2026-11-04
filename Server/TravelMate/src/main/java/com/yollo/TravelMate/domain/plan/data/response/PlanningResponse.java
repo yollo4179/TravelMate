@@ -2,7 +2,9 @@ package com.yollo.TravelMate.domain.plan.data.response;
 
 import java.util.List;
 import java.util.UUID;
+import com.yollo.TravelMate.domain.conversation.data.CharacterEmotion;
 import com.yollo.TravelMate.domain.plan.data.request.PlanContext;
+import lombok.Builder;
 
 public final class PlanningResponse {
     private PlanningResponse() {}
@@ -30,16 +32,18 @@ public final class PlanningResponse {
             Long planId,
             String errorMessage
     ) {}
+    @Builder
     public record Draft(
             Long planId,
             PlanContext context,
             String title,
             List<Pin> pins,
             List<String> warnings,
-            String description
+            String description,
+            CharacterEmotion emotion
     ) {
         public Draft(Long planId, PlanContext context, String title, List<Pin> pins, List<String> warnings) {
-            this(planId, context, title, pins, warnings, null);
+            this(planId, context, title, pins, warnings, null, null);
         }
     }
     public record Pin(

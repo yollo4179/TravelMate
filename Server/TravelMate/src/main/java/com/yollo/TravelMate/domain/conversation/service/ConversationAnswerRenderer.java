@@ -196,7 +196,20 @@ public class ConversationAnswerRenderer {
                 .requestId(context == null ? null : context.requestId()).turnId(context == null ? null : context.turnId())
                 .conversationId(context == null ? null : context.conversationId()).primaryResultId(primaryId)
                 .messageSource(messageSource).intent(type == ResultType.TEXT && answer != null ? answer.intent() : RESULT_INTENTS.get(type))
-                .emotion(messageSource == MessageSource.LLM && answer != null ? answer.emotion() : RECEIPT_EMOTIONS.get(type)).build();
+                .emotion(emotion(type, messageSource, answer, publicData)).build();
+    }
+
+    private static CharacterEmotion emotion(
+            ResultType type,
+            MessageSource source,
+            Answer answer,
+            JsonNode publicData
+    ) {
+        if (source == MessageSource.LLM && answer != null) return answer.emotion();
+        // A draft's text was written by the plan-generation model, so its stored tag outranks the receipt default.
+        var stored = publicData.path("emotion");
+        if (type == ResultType.DRAFT && stored.isTextual()) return CharacterEmotion.valueOf(stored.asText());
+        return RECEIPT_EMOTIONS.get(type);
     }
 
     private static String jobMessage(JsonNode receipt) {

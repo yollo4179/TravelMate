@@ -210,11 +210,15 @@ public class ContextPlanningService {
             log.info("planning job={} stage=VALIDATING_RESULT responseCharacters={}", jobId, output == null ? 0 : output.length());
             var generated = DraftPlanValidator.validate(planValidator.parse(output), candidates, request);
             PlanEvidenceCitationValidator.validate(generated, preparedPrompt);
-            var normalized = new GeneratedPlan(generated.planTitle(), generated.planDescription(),
+            var normalized = new GeneratedPlan(
+                    generated.planTitle(),
+                    generated.planDescription(),
                     IntStream.range(0, generated.pins().size()).mapToObj(index -> {
                         var pin = generated.pins().get(index);
                         return new GeneratedPlan.GeneratedPin(pin.placeId(), index + 1, pin.activity(), pin.reason());
-                    }).toList());
+                    }).toList(),
+                    generated.emotion()
+            );
             long planId = plans.save(userUid, request, normalized, candidates, requestJson);
             jobs.update(jobId, PlanningResponse.JobStatus.SUCCEEDED, planId, null);
             recordJob(jobId, PlanningResponse.JobStatus.SUCCEEDED, planId, JobObservationOperation.UPDATE_ACKNOWLEDGED);

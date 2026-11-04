@@ -3,6 +3,7 @@ package com.yollo.TravelMate.domain.plan.repository;
 import java.util.List;
 import java.util.stream.IntStream;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.yollo.TravelMate.domain.conversation.data.CharacterEmotion;
 import com.yollo.TravelMate.domain.place.data.result.PlaceResult;
 import com.yollo.TravelMate.domain.plan.data.internal.GeneratedPlan;
 import com.yollo.TravelMate.domain.plan.data.request.GeneratePlanRequest;
@@ -43,8 +44,13 @@ public class ContextPlanRepository {
             String requestJson
     ) {
         long planId = planRepository.saveDraft(generated, candidates, userUid);
-        jdbc.update("UPDATE plans SET context = (?::jsonb)->'context', request_payload = ?::jsonb WHERE plan_id = ?",
-                requestJson, requestJson, planId);
+        jdbc.update(
+                "UPDATE plans SET context = (?::jsonb)->'context', request_payload = ?::jsonb, character_emotion = ? WHERE plan_id = ?",
+                requestJson,
+                requestJson,
+                generated.emotion() == null ? null : generated.emotion().name(),
+                planId
+        );
         int defaultStay = request.context().preferences().pace() == PlanContext.Pace.RELAXED ? 60 : 40;
         jdbc.update("UPDATE pins SET stay_minutes = ? WHERE plan_id = ?", defaultStay, planId);
         request.requiredStops().forEach(stop -> jdbc.update(
@@ -54,9 +60,17 @@ public class ContextPlanRepository {
     }
 
     public PlanningResponse.Draft get(long planId, String userUid) {
-        var headers = jdbc.query("SELECT title, description, context::text FROM plans WHERE plan_id = ? AND user_uid = ?",
-                (row, index) -> new DraftHeader(row.getString("title"), readContext(row.getString("context")), row.getString("description")),
-                planId, userUid);
+        var headers = jdbc.query(
+                "SELECT title, description, context::text, character_emotion FROM plans WHERE plan_id = ? AND user_uid = ?",
+                (row, index) -> new DraftHeader(
+                        row.getString("title"),
+                        readContext(row.getString("context")),
+                        row.getString("description"),
+                        readEmotion(row.getString("character_emotion"))
+                ),
+                planId,
+                userUid
+        );
         if (headers.isEmpty()) throw new ResponseStatusException(HttpStatus.NOT_FOUND);
         var pins = jdbc.query("""
                 SELECT place_id, place_name, latitude, longitude, stay_minutes, sequence, memo
@@ -67,14 +81,30 @@ public class ContextPlanRepository {
                         row.getInt("stay_minutes"), row.getInt("sequence"), row.getString("memo")
                 ), planId);
         var header = headers.get(0);
-        return new PlanningResponse.Draft(planId, header.context(), header.title(), pins, List.of(
-                "운영시간과 실제 이동 경로가 검증되지 않은 초안입니다. 방문 시간과 동선은 확정되지 않았습니다."
-        ), header.description());
+        return PlanningResponse.Draft.builder()
+                .planId(planId)
+                .context(header.context())
+                .title(header.title())
+                .pins(pins)
+                .warnings(List.of("운영시간과 실제 이동 경로가 검증되지 않은 초안입니다. 방문 시간과 동선은 확정되지 않았습니다."))
+                .description(header.description())
+                .emotion(header.emotion())
+                .build();
+    }
+
+    // Drafts saved before the column existed, or written without a model call, have no stored tag.
+    private static CharacterEmotion readEmotion(String stored) {
+        return stored == null ? null : CharacterEmotion.valueOf(stored);
     }
 
     private PlanContext readContext(String json) {
         try { return objectMapper.readValue(json, PlanContext.class); }
         catch (Exception exception) { throw new IllegalStateException("저장된 여행 조건을 읽지 못했습니다.", exception); }
     }
-    private record DraftHeader(String title, PlanContext context, String description) {}
+    private record DraftHeader(
+            String title,
+            PlanContext context,
+            String description,
+            CharacterEmotion emotion
+    ) {}
 }

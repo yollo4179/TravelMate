@@ -1,12 +1,19 @@
 package com.yollo.TravelMate.domain.plan.data.internal;
 
 import java.util.List;
+import com.yollo.TravelMate.domain.conversation.data.CharacterEmotion;
 
+/** emotion is the plan-generation model's character tag; null only for drafts written without a model call. */
 public record GeneratedPlan(
         String planTitle,
         String planDescription,
-        List<GeneratedPin> pins
+        List<GeneratedPin> pins,
+        CharacterEmotion emotion
 ) {
+    public GeneratedPlan(String planTitle, String planDescription, List<GeneratedPin> pins) {
+        this(planTitle, planDescription, pins, null);
+    }
+
     public record GeneratedPin(
             Long placeId,
             Integer sequence,
