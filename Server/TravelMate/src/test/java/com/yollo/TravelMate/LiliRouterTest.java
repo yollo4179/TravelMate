@@ -87,6 +87,8 @@ class LiliRouterTest {
         assertTrue(system.contains("작업 번호를 직접 적어야 한다"));
         assertTrue(system.contains("장소 이름으로 빼거나, 목록을 다시 보여 주는 일은 할 수 없다"));
         assertTrue(system.contains("예약에 필요한 정보 찾기나 정리"));
+        // fx runs: with no list sent, LiLi still offered position, name and "show the list" choices that cannot work.
+        assertTrue(system.contains("displayedResultCount가 0이면 앱이 목록을 보내지 않은 것이라 어떤 순번도 고를 수 없다"));
         assertFalse(prompts.get(0).get(1).content().contains("serverEvidence"), "LiLi decides before any place evidence");
     }
 
