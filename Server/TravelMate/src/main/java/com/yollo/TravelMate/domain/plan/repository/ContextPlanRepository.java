@@ -45,10 +45,9 @@ public class ContextPlanRepository {
     ) {
         long planId = planRepository.saveDraft(generated, candidates, userUid);
         jdbc.update(
-                "UPDATE plans SET context = (?::jsonb)->'context', request_payload = ?::jsonb, character_emotion = ? WHERE plan_id = ?",
+                "UPDATE plans SET context = (?::jsonb)->'context', request_payload = ?::jsonb WHERE plan_id = ?",
                 requestJson,
                 requestJson,
-                generated.emotion() == null ? null : generated.emotion().name(),
                 planId
         );
         int defaultStay = request.context().preferences().pace() == PlanContext.Pace.RELAXED ? 60 : 40;

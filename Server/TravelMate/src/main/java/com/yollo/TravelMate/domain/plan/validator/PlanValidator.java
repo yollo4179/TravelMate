@@ -58,7 +58,12 @@ public class PlanValidator {
         	 throw new ErrorCodeException(ErrorCode.PLAN_ALL_HALLUCINATED);
         }
 
-        return new GeneratedPlan(plan.planTitle(), plan.planDescription(), validPins);
+        return new GeneratedPlan(
+                plan.planTitle(),
+                plan.planDescription(),
+                validPins,
+                plan.emotion()
+        );
     }
 
     /** 코드블록 마커·앞뒤 텍스트를 걷어내고 JSON 본문만 추출 */

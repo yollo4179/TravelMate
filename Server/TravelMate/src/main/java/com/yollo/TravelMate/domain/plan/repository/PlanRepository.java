@@ -29,7 +29,7 @@ public class PlanRepository {
                 .collect(Collectors.toMap(PlaceResult::id, p -> p));
 
         
-        Long planId = insertPlan(userUid, plan.planTitle(), plan.planDescription());
+        Long planId = insertPlan(userUid, plan);
 
         // 2) pins 저장 — placeId만 신뢰
         for (GeneratedPlan.GeneratedPin pin : plan.pins()) {
@@ -51,16 +51,18 @@ public class PlanRepository {
         return planId;
     }
 
-    private Long insertPlan(String userUid, String title, String description) {
+    private Long insertPlan(String userUid, GeneratedPlan plan) {
         KeyHolder keyHolder = new GeneratedKeyHolder();
         jdbc.update(conn -> {
             PreparedStatement ps = conn.prepareStatement("""
-                    INSERT INTO plans (user_uid, title, description, status)
-                    VALUES (?, ?, ?, 'DRAFT')
+                    INSERT INTO plans (user_uid, title, description, status, character_emotion)
+                    VALUES (?, ?, ?, 'DRAFT', ?)
                     """, new String[]{"plan_id"});
             ps.setString(1, userUid);
-            ps.setString(2, title);
-            ps.setString(3, description);
+            ps.setString(2, plan.planTitle());
+            ps.setString(3, plan.planDescription());
+            // Every plan path saves drafts here, so the model's tag is stored once instead of per caller.
+            ps.setString(4, plan.emotion() == null ? null : plan.emotion().name());
             return ps;
         }, keyHolder);
         return keyHolder.getKey().longValue();
