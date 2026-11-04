@@ -1,0 +1,1 @@
+{"case_id": "CONV-JOB-owned", "input_sha256": "1694e87bc2a8223ba9bd59c14501cd3a5f1d722a04256b73e182cfa5e81ab3ce", "api_request": {"message": "내 생성 작업 6f1fe6ee-1af2-4ea1-8d1f-d29f48cb1268의 현재 상태를 한 번 확인해줘.", "planningRequest": null, "history": [], "searchContext": {"region": "서울", "city": "종로", "category": "관광지", "excludePlaceIds": [], "area": null}}}

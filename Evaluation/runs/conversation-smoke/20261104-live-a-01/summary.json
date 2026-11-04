@@ -1,0 +1,66 @@
+{
+  "selected_case_count": 7,
+  "observed_case_count": 0,
+  "automated_pass_count": 0,
+  "automated_fail_count": 0,
+  "semantic_fail_count": 0,
+  "quality_pass_count": 0,
+  "all_quality_passed": false,
+  "note": "MOCK, missing observations and unreviewed reasons are never quality passes",
+  "execution": {
+    "execution_mode": "LIVE",
+    "configuration_sha256": "7fadb6b457bf0b57ba9dabffe0d69e4efc3fff16f8d017333cada7d0580a1ff7",
+    "call_caps": {
+      "runtime_read": 2,
+      "conversation": 7
+    },
+    "attempt_counts": {
+      "runtime_read": 1
+    },
+    "real_dispatch_count": 1,
+    "stopped": true
+  },
+  "failure": {
+    "type": "LocalProtocolError",
+    "detail": "Illegal Authorization header value. The local token tool's stdout mixed a JwtTokenProvider INFO log line with the token, so the request was rejected locally before any conversation call. The logged JWT secret and the token were redacted after the run; the evaluation JWT secret was rotated."
+  },
+  "status": "failed",
+  "not_run": [
+    "PLR-TM-palaces-01",
+    "PLR-TM-palaces-03",
+    "CONV-SOCIAL-thanks",
+    "CONV-CLARIFY-plan",
+    "CONV-CLARIFY-job",
+    "CONV-UNSUPPORTED-booking",
+    "CONV-SEARCH-exclude-first"
+  ],
+  "stages": {
+    "tool_call": {
+      "selected": 1,
+      "recorded": 0,
+      "plan_drafts_observed": 0,
+      "quality_passed": 0
+    },
+    "recommendation": {
+      "selected": 2,
+      "recorded": 0,
+      "plan_drafts_observed": 0,
+      "quality_passed": 0
+    },
+    "plan": {
+      "selected": 0,
+      "recorded": 0,
+      "plan_drafts_observed": 0,
+      "quality_passed": 0
+    },
+    "conversation": {
+      "selected": 4,
+      "recorded": 0,
+      "plan_drafts_observed": 0,
+      "quality_passed": 0
+    }
+  },
+  "internal_inference_call_total": null,
+  "input_count_cost_usd": null,
+  "total_billed_cost_usd": null
+}

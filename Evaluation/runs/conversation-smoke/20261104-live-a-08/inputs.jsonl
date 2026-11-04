@@ -1,0 +1,1 @@
+{"case_id": "CONV-UNSUPPORTED-booking", "input_sha256": "cfe82f56b7ca2ec89cce55bba1ae336d59856460e92d7898424804187358342c", "api_request": {"message": "내 여행 일정을 확정하고 관광지 예약까지 완료해줘.", "planningRequest": null, "history": [], "searchContext": {"region": "서울", "city": "종로", "category": "관광지", "excludePlaceIds": [], "area": null}}}

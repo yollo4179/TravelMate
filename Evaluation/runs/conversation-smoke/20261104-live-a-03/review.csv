@@ -1,0 +1,4 @@
+﻿case_id,record_sha256,events_sha256,criterion,guidance,question,response_text,citations,supplied_evidence,verdict,reviewer,rationale
+PLR-TM-palaces-01,b5f9593de2d414afa7370a585ccecc2a5c19fc77320cb59e655078e71a21296c,2117c2786df913e6de129879c83a083e0d99f335cdd9e137de1eada4d83bc36b,response_relevance,창경궁 조회에 직접 답하고 다른 장소를 찾은 것처럼 설명하지 않는다.,창경궁을 찾아줘.,설명을 완료하지 못했습니다. 확인된 서버 결과와 작업 상태를 확인해 주세요.,[],[],,,
+PLR-TM-palaces-01,b5f9593de2d414afa7370a585ccecc2a5c19fc77320cb59e655078e71a21296c,2117c2786df913e6de129879c83a083e0d99f335cdd9e137de1eada4d83bc36b,reason_and_evidence,설명·추천 이유가 실제 전달된 해당 장소 원문으로 뒷받침되며 인용이 설명을 지지한다.,창경궁을 찾아줘.,설명을 완료하지 못했습니다. 확인된 서버 결과와 작업 상태를 확인해 주세요.,[],[],,,
+PLR-TM-palaces-01,b5f9593de2d414afa7370a585ccecc2a5c19fc77320cb59e655078e71a21296c,2117c2786df913e6de129879c83a083e0d99f335cdd9e137de1eada4d83bc36b,state_and_uncertainty,다른 장소의 특징·미확인 운영시간·현재 입장 가능 여부를 창작하지 않는다.,창경궁을 찾아줘.,설명을 완료하지 못했습니다. 확인된 서버 결과와 작업 상태를 확인해 주세요.,[],[],,,

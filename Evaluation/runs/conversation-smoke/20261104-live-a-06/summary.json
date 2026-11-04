@@ -1,0 +1,63 @@
+{
+  "selected_case_count": 5,
+  "observed_case_count": 2,
+  "automated_pass_count": 1,
+  "automated_fail_count": 1,
+  "semantic_fail_count": 0,
+  "quality_pass_count": 0,
+  "all_quality_passed": false,
+  "note": "MOCK, missing observations and unreviewed reasons are never quality passes",
+  "execution": {
+    "execution_mode": "LIVE",
+    "configuration_sha256": "55946643369da3ee4ce44d476755ca2b0ed863413c3419932372621007da5559",
+    "call_caps": {
+      "runtime_read": 2,
+      "conversation": 5
+    },
+    "attempt_counts": {
+      "runtime_read": 2,
+      "conversation": 2
+    },
+    "real_dispatch_count": 4,
+    "stopped": true
+  },
+  "failure": {
+    "type": "ExecutionBlocked",
+    "detail": "First application failure or unmet response contract; later cases not run"
+  },
+  "status": "failed",
+  "not_run": [
+    "CONV-CLARIFY-job",
+    "CONV-UNSUPPORTED-booking",
+    "CONV-SEARCH-exclude-first"
+  ],
+  "stages": {
+    "tool_call": {
+      "selected": 1,
+      "recorded": 0,
+      "plan_drafts_observed": 0,
+      "quality_passed": 0
+    },
+    "recommendation": {
+      "selected": 0,
+      "recorded": 0,
+      "plan_drafts_observed": 0,
+      "quality_passed": 0
+    },
+    "plan": {
+      "selected": 0,
+      "recorded": 0,
+      "plan_drafts_observed": 0,
+      "quality_passed": 0
+    },
+    "conversation": {
+      "selected": 4,
+      "recorded": 2,
+      "plan_drafts_observed": 0,
+      "quality_passed": 0
+    }
+  },
+  "internal_inference_call_total": null,
+  "input_count_cost_usd": null,
+  "total_billed_cost_usd": null
+}

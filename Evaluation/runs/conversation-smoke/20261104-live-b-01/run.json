@@ -1,0 +1,13 @@
+{
+  "evaluator_git_sha": "d54a76de23298d6ea5a8a8837f7d3edba11e1fda",
+  "evaluator_source_sha256": "0ba86172b5c54dcd5b7490e62ec71a15f8a7f15ab18d6af91f5bf7a4228d51a7",
+  "configuration_sha256": "8191a482792e298fe61f1d3c1bef9caffeb17b35656784e218179e76677f8171",
+  "suite_sha256": "c62fa77f961b8901b2ebef5353cff227da06ed886a6182da3ce4f9ed28e67762",
+  "execution_mode": "LIVE",
+  "selected_case_ids": [
+    "CONV-PLAN-create"
+  ],
+  "status": "failed",
+  "input_count_cost_usd": null,
+  "total_billed_cost_usd": null
+}
