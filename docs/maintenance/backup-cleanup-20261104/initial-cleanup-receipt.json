@@ -1,0 +1,20 @@
+{
+  "status": "COMPLETED_LIMITED_DUPLICATE_CLEANUP",
+  "original_workspace_files_retained": 83,
+  "original_file_hashes_unchanged": true,
+  "retained_backup_files": 73,
+  "deleted_exact_committed_backup_duplicates": 10,
+  "deleted_bytes": 54247,
+  "backup_location": "C:\\ssafy\\Travelmate\\.local-backups\\branch-cleanup-20261102-1922\\files",
+  "deleted_list": "C:\\ssafy\\Travelmate\\.local-backups\\backup-cleanup-pr8\\deleted.json",
+  "retained_manifest": "C:\\ssafy\\Travelmate\\.local-backups\\backup-cleanup-pr8\\retained-manifest.json",
+  "protected_unmerged_index": "C:\\ssafy\\Travelmate\\.local-backups\\backup-cleanup-pr8\\protected-unmerged-index.json",
+  "matching_git_commit": "4ced99c57276669d9d581d611b1d79815e961581",
+  "current_workspace_git_status_unchanged": true,
+  "actual_evaluation_originals_and_followups_preserved": true,
+  "all_worktrees_preserved": true,
+  "uncertain_backups_and_git_bundle_preserved": true,
+  "db_or_shared_model_cache_touched": false,
+  "git_add_or_commit": false,
+  "development_tests_or_model_calls": false
+}

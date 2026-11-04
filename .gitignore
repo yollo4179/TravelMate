@@ -69,3 +69,6 @@ Evaluation/datasets/v1.3.0/.phoenix-evaluation/
 /embedding-server/enrichment-data/
 /LocationReview/*/
 /embedding-server/LocationReview/*/
+
+# Local preservation archives can contain credentials and private evaluation records.
+/.local-backups/
