@@ -1,0 +1,6 @@
+{
+  "status": "ok",
+  "source_sha256": "SYNTHETIC-MOCK-NOT-A-DEPLOYMENT-IDENTITY",
+  "embedding_device": "mock",
+  "reranker_device": "mock"
+}

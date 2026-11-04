@@ -1,0 +1,65 @@
+{
+  "implementation_commit": "fcfbb48e8c5d3133908d234a5e95e9267cda9277",
+  "validation_kind": "OFFLINE_AND_MOCK_ONLY",
+  "java": {
+    "tests": 157,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "evaluation_python": {
+    "passed": 50,
+    "scope": "conversation 27 + common module/launcher 23"
+  },
+  "search_python": {
+    "run": 173,
+    "passed": 141,
+    "skipped_database_integration": 32,
+    "not_run_modules": {
+      "test_contextual_relation_vector_comparison.py": "host asyncpg unavailable",
+      "test_reranker_batch_contract.py": "host torch unavailable"
+    }
+  },
+  "client_node": {
+    "passed": 7
+  },
+  "client_build": "PASSED",
+  "browser": {
+    "mode": "MOCK_BROWSER",
+    "scenarios": [
+      "conversation",
+      "recommendation",
+      "plan_accepted",
+      "plan_ready"
+    ],
+    "conversation_http_mock_requests": 4,
+    "external_requests": 0,
+    "page_errors": [],
+    "mobile_no_horizontal_overflow": true
+  },
+  "source_identities": {
+    "server_main": "99f62e71acda4cb5e9f7a9028cf9d22ff6dcafb751447a741730d92f2ec10d7d",
+    "built_server_matches_main": true,
+    "evaluator": "28cec954cd23b160bd6ffe644f79d40f4d1c0da21eae19696f0b614eb7c80efc",
+    "search": "bd9e6af2f24db72d7d9a53589be46d40c1221af985074525bbe3992b28195958"
+  },
+  "actual_calls": {
+    "openai_inference": 0,
+    "openai_input_count": 0,
+    "perplexity": 0,
+    "search": 0,
+    "judge": 0
+  },
+  "production_database_changes": 0,
+  "deployed": false,
+  "full_evaluation_suite_completed": false,
+  "limitations": [
+    "Full Evaluation regression interrupted during existing OpenAI SDK MockTransport wait",
+    "Search PostgreSQL integration not run",
+    "Real model quality and latency not observed",
+    "Curated facet intake not applied to existing indexes",
+    "Plan structured citation persistence/retrieval not implemented",
+    "Background map SDK not connected",
+    "On-device TTS deferred by user"
+  ]
+}
