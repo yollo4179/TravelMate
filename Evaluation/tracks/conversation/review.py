@@ -7,18 +7,31 @@ from pathlib import Path
 from typing import Any
 
 
+REVIEW_FIELDS = ["case_id", "record_sha256", "events_sha256", "criterion", "guidance", "question", "response_text",
+                 "final_text", "plan_draft", "job_status", "tool_results", "citations", "supplied_evidence",
+                 "review_candidates", "verdict", "reviewer", "rationale"]
+
+
+def _json(value: Any) -> str:
+    return "" if value is None else json.dumps(value, ensure_ascii=False)
+
+
 def export_review(path: Path, scores: list[dict[str, Any]]) -> None:
+    """response_text is the first line; on the LiLi path the answer under review is final_text and plan_draft."""
     with path.open("x", encoding="utf-8-sig", newline="") as stream:
-        writer = csv.DictWriter(stream, fieldnames=["case_id", "record_sha256", "events_sha256", "criterion", "guidance",
-                                                   "question", "response_text", "citations", "supplied_evidence", "verdict", "reviewer", "rationale"])
+        writer = csv.DictWriter(stream, fieldnames=REVIEW_FIELDS)
         writer.writeheader()
         for score in scores:
+            final_text = score.get("job_response_text") or score.get("draft_dialogue_text") or ""
             for criterion in score["semantic_criteria"]:
                 writer.writerow({"case_id": score["case_id"], "record_sha256": score["record_sha256"],
                                  "events_sha256": score["events_sha256"], "criterion": criterion["id"],
                                  "guidance": criterion["guidance"], "question": score["question"],
-                                 "response_text": score["response_text"], "citations": json.dumps(score["citations"], ensure_ascii=False),
-                                 "supplied_evidence": json.dumps(score["supplied_evidence"], ensure_ascii=False),
+                                 "response_text": score["response_text"], "final_text": final_text,
+                                 "plan_draft": _json(score.get("plan_draft")), "job_status": _json(score.get("job_status")),
+                                 "tool_results": _json(score.get("tool_results")),
+                                 "citations": _json(score["citations"]), "supplied_evidence": _json(score["supplied_evidence"]),
+                                 "review_candidates": _json(score.get("review_candidates")),
                                  "verdict": "", "reviewer": "", "rationale": ""})
 
 

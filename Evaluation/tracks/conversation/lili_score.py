@@ -80,6 +80,35 @@ def unevidenced_places_named(texts: list[str], candidates: list[dict[str, Any]])
                    for variant in _spoken_names(item.get("name") or "") if variant in spoken})
 
 
+def _prompt_candidates(prompt: str | None) -> list[dict[str, Any]]:
+    """The plan prompt ends with the exact JSON the planner read; older runs did not record it."""
+    if not prompt or "{" not in prompt:
+        return []
+    try:
+        return json.loads(prompt[prompt.index("{"):]).get("candidates", [])
+    except ValueError:
+        return []
+
+
+def _review_candidates(preparations: list[dict[str, Any]], plan_drafts: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """What each job step had about its candidates, so a reviewer can tell an uncited claim from an invented one."""
+    steps = (("recommendation", [candidate for item in preparations for candidate in (item.get("modelData") or {}).get("candidates", [])]),
+             ("plan", [candidate for item in plan_drafts for candidate in _prompt_candidates(item.get("prompt"))]))
+    return [{"step": step, "placeId": candidate.get("placeId"), "name": candidate.get("name"),
+             "evidenceAvailability": candidate.get("evidenceAvailability"), "description": candidate.get("description")}
+            for step, candidates in steps for candidate in candidates]
+
+
+def _draft_summary(draft: dict[str, Any]) -> dict[str, Any] | None:
+    if not draft:
+        return None
+    context = draft.get("context") or {}
+    return {"title": draft.get("title"), "description": draft.get("description"),
+            "window": [context.get("startAt"), context.get("endAt")], "warnings": draft.get("warnings"),
+            "pins": [{"placeId": pin.get("placeId"), "name": pin.get("name"), "stayMinutes": pin.get("stayMinutes"),
+                      "explanation": pin.get("explanation")} for pin in draft.get("pins") or []]}
+
+
 def _sources(preparations: list[dict[str, Any]]) -> tuple[dict[str, dict[str, Any]], list[dict[str, Any]]]:
     sources: dict[str, dict[str, Any]] = {}
     supplied = []
@@ -253,6 +282,13 @@ def score_lili_case(case: dict[str, Any], record: dict[str, Any], selected: list
             "response_text": " / ".join(_texts(native.get("dialogue"))) or native.get("message"),
             "job_response_text": " / ".join(_texts(job_result.get("dialogue"))) or None,
             "draft_dialogue_text": " / ".join(_texts(draft.get("dialogue"))) or None,
+            "plan_draft": _draft_summary(draft),
+            "job_status": {"kind": followed.get("kind"), "status": (followed.get("job") or {}).get("status"),
+                           "errorMessage": (followed.get("job") or {}).get("errorMessage"),
+                           "timedOut": followed.get("timed_out")} if followed else None,
+            "tool_results": [{"name": item.get("name"), "status": item.get("status"), "type": item.get("type")}
+                             for item in native.get("toolResults") or []],
+            "review_candidates": _review_candidates(job_preparations, plan_drafts),
             "citations": citations, "model_tool_calls": [], "supplied_evidence": supplied,
             "question": case["api_request"]["message"], "semantic_criteria": criteria,
             "acceptable_response_example": expected["message_example"], "semantic_status": "not_reviewed",

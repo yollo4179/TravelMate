@@ -265,6 +265,30 @@ class LiliScoreTests(unittest.TestCase):
         self.assertEqual([], [name for name, value in scored["checks"].items() if value is False])
         self.assertEqual({"plan_accepted": True, "plan_draft_completed": True}, scored["stage_results"])
 
+    # Codex r3 review: the CSV carried only LiLi's first line, so a reviewer missed the final explanation and plan.
+    def test_review_export_carries_the_final_answer_the_draft_and_what_the_model_was_given(self) -> None:
+        import csv
+        import tempfile
+        from tracks.conversation.review import export_review
+        pin = {"placeId": 378, "name": "창경궁", "sequence": 1, "stayMinutes": 60, "explanation": "왕실 생활공간"}
+        draft = {"planId": 77, "pins": [pin], "dialogue": TWO_CUTS, "description": "창경궁 중심 초안",
+                 "context": {"startAt": "10:00", "endAt": "12:00"}}
+        trace = self.plan_trace({"status": "SUCCEEDED", "planId": 77}, draft)
+        prompt = '조건\n{"request":{},"candidates":[{"placeId":208,"name":"서울 운현궁","description":null,"evidenceAvailability":"NONE_SELECTED"}]}'
+        next(event for event in trace.events if event["event"] == "PLAN_DRAFT")["payload"]["prompt"] = prompt
+        scored = self.score(trace)
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "review.csv"
+            export_review(path, [scored])
+            with path.open(encoding="utf-8-sig") as stream:
+                rows = list(csv.DictReader(stream))
+        self.assertTrue(rows)
+        self.assertEqual(" / ".join(cut["text"] for cut in TWO_CUTS), rows[0]["final_text"])
+        self.assertEqual("왕실 생활공간", json.loads(rows[0]["plan_draft"])["pins"][0]["explanation"])
+        self.assertEqual("SUCCEEDED", json.loads(rows[0]["job_status"])["status"])
+        self.assertEqual([{"step": "plan", "placeId": 208, "name": "서울 운현궁", "evidenceAvailability": "NONE_SELECTED",
+                           "description": None}], json.loads(rows[0]["review_candidates"]))
+
     def test_the_displayed_list_reaches_the_server_unchanged(self) -> None:
         case = self.cases[EXCLUDE_SHOWN]
         supplied = ModuleInput(case=case, input_sha256=case["input_sha256"], conversation_id="c", turn_key="t")
