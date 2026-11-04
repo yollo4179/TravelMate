@@ -1,0 +1,16 @@
+{
+  "evaluator_git_sha": "4aec8565cf1c3f89b36911e4c412dacb7807d377",
+  "evaluator_source_sha256": "e3ab0a4bbc4bb58e7a567f76d613c8ff65b71c6290b22a32396f313c45039ccc",
+  "configuration_sha256": "848720239fba42ad1b9ed35801da769c1b29bf1dd859beaa7faca3d03a4697ff",
+  "suite_sha256": "616b73deea379b680f34cdc935a6bf3b5333063069cd616e8b222acd9c3c8494",
+  "execution_mode": "LIVE",
+  "selected_case_ids": [
+    "CONV-UNSUPPORTED-booking",
+    "CONV-SEARCH-exclude-first",
+    "CONV-PLAN-create",
+    "CONV-JOB-owned"
+  ],
+  "status": "collected",
+  "input_count_cost_usd": null,
+  "total_billed_cost_usd": null
+}
