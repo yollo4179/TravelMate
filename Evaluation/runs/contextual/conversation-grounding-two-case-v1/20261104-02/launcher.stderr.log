@@ -1,0 +1,8 @@
+Traceback (most recent call last):
+  File "C:\ssafy\Travelmate\.local-backups\conversation-control\Evaluation\evaluation_server.py", line 6, in <module>
+    main()
+  File "C:\ssafy\Travelmate\.local-backups\conversation-control\Evaluation\common\experiments\server.py", line 86, in main
+    validate_environment(environment)
+  File "C:\ssafy\Travelmate\.local-backups\conversation-control\Evaluation\common\experiments\server.py", line 55, in validate_environment
+    raise ValueError("Use a dedicated PostgreSQL database name ending in _evaluation")
+ValueError: Use a dedicated PostgreSQL database name ending in _evaluation

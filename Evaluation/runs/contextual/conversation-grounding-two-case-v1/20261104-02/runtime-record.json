@@ -1,0 +1,45 @@
+{
+  "environment": "evaluation",
+  "server_url": "http://127.0.0.1:18080",
+  "execution_mode": "LIVE",
+  "corpus_sha256": "c74e902620687cbe8b7ec61a24eb7932e95f8cf7a90762baef5e78ad0b134f9e",
+  "backend_profile": {
+    "search": "existing-independent-search",
+    "evidence": "PlaceConversationEvidence",
+    "llm": "gpt-5.4-mini-2026-03-17",
+    "prompt": "existing-conversation-prompt",
+    "implementation_commit": "9733756de571b54fe36ad3b52caf4ee64e8bcf5b"
+  },
+  "server_jar_sha256": "2bf8190d45d015dcaf93b7a9cfa5c3829d4d9d417d8124ce0dd3c4f0e103be48",
+  "runtime_reused": "C:\\ssafy\\Travelmate\\.local-backups\\conversation-control\\Server\\TravelMate\\build\\conversation-grounding-live-20261104-01",
+  "infrastructure_reused": true,
+  "new_runtime_clone": false,
+  "configuration_mode": "existing explicitly isolated Spring properties; new evaluation profile not applied to existing DB/topic bindings",
+  "isolated_targets": {
+    "spring_db": "127.0.0.1:55432/travelmate_b_spring",
+    "search": "http://127.0.0.1:18000",
+    "redis": "127.0.0.1:16379",
+    "kafka": "127.0.0.1:39092",
+    "provider_recorder": "127.0.0.1:18082"
+  },
+  "limits": {
+    "sequential": true,
+    "repeats_per_case": 1,
+    "api_submissions_per_case": 1,
+    "max_api_submissions": 2,
+    "max_inference_calls_per_case": 1,
+    "max_input_count_requests_per_case": 1,
+    "max_search_requests_per_case": 1,
+    "max_inference_calls": 2,
+    "max_input_count_requests": 2,
+    "max_search_requests": 2,
+    "max_additional_tool_executions": 0,
+    "max_followup_inference_calls": 0,
+    "retries": 0,
+    "plan_calls": 0,
+    "judge_calls": 0,
+    "warmup_calls": 0,
+    "stop_on_first_error_or_unmet_target": true,
+    "failed_or_unknown_dispatch_consumes_allowance": true
+  }
+}

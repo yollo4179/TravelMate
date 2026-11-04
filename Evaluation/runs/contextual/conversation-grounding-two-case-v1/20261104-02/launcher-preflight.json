@@ -1,0 +1,28 @@
+{
+  "stage": "evaluation_launcher_validation",
+  "status": "BLOCKED_BEFORE_SERVER_START",
+  "implementation_commit": "9733756de571b54fe36ad3b52caf4ee64e8bcf5b",
+  "command": "python Evaluation/evaluation_server.py --environment-file .env.evaluation.json --start",
+  "exit_code": 1,
+  "error_type": "ValueError",
+  "message": "Use a dedicated PostgreSQL database name ending in _evaluation",
+  "existing_isolated_database": "travelmate_b_spring",
+  "databases_observed_in_existing_isolated_container": [
+    "postgres",
+    "travelmate_b_spring"
+  ],
+  "server_process_started_by_launcher": false,
+  "admin_user": "aDMINuser",
+  "admin_http_authentication": "NOT_RUN_SERVER_UNAVAILABLE",
+  "configuration_source": "Existing isolated spring.properties mapped to EVAL_*; production target comparisons taken from running container metadata",
+  "base_configuration_replaced": false,
+  "jwt_expiration_hardcoded": false,
+  "new_database_created": false,
+  "database_renamed": false,
+  "validation_bypassed": false,
+  "source_changes": false,
+  "environment_secret_file_committed": false,
+  "quality_aggregation_excluded": true,
+  "model_calls": 0,
+  "search_calls": 0
+}

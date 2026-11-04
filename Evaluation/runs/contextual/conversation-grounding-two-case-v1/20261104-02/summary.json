@@ -1,0 +1,155 @@
+{
+  "status": "STOPPED_ON_FIRST_ERROR",
+  "implementation_commit": "9733756de571b54fe36ad3b52caf4ee64e8bcf5b",
+  "first_error": {
+    "state": "STOPPED_ON_FIRST_ERROR",
+    "stage": "spring_startup",
+    "occurred_at": "2026-11-04T11:51:38.844+09:00",
+    "error_type": "PlaceholderResolutionException",
+    "message": "Could not resolve placeholder 'jwt.access-expiration' in value \"${jwt.access-expiration}\"",
+    "launch_configuration": "Explicit spring.config.location replaced default locations; reused isolation file lacked the JWT access-expiration property",
+    "retries": 0,
+    "server_restarts": 0,
+    "source_changes": false,
+    "new_runtime_clone": false
+  },
+  "actual_counts": {
+    "conversation_submissions": 0,
+    "search_backend_requests": 0,
+    "evidence_preparations": 0,
+    "input_count_requests": 0,
+    "inference_calls": 0,
+    "model_selected_tool_executions": 0,
+    "plan_calls": 0,
+    "judge_calls": 0,
+    "warmup_calls": 0,
+    "retries": 0,
+    "server_launches": 1,
+    "server_restarts": 0,
+    "evaluation_launcher_invocations": 1,
+    "server_launches_from_evaluation_launcher": 0
+  },
+  "cases": [
+    {
+      "case_id": "PLR-TM-palaces-01",
+      "input_sha256": "13f07e1370f08c3962a159bbf18ff3ef60b7a5b2d03f1d550a34c96f70f9598b",
+      "original_request": {
+        "message": "창경궁을 찾아줘.",
+        "planningRequest": null,
+        "history": [],
+        "searchContext": {
+          "region": "서울",
+          "city": null,
+          "category": null,
+          "excludePlaceIds": [],
+          "area": null
+        }
+      },
+      "status": "NOT_RUN",
+      "request_dispatched": false,
+      "original_response": null,
+      "explanation": null,
+      "citation_alignment": {
+        "status": "NOT_ASSESSED",
+        "reason": "Server startup failed before any case submission"
+      },
+      "stage_latency_ms": {
+        "search": null,
+        "evidence_preparation": null,
+        "input_count": null,
+        "inference": null,
+        "server_turn": null,
+        "client_total": null
+      },
+      "actual_calls": {
+        "conversation": 0,
+        "search": 0,
+        "input_count": 0,
+        "inference": 0
+      }
+    },
+    {
+      "case_id": "PLR-TM-palaces-03",
+      "input_sha256": "42a6a1b0fb5c40e8be6c37f1cf5e685c982b4d927151646eb6b2467478d8246d",
+      "original_request": {
+        "message": "종로에서 조선 왕실 가족이 생활했던 궁이나 거처를 둘러보고 싶어.",
+        "planningRequest": null,
+        "history": [],
+        "searchContext": {
+          "region": "서울",
+          "city": "종로",
+          "category": null,
+          "excludePlaceIds": [],
+          "area": null
+        }
+      },
+      "status": "NOT_RUN",
+      "request_dispatched": false,
+      "original_response": null,
+      "explanation": null,
+      "citation_alignment": {
+        "status": "NOT_ASSESSED",
+        "reason": "Server startup failed before any case submission"
+      },
+      "stage_latency_ms": {
+        "search": null,
+        "evidence_preparation": null,
+        "input_count": null,
+        "inference": null,
+        "server_turn": null,
+        "client_total": null
+      },
+      "actual_calls": {
+        "conversation": 0,
+        "search": 0,
+        "input_count": 0,
+        "inference": 0
+      }
+    }
+  ],
+  "startup_failure_latency_ms": 3647.0,
+  "startup_latency_basis": "Application Starting log timestamp to Application run failed log timestamp; excludes JVM bootstrap and build time; not a question latency",
+  "call_count_basis": [
+    "No collector or experiment execution was started",
+    "Server process exited during Spring context initialization",
+    "No question request or provider-recorder request was dispatched",
+    "No new observation events and no new inference ledger exist"
+  ],
+  "input_count_cost_usd": null,
+  "total_billed_cost_usd": null,
+  "inference_cost_from_this_run_usd": "0",
+  "no_additional_development": true,
+  "no_runtime_clone": true,
+  "no_retry": true,
+  "quality_aggregation_excluded": true,
+  "quality_exclusion_reason": "Infrastructure/configuration startup failures; no question dispatched and no model output",
+  "latest_launcher_preflight": {
+    "stage": "evaluation_launcher_validation",
+    "status": "BLOCKED_BEFORE_SERVER_START",
+    "implementation_commit": "9733756de571b54fe36ad3b52caf4ee64e8bcf5b",
+    "command": "python Evaluation/evaluation_server.py --environment-file .env.evaluation.json --start",
+    "exit_code": 1,
+    "error_type": "ValueError",
+    "message": "Use a dedicated PostgreSQL database name ending in _evaluation",
+    "existing_isolated_database": "travelmate_b_spring",
+    "databases_observed_in_existing_isolated_container": [
+      "postgres",
+      "travelmate_b_spring"
+    ],
+    "server_process_started_by_launcher": false,
+    "admin_user": "aDMINuser",
+    "admin_http_authentication": "NOT_RUN_SERVER_UNAVAILABLE",
+    "configuration_source": "Existing isolated spring.properties mapped to EVAL_*; production target comparisons taken from running container metadata",
+    "base_configuration_replaced": false,
+    "jwt_expiration_hardcoded": false,
+    "new_database_created": false,
+    "database_renamed": false,
+    "validation_bypassed": false,
+    "source_changes": false,
+    "environment_secret_file_committed": false,
+    "quality_aggregation_excluded": true,
+    "model_calls": 0,
+    "search_calls": 0
+  },
+  "admin_http_authentication": "NOT_RUN_SERVER_UNAVAILABLE"
+}

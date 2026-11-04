@@ -1,0 +1,14 @@
+{
+  "implementation_commit": "9733756de571b54fe36ad3b52caf4ee64e8bcf5b",
+  "jar_sha256": "2bf8190d45d015dcaf93b7a9cfa5c3829d4d9d417d8124ce0dd3c4f0e103be48",
+  "build": "gradlew.bat --offline bootJar -x test --no-daemon",
+  "build_status": "SUCCESS",
+  "collector_module": "CONVERSATION_API",
+  "provider_recorder_source": "C:\\ssafy\\Travelmate\\.local-backups\\conversation-control\\Evaluation\\runs\\contextual\\conversation-grounding-two-case-v1\\20261104-01\\run-once.approved.py",
+  "provider_recorder_sha256": "bd708220235364bbb83d3df1a17706ea4a90092ef01560b40a1fba60527e95ac",
+  "original_properties_sha256": "0cc6173a7f893714b171e5513fd01775d84916aedd4caf92734402829059292f",
+  "policy_sha256": "aa5e65819a13c538f8ebc6e77f56f76a31543d9810061f29efb1c322a66cdbc1",
+  "model": "gpt-5.4-mini-2026-03-17",
+  "provider_calls_started": false,
+  "execution_status": "STOPPED_ON_FIRST_ERROR_BEFORE_CASE_DISPATCH"
+}

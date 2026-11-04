@@ -1,0 +1,41 @@
+{
+  "schema_version": "module-experiment-v1",
+  "dataset": "C:\\ssafy\\Travelmate\\.local-backups\\conversation-control\\Evaluation\\datasets\\v1.4.0",
+  "dataset_manifest_sha256": "42235cfe110d208f9f30656dc90a510951e1ec6dbb8d6b861efe8f4d1e460038",
+  "execution": {
+    "mode": "LIVE",
+    "case_ids": [
+      "PLR-TM-palaces-01",
+      "PLR-TM-palaces-03"
+    ],
+    "max_calls": {
+      "conversation": 2
+    },
+    "timeout_seconds": 700,
+    "model": null,
+    "max_output_tokens": null,
+    "parameters": {}
+  },
+  "variants": [
+    {
+      "id": "grounded",
+      "module": "CONVERSATION_API",
+      "ranking_mode": null,
+      "response_limit": null,
+      "expected_response_type": "PLACES",
+      "require_citations": true,
+      "backend_profile": {
+        "search": "existing-independent-search",
+        "evidence": "PlaceConversationEvidence",
+        "llm": "gpt-5.4-mini-2026-03-17",
+        "prompt": "existing-conversation-prompt",
+        "implementation_commit": "9733756de571b54fe36ad3b52caf4ee64e8bcf5b"
+      }
+    }
+  ],
+  "server_url": "http://127.0.0.1:18080",
+  "token_env": "TRAVELMATE_EVAL_ACCESS_TOKEN",
+  "runtime_record": "runtime-record.json",
+  "runtime_sha256": "398d837a506c8254092461283566e1ac4e24284f64f71238038048816e7fb979",
+  "fixtures": null
+}

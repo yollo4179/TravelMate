@@ -1,0 +1,15 @@
+{
+  "pid": 18832,
+  "arguments": [
+    "C:\\Program Files\\BellSoft\\LibericaJDK-21\\bin\\java.exe",
+    "-Dfile.encoding=UTF-8",
+    "-jar",
+    "C:\\ssafy\\Travelmate\\.local-backups\\conversation-control\\Server\\TravelMate\\build\\libs\\TravelMate-0.0.1-SNAPSHOT.jar",
+    "--spring.config.location=file:C:/ssafy/Travelmate/.local-backups/conversation-control/Server/TravelMate/build/conversation-grounding-live-20261104-01/spring.properties",
+    "--openai.evaluation-budget-file=C:/ssafy/Travelmate/.local-backups/conversation-control/Server/TravelMate/build/conversation-grounding-live-20261104-01/approved-inference-policy-20261104-02.json",
+    "--travelmate.observation.directory=C:/ssafy/Travelmate/.local-backups/conversation-control/Evaluation/runs/contextual/conversation-grounding-two-case-v1/20261104-02/observations",
+    "--server.address=127.0.0.1"
+  ],
+  "source_commit": "9733756de571b54fe36ad3b52caf4ee64e8bcf5b",
+  "runtime_cloned": false
+}

@@ -1,0 +1,12 @@
+{
+  "state": "STOPPED_ON_FIRST_ERROR",
+  "stage": "spring_startup",
+  "occurred_at": "2026-11-04T11:51:38.844+09:00",
+  "error_type": "PlaceholderResolutionException",
+  "message": "Could not resolve placeholder 'jwt.access-expiration' in value \"${jwt.access-expiration}\"",
+  "launch_configuration": "Explicit spring.config.location replaced default locations; reused isolation file lacked the JWT access-expiration property",
+  "retries": 0,
+  "server_restarts": 0,
+  "source_changes": false,
+  "new_runtime_clone": false
+}
