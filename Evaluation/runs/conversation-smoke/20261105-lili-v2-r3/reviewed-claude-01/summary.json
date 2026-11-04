@@ -1,0 +1,10 @@
+{
+  "selected_case_count": 10,
+  "observed_case_count": 10,
+  "automated_pass_count": 10,
+  "automated_fail_count": 0,
+  "semantic_fail_count": 2,
+  "quality_pass_count": 8,
+  "all_quality_passed": false,
+  "note": "MOCK, missing observations and unreviewed reasons are never quality passes"
+}
