@@ -64,6 +64,7 @@ DB 스키마 변경은 없다. 생성 때 검사한 구조화 인용은 아직 D
 - [공통 구조·설정·미구현 범위](../architecture/unified-conversation-evaluation.md)
 - [평가 실행·내용 검수](../../Evaluation/tracks/conversation/README.md)
 - [블로그용 구조도](../blog/2026-11-04-one-pipeline-four-evaluation-units.md)
+- [후속: 미충족·부분 항목 수정과 모바일 전환 확인](unified-conversation-gap-fixes-20261104.md)
 
 실제 시작은 전용 연결값·모델/키·공식 한도·승인 예산을 정상 작업 폴더에 설정한 뒤,
 같은 소스의 서버 두 개를 실행하고 도구 호출 단위부터 한다. 실행 중인 구형 B안에 새 수집기만 붙여서 통과로 만들지 않는다.

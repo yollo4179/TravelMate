@@ -5,70 +5,70 @@
     {
       "emotion": "NEUTRAL",
       "file": "neutral_idle.png",
-      "visual_description": "차분하게 정면을 보는 기본 대기 표정",
+      "visual_description": "입을 다물고 옅게 웃으며 정면을 보는 기본 대기 모습, 한 손은 머리카락 쪽",
       "usage": "기본 대기",
       "sha256": "4512d92eee98b0c62b21e28182d964c7b8d897c6204d8c80fd754e04beb66de4"
     },
     {
       "emotion": "THINKING",
       "file": "thinking.png",
-      "visual_description": "턱에 손을 대고 시선을 올린 모습",
+      "visual_description": "검지를 입가에 대고 위를 올려다보며, 다른 팔은 몸 앞에 접은 모습",
       "usage": "조건 확인·생각",
       "sha256": "956803b7ec2222464dff4c032eb3a503b6c2b29203549ab8a3b47f2e6db227ee"
     },
     {
       "emotion": "HAPPY",
       "file": "happy_smile.png",
-      "visual_description": "웃으며 손을 들어 인사하는 모습",
+      "visual_description": "입을 벌리고 웃으며 손바닥을 정면으로 보이게 흔드는 인사 (GUIDING과 달리 손가락이 위를 향함)",
       "usage": "인사·긍정",
       "sha256": "e4bafb7d03dda2eec1930501c3b52d75b714d644d7c859cc506a86298fa480c4"
     },
     {
       "emotion": "GUIDING",
       "file": "guide_explain.png",
-      "visual_description": "펴진 손으로 옆을 안내하는 모습",
+      "visual_description": "웃으며 손바닥을 위로 펴서 옆을 가리키는 안내 동작 (HAPPY와 달리 손바닥이 위를 향함)",
       "usage": "장소 설명",
       "sha256": "2f2c68eefda99dfcfff2b6bbae1a574097885638f0c7d19738f18a29faba19fd"
     },
     {
       "emotion": "EXCITED",
       "file": "excited_lead.png",
-      "visual_description": "밝게 웃으며 앞으로 손을 내미는 모습",
+      "visual_description": "활짝 웃으며 한 손을 화면 쪽으로 뻗고 다른 손은 주먹을 쥔 모습 (CONCERNED와 같은 구도, 표정으로 구분)",
       "usage": "여행 제안",
       "sha256": "600c86ff3330f66fc00aa0016f7b1f8e8de3e76afe854784991711277a5936da"
     },
     {
       "emotion": "AFFECTIONATE",
       "file": "affectionate_softsmile.png",
-      "visual_description": "가슴에 손을 얹고 부드럽게 웃는 모습",
+      "visual_description": "고개를 기울이고 가슴에 손을 얹은 채 부드럽게 웃는 모습",
       "usage": "따뜻한 반응",
       "sha256": "90e7f6ab262cc96fe43e2648f39fa384cecd1330bf1da8fe9f900b19713f71d5"
     },
     {
       "emotion": "EMBARRASSED",
       "file": "embarrassed_flustered.png",
-      "visual_description": "놀란 입 모양과 붉어진 볼, 든 양손",
+      "visual_description": "볼이 붉고 땀방울이 맺힌 채 놀란 입으로 양손을 가슴 앞에 든 모습",
       "usage": "당황",
       "sha256": "904c71e13ea6ca5cb13b8f262a17a0aa5be7314aba7ae5da483c90da9eb76efe"
     },
     {
       "emotion": "SHY",
       "file": "shy_lookaway.png",
-      "visual_description": "손을 모으고 옆으로 시선을 피하는 모습",
+      "visual_description": "볼을 붉히고 양손을 가슴 앞에 모은 채 옆으로 시선을 피하는 모습",
       "usage": "수줍음",
       "sha256": "34e110a393db36f3f4e423f229846153c6f8c8804d2e7c41f2b7dc3759e03016"
     },
     {
       "emotion": "SAD",
       "file": "sad_lookdown.png",
-      "visual_description": "고개와 눈을 내리고 앉아 있는 모습",
+      "visual_description": "선 채로 고개와 눈을 내리고 양손을 몸 앞에 모은 모습",
       "usage": "아쉬움",
       "sha256": "312b39a9a4aac8b723edac61f882c66299e7b479b940bc39cc3d7d133a5ef630"
     },
     {
       "emotion": "CONCERNED",
       "file": "worried_reachout.png",
-      "visual_description": "걱정스러운 얼굴로 손을 내미는 모습",
+      "visual_description": "눈썹을 찌푸리고 입을 벌린 걱정스러운 얼굴로 한 손을 화면 쪽으로 뻗는 모습 (EXCITED와 같은 구도, 표정으로 구분)",
       "usage": "불확실성·걱정",
       "sha256": "30070e80be679f1bcd770a5f842db41c74e70c8e85ee6d06af9dc1cfdfd31712"
     }
