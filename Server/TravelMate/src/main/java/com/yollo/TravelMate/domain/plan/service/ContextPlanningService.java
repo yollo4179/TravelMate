@@ -38,8 +38,8 @@ public class ContextPlanningService {
     private enum DraftFailure {
         // Budget guard, provider or transport: which one, and whether retrying helps, is not known here.
         GENERATION_UNAVAILABLE("일정 초안을 만들지 못했어요. 같은 조건으로 다시 요청하거나 조건을 바꿔 요청해 주세요."),
-        // The model answered, but the draft broke a rule the server checks, so nothing was saved.
-        DRAFT_REJECTED("만들어진 초안이 확인된 장소 정보와 맞지 않아 저장하지 않았어요. 다시 요청해 주세요.");
+        // The model answered, but its draft could not be read or cited evidence it was not given, so nothing was saved.
+        DRAFT_REJECTED("만들어진 초안이 확인 단계를 통과하지 못해 저장하지 않았어요. 다시 요청해 주세요.");
 
         private final String userMessage;
 
@@ -277,6 +277,9 @@ public class ContextPlanningService {
             var generated = DraftPlanValidator.validate(planValidator.parse(output), candidates, request);
             PlanEvidenceCitationValidator.validate(generated, preparedPrompt);
             return generated;
+        } catch (ResponseStatusException conditionReason) {
+            // The draft rules word their reasons for users (they also guard manual plans), e.g. a café the area lacks.
+            throw conditionReason;
         } catch (RuntimeException exception) {
             throw new DraftFailureException(DraftFailure.DRAFT_REJECTED, exception);
         }
