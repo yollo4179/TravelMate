@@ -1,0 +1,14 @@
+{
+  "evaluator_git_sha": "66596a49875e3d13bc55fcacadc9bb6d2d51f75c",
+  "evaluator_source_sha256": "682bbd6e9f526cb8431bcce7256fba995985158665eb066dd56457235682865d",
+  "configuration_sha256": "2c4b3c2184de067f9af493d4b8330199c4fa5aa29fd47acc9a16fd7a6b2d638c",
+  "suite_sha256": "8ee605c689c619bfa54a14ac3335bd009b3cd5643d56ced613b709e7b5a42a78",
+  "execution_mode": "LIVE",
+  "selected_case_ids": [
+    "CONV-JOB-owned",
+    "CONV-PLAN-create"
+  ],
+  "status": "failed",
+  "input_count_cost_usd": null,
+  "total_billed_cost_usd": null
+}
