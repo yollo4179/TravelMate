@@ -90,6 +90,15 @@ class PlanGenerationFailureObservationTest {
     }
 
     @Test
+    void anyModelCallFailureIsHiddenFromUsersNotOnlyTheBudgetGuard() throws Exception {
+        when(llm.generate(anyString(), anyString())).thenThrow(new IllegalStateException("OpenAI evaluation call cap reached"));
+        var draft = runUntilFailed();
+        assertFalse(storedError.get().contains("OpenAI"), "provider and budget wording never reaches the job's public reason");
+        assertEquals("IllegalStateException", draft.path("failureType").asText());
+        assertEquals("OpenAI evaluation call cap reached", draft.path("failureMessage").asText());
+    }
+
+    @Test
     void aRejectedDraftKeepsTheExactModelOutputBesideTheReason() throws Exception {
         when(llm.generate(anyString(), anyString())).thenReturn("not a plan");
         var draft = runUntilFailed();

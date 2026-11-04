@@ -6,7 +6,6 @@ import java.util.stream.IntStream;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.yollo.TravelMate.ai.llm.base.LlmClient;
-import com.yollo.TravelMate.ai.llm.budget.TokenBudgetException;
 import com.yollo.TravelMate.ai.llm.observation.ObservationContext;
 import com.yollo.TravelMate.domain.place.data.result.PlaceResult;
 import com.yollo.TravelMate.domain.place.service.PlaceSemanticSearchService;
@@ -214,7 +213,12 @@ public class ContextPlanningService {
             String prompt = preparedPrompt.userPrompt();
             log.info("planning job={} stage=GENERATING candidateIds={} contextIncluded=true promptCharacters={}",
                     jobId, candidatesById.keySet(), prompt.length());
-            String output = llmClient.generate(promptFactory.systemPrompt(), prompt);
+            String output;
+            try {
+                output = llmClient.generate(promptFactory.systemPrompt(), prompt);
+            } catch (RuntimeException exception) {
+                throw new GenerationUnavailableException(exception);
+            }
             attempt.output = output;
             log.info("planning job={} stage=VALIDATING_RESULT responseCharacters={}", jobId, output == null ? 0 : output.length());
             var generated = DraftPlanValidator.validate(planValidator.parse(output), candidates, request);
@@ -235,8 +239,8 @@ public class ContextPlanningService {
             recordDraft(attempt, PlanningResponse.JobStatus.SUCCEEDED, null);
         } catch (Exception exception) {
             log.warn("planning job={} stage=FAILED exception={}", jobId, exception.toString());
-            // The job's error is shown to users and read aloud by LiLi; model budget and provider failures stay internal.
-            String message = exception instanceof TokenBudgetException ? GENERATION_UNAVAILABLE
+            // The job's error is shown to users and read aloud by LiLi; anything the model call raised stays internal.
+            String message = exception instanceof GenerationUnavailableException ? GENERATION_UNAVAILABLE
                     : exception instanceof ResponseStatusException status ? status.getReason()
                     : exception instanceof IllegalStateException ? exception.getMessage()
                     : exception instanceof com.yollo.TravelMate.exceptions.cumtom.ErrorCodeException known ? known.getErrorCode().getMessage()
@@ -247,15 +251,23 @@ public class ContextPlanningService {
         }
     }
 
-    private void recordDraft(DraftAttempt attempt, PlanningResponse.JobStatus status, Exception failure) {
+    private void recordDraft(DraftAttempt attempt, PlanningResponse.JobStatus status, Exception rejected) {
+        Throwable failure = rejected instanceof GenerationUnavailableException unavailable ? unavailable.getCause() : rejected;
         var event = objectMapper.createObjectNode().put("status", status.name()).put("query", attempt.query)
                 .put("output", attempt.output)
                 .put("failureType", failure == null ? null : failure.getClass().getSimpleName())
-                .put("failureMessage", failure == null ? null : failure instanceof ResponseStatusException rejected
-                        ? rejected.getReason() : failure.getMessage());
+                .put("failureMessage", failure == null ? null : failure instanceof ResponseStatusException statusFailure
+                        ? statusFailure.getReason() : failure.getMessage());
         var candidates = event.putArray("candidateIds");
         attempt.candidateIds.forEach(candidates::add);
         ObservationContext.record(ObservationContext.Event.PLAN_DRAFT, event);
+    }
+
+    /** The model call itself failed (budget, provider, transport); its cause is for operators, not users. */
+    private static final class GenerationUnavailableException extends RuntimeException {
+        private GenerationUnavailableException(RuntimeException cause) {
+            super(cause);
+        }
     }
 
     /** What one generation attempt saw and produced, filled in as the job advances. */
