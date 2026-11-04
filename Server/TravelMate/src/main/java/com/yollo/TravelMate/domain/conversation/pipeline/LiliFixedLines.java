@@ -1,5 +1,6 @@
 package com.yollo.TravelMate.domain.conversation.pipeline;
 
+import java.util.Arrays;
 import java.util.EnumMap;
 import java.util.Map;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -9,35 +10,52 @@ import com.yollo.TravelMate.domain.plan.data.response.PlanningResponse.JobStatus
 import org.springframework.core.io.DefaultResourceLoader;
 
 /**
- * LiLi's fixed lines for a planning job that has not failed. A known status needs no second model call;
- * only failures, whose reason varies, go back to LiLi's follow-up.
+ * LiLi's lines that need no model call: known job statuses, and the fallback when her own line could not be used.
+ * Failures with varying reasons are not here; they go back to LiLi's follow-up.
  */
-public final class LiliStatusLines {
-    public static final String RESOURCE = "classpath:conversation/persona/lili-job-status-v1.json";
+public final class LiliFixedLines {
+    public static final String RESOURCE = "classpath:conversation/persona/lili-fixed-lines-v1.json";
 
-    private LiliStatusLines() {}
-
-    public static DialogueCut line(JobStatus status) {
-        var cut = Holder.LINES.get(status);
-        if (cut == null) throw new IllegalArgumentException("No fixed LiLi line for job status " + status);
-        return cut;
+    public enum Line {
+        JOB_QUEUED,
+        JOB_RUNNING,
+        JOB_SUCCEEDED,
+        EXPLANATION_UNAVAILABLE,
+        REPLY_UNAVAILABLE
     }
 
-    // Loaded once on first use; a status without a line fails before the first lookup reaches a user.
-    private static final class Holder {
-        private static final Map<JobStatus, DialogueCut> LINES = load();
+    private static final Map<JobStatus, Line> STATUS_LINES = Map.of(
+            JobStatus.QUEUED, Line.JOB_QUEUED,
+            JobStatus.RUNNING, Line.JOB_RUNNING,
+            JobStatus.SUCCEEDED, Line.JOB_SUCCEEDED
+    );
 
-        private static Map<JobStatus, DialogueCut> load() {
+    private LiliFixedLines() {}
+
+    public static DialogueCut line(Line line) {
+        return Holder.LINES.get(line);
+    }
+
+    public static DialogueCut line(JobStatus status) {
+        var line = STATUS_LINES.get(status);
+        if (line == null) throw new IllegalArgumentException("No fixed LiLi line for job status " + status);
+        return line(line);
+    }
+
+    // Loaded once on first use; a missing line fails before the first lookup reaches a user.
+    private static final class Holder {
+        private static final Map<Line, DialogueCut> LINES = load();
+
+        private static Map<Line, DialogueCut> load() {
             String json = PromptTemplates.load(new DefaultResourceLoader(), RESOURCE);
             try {
-                Map<JobStatus, DialogueCut> lines = new ObjectMapper().readValue(json, new TypeReference<EnumMap<JobStatus, DialogueCut>>() {});
-                var required = JobStatus.pendingValues().stream().toList();
-                if (!lines.keySet().containsAll(required) || !lines.containsKey(JobStatus.SUCCEEDED) || lines.containsKey(JobStatus.FAILED)) {
-                    throw new IllegalStateException("LiLi status lines must cover pending and completed jobs and leave failures to LiLi");
+                Map<Line, DialogueCut> lines = new ObjectMapper().readValue(json, new TypeReference<EnumMap<Line, DialogueCut>>() {});
+                if (!lines.keySet().containsAll(Arrays.asList(Line.values()))) {
+                    throw new IllegalStateException("Every fixed LiLi line needs text and an emotion: " + RESOURCE);
                 }
                 return Map.copyOf(lines);
             } catch (java.io.IOException exception) {
-                throw new IllegalStateException("LiLi status lines unavailable: " + RESOURCE, exception);
+                throw new IllegalStateException("LiLi fixed lines unavailable: " + RESOURCE, exception);
             }
         }
     }

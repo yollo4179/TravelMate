@@ -15,7 +15,7 @@ import com.yollo.TravelMate.domain.conversation.data.ConversationIntent;
 import com.yollo.TravelMate.domain.conversation.data.ConversationRequest;
 import com.yollo.TravelMate.domain.conversation.data.DialogueCut;
 import com.yollo.TravelMate.domain.conversation.data.DisplayedResult;
-import com.yollo.TravelMate.domain.conversation.pipeline.LiliStatusLines;
+import com.yollo.TravelMate.domain.conversation.pipeline.LiliFixedLines;
 import com.yollo.TravelMate.domain.place.data.request.PlaceSearchContext;
 import com.yollo.TravelMate.domain.plan.data.response.PlanningResponse.JobStatus;
 import com.yollo.TravelMate.domain.conversation.data.ConversationResponse;
@@ -137,7 +137,7 @@ class LiliRouterTest {
         var response = respond(new ConversationRequest("내 생성 작업 " + jobId + "의 현재 상태를 확인해줘.", null, List.of()));
         assertEquals(1, jobInvocations.size());
         assertEquals(jobId, jobInvocations.get(0).arguments().path("job_id").asText());
-        assertEquals(List.of(new DialogueCut("확인해 볼게.", CharacterEmotion.THINKING), LiliStatusLines.line(JobStatus.QUEUED)),
+        assertEquals(List.of(new DialogueCut("확인해 볼게.", CharacterEmotion.THINKING), LiliFixedLines.line(JobStatus.QUEUED)),
                 response.dialogue());
         assertEquals(1, outputs.size(), "a known status needs no follow-up call");
         assertTrue(lastUserInput(0).contains("\"jobIdProvided\":true"));

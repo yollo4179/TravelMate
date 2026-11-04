@@ -31,7 +31,7 @@ public class LiliPlanHandler implements LiliBranchHandler {
             return actions.followUp(turn, LiliServerCode.PLANNING_CONDITIONS_MISSING, null)
                     .map(reply -> renderer.dialogue(null, reply.intent(), List.of(), List.of(reply.cut()),
                             reply.choices(), Termination.COMPLETED, 2, List.of()))
-                    .orElseGet(() -> renderer.render(null, null, Termination.INVALID_RESPONSE, 2, List.of()));
+                    .orElseGet(() -> renderer.liliFallback(null, Termination.INVALID_RESPONSE, 2, List.of()));
         }
         var request = turn.request().withPlanningRequest(planning.withSearchQuery(decision.searchQuery()));
         var executed = actions.run(turn, request, ConversationTool.Name.GENERATE_PLAN, mapper.createObjectNode());

@@ -130,7 +130,7 @@ public class RecommendationJobService {
                     LiliTurnContract.RECOMMENDATION_NAME, LiliTurnContract.recommendationSchema());
         } catch (RuntimeException exception) {
             lili.record(LiliTurns.Stage.RECOMMENDATION, LiliPrompts.Prompt.RECOMMENDATION, null, elapsed(started));
-            return renderer.render(prepared.result(), null, termination(exception), 1, List.of());
+            return renderer.liliFallback(prepared.result(), termination(exception), 1, List.of());
         }
         lili.record(LiliTurns.Stage.RECOMMENDATION, LiliPrompts.Prompt.RECOMMENDATION, completion, elapsed(started));
         try {
@@ -141,7 +141,7 @@ public class RecommendationJobService {
                     recommendation.dialogue(), List.of(), Termination.COMPLETED, 1, List.of());
         } catch (Exception exception) {
             // Keep the strict citation rule; the verified cards still reach the user with a fallback line.
-            return renderer.render(prepared.result(), null, Termination.INVALID_RESPONSE, 1, List.of());
+            return renderer.liliFallback(prepared.result(), Termination.INVALID_RESPONSE, 1, List.of());
         }
     }
 

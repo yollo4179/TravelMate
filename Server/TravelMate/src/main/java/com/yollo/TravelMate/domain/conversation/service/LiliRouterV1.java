@@ -46,14 +46,14 @@ public class LiliRouterV1 implements ConversationRoutingModule {
                     LiliTurnContract.ROUTER_NAME, LiliTurnContract.routerSchema());
         } catch (RuntimeException exception) {
             lili.record(LiliTurns.Stage.ROUTER, LiliPrompts.Prompt.ROUTER, null, elapsed(started));
-            return renderer.render(null, null, RecommendationJobService.termination(exception), 1, List.of());
+            return renderer.liliFallback(null, RecommendationJobService.termination(exception), 1, List.of());
         }
         lili.record(LiliTurns.Stage.ROUTER, LiliPrompts.Prompt.ROUTER, completion, elapsed(started));
         final LiliTurns.Decision decision;
         try {
             decision = lili.decision(completion.content());
         } catch (Exception exception) {
-            return renderer.render(null, null, Termination.INVALID_RESPONSE, 1, List.of());
+            return renderer.liliFallback(null, Termination.INVALID_RESPONSE, 1, List.of());
         }
         var handler = ModuleSelection.requireOne(handlers, candidate -> candidate.supports(decision.branch()), "LiLi branch");
         return handler.execute(new LiliBranchHandler.Input(turn, decision));

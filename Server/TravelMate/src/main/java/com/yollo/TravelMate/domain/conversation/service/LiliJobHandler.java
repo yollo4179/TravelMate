@@ -10,7 +10,7 @@ import com.yollo.TravelMate.domain.conversation.data.ConversationResponse.Result
 import com.yollo.TravelMate.domain.conversation.data.ConversationResponse.Termination;
 import com.yollo.TravelMate.domain.conversation.data.DialogueCut;
 import com.yollo.TravelMate.domain.conversation.data.LiliBranch;
-import com.yollo.TravelMate.domain.conversation.pipeline.LiliStatusLines;
+import com.yollo.TravelMate.domain.conversation.pipeline.LiliFixedLines;
 import com.yollo.TravelMate.domain.conversation.tool.ConversationTool;
 import com.yollo.TravelMate.domain.plan.data.response.PlanningResponse.JobStatus;
 import lombok.RequiredArgsConstructor;
@@ -52,7 +52,7 @@ public class LiliJobHandler implements LiliBranchHandler {
             return followUp(input, LiliServerCode.PLAN_GENERATION_FAILED,
                     result.publicData().path("errorMessage").asText(null), executed, Termination.COMPLETED);
         }
-        return told(input, executed, List.of(LiliStatusLines.line(status)));
+        return told(input, executed, List.of(LiliFixedLines.line(status)));
     }
 
     private ConversationResponse told(Input input, LiliActions.Executed executed, List<DialogueCut> statusCuts) {
@@ -66,7 +66,7 @@ public class LiliJobHandler implements LiliBranchHandler {
     // The plan model already wrote LiLi's cuts for the draft; older drafts without cuts get the fixed line.
     private List<DialogueCut> draftCuts(JsonNode draft) {
         var stored = draft.path("dialogue");
-        if (!stored.isArray() || stored.isEmpty()) return List.of(LiliStatusLines.line(JobStatus.SUCCEEDED));
+        if (!stored.isArray() || stored.isEmpty()) return List.of(LiliFixedLines.line(JobStatus.SUCCEEDED));
         var cuts = new ArrayList<DialogueCut>();
         stored.forEach(cut -> cuts.add(new DialogueCut(cut.path("text").asText(),
                 CharacterEmotion.valueOf(cut.path("emotion").asText()))));
@@ -86,7 +86,7 @@ public class LiliJobHandler implements LiliBranchHandler {
                 .map(reply -> renderer.dialogue(primary, reply.intent(), List.of(), List.of(reply.cut()),
                         reply.choices(), termination, FOLLOW_UP_TURNS, observations))
                 .orElseGet(() -> primary == null
-                        ? renderer.render(null, null, Termination.INVALID_RESPONSE, FOLLOW_UP_TURNS, List.of())
+                        ? renderer.liliFallback(null, Termination.INVALID_RESPONSE, FOLLOW_UP_TURNS, List.of())
                         : renderer.receipt(primary, termination, ROUTER_TURNS, observations));
     }
 }

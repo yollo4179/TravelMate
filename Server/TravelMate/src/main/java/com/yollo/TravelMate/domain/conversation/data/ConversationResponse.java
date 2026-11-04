@@ -4,7 +4,7 @@ import java.util.List;
 import com.fasterxml.jackson.databind.JsonNode;
 import lombok.Builder;
 
-@Builder
+@Builder(toBuilder = true)
 public record ConversationResponse(
         ResultType type,
         JsonNode data,

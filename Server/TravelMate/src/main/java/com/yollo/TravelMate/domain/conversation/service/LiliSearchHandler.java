@@ -72,6 +72,6 @@ public class LiliSearchHandler implements LiliBranchHandler {
         return actions.followUp(input.turn(), code, null)
                 .map(reply -> renderer.dialogue(null, reply.intent(), List.of(), List.of(reply.cut()),
                         reply.choices(), Termination.COMPLETED, FOLLOW_UP_TURNS, List.of()))
-                .orElseGet(() -> renderer.render(null, null, Termination.INVALID_RESPONSE, FOLLOW_UP_TURNS, List.of()));
+                .orElseGet(() -> renderer.liliFallback(null, Termination.INVALID_RESPONSE, FOLLOW_UP_TURNS, List.of()));
     }
 }

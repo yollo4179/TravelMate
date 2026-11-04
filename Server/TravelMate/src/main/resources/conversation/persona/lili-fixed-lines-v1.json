@@ -1,14 +1,22 @@
 {
-  "QUEUED": {
+  "JOB_QUEUED": {
     "text": "요청은 잘 들어가 있어. 아직 차례를 기다리는 중이라 조금 있다가 다시 물어봐 줘.",
     "emotion": "GUIDING"
   },
-  "RUNNING": {
+  "JOB_RUNNING": {
     "text": "지금 열심히 일정 짜는 중이야. 조금만 기다려 주면 금방 보여줄게!",
     "emotion": "THINKING"
   },
-  "SUCCEEDED": {
+  "JOB_SUCCEEDED": {
     "text": "일정 초안이 다 만들어졌어! 카드에서 한번 확인해 봐.",
     "emotion": "HAPPY"
+  },
+  "EXPLANATION_UNAVAILABLE": {
+    "text": "미안, 설명을 정리하다가 꼬여 버렸어. 찾은 곳은 카드에서 먼저 봐 줘!",
+    "emotion": "CONCERNED"
+  },
+  "REPLY_UNAVAILABLE": {
+    "text": "미안, 방금은 내가 대답을 제대로 못 만들었어. 한 번만 다시 말해 줄래?",
+    "emotion": "CONCERNED"
   }
 }
