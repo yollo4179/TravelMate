@@ -18,6 +18,7 @@ from common.experiments.contracts import ConversationRouting, ModuleInput
 from common.experiments.modules import ConversationApiModule, conversation_checks
 from tracks.conversation.cases import LILI_SUITE, load_cases
 from tracks.conversation.job_follow import FollowedJobKind, follow_job, select_follower
+from tracks.conversation.lili_score import unevidenced_places_named
 from tracks.conversation.score import score_case
 
 SEARCH_CASE = "PLR-TM-palaces-01"
@@ -179,6 +180,13 @@ class LiliScoreTests(unittest.TestCase):
     def test_naming_a_candidate_without_evidence_fails(self) -> None:
         cuts = [{"text": "경복궁 좋아. 운현궁도 조용하고 사적인 느낌이야.", "emotion": "HAPPY"}, TWO_CUTS[1]]
         self.assertIn("job_dialogue_no_unevidenced_places", self.failed(self.search_trace(cuts)))
+
+    def test_a_place_said_without_its_catalog_prefix_is_still_caught(self) -> None:
+        candidates = [{"name": "창경궁", "selectedEvidence": [1]}, {"name": "서울 운현궁", "selectedEvidence": []},
+                      {"name": "창경궁 홍화문", "selectedEvidence": []}, {"name": "조계사(서울)", "selectedEvidence": []}]
+        self.assertEqual(["운현궁"], unevidenced_places_named(["창경궁이 맞아. 운현궁도 떠올라."], candidates))
+        self.assertEqual(["조계사"], unevidenced_places_named(["조계사 쪽도 봐."], candidates))
+        self.assertEqual([], unevidenced_places_named(["창경궁이 딱 맞아."], candidates))
 
     def test_internal_codes_in_any_line_fail(self) -> None:
         trace = LiliTrace(self.cases[JOB_CASE], "GET_PLANNING_JOB", None, "PLANNING_JOB")

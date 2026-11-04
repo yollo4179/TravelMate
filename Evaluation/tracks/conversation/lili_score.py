@@ -56,19 +56,28 @@ def internal_terms(texts: list[str]) -> list[str]:
     return found + [term for term in INTERNAL_TERMS if any(term in text for text in texts)]
 
 
-def _spoken_name(name: str) -> str:
-    # "사직공원(서울)" is said as "사직공원"; the bracket only disambiguates the catalog entry.
-    return PARENTHESIZED.sub("", name).strip()
+MIN_NAME_LENGTH = 2
+
+
+def _spoken_names(name: str) -> set[str]:
+    """How a catalog name is said aloud: "사직공원(서울)" → "사직공원", "서울 운현궁" → also "운현궁"."""
+    base = PARENTHESIZED.sub("", name).strip()
+    tokens = base.split()
+    names = {base}
+    if len(tokens) > 1:
+        names.add(tokens[-1])
+    return {spoken for spoken in names if len(spoken) >= MIN_NAME_LENGTH}
 
 
 def unevidenced_places_named(texts: list[str], candidates: list[dict[str, Any]]) -> list[str]:
     spoken = " ".join(texts)
-    grounded = sorted({_spoken_name(item.get("name") or "") for item in candidates if item.get("selectedEvidence")}, key=len, reverse=True)
+    grounded = sorted({variant for item in candidates if item.get("selectedEvidence")
+                       for variant in _spoken_names(item.get("name") or "")}, key=len, reverse=True)
     # Remove grounded names first so "창경궁" inside a grounded "창경궁 홍화문" is not blamed on another candidate.
-    for name in filter(None, grounded):
+    for name in grounded:
         spoken = spoken.replace(name, " ")
-    names = {_spoken_name(item.get("name") or "") for item in candidates if not item.get("selectedEvidence")}
-    return sorted(name for name in names if len(name) >= 2 and name in spoken)
+    return sorted({variant for item in candidates if not item.get("selectedEvidence")
+                   for variant in _spoken_names(item.get("name") or "") if variant in spoken})
 
 
 def _sources(preparations: list[dict[str, Any]]) -> tuple[dict[str, dict[str, Any]], list[dict[str, Any]]]:
