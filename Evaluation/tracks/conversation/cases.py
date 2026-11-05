@@ -39,6 +39,8 @@ class TurnOutcome(StrEnum):
     """How a turn must end when that matters more than which branch LiLi chose."""
     # Ends asking the user: LiLi's own CLARIFY or the server's ask-back after she picked a tool branch.
     ASK_BACK = "ASK_BACK"
+    # Ends with the server's line that the area the user named is not in the place data; no search runs.
+    OUT_OF_COVERAGE = "OUT_OF_COVERAGE"
 
 
 class Capability(StrEnum):
@@ -116,6 +118,8 @@ def load_cases(path: Path, selected: tuple[str, ...], bindings: dict[str, str]) 
             PlanOutcome(expected["plan_outcome"])
         if "outcome" in expected:
             TurnOutcome(expected["outcome"])
+        if expected.get("outcome") == TurnOutcome.OUT_OF_COVERAGE and not expected.get("requested_region"):
+            raise ValueError("An out-of-coverage case names the area LiLi must recognise")
         if "capability" in expected:
             Capability(expected["capability"])
             if expected.get("intent") is not None or expected["tool_names"]:

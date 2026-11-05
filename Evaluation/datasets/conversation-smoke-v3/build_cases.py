@@ -44,6 +44,7 @@ NO_HOURS = {"id": "state_and_uncertainty", "guidance": "운영시간·입장료�
 EVIDENCE_ONLY = {"id": "reason_and_evidence", "guidance": "설명·추천 이유는 인용 가능한 원문이 있는 장소에 대해서만 말하고, 근거 없는 후보를 이름 없이라도 묘사하지 않는다."}
 NO_CLAIMED_ACTION = {"id": "state_and_uncertainty", "guidance": "검색·일정 생성·조회·예약을 실행했다고 말하지 않는다."}
 CAPABILITY_ONLY = {"id": "reason_and_evidence", "guidance": "서버에 없는 기능(이름으로 조회·제외, 예약 정보 정리, 일정 수정)을 약속하지 않는다."}
+COVERED_ONLY = {"id": "state_and_uncertainty", "guidance": "장소 데이터에 없는 지역에서 찾아 주겠다거나 검색 범위를 그쪽으로 바꾸라고 안내하지 않는다."}
 
 
 def criteria(relevance: str, *rest: dict[str, str]) -> list[dict[str, str]]:
@@ -94,6 +95,14 @@ def talk(case_id: str, message: str, intent: str | None, branch: str, relevance:
         request["displayedResult"] = copy.deepcopy(displayed)
     return {"case_id": case_id, "creates_plan": False, "api_request": request, "expected": expected,
             "evaluation_stage": "conversation"}
+
+
+def outside(case_id: str, message: str, context: dict, region: str, relevance: str) -> dict:
+    """An area the place data does not hold. LiLi names it; the server compares it with the data and answers instead of searching."""
+    case = talk(case_id, message, "RECOMMENDATION", "SEARCH_PLACES", relevance, context=context,
+                outcome="OUT_OF_COVERAGE", branches=["SEARCH_PLACES", "CLARIFY"], extra=(NO_CLAIMED_ACTION, COVERED_ONLY))
+    case["expected"]["requested_region"] = region
+    return case
 
 
 def plan(case_id: str, message: str, planning: dict, outcome: str, relevance: str, *, history=None) -> dict:
@@ -219,8 +228,10 @@ def build() -> dict:
                          "주차 가능 여부는 확인할 수 없다고 말하고 지어내지 않는다.", extra=(NO_HOURS, CAPABILITY_ONLY))),
         search("V3-D-no-beach", "종로에서 바다 보이는 해수욕장 추천해줘.", JONGNO,
                "조건에 맞는 곳을 찾지 못했다고 솔직히 말하고 관련 없는 장소를 맞는 것처럼 소개하지 않는다."),
-        search("V3-D-outside-catalog", "부산 해운대 근처 관광지 알려줘.", SEOUL,
-               "부산 장소를 찾지 못했으면 그렇다고 말하고 서울 결과를 부산 장소처럼 말하지 않는다."),
+        # Changed after g1 and its repeats (user's decision, 2026-11-05): the server now reads the regions the place data
+        # holds and answers an area outside them with its own line. Searching first could only return Seoul places.
+        outside("V3-D-outside-catalog", "부산 해운대 근처 관광지 알려줘.", SEOUL, "부산",
+                "부산 장소는 데이터에 없다고 알리고 서울 결과를 부산 장소처럼 말하지 않는다."),
         search("V3-D-compare", "창경궁이랑 경복궁 중에 어디가 더 좋아?", JONGNO,
                "원문이 있는 장소만 근거로 비교하고, 원문 없는 장소의 특징을 지어내지 않는다.", query_terms=["창경궁"]),
         plan("V3-D-plan-budget", "입력한 조건대로 일정 짜 줘. 예산은 3만 원이야.",

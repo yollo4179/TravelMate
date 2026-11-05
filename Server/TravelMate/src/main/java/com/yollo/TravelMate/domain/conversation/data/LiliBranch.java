@@ -11,4 +11,9 @@ public enum LiliBranch {
         public boolean requiresSearchQuery() {
             return this == SEARCH_PLACES || this == GENERATE_PLAN;
         }
+
+        /** Branches where the user is after places by what they said; a plan's area comes from the app's map instead. */
+        public boolean asksForPlacesInWords() {
+            return this == SEARCH_PLACES || this == CLARIFY;
+        }
 }

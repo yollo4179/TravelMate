@@ -16,7 +16,10 @@ import com.yollo.TravelMate.domain.conversation.data.ConversationRequest;
 import com.yollo.TravelMate.domain.conversation.data.DialogueCut;
 import com.yollo.TravelMate.domain.conversation.data.DisplayedResult;
 import com.yollo.TravelMate.domain.conversation.pipeline.LiliFixedLines;
+import com.yollo.TravelMate.domain.place.data.internal.Sido;
 import com.yollo.TravelMate.domain.place.data.request.PlaceSearchContext;
+import com.yollo.TravelMate.domain.place.data.result.PlaceCoverage;
+import com.yollo.TravelMate.domain.place.service.PlaceCoverageService;
 import com.yollo.TravelMate.domain.plan.data.response.PlanningResponse.JobStatus;
 import com.yollo.TravelMate.domain.conversation.data.ConversationResponse;
 import com.yollo.TravelMate.domain.conversation.data.ConversationResponse.MessageSource;
@@ -43,6 +46,8 @@ class LiliRouterTest {
     private static final String FAILURE_REASON = "방문 체류시간이 여행 가능 시간을 초과합니다.";
     private String jobStatus = "QUEUED";
     private JsonNode storedReaction;
+    private String requestedRegion;
+    private final PlaceCoverageService coverage = mock(PlaceCoverageService.class);
     private final ObjectMapper mapper = new ObjectMapper();
     private final LlmClient llm = mock(LlmClient.class);
     private final RecommendationJobService recommendations = mock(RecommendationJobService.class);
@@ -64,7 +69,9 @@ class LiliRouterTest {
                 new LiliReplyHandler(renderer),
                 new LiliSearchHandler(recommendations, actions, renderer, mapper),
                 new LiliPlanHandler(actions, renderer, mapper),
-                new LiliJobHandler(actions, renderer, mapper)), renderer, mapper);
+                new LiliJobHandler(actions, renderer, mapper)), renderer, mapper,
+                coverage, new PlaceCoverageGate(coverage, renderer, mapper));
+        when(coverage.current()).thenReturn(new PlaceCoverage(List.of(Sido.SEOUL), List.of("관광지")));
         var queued = mapper.createObjectNode().put("jobId", UUID.randomUUID().toString()).put("status", "QUEUED");
         when(recommendations.submit(anyString(), any(), any(), anyString())).thenReturn(ConversationTool.Result.builder()
                 .type(ResultType.RECOMMENDATION_JOB).publicData(queued).modelData(queued).build());
@@ -111,6 +118,65 @@ class LiliRouterTest {
         assertEquals("오, 궁궐 좋지! 잠깐만 찾아볼게.", response.message());
         assertEquals("search_places", response.toolResults().get(0).name());
         assertEquals(QUERY, mapper.readTree(response.toolResults().get(0).arguments()).path("query").asText());
+    }
+
+    // Live runs: LiLi told users to switch the search to Busan or Jeju, which the place data does not hold.
+    @Test
+    void anAreaThePlaceDataDoesNotHoldEndsWithTheCoverageLineAndNoSearch() throws Exception {
+        requestedRegion = "부산";
+        answer(decision("SEARCH_PLACES", "RECOMMENDATION", "부산 해운대 관광지", "EXCITED", "해운대 쪽으로 찾아볼게!", List.of()));
+        var response = respond(new ConversationRequest("부산 해운대 근처 관광지 알려줘.", null, List.of()));
+        verifyNoInteractions(recommendations);
+        assertEquals(ResultType.TEXT, response.type());
+        assertEquals(List.of(LiliFixedLines.outsideCoverage("부산", "서울", "관광지")), response.dialogue(),
+                "her promise to look in Busan is replaced, not shown");
+        assertTrue(response.message().contains("서울 관광지만"));
+        assertTrue(lastUserInput(0).contains("\"searchCoverage\":{\"regions\":[\"서울\"],\"categories\":[\"관광지\"]}"));
+    }
+
+    @Test
+    void askingBackAboutAnAreaOutsideTheDataGetsTheSameLine() throws Exception {
+        requestedRegion = "제주";
+        answer(decision("CLARIFY", "RECOMMENDATION", null, "THINKING", "제주로 범위를 바꿔서 다시 물어봐 줄래?",
+                List.of("제주로 범위 바꾸기", "서울에서 찾기")));
+        var response = respond(new ConversationRequest("성산일출봉 쪽 볼거리 추천해줘.", null, List.of()));
+        assertEquals(List.of(LiliFixedLines.outsideCoverage("제주", "서울", "관광지")), response.dialogue());
+        assertTrue(response.choices().isEmpty(), "no choice leads to an area the data does not hold");
+    }
+
+    @Test
+    void anAreaTheDataHoldsIsSearchedAsBefore() throws Exception {
+        requestedRegion = "서울";
+        answer(decision("SEARCH_PLACES", "RECOMMENDATION", QUERY, "EXCITED", "찾아볼게!", List.of()));
+        respond(new ConversationRequest("종로 궁궐 추천해줘.", null, List.of()));
+        verify(recommendations).submit(eq(OWNER), any(), any(), eq(QUERY));
+    }
+
+    @Test
+    void unknownCoverageNeverRefusesASearch() throws Exception {
+        when(coverage.current()).thenReturn(PlaceCoverage.UNKNOWN);
+        requestedRegion = "부산";
+        answer(decision("SEARCH_PLACES", "RECOMMENDATION", "부산 해운대 관광지", "EXCITED", "찾아볼게!", List.of()));
+        respond(new ConversationRequest("부산 해운대 근처 관광지 알려줘.", null, List.of()));
+        verify(recommendations).submit(eq(OWNER), any(), any(), eq("부산 해운대 관광지"));
+        assertFalse(lastUserInput(0).contains("searchCoverage"), "she is not told a range the server could not read");
+    }
+
+    @Test
+    void smallTalkThatNamesAnAreaStaysSmallTalk() throws Exception {
+        requestedRegion = "부산";
+        answer(decision("CHAT", "CONVERSATION", null, "HAPPY", "부산 다녀왔구나, 좋았겠다!", List.of()));
+        var response = respond(new ConversationRequest("나 지난주에 부산 다녀왔어!", null, List.of()));
+        assertEquals("부산 다녀왔구나, 좋았겠다!", response.message());
+    }
+
+    @Test
+    void theRouterNoLongerAsksBackOnARegionBeforeSearching() throws Exception {
+        answer(decision("CHAT", "CONVERSATION", null, "HAPPY", "안녕!", List.of()));
+        respond(new ConversationRequest("안녕", null, List.of()));
+        String system = prompts.get(0).get(0).content();
+        assertFalse(system.contains("필터와 충돌하면"), "the rule that skipped searches in live runs is gone");
+        assertTrue(system.contains("searchCoverage"));
     }
 
     @Test
@@ -242,7 +308,7 @@ class LiliRouterTest {
     void routerSchemaDecidesBeforeItSpeaks() {
         var order = new ArrayList<String>();
         LiliTurnContract.routerSchema().path("properties").fieldNames().forEachRemaining(order::add);
-        assertEquals(List.of("branch", "intent", "search_query", "exclude_positions", "emotion", "message", "choices"), order);
+        assertEquals(List.of("branch", "intent", "search_query", "requested_region", "exclude_positions", "emotion", "message", "choices"), order);
         var recommendation = new ArrayList<String>();
         LiliTurnContract.recommendationSchema().path("properties").fieldNames().forEachRemaining(recommendation::add);
         assertTrue(recommendation.indexOf("citations") < recommendation.indexOf("dialogue"));
@@ -280,7 +346,8 @@ class LiliRouterTest {
             String message,
             List<String> choices
     ) {
-        var node = mapper.createObjectNode().put("branch", branch).put("intent", intent).put("search_query", query);
+        var node = mapper.createObjectNode().put("branch", branch).put("intent", intent).put("search_query", query)
+                .put("requested_region", requestedRegion);
         var positions = node.putArray("exclude_positions");
         excludePositions.forEach(positions::add);
         node.put("emotion", emotion).put("message", message);

@@ -21,7 +21,11 @@ import com.yollo.TravelMate.domain.conversation.repository.RecommendationJobRepo
 import com.yollo.TravelMate.domain.conversation.service.*;
 import com.yollo.TravelMate.domain.conversation.tool.ConversationTool;
 import com.yollo.TravelMate.domain.conversation.tool.ConversationToolRegistry;
+import com.yollo.TravelMate.domain.place.data.internal.Sido;
+import com.yollo.TravelMate.domain.place.data.result.PlaceCoverage;
+import com.yollo.TravelMate.domain.place.service.PlaceCoverageService;
 import com.yollo.TravelMate.domain.plan.data.response.PlanningResponse.JobStatus;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import static org.junit.jupiter.api.Assertions.*;
@@ -34,6 +38,12 @@ class RecommendationJobServiceTest {
     private final RecommendationJobRepository jobs = mock(RecommendationJobRepository.class);
     private final LlmClient llm = mock(LlmClient.class);
     private final AtomicReference<String> searched = new AtomicReference<>();
+    private final PlaceCoverageService coverage = mock(PlaceCoverageService.class);
+
+    @BeforeEach
+    void coverageUnknownUnlessATestSetsIt() {
+        when(coverage.current()).thenReturn(PlaceCoverage.UNKNOWN);
+    }
 
     @Test
     void searchesWithLilisQueryAndStoresHerCutsWithTheCards() throws Exception {
@@ -93,6 +103,20 @@ class RecommendationJobServiceTest {
         assertFalse(sent.contains("카드 요약"));
         assertTrue(sent.contains("f9778e87-11f5-5d07-83fa-33e8350a3a40"), "the source id that citations need stays");
         assertTrue(sent.contains("places.description"), "short metadata that is not a hash stays");
+    }
+
+    // Live runs: after a search LiLi suggested switching to Busan, which the place data does not hold.
+    @Test
+    void theExplanationKnowsWhichAreasAndKindsThePlaceDataHolds() throws Exception {
+        when(coverage.current()).thenReturn(new PlaceCoverage(List.of(Sido.SEOUL), List.of("관광지")));
+        run("""
+                {"intent":"RECOMMENDATION","answerKind":"PLACE_GUIDANCE","citations":[],
+                 "dialogue":[{"text":"카드에서 골라 줘.","emotion":"GUIDING"},{"text":"더 알아봐 줄게.","emotion":"HAPPY"}]}""");
+        @SuppressWarnings("unchecked")
+        ArgumentCaptor<List<LlmMessage>> messages = ArgumentCaptor.forClass((Class<List<LlmMessage>>) (Class<?>) List.class);
+        verify(llm).chat(messages.capture(), anyList(), any(StructuredOutput.class));
+        String sent = messages.getValue().stream().map(LlmMessage::content).collect(Collectors.joining("\n"));
+        assertTrue(sent.contains("\"searchCoverage\":{\"regions\":[\"서울\"],\"categories\":[\"관광지\"]}"));
     }
 
     private com.fasterxml.jackson.databind.JsonNode run(String recommendation) throws Exception {
@@ -169,7 +193,8 @@ class RecommendationJobServiceTest {
             }
         }));
         var service = new RecommendationJobService(jobs, evidence, new ConversationToolRegistry(List.of()),
-                new LiliTurns(ConversationGenerationPipeline.defaults(llm), mapper), new ConversationAnswerRenderer(mapper), mapper);
+                new LiliTurns(ConversationGenerationPipeline.defaults(llm), mapper), new ConversationAnswerRenderer(mapper), mapper,
+                coverage);
         var queued = service.submit("owner", UUID.randomUUID(), request, QUERY);
         assertEquals(ResultType.RECOMMENDATION_JOB, queued.type());
         var result = ArgumentCaptor.forClass(String.class);

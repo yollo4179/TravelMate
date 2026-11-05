@@ -30,12 +30,11 @@ def build() -> dict:
                        "guidance": "데이터에 없는 지역에서 다시 찾아 주겠다거나 검색 범위를 바꿔 주겠다고 약속하지 않는다."}
     cases = [
         # Outside the catalog (v3: 부산 해운대 with a Seoul filter).
-        v3.search("V3H-outside-jeju", "제주도 성산일출봉 쪽 볼거리 추천해줘.", v3.SEOUL,
-                  "제주 장소를 찾지 못했으면 그렇다고 말하고 서울 결과를 제주 장소처럼 말하지 않는다.",
-                  extra=(v3.EVIDENCE_ONLY, no_other_region)),
-        v3.search("V3H-outside-gangneung-no-filter", "강릉 경포대 주변에 가 볼 만한 데 있어?", no_filter,
-                  "강릉 장소를 찾지 못했으면 그렇다고 말하고 다른 지역 결과를 강릉 장소처럼 말하지 않는다.",
-                  extra=(v3.EVIDENCE_ONLY, no_other_region)),
+        # Changed with V3-D-outside-catalog (user's decision, 2026-11-05): areas outside the place data get the server's line.
+        v3.outside("V3H-outside-jeju", "제주도 성산일출봉 쪽 볼거리 추천해줘.", v3.SEOUL, "제주",
+                   "제주 장소는 데이터에 없다고 알리고 서울 결과를 제주 장소처럼 말하지 않는다."),
+        v3.outside("V3H-outside-gangneung-no-filter", "강릉 경포대 주변에 가 볼 만한 데 있어?", no_filter, "강원",
+                   "강릉 장소는 데이터에 없다고 알리고 다른 지역 결과를 강릉 장소처럼 말하지 않는다."),
         # Planning conditions given in words (v3: conditions answered in a later turn).
         v3.talk("V3H-conditions-first-message", "모레 오후 2시부터 6시까지, 시청역에서 출발해서 덕수궁 근처로 일정 짜줘.",
                 "PLAN", "CLARIFY",

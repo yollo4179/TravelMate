@@ -22,6 +22,7 @@ import com.yollo.TravelMate.domain.conversation.repository.RecommendationJobRepo
 import com.yollo.TravelMate.domain.conversation.tool.ConversationTool;
 import com.yollo.TravelMate.domain.conversation.tool.ConversationToolRegistry;
 import com.yollo.TravelMate.domain.plan.data.response.PlanningResponse.JobStatus;
+import com.yollo.TravelMate.domain.place.service.PlaceCoverageService;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
 import lombok.RequiredArgsConstructor;
@@ -41,6 +42,7 @@ public class RecommendationJobService {
     private final LiliTurns lili;
     private final ConversationAnswerRenderer renderer;
     private final ObjectMapper mapper;
+    private final PlaceCoverageService coverage;
     private final ExecutorService executor = new ThreadPoolExecutor(
             WORKERS,
             WORKERS,
@@ -123,6 +125,9 @@ public class RecommendationJobService {
         input.set("searchContext", mapper.valueToTree(request.searchContext()));
         var serverEvidence = input.putObject("serverEvidence").put("state", prepared.state().name());
         input.set("executionFacts", mapper.valueToTree(RecommendationExecutionFacts.execute(request, prepared)));
+        // Without it LiLi told users to switch the search to areas the data does not hold.
+        var covered = coverage.current();
+        if (covered.known()) input.set("searchCoverage", mapper.valueToTree(covered.facts()));
         if (prepared.result() != null) serverEvidence.set("data", LiliEvidenceView.of(prepared.result().modelData()));
         long started = System.nanoTime();
         final LlmTurn completion;

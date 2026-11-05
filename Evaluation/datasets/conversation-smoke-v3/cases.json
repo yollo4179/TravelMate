@@ -2399,46 +2399,45 @@
         }
       },
       "expected": {
-        "decision_type": "TOOL_CALL",
-        "tool_types": [
-          "SEARCH_PLACES"
-        ],
-        "tool_names": [
-          "search_places"
-        ],
-        "arguments": [
-          {
-            "exclude_place_ids": []
-          }
-        ],
+        "decision_type": "CLARIFICATION",
+        "tool_types": [],
+        "tool_names": [],
+        "arguments": [],
         "response_types": [
-          "RECOMMENDATION_JOB"
+          "TEXT"
         ],
         "message_sources": [
           "LLM"
         ],
-        "answer_kinds": [],
-        "citations": "OPTIONAL",
-        "message_example": "찾아볼게, 잠깐만 기다려줘.",
+        "answer_kinds": [
+          "CLARIFICATION"
+        ],
+        "citations": "FORBIDDEN",
+        "message_example": "필요한 정보를 알려줘.",
         "semantic_criteria": [
           {
             "id": "response_relevance",
-            "guidance": "부산 장소를 찾지 못했으면 그렇다고 말하고 서울 결과를 부산 장소처럼 말하지 않는다."
-          },
-          {
-            "id": "reason_and_evidence",
-            "guidance": "설명·추천 이유는 인용 가능한 원문이 있는 장소에 대해서만 말하고, 근거 없는 후보를 이름 없이라도 묘사하지 않는다."
+            "guidance": "부산 장소는 데이터에 없다고 알리고 서울 결과를 부산 장소처럼 말하지 않는다."
           },
           {
             "id": "state_and_uncertainty",
-            "guidance": "운영시간·입장료·주차·현재 입장 가능 여부처럼 원문에 없는 정보를 지어내지 않는다."
+            "guidance": "검색·일정 생성·조회·예약을 실행했다고 말하지 않는다."
+          },
+          {
+            "id": "state_and_uncertainty",
+            "guidance": "장소 데이터에 없는 지역에서 찾아 주겠다거나 검색 범위를 그쪽으로 바꾸라고 안내하지 않는다."
           }
         ],
         "emotions": "catalog",
         "intent": "RECOMMENDATION",
-        "lili_branch": "SEARCH_PLACES"
+        "lili_branch": [
+          "SEARCH_PLACES",
+          "CLARIFY"
+        ],
+        "outcome": "OUT_OF_COVERAGE",
+        "requested_region": "부산"
       },
-      "evaluation_stage": "recommendation"
+      "evaluation_stage": "conversation"
     },
     {
       "case_id": "V3-D-compare",

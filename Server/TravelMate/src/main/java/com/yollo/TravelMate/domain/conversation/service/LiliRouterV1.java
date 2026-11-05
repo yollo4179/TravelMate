@@ -8,6 +8,7 @@ import com.yollo.TravelMate.domain.conversation.data.ConversationResponse.Termin
 import com.yollo.TravelMate.domain.conversation.pipeline.ConversationRoutingModule;
 import com.yollo.TravelMate.domain.conversation.pipeline.LiliPrompts;
 import com.yollo.TravelMate.domain.conversation.pipeline.ModuleSelection;
+import com.yollo.TravelMate.domain.place.service.PlaceCoverageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -22,6 +23,8 @@ public class LiliRouterV1 implements ConversationRoutingModule {
     private final List<LiliBranchHandler> handlers;
     private final ConversationAnswerRenderer renderer;
     private final ObjectMapper mapper;
+    private final PlaceCoverageService coverage;
+    private final PlaceCoverageGate coverageGate;
 
     @Override
     public boolean supports(Version version) {
@@ -39,6 +42,9 @@ public class LiliRouterV1 implements ConversationRoutingModule {
                 .put("jobIdProvided", PlanningJobReference.single(request.message()).isPresent())
                 .put("displayedResultCount", request.displayedResult() == null ? 0 : request.displayedResult().placeIds().size());
         input.set("searchContext", mapper.valueToTree(request.searchContext()));
+        // What the place data holds, read from the data: without it LiLi offered areas and kinds of places it cannot search.
+        var covered = coverage.current();
+        if (covered.known()) input.set("searchCoverage", mapper.valueToTree(covered.facts()));
         long started = System.nanoTime();
         final LlmTurn completion;
         try {
@@ -56,7 +62,7 @@ public class LiliRouterV1 implements ConversationRoutingModule {
             return renderer.liliFallback(null, Termination.INVALID_RESPONSE, 1, List.of());
         }
         var handler = ModuleSelection.requireOne(handlers, candidate -> candidate.supports(decision.branch()), "LiLi branch");
-        return handler.execute(new LiliBranchHandler.Input(turn, decision));
+        return coverageGate.outside(decision).orElseGet(() -> handler.execute(new LiliBranchHandler.Input(turn, decision)));
     }
 
     private static double elapsed(long started) {

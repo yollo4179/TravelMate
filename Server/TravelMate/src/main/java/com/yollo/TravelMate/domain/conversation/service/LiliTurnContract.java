@@ -14,6 +14,7 @@ import com.yollo.TravelMate.domain.conversation.data.DialogueCut;
 import com.yollo.TravelMate.domain.conversation.data.DisplayedResult;
 import com.yollo.TravelMate.domain.conversation.data.LiliBranch;
 import com.yollo.TravelMate.domain.conversation.tool.ToolSchemas;
+import com.yollo.TravelMate.domain.place.data.internal.Sido;
 
 /**
  * Strict schemas for LiLi's turns. Property order is generation order, so decisions come before the line
@@ -35,6 +36,8 @@ public final class LiliTurnContract {
         properties.put("branch", enumeration(Arrays.asList(LiliBranch.values())));
         properties.put("intent", enumeration(ConversationIntent.finalValues()));
         properties.put("search_query", ToolSchemas.nullable(ToolSchemas.text(MAX_QUERY_LENGTH)));
+        // LiLi names the area the user asked about; whether the data holds it is the server's check, not hers.
+        properties.put("requested_region", ToolSchemas.nullable(labels(Sido.labels())));
         properties.put("exclude_positions", excludePositions());
         properties.putAll(reply());
         return ToolSchemas.object(properties);
@@ -77,6 +80,13 @@ public final class LiliTurnContract {
         choices.set("items", ToolSchemas.text(MAX_CHOICE_LENGTH));
         properties.put("choices", choices);
         return properties;
+    }
+
+    private static ObjectNode labels(List<String> values) {
+        ObjectNode node = JSON.objectNode().put("type", "string");
+        var allowed = node.putArray("enum");
+        values.forEach(allowed::add);
+        return node;
     }
 
     private static ObjectNode enumeration(List<? extends Enum<?>> values) {

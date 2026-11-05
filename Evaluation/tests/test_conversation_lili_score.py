@@ -43,11 +43,12 @@ CUT_SCHEMA = {
 ROUTER_SCHEMA = {
     "type": "object",
     "additionalProperties": False,
-    "required": ["branch", "intent", "search_query", "exclude_positions", "emotion", "message", "choices"],
+    "required": ["branch", "intent", "search_query", "requested_region", "exclude_positions", "emotion", "message", "choices"],
     "properties": {
         "branch": {"enum": ["CHAT", "CLARIFY", "SEARCH_PLACES", "GENERATE_PLAN", "GET_PLANNING_JOB"]},
         "intent": {"type": "string"},
         "search_query": {"type": ["string", "null"]},
+        "requested_region": {"type": ["string", "null"]},
         "exclude_positions": {"type": "array", "items": {"type": "integer", "minimum": 1, "maximum": 20}},
         "emotion": {"enum": EMOTIONS},
         "message": {"type": "string"},
@@ -82,7 +83,7 @@ class LiliTrace:
         self.record = {"case_id": case["case_id"], "execution_mode": "LIVE", "native_response": self.native,
                        "http_request": {"raw_body": body, "body_sha256": hashlib.sha256(body.encode("utf-8")).hexdigest(),
                                         "headers": headers}}
-        self.decision = {"branch": branch, "intent": self.native["intent"], "search_query": query,
+        self.decision = {"branch": branch, "intent": self.native["intent"], "search_query": query, "requested_region": None,
                          "exclude_positions": positions or [], "emotion": cut["emotion"], "message": cut["text"], "choices": []}
         self.events: list[dict[str, Any]] = []
         self.add("API_REQUEST", {"bodySha256": self.record["http_request"]["body_sha256"], "rawBody": body}, "REQUEST")
@@ -365,6 +366,7 @@ class LiliBoundaryScoreTests(unittest.TestCase):
     PLAN_BUDGET = "V3-D-plan-budget"
     PLAN_TOO_SHORT = "V3-D-plan-too-short"
     HOTEL = "V3-A-unsupported-hotel"
+    OUTSIDE = "V3-D-outside-catalog"
     STAY_REASON = "방문 체류시간과 이동 여유를 합하면 여행 가능 시간을 초과합니다."
 
     # The user's rule: "~해 줘" for a missing feature is judged by whether the feature exists, not by its intent label.
@@ -389,7 +391,7 @@ class LiliBoundaryScoreTests(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls) -> None:
-        ids = (cls.OUT_OF_RANGE, cls.CHANGE_REGION, cls.KEEP_EXISTING, cls.PLAN_BUDGET, cls.PLAN_TOO_SHORT, cls.HOTEL)
+        ids = (cls.OUT_OF_RANGE, cls.CHANGE_REGION, cls.KEEP_EXISTING, cls.PLAN_BUDGET, cls.PLAN_TOO_SHORT, cls.HOTEL, cls.OUTSIDE)
         cls.cases = {case["case_id"]: case for case in load_cases(LILI_BOUNDARY_SUITE, ids, {"owned_job_id": OWNED_JOB_ID})}
 
     def score(self, trace: LiliTrace) -> dict[str, Any]:
@@ -401,6 +403,32 @@ class LiliBoundaryScoreTests(unittest.TestCase):
     def words_only(self, trace: LiliTrace) -> LiliTrace:
         trace.native["data"] = None
         return trace
+
+    def outside_trace(self, region: str | None, refused: bool) -> LiliTrace:
+        trace = self.words_only(LiliTrace(self.cases[self.OUTSIDE], "SEARCH_PLACES", "부산 해운대 관광지", "TEXT"))
+        trace.decision["requested_region"] = region
+        route = next(event for event in trace.events if event["event"] == "ROUTE")
+        route["payload"]["content"] = json.dumps(trace.decision, ensure_ascii=False)
+        if refused:
+            trace.add("COVERAGE", {"requestedRegion": region, "branch": "SEARCH_PLACES", "coveredRegions": ["서울"]})
+        return trace
+
+    def test_an_area_outside_the_data_ends_with_the_servers_line_and_no_search(self) -> None:
+        self.assertEqual([], self.failed(self.outside_trace("부산", refused=True)))
+
+    def test_searching_an_area_the_data_does_not_hold_fails(self) -> None:
+        trace = self.outside_trace("부산", refused=False)
+        trace.native["type"] = "RECOMMENDATION_JOB"
+        trace.tool("search_places", {"query": "부산 해운대 관광지"})
+        trace.job("부산 해운대 관광지")
+        failed = self.failed(trace)
+        self.assertIn("no_search_outside_coverage", failed)
+        self.assertIn("coverage_refused_by_server", failed)
+
+    def test_naming_no_area_leaves_the_server_nothing_to_check(self) -> None:
+        failed = self.failed(self.outside_trace(None, refused=False))
+        self.assertIn("requested_region", failed)
+        self.assertIn("coverage_refused_by_server", failed)
 
     def test_lili_asking_back_herself_passes(self) -> None:
         trace = self.words_only(LiliTrace(self.cases[self.OUT_OF_RANGE], "CLARIFY", None, "TEXT"))

@@ -1,0 +1,34 @@
+{
+  "mode": "LIVE",
+  "case_ids": [
+    "V3H-outside-jeju",
+    "V3H-outside-gangneung-no-filter",
+    "V3H-conditions-first-message",
+    "V3H-exclude-fifth-also",
+    "V3H-no-match-ski",
+    "V3H-no-data-wheelchair"
+  ],
+  "max_calls": {
+    "runtime_read": 2500,
+    "conversation": 6
+  },
+  "timeout_seconds": 120,
+  "model": null,
+  "max_output_tokens": null,
+  "parameters": {
+    "server_url": "http://127.0.0.1:18080",
+    "suite_sha256": "e81e1a43038b9a268d2999ee15ea6f87002a3ef65cccd354a263193104db714d",
+    "bindings_sha256": "22067be80e46a296392d6d7118803db58325df8eba62dc012b1a4b29d63fd400",
+    "token_env": "TRAVELMATE_EVAL_ACCESS_TOKEN",
+    "expected_provider": "OPENAI",
+    "expected_model": "gpt-5.4-mini-2026-03-17",
+    "max_model_turns": 6,
+    "max_tool_calls": 8,
+    "allow_plan_creation": true,
+    "expected_user_id": "aDMINuser",
+    "expected_search_devices": {
+      "embedding_device": "cuda",
+      "reranker_device": "cuda"
+    }
+  }
+}

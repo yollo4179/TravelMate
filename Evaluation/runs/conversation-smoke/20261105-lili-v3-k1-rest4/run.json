@@ -1,0 +1,26 @@
+{
+  "evaluator_git_sha": "6844cb1028f999dcf1f73887b19ffa829730f1e0",
+  "evaluator_source_sha256": "66d415a1c280eb33d3c953a5a565366570958e8b14192739c97d39a4b61287aa",
+  "configuration_sha256": "a99aad6962b173a50e24724d6aa0e901b69a82f5223ce018d1edd943829c4cef",
+  "suite_sha256": "1f0309f2d392489b4f6c11cefb043a5adbac73e7cb8c375161432be17975a210",
+  "execution_mode": "LIVE",
+  "selected_case_ids": [
+    "V3-C-plan-after-recommend",
+    "V3-C-job-with-id",
+    "V3-C-thanks-after-recommend",
+    "V3-C-change-region",
+    "V3-C-near-there",
+    "V3-C-conditions-in-text",
+    "V3-D-hours-and-fee",
+    "V3-D-parking",
+    "V3-D-no-beach",
+    "V3-D-outside-catalog",
+    "V3-D-compare",
+    "V3-D-plan-budget",
+    "V3-D-plan-car",
+    "V3-D-plan-too-short"
+  ],
+  "status": "failed",
+  "input_count_cost_usd": null,
+  "total_billed_cost_usd": null
+}

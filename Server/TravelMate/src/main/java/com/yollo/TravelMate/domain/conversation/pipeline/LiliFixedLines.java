@@ -22,7 +22,9 @@ public final class LiliFixedLines {
         JOB_SUCCEEDED,
         EXPLANATION_UNAVAILABLE,
         REPLY_UNAVAILABLE,
-        PLAN_UNAVAILABLE
+        PLAN_UNAVAILABLE,
+        // A template: the server fills in the area the user asked for and what the place data holds.
+        OUTSIDE_COVERAGE
     }
 
     private static final Map<JobStatus, Line> STATUS_LINES = Map.of(
@@ -35,6 +37,17 @@ public final class LiliFixedLines {
 
     public static DialogueCut line(Line line) {
         return Holder.LINES.get(line);
+    }
+
+    public static DialogueCut outsideCoverage(
+            String requestedRegion,
+            String coveredRegions,
+            String coveredCategories
+    ) {
+        var template = line(Line.OUTSIDE_COVERAGE);
+        String text = template.text().replace("{requested}", requestedRegion)
+                .replace("{regions}", coveredRegions).replace("{categories}", coveredCategories);
+        return new DialogueCut(text, template.emotion());
     }
 
     public static DialogueCut line(JobStatus status) {

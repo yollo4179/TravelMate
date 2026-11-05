@@ -258,9 +258,10 @@ def score_lili_case(case: dict[str, Any], record: dict[str, Any], selected: list
     expected_branch = expected.get("lili_branch")
     accepted_branches = expected_branch if isinstance(expected_branch, list) else [expected_branch]
     asks_back = expected.get("outcome") == TurnOutcome.ASK_BACK
+    out_of_coverage = expected.get("outcome") == TurnOutcome.OUT_OF_COVERAGE
     plan_outcome = expected.get("plan_outcome")
-    # The branch whose tools and job the case expects; a turn that must ask back expects neither.
-    tool_branch = None if asks_back else accepted_branches[0]
+    # The branch whose tools and job the case expects; a turn that must ask back or is outside the data expects neither.
+    tool_branch = None if asks_back or out_of_coverage else accepted_branches[0]
     native = record.get("native_response") if isinstance(record.get("native_response"), dict) else {}
     followed = record.get("followed_job") or {}
     # Legacy checks assume pre-retrieved places in the chat turn; LiLi's turn is judged by its own rules below.
@@ -300,7 +301,7 @@ def score_lili_case(case: dict[str, Any], record: dict[str, Any], selected: list
     expected_type = {"SEARCH_PLACES": "RECOMMENDATION_JOB", "GENERATE_PLAN": "PLANNING_JOB", "GET_PLANNING_JOB": "PLANNING_JOB"}
     # An ask-back answers in TEXT; a refused plan keeps the failed tool's ERROR result beside LiLi's reason.
     words_type = "ERROR" if plan_outcome == PlanOutcome.REJECTED else "TEXT"
-    ends_in_words = asks_back or plan_outcome == PlanOutcome.REJECTED
+    ends_in_words = asks_back or out_of_coverage or plan_outcome == PlanOutcome.REJECTED
     checks["response_type"] = native.get("type") == (words_type if ends_in_words else expected_type.get(tool_branch, "TEXT")) or (
         tool_branch == "GET_PLANNING_JOB" and native.get("type") in {"PLANNING_JOB", "DRAFT"})
     follow_ups = [item for item in _payloads(selected, "MODEL_TURN") if item.get("stage") == "FOLLOW_UP"]
@@ -309,6 +310,13 @@ def score_lili_case(case: dict[str, Any], record: dict[str, Any], selected: list
     checks["choices_only_when_clarifying"] = bool(native.get("choices")) <= (branch == "CLARIFY" or asked_back) if branch else None
     if asks_back:
         checks["asked_user"] = native.get("type") == "TEXT" and (branch == "CLARIFY" or asked_back) and not followed.get("kind")
+    if out_of_coverage:
+        # LiLi only names the area; the server compares it with the place data and answers with its own line.
+        region = expected["requested_region"]
+        checks["requested_region"] = decision.get("requested_region") == region
+        checks["coverage_refused_by_server"] = any(item.get("requestedRegion") == region
+                                                   for item in _payloads(selected, "COVERAGE", "CONVERSATION"))
+        checks["no_search_outside_coverage"] = not executed and not followed.get("kind") and native.get("type") == "TEXT"
     if expected.get("query_terms"):
         query = decision.get("search_query") or ""
         checks["query_terms"] = all(term in query for term in expected["query_terms"])

@@ -14,3 +14,9 @@
 | `V3H-exclude-fifth-also` | `V3-B-exclude-keep-existing` | 이미 173을 뺀 목록에서 다섯 번째(371)를 더 뺄 때 기존 제외를 유지하고, 끝난 제외를 되묻지 않는다 |
 | `V3H-no-match-ski` | `V3-D-no-beach` | 맞는 장소가 없는 요청에 검색 후 없다고 말하고, 다른 지역 검색을 약속하지 않는다 |
 | `V3H-no-data-wheelchair` | `V3-D-hours-and-fee`, `V3-D-parking` | 데이터에 없는 정보(휠체어 대여)를 없는 기능으로 다루고, 확인해 주겠다고 약속하지 않는다 |
+
+## 바꾼 기대 동작
+
+| 문항 | 처음 기대 | 바꾼 기대 | 근거 |
+|---|---|---|---|
+| `V3H-outside-jeju`, `V3H-outside-gangneung-no-filter` | 검색 후 그 지역 장소가 없다고 말함 | 범위 밖 안내(`OUT_OF_COVERAGE`, 제주·강원) | `V3-D-outside-catalog`와 같은 사용자 결정(2026-11-05). 바꾸기 전 실측 기록(`20261105-lili-v3h-g1-h1`~`h3`)은 바꾸기 전 문항 해시(`acb206d16f86…`)로 남아 있다 |

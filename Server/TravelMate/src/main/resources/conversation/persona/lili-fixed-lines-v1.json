@@ -22,5 +22,9 @@
   "PLAN_UNAVAILABLE": {
     "text": "미안, 이번엔 일정 초안을 만들지 못했어. 같은 조건으로 다시 부탁하거나 조건을 바꿔서 요청해 줘.",
     "emotion": "CONCERNED"
+  },
+  "OUTSIDE_COVERAGE": {
+    "text": "{requested} 쪽 장소는 아직 내 자료에 없어. 지금은 {regions} {categories}만 찾을 수 있어.",
+    "emotion": "CONCERNED"
   }
 }

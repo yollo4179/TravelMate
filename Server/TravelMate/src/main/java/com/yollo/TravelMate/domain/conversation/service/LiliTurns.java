@@ -21,6 +21,7 @@ import com.yollo.TravelMate.domain.conversation.pipeline.ConversationGenerationP
 import com.yollo.TravelMate.domain.conversation.pipeline.LiliPrompts;
 import com.yollo.TravelMate.domain.conversation.pipeline.ModelModule;
 import com.yollo.TravelMate.domain.conversation.tool.ToolSchemas;
+import com.yollo.TravelMate.domain.place.data.internal.Sido;
 import com.yollo.TravelMate.domain.plan.data.internal.GeneratedPlan;
 import com.yollo.TravelMate.domain.plan.prompts.ContextPlanPromptFactory.CitationSource;
 import com.yollo.TravelMate.domain.plan.validator.PlanEvidenceCitationValidator;
@@ -41,6 +42,7 @@ public class LiliTurns {
             LiliBranch branch,
             ConversationIntent intent,
             String searchQuery,
+            Sido requestedRegion,
             List<Integer> excludePositions,
             CharacterEmotion emotion,
             String message,
@@ -112,6 +114,7 @@ public class LiliTurns {
                 branch,
                 ConversationIntent.valueOf(node.get("intent").asText()),
                 branch.requiresSearchQuery() ? query : null,
+                node.get("requested_region").isNull() ? null : Sido.fromLabel(node.get("requested_region").asText()).orElse(null),
                 // Positions only mean something for a search over the list the user is looking at.
                 branch == LiliBranch.SEARCH_PLACES ? positions(node.get("exclude_positions")) : List.of(),
                 CharacterEmotion.valueOf(node.get("emotion").asText()),
