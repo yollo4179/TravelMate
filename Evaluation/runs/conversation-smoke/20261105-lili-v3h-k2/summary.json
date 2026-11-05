@@ -1,0 +1,56 @@
+{
+  "selected_case_count": 6,
+  "observed_case_count": 6,
+  "automated_pass_count": 6,
+  "automated_fail_count": 0,
+  "semantic_fail_count": 0,
+  "quality_pass_count": 0,
+  "all_quality_passed": false,
+  "note": "MOCK, missing observations and unreviewed reasons are never quality passes",
+  "execution": {
+    "execution_mode": "LIVE",
+    "configuration_sha256": "f4b79964c088a62df230b65719dc67ab5685176b93c32e53d70a093cd8d5c548",
+    "call_caps": {
+      "runtime_read": 2500,
+      "conversation": 6
+    },
+    "attempt_counts": {
+      "runtime_read": 8,
+      "conversation": 6
+    },
+    "real_dispatch_count": 14,
+    "stopped": false
+  },
+  "failure": null,
+  "status": "collected",
+  "not_run": [],
+  "stages": {
+    "tool_call": {
+      "selected": 1,
+      "recorded": 1,
+      "plan_drafts_observed": 0,
+      "quality_passed": 0
+    },
+    "recommendation": {
+      "selected": 1,
+      "recorded": 1,
+      "plan_drafts_observed": 0,
+      "quality_passed": 0
+    },
+    "plan": {
+      "selected": 0,
+      "recorded": 0,
+      "plan_drafts_observed": 0,
+      "quality_passed": 0
+    },
+    "conversation": {
+      "selected": 4,
+      "recorded": 4,
+      "plan_drafts_observed": 0,
+      "quality_passed": 0
+    }
+  },
+  "internal_inference_call_total": null,
+  "input_count_cost_usd": null,
+  "total_billed_cost_usd": null
+}

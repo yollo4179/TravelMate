@@ -12,6 +12,11 @@ public enum LiliBranch {
             return this == SEARCH_PLACES || this == GENERATE_PLAN;
         }
 
+        /** A job lookup needs a job ID the server found in the message; without one the branch is not offered at all. */
+        public boolean requiresJobId() {
+            return this == GET_PLANNING_JOB;
+        }
+
         /** Branches where the user is after places by what they said; a plan's area comes from the app's map instead. */
         public boolean asksForPlacesInWords() {
             return this == SEARCH_PLACES || this == CLARIFY;

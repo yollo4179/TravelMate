@@ -1,0 +1,20 @@
+{
+  "status": "ok",
+  "dim": 1024,
+  "source_sha256": "fac11e871ad3cae7fcf4630b3c60cce3bfe807537f023923e70fd3a4574513e9",
+  "embedding_device": "cuda",
+  "reranker_device": "cuda",
+  "cuda_available": true,
+  "gpu_name": "NVIDIA GeForce RTX 4050 Laptop GPU",
+  "embedding_parameter_device": "cuda:0",
+  "embedding_dtype": "torch.float32",
+  "reranker_parameter_device": "cuda:0",
+  "reranker_dtype": "torch.float32",
+  "reranker_execution_strategy": "cross_encoder_predict",
+  "reranker_configured_batch_size": 8,
+  "reranker_max_length": 1024,
+  "reranker_effective_batch_size": 8,
+  "reranker_predict_default_batch_size": 32,
+  "reranker_inference_count": 129,
+  "original_evidence_mode": "post-retrieval-field-v1"
+}

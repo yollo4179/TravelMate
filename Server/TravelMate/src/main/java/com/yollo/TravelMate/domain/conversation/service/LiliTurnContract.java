@@ -32,8 +32,13 @@ public final class LiliTurnContract {
     private LiliTurnContract() {}
 
     public static JsonNode routerSchema() {
+        return routerSchema(Arrays.asList(LiliBranch.values()));
+    }
+
+    /** The branches offered for one turn; a branch the server already knows cannot run is left out of the choices. */
+    public static JsonNode routerSchema(List<LiliBranch> branches) {
         var properties = new LinkedHashMap<String, JsonNode>();
-        properties.put("branch", enumeration(Arrays.asList(LiliBranch.values())));
+        properties.put("branch", enumeration(branches));
         properties.put("intent", enumeration(ConversationIntent.finalValues()));
         properties.put("search_query", ToolSchemas.nullable(ToolSchemas.text(MAX_QUERY_LENGTH)));
         // LiLi names the area the user asked about; whether the data holds it is the server's check, not hers.

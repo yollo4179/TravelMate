@@ -207,6 +207,32 @@ class LiliRouterTest {
         assertTrue(prompts.get(0).get(0).content().contains("말로 빠진 조건을 수집하지 않는다"));
     }
 
+    // Live core run: with no job ID in the message the router still chose the job lookup; now it cannot.
+    @Test
+    void theJobLookupIsOfferedOnlyWhenTheMessageCarriesAJobId() throws Exception {
+        answer(decision("CLARIFY", "PLAN", null, "THINKING", "어떤 작업인지 번호를 알려줄래?", List.of("작업 번호 알려주기", "새 일정 만들기")),
+                decision("GET_PLANNING_JOB", "PLAN", null, "THINKING", "확인해 볼게.", List.of()));
+        respond(new ConversationRequest("내 일정 생성 작업이 어디까지 됐어?", null, List.of()));
+        respond(new ConversationRequest("작업 " + UUID.randomUUID() + " 어떻게 됐어?", null, List.of()));
+        assertFalse(branchChoices(0).contains("GET_PLANNING_JOB"), "no ID, so the lookup is not a choice");
+        assertTrue(branchChoices(0).contains("CLARIFY"));
+        assertTrue(branchChoices(1).contains("GET_PLANNING_JOB"));
+    }
+
+    @Test
+    void bookingOrConfirmingIsAMissingFeatureEvenWhenATripIsMentioned() throws Exception {
+        answer(decision("CHAT", "CONVERSATION", null, "THINKING", "예약은 내가 못 해.", List.of()));
+        respond(new ConversationRequest("안녕", null, List.of()));
+        String system = prompts.get(0).get(0).content();
+        assertTrue(system.contains("예약·결제·확정을 해 달라는 요청은 일정 이야기가 함께 있어도 지원하지 않는 기능 요청이다"));
+    }
+
+    private List<String> branchChoices(int call) {
+        var choices = new ArrayList<String>();
+        outputs.get(call).schema().path("properties").path("branch").path("enum").forEach(value -> choices.add(value.asText()));
+        return choices;
+    }
+
     @Test
     void knownJobStatusIsToldWithAFixedLineAfterLilisCutWithoutASecondModelCall() throws Exception {
         String jobId = UUID.randomUUID().toString();

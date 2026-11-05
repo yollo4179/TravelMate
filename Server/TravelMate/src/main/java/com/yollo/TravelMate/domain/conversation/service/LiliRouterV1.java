@@ -1,10 +1,12 @@
 package com.yollo.TravelMate.domain.conversation.service;
 
+import java.util.Arrays;
 import java.util.List;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.yollo.TravelMate.ai.llm.base.LlmTurn;
 import com.yollo.TravelMate.domain.conversation.data.ConversationResponse;
 import com.yollo.TravelMate.domain.conversation.data.ConversationResponse.Termination;
+import com.yollo.TravelMate.domain.conversation.data.LiliBranch;
 import com.yollo.TravelMate.domain.conversation.pipeline.ConversationRoutingModule;
 import com.yollo.TravelMate.domain.conversation.pipeline.LiliPrompts;
 import com.yollo.TravelMate.domain.conversation.pipeline.ModuleSelection;
@@ -36,10 +38,11 @@ public class LiliRouterV1 implements ConversationRoutingModule {
         var request = turn.request();
         // LiLi gets facts the server can check exactly, not the IDs themselves: she picks a branch and positions,
         // and the server resolves them.
+        boolean jobIdProvided = PlanningJobReference.single(request.message()).isPresent();
         var input = mapper.createObjectNode().put("message", request.message())
                 .put("intentHint", request.intentHint().name())
                 .put("planningRequestProvided", request.planningRequest() != null)
-                .put("jobIdProvided", PlanningJobReference.single(request.message()).isPresent())
+                .put("jobIdProvided", jobIdProvided)
                 .put("displayedResultCount", request.displayedResult() == null ? 0 : request.displayedResult().placeIds().size());
         input.set("searchContext", mapper.valueToTree(request.searchContext()));
         // What the place data holds, read from the data: without it LiLi offered areas and kinds of places it cannot search.
@@ -49,7 +52,7 @@ public class LiliRouterV1 implements ConversationRoutingModule {
         final LlmTurn completion;
         try {
             completion = lili.call(LiliPrompts.Prompt.ROUTER, request, input,
-                    LiliTurnContract.ROUTER_NAME, LiliTurnContract.routerSchema());
+                    LiliTurnContract.ROUTER_NAME, LiliTurnContract.routerSchema(offered(jobIdProvided)));
         } catch (RuntimeException exception) {
             lili.record(LiliTurns.Stage.ROUTER, LiliPrompts.Prompt.ROUTER, null, elapsed(started));
             return renderer.liliFallback(null, RecommendationJobService.termination(exception), 1, List.of());
@@ -63,6 +66,11 @@ public class LiliRouterV1 implements ConversationRoutingModule {
         }
         var handler = ModuleSelection.requireOne(handlers, candidate -> candidate.supports(decision.branch()), "LiLi branch");
         return coverageGate.outside(decision).orElseGet(() -> handler.execute(new LiliBranchHandler.Input(turn, decision)));
+    }
+
+    // Live core run: with no job ID in the message LiLi still picked the job lookup the prompt told her not to pick.
+    private static List<LiliBranch> offered(boolean jobIdProvided) {
+        return Arrays.stream(LiliBranch.values()).filter(branch -> jobIdProvided || !branch.requiresJobId()).toList();
     }
 
     private static double elapsed(long started) {

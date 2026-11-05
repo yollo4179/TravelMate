@@ -1,0 +1,22 @@
+{
+  "evaluator_git_sha": "c28759f93aaec9ed17c20f13b4aba91b4e4de06b",
+  "evaluator_source_sha256": "66d415a1c280eb33d3c953a5a565366570958e8b14192739c97d39a4b61287aa",
+  "configuration_sha256": "fb6002a2456cd9422c17513160ea7c21c36b912f3a2a9a0a0029615fe29dc06b",
+  "suite_sha256": "1f0309f2d392489b4f6c11cefb043a5adbac73e7cb8c375161432be17975a210",
+  "execution_mode": "LIVE",
+  "selected_case_ids": [
+    "PLR-TM-palaces-01",
+    "PLR-TM-palaces-03",
+    "CONV-SOCIAL-thanks",
+    "CONV-CLARIFY-plan",
+    "CONV-CLARIFY-job",
+    "CONV-UNSUPPORTED-booking",
+    "CONV-SEARCH-exclude-first",
+    "CONV-SEARCH-exclude-shown",
+    "CONV-JOB-owned",
+    "CONV-PLAN-create"
+  ],
+  "status": "collected",
+  "input_count_cost_usd": null,
+  "total_billed_cost_usd": null
+}
