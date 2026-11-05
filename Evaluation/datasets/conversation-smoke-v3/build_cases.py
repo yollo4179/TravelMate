@@ -211,10 +211,12 @@ def build() -> dict:
              history=PLAN_ASK_HISTORY, outcome=ask_back, branches=["CLARIFY", "GENERATE_PLAN"]),
 
         # D. Questions the originals cannot answer, places the catalog does not have, and plans the server refuses.
-        search("V3-D-hours-and-fee", "창경궁 지금 문 열었어? 입장료는 얼마야?", JONGNO,
-               "창경궁을 찾되 운영시간과 입장료는 확인되지 않았다고 말한다.", query_terms=["창경궁"]),
-        search("V3-D-parking", "창경궁 주차 돼?", JONGNO,
-               "주차 가능 여부는 확인되지 않았다고 말하고 지어내지 않는다.", query_terms=["창경궁"]),
+        # Changed after r1 and c1 (user's rule, 2026-11-05): the server has no opening-hours, fee or parking data, so
+        # these ask for a missing feature. LiLi answered in words without inventing anything in both runs.
+        unsupported(talk("V3-D-hours-and-fee", "창경궁 지금 문 열었어? 입장료는 얼마야?", None, "CHAT",
+                         "운영시간과 입장료는 확인할 수 없다고 말하고 지어내지 않는다.", extra=(NO_HOURS, CAPABILITY_ONLY))),
+        unsupported(talk("V3-D-parking", "창경궁 주차 돼?", None, "CHAT",
+                         "주차 가능 여부는 확인할 수 없다고 말하고 지어내지 않는다.", extra=(NO_HOURS, CAPABILITY_ONLY))),
         search("V3-D-no-beach", "종로에서 바다 보이는 해수욕장 추천해줘.", JONGNO,
                "조건에 맞는 곳을 찾지 못했다고 솔직히 말하고 관련 없는 장소를 맞는 것처럼 소개하지 않는다."),
         search("V3-D-outside-catalog", "부산 해운대 근처 관광지 알려줘.", SEOUL,
