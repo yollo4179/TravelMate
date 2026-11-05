@@ -16,7 +16,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from common.execution.control import RunMode
 from common.experiments.contracts import ConversationRouting, ModuleInput
 from common.experiments.modules import ConversationApiModule, conversation_checks
-from tracks.conversation.cases import LILI_SUITE, load_cases
+from tracks.conversation.cases import LILI_BOUNDARY_SUITE, LILI_SUITE, load_cases
 from tracks.conversation.job_follow import FollowedJobKind, follow_job, select_follower
 from tracks.conversation.lili_score import unevidenced_places_named
 from tracks.conversation.score import score_case
@@ -355,6 +355,119 @@ class JobFollowTests(unittest.TestCase):
     def test_a_job_lookup_turn_is_not_followed_as_a_new_plan(self) -> None:
         self.assertIsNone(select_follower({"type": "PLANNING_JOB"}, {"case_id": JOB_CASE, "creates_plan": False}))
         self.assertIsNone(select_follower({"type": "TEXT"}, {"case_id": SEARCH_CASE}))
+
+
+class LiliBoundaryScoreTests(unittest.TestCase):
+    """v3 judgments: ask-back by either LiLi or the server, query terms, kept exclusions, refused and failed plans."""
+    OUT_OF_RANGE = "V3-B-exclude-out-of-range"
+    CHANGE_REGION = "V3-C-change-region"
+    KEEP_EXISTING = "V3-B-exclude-keep-existing"
+    PLAN_BUDGET = "V3-D-plan-budget"
+    PLAN_TOO_SHORT = "V3-D-plan-too-short"
+    HOTEL = "V3-A-unsupported-hotel"
+    STAY_REASON = "방문 체류시간과 이동 여유를 합하면 여행 가능 시간을 초과합니다."
+
+    # The user's rule: "~해 줘" for a missing feature is judged by whether the feature exists, not by its intent label.
+    def test_a_missing_feature_request_passes_under_any_intent_label(self) -> None:
+        for intent in ("PLAN", "CONVERSATION"):
+            with self.subTest(intent=intent):
+                trace = self.words_only(LiliTrace(self.cases[self.HOTEL], "CHAT", None, "TEXT"))
+                trace.native["intent"] = intent
+                trace.decision["intent"] = intent
+                route = next(event for event in trace.events if event["event"] == "ROUTE")
+                route["payload"]["content"] = json.dumps(trace.decision, ensure_ascii=False)
+                self.assertEqual([], self.failed(trace))
+
+    def test_running_anything_for_a_missing_feature_fails(self) -> None:
+        trace = LiliTrace(self.cases[self.HOTEL], "SEARCH_PLACES", "종로 호텔", "RECOMMENDATION_JOB")
+        trace.native["intent"] = "RECOMMENDATION"
+        trace.tool("search_places", {"query": "종로 호텔"})
+        trace.job("종로 호텔")
+        failed = self.failed(trace)
+        self.assertIn("missing_feature_not_run", failed)
+        self.assertNotIn("intent_type", failed, "the label is not what fails it")
+
+    @classmethod
+    def setUpClass(cls) -> None:
+        ids = (cls.OUT_OF_RANGE, cls.CHANGE_REGION, cls.KEEP_EXISTING, cls.PLAN_BUDGET, cls.PLAN_TOO_SHORT, cls.HOTEL)
+        cls.cases = {case["case_id"]: case for case in load_cases(LILI_BOUNDARY_SUITE, ids, {"owned_job_id": OWNED_JOB_ID})}
+
+    def failed(self, trace: LiliTrace) -> list[str]:
+        return [name for name, value in score_case(trace.case, trace.record, trace.events, CONTRACT)["checks"].items()
+                if value is False]
+
+    def words_only(self, trace: LiliTrace) -> LiliTrace:
+        trace.native["data"] = None
+        return trace
+
+    def test_lili_asking_back_herself_passes(self) -> None:
+        trace = self.words_only(LiliTrace(self.cases[self.OUT_OF_RANGE], "CLARIFY", None, "TEXT"))
+        self.assertEqual([], self.failed(trace))
+
+    def test_the_server_asking_back_after_a_search_branch_also_passes(self) -> None:
+        trace = self.words_only(LiliTrace(self.cases[self.OUT_OF_RANGE], "SEARCH_PLACES", "종로 관광지", "TEXT", [12]))
+        trace.add("EXCLUSION", {"status": "POSITION_OUT_OF_RANGE", "positions": [12], "placeIds": []})
+        trace.add("MODEL_TURN", {"stage": "FOLLOW_UP", "durationMs": 800.0})
+        self.assertEqual([], self.failed(trace))
+
+    def test_queuing_a_search_instead_of_asking_back_fails(self) -> None:
+        trace = LiliTrace(self.cases[self.OUT_OF_RANGE], "SEARCH_PLACES", "종로 관광지", "RECOMMENDATION_JOB")
+        trace.tool("search_places", {"query": "종로 관광지"})
+        trace.job("종로 관광지")
+        failed = self.failed(trace)
+        self.assertIn("asked_user", failed)
+        self.assertIn("tool_selection", failed)
+
+    def test_a_region_change_must_reach_the_search_query(self) -> None:
+        for query, passes in (("종로 관광지", False), ("서울 송파 관광지", True)):
+            with self.subTest(query=query):
+                trace = LiliTrace(self.cases[self.CHANGE_REGION], "SEARCH_PLACES", query, "RECOMMENDATION_JOB")
+                trace.tool("search_places", {"query": query})
+                trace.job(query)
+                self.assertEqual(passes, "query_terms" not in self.failed(trace))
+
+    def test_a_new_exclusion_keeps_what_the_app_already_excluded(self) -> None:
+        for applied, passes in (([368], False), ([173, 368], True)):
+            with self.subTest(applied=applied):
+                trace = LiliTrace(self.cases[self.KEEP_EXISTING], "SEARCH_PLACES", "종로 관광지", "RECOMMENDATION_JOB", [3])
+                trace.add("EXCLUSION", {"status": "RESOLVED", "positions": [3], "placeIds": [368]})
+                trace.tool("search_places", {"query": "종로 관광지", "exclude_place_ids": [368]})
+                trace.job("종로 관광지", excluded=applied, returned=[188, 272])
+                self.assertEqual(passes, "exclusion_keeps_existing" not in self.failed(trace))
+
+    # Live r4: the refused plan answered as ERROR / TOOL_FAILED with LiLi's reason, which is the designed ending.
+    def test_a_refused_plan_ends_in_words_without_a_job(self) -> None:
+        trace = self.words_only(LiliTrace(self.cases[self.PLAN_BUDGET], "GENERATE_PLAN", "종로 일정", "ERROR"))
+        trace.native["termination"] = "TOOL_FAILED"
+        trace.native["dialogue"] = [{"text": "지금은 예산 3만 원 안에 맞는지 확인할 수 없어.", "emotion": "THINKING"}]
+        trace.native["message"] = trace.native["dialogue"][0]["text"]
+        trace.tool("generate_plan", {}, status="FAILED")
+        trace.add("MODEL_TURN", {"stage": "FOLLOW_UP", "durationMs": 800.0})
+        self.assertEqual([], self.failed(trace), "the user's own word 예산 is not an internal term")
+
+    def test_an_accepted_plan_is_not_a_refusal(self) -> None:
+        trace = LiliTrace(self.cases[self.PLAN_BUDGET], "GENERATE_PLAN", "종로 일정", "PLANNING_JOB")
+        trace.tool("generate_plan", {})
+        failed = self.failed(trace)
+        self.assertIn("plan_request_rejected", failed)
+        self.assertIn("plan_no_job", failed)
+
+    def test_a_plan_that_fails_its_rules_must_end_failed_with_a_readable_reason(self) -> None:
+        for reason, passes in ((self.STAY_REASON, True), ("LLM 호출 전 토큰 예산 검사 실패: COUNT_UNAVAILABLE", False)):
+            with self.subTest(reason=reason):
+                trace = LiliTrace(self.cases[self.PLAN_TOO_SHORT], "GENERATE_PLAN", "종로 일정", "PLANNING_JOB")
+                trace.tool("generate_plan", {})
+                trace.record["followed_job"] = {"kind": "PLANNING", "polls": 4, "wait_ms": 9000.0, "timed_out": False,
+                                                "result": None, "job": {"status": "FAILED", "errorMessage": reason}}
+                failed = self.failed(trace)
+                self.assertEqual(passes, failed == [], failed)
+
+    def test_the_v3_suite_loads_with_the_owned_job_binding(self) -> None:
+        suite = json.loads(LILI_BOUNDARY_SUITE.read_text(encoding="utf-8"))
+        ids = tuple(case["case_id"] for case in suite["cases"])
+        loaded = load_cases(LILI_BOUNDARY_SUITE, ids, {"owned_job_id": OWNED_JOB_ID})
+        self.assertEqual(42, len(loaded))
+        self.assertEqual(len(loaded), len({case["input_sha256"] for case in loaded}), "every case has its own input")
 
 
 if __name__ == "__main__":

@@ -83,7 +83,9 @@ def score_case(case: dict[str, Any], record: dict[str, Any], events: list[dict[s
     checks["intent_type"] = native.get("intent") == expected.get("intent", expected_intent.get(native.get("type")))
     expected_items = native.get("data") if native.get("type") == "PLACES" else [native.get("data")] if native.get("type") == "DRAFT" else []
     checks["array_result_preserved"] = isinstance(native.get("items"), list) and native.get("items") == expected_items
-    checks["completed"] = native.get("termination") == "COMPLETED"
+    # Same rule as the run-time completion contract: a plan the server refuses ends TOOL_FAILED by design.
+    endings = {"COMPLETED", "TOOL_FAILED"} if expected.get("plan_outcome") == "REJECTED" else {"COMPLETED"}
+    checks["completed"] = native.get("termination") in endings
     trace_error = None
     selected: list[dict[str, Any]] = []
     try:

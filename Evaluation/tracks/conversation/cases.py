@@ -16,17 +16,37 @@ from tracks.search.collect_live import selected_v14_inputs
 
 DEFAULT_SUITE = DEFAULT_DATASET.parent / "conversation-smoke-v1/cases.json"
 LILI_SUITE = DEFAULT_DATASET.parent / "conversation-smoke-v2/cases.json"
+LILI_BOUNDARY_SUITE = DEFAULT_DATASET.parent / "conversation-smoke-v3/cases.json"
 MAX_DISPLAYED_PLACES = 20
 
 
 class SuiteVersion(StrEnum):
     SINGLE_LLM_V1 = "conversation-smoke-v1"
     LILI_ROUTER_V2 = "conversation-smoke-v2"
+    LILI_BOUNDARY_V3 = "conversation-smoke-v3"
 
 
 class PlanOutcome(StrEnum):
     ACCEPTED = "ACCEPTED"
     DRAFT_COMPLETED = "DRAFT_COMPLETED"
+    # The server refuses the request before any job exists, e.g. a budget or a car trip it cannot plan yet.
+    REJECTED = "REJECTED"
+    # The job is accepted but its draft fails the server's rules, so it must end FAILED with a user-facing reason.
+    FAILED = "FAILED"
+
+
+class TurnOutcome(StrEnum):
+    """How a turn must end when that matters more than which branch LiLi chose."""
+    # Ends asking the user: LiLi's own CLARIFY or the server's ask-back after she picked a tool branch.
+    ASK_BACK = "ASK_BACK"
+
+
+class Capability(StrEnum):
+    """Whether the server has the feature a request asks for; a request for a missing one is judged by that, not its intent label."""
+    UNSUPPORTED = "UNSUPPORTED"
+
+
+LILI_BRANCHES = {"CHAT", "CLARIFY", "SEARCH_PLACES", "GENERATE_PLAN", "GET_PLANNING_JOB"}
 
 
 class DecisionType(StrEnum):
@@ -94,6 +114,17 @@ def load_cases(path: Path, selected: tuple[str, ...], bindings: dict[str, str]) 
         validate_exclusion(request.get("displayedResult"), expected.get("exclusion"))
         if "plan_outcome" in expected:
             PlanOutcome(expected["plan_outcome"])
+        if "outcome" in expected:
+            TurnOutcome(expected["outcome"])
+        if "capability" in expected:
+            Capability(expected["capability"])
+            if expected.get("intent") is not None or expected["tool_names"]:
+                raise ValueError("A request for a missing feature expects no intent label and no tool")
+        branches = expected.get("lili_branch")
+        if branches is not None and not set([branches] if isinstance(branches, str) else branches) <= LILI_BRANCHES:
+            raise ValueError("Expected LiLi branches must be existing branches")
+        if "query_terms" in expected and not all(isinstance(term, str) and term.strip() for term in expected["query_terms"]):
+            raise ValueError("Query terms must be non-empty words")
         if not isinstance(request["message"], str) or not request["message"].strip() or len(request["message"]) > 4000:
             raise ValueError("The original conversation question must fit the server contract")
         result.append(case)

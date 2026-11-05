@@ -8,6 +8,7 @@ from typing import Any
 from jsonschema import Draft202012Validator
 
 from common.dataset.io import canonical_digest
+from tracks.conversation.cases import Capability, PlanOutcome, TurnOutcome
 from tracks.conversation.plan_checks import draft_checks
 
 BRANCH_TOOLS = {
@@ -29,7 +30,8 @@ ROUTER_LINE_CRITERION = {
 INTERNAL_CODE = re.compile(r"(?<![A-Za-z0-9_])[A-Z]{2,}(?:_[A-Z]{2,})+(?![A-Za-z0-9_])")
 # Input field names such as requiredStops or selectedEvidence; a plan description said "requiredStops" to the user.
 INTERNAL_IDENTIFIER = re.compile(r"(?<![A-Za-z0-9_])[a-z]+(?:[A-Z][a-z0-9]*)+(?![A-Za-z0-9_])")
-INTERNAL_TERMS = ("토큰", "예산", "LLM", "API", "evidence", "셀렉트", "selectedEvidence", "서버",
+# "예산" alone is not here: a travel budget is the user's own word ("예산 3만 원"); the token-budget leak still says "토큰".
+INTERNAL_TERMS = ("토큰", "LLM", "API", "evidence", "셀렉트", "selectedEvidence", "서버",
                   "QUEUED", "RUNNING", "SUCCEEDED", "FAILED")
 PARENTHESIZED = re.compile(r"\([^)]*\)")
 
@@ -160,6 +162,7 @@ def _exclusion_checks(
     exclusions: list[dict[str, Any]],
     job_preparations: list[dict[str, Any]],
     result: dict[str, Any],
+    existing: list[int],
 ) -> dict[str, bool | None]:
     """Requested position → server-resolved ID → applied search filter → absent from what the job returned."""
     if expected_exclusion is None:
@@ -167,12 +170,48 @@ def _exclusion_checks(
     wanted = expected_exclusion["place_ids"]
     resolved = exclusions[0] if len(exclusions) == 1 else {}
     criteria = (job_preparations[0].get("modelData") or {}).get("searchCriteria") or {} if len(job_preparations) == 1 else {}
+    applied = set(criteria.get("excludePlaceIds") or [])
     returned = [item.get("placeId") for item in result.get("data") or [] if isinstance(item, dict)]
-    return {
+    checks: dict[str, bool | None] = {
         "exclusion_positions": decision.get("exclude_positions") == expected_exclusion["positions"],
         "exclusion_resolved": resolved.get("status") == "RESOLVED" and resolved.get("placeIds") == wanted,
-        "exclusion_filter_applied": set(wanted) <= set(criteria.get("excludePlaceIds") or []),
+        "exclusion_filter_applied": set(wanted) <= applied,
         "exclusion_absent_from_result": bool(returned) and not set(wanted) & set(returned),
+    }
+    if existing:
+        # A new exclusion is merged into what the app already excluded, never replacing it.
+        checks["exclusion_keeps_existing"] = set(existing) <= applied and not set(existing) & set(returned)
+    return checks
+
+
+def _plan_rejection_checks(
+    native: dict[str, Any],
+    tool_events: list[dict[str, Any]],
+    followed: dict[str, Any],
+) -> dict[str, bool | None]:
+    """The server refused the request itself: the plan tool failed, no job exists, and the turn ends in LiLi's words."""
+    results = [event.get("result") or {} for event in tool_events]
+    return {
+        "plan_request_rejected": any(item.get("name") == "generate_plan" and item.get("status") == "FAILED" for item in results),
+        "plan_no_job": not followed.get("kind") and not (native.get("data") or {}).get("jobId"),
+    }
+
+
+def _plan_failure_checks(
+    native: dict[str, Any],
+    tool_events: list[dict[str, Any]],
+    followed: dict[str, Any],
+) -> dict[str, bool | None]:
+    """The job was accepted and then failed the draft rules; failing is the expected end, with a reason users can read."""
+    job = followed.get("job") or {}
+    accepted = native.get("type") == "PLANNING_JOB" and bool((native.get("data") or {}).get("jobId")) and any(
+        (event.get("result") or {}).get("name") == "generate_plan" and (event.get("result") or {}).get("status") == "SUCCEEDED"
+        for event in tool_events)
+    return {
+        "plan_job_accepted": accepted,
+        "plan_job_failed": followed.get("kind") == "PLANNING" and not followed.get("timed_out")
+        and job.get("status") == "FAILED" and bool(job.get("errorMessage")),
+        "plan_no_draft": not isinstance(followed.get("result"), dict),
     }
 
 
@@ -205,6 +244,11 @@ def score_lili_case(case: dict[str, Any], record: dict[str, Any], selected: list
                     contract: dict[str, Any], base_checks: dict[str, bool | None], trace_error: str | None) -> dict[str, Any]:
     expected = case["expected"]
     expected_branch = expected.get("lili_branch")
+    accepted_branches = expected_branch if isinstance(expected_branch, list) else [expected_branch]
+    asks_back = expected.get("outcome") == TurnOutcome.ASK_BACK
+    plan_outcome = expected.get("plan_outcome")
+    # The branch whose tools and job the case expects; a turn that must ask back expects neither.
+    tool_branch = None if asks_back else accepted_branches[0]
     native = record.get("native_response") if isinstance(record.get("native_response"), dict) else {}
     followed = record.get("followed_job") or {}
     # Legacy checks assume pre-retrieved places in the chat turn; LiLi's turn is judged by its own rules below.
@@ -217,51 +261,71 @@ def score_lili_case(case: dict[str, Any], record: dict[str, Any], selected: list
     branch = decision.get("branch")
     checks["route_observed"] = route is not None and route.get("stage") == "ROUTER"
     checks["route_schema"] = _valid(lili["router_schema"], decision) if route and "router_schema" in lili else None
-    checks["lili_branch"] = branch == expected_branch
+    checks["lili_branch"] = branch in accepted_branches
     checks["search_query_present"] = bool((decision.get("search_query") or "").strip()) if branch in QUERY_BRANCHES else None
     checks["no_evidence_before_lili"] = not _payloads(selected, "EVIDENCE_PREPARATION", "CONVERSATION")
     tool_events = _payloads(selected, "TOOL_RESULT", "CONVERSATION")
     executed = [item.get("result", {}) for item in tool_events]
-    checks["tool_selection"] = [item.get("name") for item in executed] == BRANCH_TOOLS.get(expected_branch, [])
+    checks["tool_selection"] = [item.get("name") for item in executed] == BRANCH_TOOLS.get(tool_branch, [])
     checks["tools_run_by_server"] = all(item.get("initiator") == "LILI" for item in tool_events)
     arguments = [json.loads(item.get("arguments") or "{}") for item in executed]
     expected_exclusion = expected.get("exclusion")
-    if expected_branch == "GET_PLANNING_JOB":
+    if tool_branch == "GET_PLANNING_JOB":
         checks["tool_arguments"] = len(arguments) == 1 and bool(arguments[0].get("job_id")) and arguments[0]["job_id"] in case["api_request"]["message"]
-    elif expected_branch == "GENERATE_PLAN":
+    elif tool_branch == "GENERATE_PLAN":
         checks["tool_arguments"] = arguments == [{}]
-    elif expected_branch == "SEARCH_PLACES":
+    elif tool_branch == "SEARCH_PLACES":
         wanted = expected_exclusion["place_ids"] if expected_exclusion else []
         checks["tool_arguments"] = len(arguments) == 1 and arguments[0].get("query") == decision.get("search_query") \
             and arguments[0].get("exclude_place_ids", []) == wanted
-    checks["intent_type"] = native.get("intent") == expected.get("intent")
+    missing_feature = expected.get("capability") == Capability.UNSUPPORTED
+    # A request for a feature the server lacks is judged by what happened, not by which intent label it got.
+    checks["intent_type"] = None if missing_feature else native.get("intent") == expected.get("intent")
+    if missing_feature:
+        checks["missing_feature_not_run"] = not executed and not followed.get("kind") and native.get("type") == "TEXT"
     checks["message_source"] = native.get("messageSource") == "LLM"
     checks["dialogue_present"] = bool(native.get("dialogue")) and native.get("message") == native["dialogue"][0].get("text")
     expected_type = {"SEARCH_PLACES": "RECOMMENDATION_JOB", "GENERATE_PLAN": "PLANNING_JOB", "GET_PLANNING_JOB": "PLANNING_JOB"}
-    checks["response_type"] = native.get("type") == expected_type.get(expected_branch, "TEXT") or (
-        expected_branch == "GET_PLANNING_JOB" and native.get("type") in {"PLANNING_JOB", "DRAFT"})
+    # An ask-back answers in TEXT; a refused plan keeps the failed tool's ERROR result beside LiLi's reason.
+    words_type = "ERROR" if plan_outcome == PlanOutcome.REJECTED else "TEXT"
+    ends_in_words = asks_back or plan_outcome == PlanOutcome.REJECTED
+    checks["response_type"] = native.get("type") == (words_type if ends_in_words else expected_type.get(tool_branch, "TEXT")) or (
+        tool_branch == "GET_PLANNING_JOB" and native.get("type") in {"PLANNING_JOB", "DRAFT"})
     follow_ups = [item for item in _payloads(selected, "MODEL_TURN") if item.get("stage") == "FOLLOW_UP"]
     # A server-side ask-back (missing job ID or list) is a clarification even when the router picked another branch.
     asked_back = bool(follow_ups) and native.get("type") == "TEXT"
     checks["choices_only_when_clarifying"] = bool(native.get("choices")) <= (branch == "CLARIFY" or asked_back) if branch else None
+    if asks_back:
+        checks["asked_user"] = native.get("type") == "TEXT" and (branch == "CLARIFY" or asked_back) and not followed.get("kind")
+    if expected.get("query_terms"):
+        query = decision.get("search_query") or ""
+        checks["query_terms"] = all(term in query for term in expected["query_terms"])
     citations: list[dict[str, Any]] = []
     supplied: list[dict[str, Any]] = []
     job_result: dict[str, Any] = {}
     job_preparations = _payloads(selected, "EVIDENCE_PREPARATION", "RECOMMENDATION_GENERATION")
-    if expected_branch == "SEARCH_PLACES":
+    if tool_branch == "SEARCH_PLACES":
         job_checks, job_result, supplied = _recommendation_checks(followed, expected, decision, job_preparations, cut_schema)
         checks.update(job_checks)
-        checks.update(_exclusion_checks(expected_exclusion, decision, _payloads(selected, "EXCLUSION"), job_preparations, job_result))
+        existing = (case["api_request"].get("searchContext") or {}).get("excludePlaceIds") or []
+        checks.update(_exclusion_checks(expected_exclusion, decision, _payloads(selected, "EXCLUSION"), job_preparations,
+                                        job_result, existing))
         citations = job_result.get("citations") or []
     plan_content = {"status": "not_applicable", "checks": {}, "route_time_verified": False, "opening_hours_verified": False}
     draft = followed.get("result") if isinstance(followed.get("result"), dict) else {}
-    if expected.get("plan_outcome") == DRAFT_COMPLETED:
+    if plan_outcome == DRAFT_COMPLETED:
         plan_check_values, plan_content = _plan_checks(case, followed, native, tool_events, cut_schema)
         checks.update(plan_check_values)
+    elif plan_outcome == PlanOutcome.REJECTED:
+        checks.update(_plan_rejection_checks(native, tool_events, followed))
+    elif plan_outcome == PlanOutcome.FAILED:
+        checks.update(_plan_failure_checks(native, tool_events, followed))
     # The draft's title, description and pin explanations are shown to the user as they are, like LiLi's lines.
     shown_plan = [draft.get("title") or "", draft.get("description") or ""] + [
         pin.get("explanation") or "" for pin in draft.get("pins") or []]
-    spoken = _texts(native.get("dialogue")) + _texts(job_result.get("dialogue")) + _texts(draft.get("dialogue")) + shown_plan
+    # A failed job's reason is shown in the app and read aloud by LiLi when the user asks about the job.
+    job_reason = [(followed.get("job") or {}).get("errorMessage") or ""] if plan_outcome == PlanOutcome.FAILED else []
+    spoken = _texts(native.get("dialogue")) + _texts(job_result.get("dialogue")) + _texts(draft.get("dialogue")) + shown_plan + job_reason
     leaked = internal_terms(spoken)
     checks["no_internal_terms"] = not leaked
     model_calls = [item for item in _payloads(selected, "MODEL_CALL") if item.get("stage") == "FINISHED"]

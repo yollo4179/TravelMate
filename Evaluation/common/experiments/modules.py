@@ -142,8 +142,10 @@ class LiliCompletion:
 
     def checks(self, native: dict[str, Any], expected: dict[str, Any]) -> dict[str, bool]:
         dialogue = native.get("dialogue")
+        # A plan the server refuses ends TOOL_FAILED by design; LiLi still answers the turn with the reason.
+        endings = {"COMPLETED", "TOOL_FAILED"} if expected.get("plan_outcome") == "REJECTED" else {"COMPLETED"}
         return {
-            "completed": native.get("termination") == "COMPLETED",
+            "completed": native.get("termination") in endings,
             "message_present": isinstance(native.get("message"), str) and bool(native["message"].strip()),
             "message_source": native.get("messageSource") == "LLM",
             "dialogue_present": isinstance(dialogue, list) and bool(dialogue),
