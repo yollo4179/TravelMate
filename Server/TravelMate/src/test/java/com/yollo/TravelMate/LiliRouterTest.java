@@ -127,14 +127,17 @@ class LiliRouterTest {
     @Test
     void planWithoutConditionsAsksBackAndNeverQueuesAJob() throws Exception {
         answer(decision("GENERATE_PLAN", "PLAN", QUERY, "EXCITED", "좋아, 일정 짜 볼게!", List.of()),
-                reply("PLAN", "THINKING", "언제 어디로 갈지 먼저 알려줄래?", List.of("이번 주말", "다음 달")));
-        var response = respond(new ConversationRequest("서울 여행 일정을 만들어줘.", null, List.of()));
+                reply("PLAN", "THINKING", "앱에서 일정 조건을 입력한 뒤 요청해 줘.", List.of("조건 입력 후 요청하기", "장소 추천받기")));
+        var response = respond(new ConversationRequest("다음 주 토요일 오전 10시부터 12시까지, 출발은 종로3가역이야.", null,
+                List.of(new ConversationRequest.HistoryMessage(ConversationRequest.HistoryRole.USER, "서울 여행 일정을 만들어줘."))));
         assertTrue(planInvocations.isEmpty());
-        assertEquals("언제 어디로 갈지 먼저 알려줄래?", response.message());
+        assertEquals("앱에서 일정 조건을 입력한 뒤 요청해 줘.", response.message());
         assertEquals(LiliTurnContract.REPLY_NAME, outputs.get(1).name());
         String followUp = lastUserInput(1);
         assertTrue(followUp.contains(LiliServerCode.PLANNING_CONDITIONS_MISSING.situation()));
         assertFalse(followUp.contains(LiliServerCode.PLANNING_CONDITIONS_MISSING.name()), "LiLi never reads an internal code");
+        assertTrue(followUp.contains("대화로 받은 날짜·시간·출발지는 일정 입력으로 자동 반영되지 않는다"));
+        assertTrue(prompts.get(0).get(0).content().contains("말로 빠진 조건을 수집하지 않는다"));
     }
 
     @Test

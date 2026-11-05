@@ -11,6 +11,9 @@ import com.yollo.TravelMate.ai.llm.base.LlmMessage;
 import com.yollo.TravelMate.ai.llm.base.LlmTurn;
 import com.yollo.TravelMate.ai.llm.base.StructuredOutput;
 import com.yollo.TravelMate.domain.conversation.data.ConversationRequest;
+import com.yollo.TravelMate.domain.conversation.data.ConversationIntent;
+import com.yollo.TravelMate.domain.conversation.data.DisplayedResult;
+import com.yollo.TravelMate.domain.place.data.request.PlaceSearchContext;
 import com.yollo.TravelMate.domain.conversation.data.ConversationResponse.ResultType;
 import com.yollo.TravelMate.domain.conversation.data.RecommendationJobResponse;
 import com.yollo.TravelMate.domain.conversation.pipeline.ConversationGenerationPipeline;
@@ -100,6 +103,47 @@ class RecommendationJobServiceTest {
             String recommendation,
             com.fasterxml.jackson.databind.JsonNode modelData
     ) throws Exception {
+        return run(recommendation, modelData, mapper.createArrayNode(),
+                new ConversationRequest("왕실 가족이 살던 궁 찾아줘", null, List.of()));
+    }
+
+    @Test
+    void realCardRegionsAndCompletedExactExclusionsReachTheFinalModelWithoutUncitableDescriptions() throws Exception {
+        // c1 regression: all cards lack originals; the old prompt hid their regions and the completed exclusion.
+        var cards = mapper.readTree("""
+                [{"placeId":188,"name":"서순라길","region":"서울","city":"종로"},
+                 {"placeId":272,"name":"안양암","region":"서울","city":"종로"}]
+                """);
+        var modelData = mapper.readTree("""
+                {"searchCriteria":{"region":"서울","excludePlaceIds":[173,368]},"candidates":[
+                 {"placeId":188,"name":"서순라길","description":"인용 불가 설명","selectedEvidence":[]},
+                 {"placeId":272,"name":"안양암","selectedEvidence":[]}]}
+                """);
+        var request = new ConversationRequest("부산 해운대에서 찾아줘. 세 번째도 빼 줘.", null, List.of(),
+                new PlaceSearchContext("서울", null, null, List.of(173L, 368L), null), ConversationIntent.AUTO,
+                new DisplayedResult(UUID.randomUUID(), List.of(188L, 272L, 368L)));
+        var stored = run("""
+                {"intent":"RECOMMENDATION","answerKind":"PLACE_GUIDANCE","citations":[],"dialogue":[
+                 {"text":"세 번째 장소를 빼고 찾았어. 지금 카드는 서울 지역이야.","emotion":"GUIDING"},
+                 {"text":"부산을 찾으려면 앱의 검색 범위를 바꿔 줘.","emotion":"THINKING"}]}
+                """, modelData, cards, request);
+        @SuppressWarnings("unchecked")
+        ArgumentCaptor<List<LlmMessage>> messages = ArgumentCaptor.forClass((Class<List<LlmMessage>>) (Class<?>) List.class);
+        verify(llm).chat(messages.capture(), anyList(), any(StructuredOutput.class));
+        String sent = messages.getValue().stream().map(LlmMessage::content).collect(Collectors.joining("\n"));
+        assertTrue(sent.contains("\"returnedLocations\":[{\"region\":\"서울\",\"city\":\"종로\"}]"));
+        assertTrue(sent.contains("\"exclusionStatus\":\"VERIFIED\""));
+        assertTrue(sent.contains("\"excludedDisplayedPositions\":[3]"));
+        assertFalse(sent.contains("인용 불가 설명"));
+        assertEquals(cards, stored.path("data"), "execution facts do not rewrite the actual search result");
+    }
+
+    private com.fasterxml.jackson.databind.JsonNode run(
+            String recommendation,
+            com.fasterxml.jackson.databind.JsonNode modelData,
+            com.fasterxml.jackson.databind.JsonNode cards,
+            ConversationRequest request
+    ) throws Exception {
         when(jobs.insert(any(), anyString(), any(), anyString())).thenReturn(true);
         when(jobs.get(any(), anyString())).thenAnswer(invocation -> Optional.of(new RecommendationJobResponse(
                 invocation.getArgument(0), JobStatus.QUEUED, "status", null, null)));
@@ -115,8 +159,7 @@ class RecommendationJobServiceTest {
             public ConversationTool.Result prepare(String userUid, UUID turnKey, ConversationRequest request,
                                                    ConversationToolRegistry registry) {
                 searched.set(request.message());
-                var empty = mapper.createArrayNode();
-                return ConversationTool.Result.builder().type(ResultType.PLACES).publicData(empty)
+                return ConversationTool.Result.builder().type(ResultType.PLACES).publicData(cards)
                         .modelData(modelData).build();
             }
 
@@ -127,7 +170,7 @@ class RecommendationJobServiceTest {
         }));
         var service = new RecommendationJobService(jobs, evidence, new ConversationToolRegistry(List.of()),
                 new LiliTurns(ConversationGenerationPipeline.defaults(llm), mapper), new ConversationAnswerRenderer(mapper), mapper);
-        var queued = service.submit("owner", UUID.randomUUID(), new ConversationRequest("왕실 가족이 살던 궁 찾아줘", null, List.of()), QUERY);
+        var queued = service.submit("owner", UUID.randomUUID(), request, QUERY);
         assertEquals(ResultType.RECOMMENDATION_JOB, queued.type());
         var result = ArgumentCaptor.forClass(String.class);
         verify(jobs, timeout(5000)).update(any(), eq(JobStatus.SUCCEEDED), result.capture(), isNull());

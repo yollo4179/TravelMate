@@ -122,6 +122,7 @@ public class RecommendationJobService {
         var input = mapper.createObjectNode().put("message", request.message()).put("searchQuery", query);
         input.set("searchContext", mapper.valueToTree(request.searchContext()));
         var serverEvidence = input.putObject("serverEvidence").put("state", prepared.state().name());
+        input.set("executionFacts", mapper.valueToTree(RecommendationExecutionFacts.execute(request, prepared)));
         if (prepared.result() != null) serverEvidence.set("data", LiliEvidenceView.of(prepared.result().modelData()));
         long started = System.nanoTime();
         final LlmTurn completion;

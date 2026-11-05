@@ -12,6 +12,7 @@ import com.yollo.TravelMate.domain.conversation.data.ConversationIntent;
 import com.yollo.TravelMate.domain.conversation.data.LiliBranch;
 import com.yollo.TravelMate.domain.conversation.service.ConversationAnswerContract;
 import com.yollo.TravelMate.domain.conversation.service.ConversationEvidencePreparation;
+import com.yollo.TravelMate.domain.conversation.service.RecommendationExecutionFacts.ExclusionStatus;
 import com.yollo.TravelMate.domain.conversation.tool.ConversationTool;
 import com.yollo.TravelMate.domain.plan.data.response.PlanningResponse.JobStatus;
 
@@ -26,6 +27,8 @@ public enum PromptVocabulary {
 
         // [서버 사전 검색]
         EVIDENCE_FAILED("evidenceFailed", ConversationEvidencePreparation.State.FAILED::name),      // 빈 결과와 구분할 검색 실패 상태
+        EXCLUSION_VERIFIED("exclusionVerified", ExclusionStatus.VERIFIED::name),                    // 필터와 반환 목록에서 확인한 제외 완료
+        EXCLUSION_UNVERIFIED("exclusionUnverified", ExclusionStatus.UNVERIFIED::name),              // 제외 요청을 완료로 말할 수 없는 상태
 
         // [등록 도구]
         SEARCH_PLACES("searchPlaces", ConversationTool.Name.SEARCH_PLACES::wireName),
