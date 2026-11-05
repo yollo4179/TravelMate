@@ -18,7 +18,11 @@ from app.reranking.strategies.base import RerankingStrategyType
 from app.reranking.strategies.registry import build_reranking_strategy_registry
 
 
-RERANK_BATCH_SIZE = max(1, int(os.getenv("RERANK_BATCH_SIZE", "32")))
+# A batch is padded to its longest pair, so reranking memory grows with batch size × length². With fp32 weights,
+# 32 pairs at the model's own 8,192-token limit pushed this process past the 6 GB GPU into shared system memory.
+# Live pairs are 80-817 tokens, so the length cap leaves current scores unchanged while bounding the worst case.
+RERANK_BATCH_SIZE = max(1, int(os.getenv("RERANK_BATCH_SIZE", "8")))
+RERANK_MAX_LENGTH = max(1, int(os.getenv("RERANK_MAX_LENGTH", "1024")))
 RERANK_DIAGNOSTICS_ENABLED = os.getenv("RERANK_DIAGNOSTICS_ENABLED", "false").lower() == "true"
 RERANK_EXECUTION_STRATEGY = os.getenv("RERANK_EXECUTION_STRATEGY")
 
@@ -29,7 +33,7 @@ class Reranker:
         device = select_inference_device(MODEL_DEVICE_RERANKER)
         print(f"[Reranker] 모델 로딩 중: {MODEL_NAME_RERANKER} (device={device})")
         try:
-            self.model = CrossEncoder(MODEL_NAME_RERANKER, device=device)
+            self.model = CrossEncoder(MODEL_NAME_RERANKER, device=device, max_length=RERANK_MAX_LENGTH)
         except Exception:
             if device != "cuda":
                 raise
@@ -37,7 +41,7 @@ class Reranker:
                 "Reranker failed to initialize on CUDA; retrying on CPU"
             )
             device = "cpu"
-            self.model = CrossEncoder(MODEL_NAME_RERANKER, device=device)
+            self.model = CrossEncoder(MODEL_NAME_RERANKER, device=device, max_length=RERANK_MAX_LENGTH)
 
         self.device = device
         self.model_name = MODEL_NAME_RERANKER

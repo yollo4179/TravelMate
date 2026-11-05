@@ -14,5 +14,7 @@ services:
       CONTEXTUAL_RERANK_EVIDENCE_PER_PLACE: "1"
       # Attaches the frozen TourAPI description of bound places (currently 311 and 378) as citable originals.
       PRESERVED_ORIGINAL_EVIDENCE: post-retrieval-field-v1
-      RERANK_BATCH_SIZE: "32"
+      # 32 pairs at fp32 overflowed the 6 GB GPU into shared memory; see embedding-server/app/reranker.py.
+      RERANK_BATCH_SIZE: "8"
+      RERANK_MAX_LENGTH: "1024"
       RERANK_EXECUTION_STRATEGY: ""

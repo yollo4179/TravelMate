@@ -24,6 +24,7 @@ async def health(request: Request) -> dict[str, int | str | bool]:
         "reranker_dtype": str(next(reranker.model.model.parameters()).dtype),
         "reranker_execution_strategy": reranker.execution_mode,
         "reranker_configured_batch_size": reranker.batch_size,
+        "reranker_max_length": reranker.model.max_length,
         "reranker_effective_batch_size": reranker.batch_size,
         "reranker_predict_default_batch_size": signature(reranker.model.predict).parameters["batch_size"].default,
         "reranker_inference_count": reranker.inference_count,
