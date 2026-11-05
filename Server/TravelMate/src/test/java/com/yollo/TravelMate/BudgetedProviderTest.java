@@ -111,6 +111,29 @@ class BudgetedProviderTest {
         server.verify();
     }
 
+    // One stable key per request kind keeps calls that share a system prompt and schema on the same cache route.
+    @Test
+    void everyRequestCarriesAStablePromptCacheKeyForItsKind() {
+        var router = new StructuredOutput("lili_router_v1", mapper.createObjectNode().put("type", "object"));
+        assertEquals("travelmate-lili_router_v1", OpenAiLlmClient.promptCacheKey(router, false, List.of()));
+        assertEquals("travelmate-draft_plan_v1", OpenAiLlmClient.promptCacheKey(null, true, List.of()));
+        assertEquals("travelmate-text", OpenAiLlmClient.promptCacheKey(null, false, List.of()));
+        var builder = RestClient.builder().baseUrl("https://mock.invalid/v1");
+        var server = MockRestServiceServer.bindTo(builder).build();
+        var client = new OpenAiLlmClient(builder.build(), "test-key", limits(10_000, 100),
+                new LlmCallGuard(mapper, mock(ExecutionRecorder.class))).inputCountPolicy(InputCountPolicy.LOCAL_BOUND_FIRST);
+        server.expect(requestTo("https://mock.invalid/v1/responses"))
+                .andExpect(jsonPath("$.prompt_cache_key").value("travelmate-lili_router_v1"))
+                .andRespond(withSuccess("""
+                        {"status":"completed","id":"response-mock","usage":{"input_tokens":40,"output_tokens":5},
+                         "output":[{"type":"message","content":[{"type":"output_text","text":"{}"}]}]}
+                        """, MediaType.APPLICATION_JSON));
+        try (var scope = ObservationContext.open(TokenBudgetGuardTest.context(new ArrayList<>()))) {
+            client.chat(List.of(LlmMessage.text(LlmMessage.Role.USER, "고마워")), List.of(), router);
+        }
+        server.verify();
+    }
+
     @Test
     void theDefaultPolicyKeepsTheProviderCountOnEveryCall() {
         var builder = RestClient.builder().baseUrl("https://mock.invalid/v1");

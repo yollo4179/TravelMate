@@ -169,6 +169,7 @@ public class OpenAiLlmClient implements LlmStrategy {
         var preparedTools = OpenAiToolContracts.prepare(tools, toolContractMode);
         Map<String, Object> request = new LinkedHashMap<>();
         request.put("model", model);
+        request.put("prompt_cache_key", promptCacheKey(output, jsonOutput, tools));
         request.put("input", messages.stream().flatMap(message -> wireItems(message).stream()).toList());
         request.put("stream", false);
         request.put("store", false);
@@ -228,6 +229,17 @@ public class OpenAiLlmClient implements LlmStrategy {
         }
     }
 
+    /**
+     * Requests of one kind share the same system prompt and output schema, so one stable key per kind keeps them on
+     * the same cache route. Before GPT-5.6 OpenAI routes cache lookups by this key; it never guarantees a hit.
+     * Measured before the key: router calls had 52% of input cached, recommendation and plan calls under 4%.
+     */
+    public static String promptCacheKey(StructuredOutput output, boolean jsonOutput, List<LlmTurn.ToolDefinition> tools) {
+        if (output != null) return "travelmate-" + output.name();
+        if (jsonOutput) return "travelmate-draft_plan_v1";
+        return tools.isEmpty() ? "travelmate-text" : "travelmate-conversation_answer_v1";
+    }
+
     private TokenBudget.Count countInput(JsonNode wireRequest) {
         var countRequest = JSON.createObjectNode();
         for (String name : List.of("model", "input", "tools", "text", "parallel_tool_calls")) {
@@ -253,9 +265,21 @@ public class OpenAiLlmClient implements LlmStrategy {
             return restClient.post().uri("/responses")
                     .header("Authorization", "Bearer " + apiKey)
                     .body(request).retrieve().body(JsonNode.class);
-        } catch (RuntimeException exception) {
+        } catch (org.springframework.web.client.RestClientResponseException exception) {
             // 공급자 오류 본문이나 인증 헤더를 외부 응답·작업 실패 사유에 노출하지 않는다.
-            throw new IllegalStateException("OpenAI 서버 호출에 실패했습니다.");
+            // 상태 코드와 오류 type·code만 남긴다. message는 입력 일부를 담을 수 있어 제외한다.
+            throw new IllegalStateException("OpenAI 서버 호출에 실패했습니다. status=" + exception.getStatusCode().value()
+                    + " type=" + providerErrorField(exception, "type") + " code=" + providerErrorField(exception, "code"));
+        } catch (RuntimeException exception) {
+            throw new IllegalStateException("OpenAI 서버 호출에 실패했습니다. " + exception.getClass().getSimpleName());
+        }
+    }
+
+    private static String providerErrorField(org.springframework.web.client.RestClientResponseException exception, String field) {
+        try {
+            return JSON.readTree(exception.getResponseBodyAsString()).path("error").path(field).asText("unknown");
+        } catch (Exception unreadable) {
+            return "unreadable";
         }
     }
 

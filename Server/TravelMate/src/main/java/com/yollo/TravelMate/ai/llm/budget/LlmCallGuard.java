@@ -78,6 +78,8 @@ public class LlmCallGuard {
                 throw exception;
             } catch (RuntimeException exception) {
                 failure = exception.getClass().getSimpleName();
+                // Provider clients put only a status and error type here, so operators can tell an outage from a bad request.
+                event.put("failureDetail", exception.getMessage());
                 throw exception;
             } finally {
                 event.put("stage", "FINISHED").put("status", status.name()).put("failure", failure)

@@ -52,15 +52,20 @@ class PlanStayBudgetTest {
     @Test
     void thePromptStatesTheBudgetAndThatTheWalkIsNotMeasured() throws Exception {
         var request = mapper.readValue(TWO_HOUR_REQUEST, GeneratePlanRequest.class);
-        String prompt = new ContextPlanPromptFactory(mapper).prepare(request, List.of(), List.of()).userPrompt();
+        var factory = new ContextPlanPromptFactory(mapper);
+        String prompt = factory.prepare(request, List.of(), List.of()).userPrompt();
+        String system = factory.systemPrompt();
         assertTrue(prompt.contains("최대 1개 장소"), prompt);
         assertTrue(prompt.contains("120분"));
         assertTrue(prompt.contains("구간마다 " + PlanStayBudget.WALKING_LEG_MINUTES + "분"));
         assertTrue(prompt.contains("실제 경로로 확인한 값이 아니다"));
-        assertTrue(prompt.contains("빡빡하지 않다"), "the draft may not call an unchecked schedule relaxed");
-        assertTrue(prompt.contains("초안 수정 기능은 없다"), "fx drafts offered to polish the plan, which no endpoint does");
-        assertTrue(prompt.contains("입력 필드 이름을 쓰지 마라"), "an fx draft description said requiredStops to the user");
         assertFalse(prompt.contains("최대 6개 장소"));
+        assertTrue(system.contains("빡빡하지 않다"), "the draft may not call an unchecked schedule relaxed");
+        assertTrue(system.contains("초안 수정 기능은 없다"), "fx drafts offered to polish the plan, which no endpoint does");
+        assertTrue(system.contains("입력 필드 이름을 쓰지 마라"), "an fx draft description said requiredStops to the user");
+        // Fixed rules stay in the system prompt so every plan call shares one cacheable prefix.
+        assertFalse(prompt.contains("빡빡하지 않다"));
+        assertTrue(prompt.startsWith("여행 가능 시간은"), "the user message holds only this request's numbers and data");
     }
 
     @Test
