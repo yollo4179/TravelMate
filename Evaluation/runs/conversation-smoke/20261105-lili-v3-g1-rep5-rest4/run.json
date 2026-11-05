@@ -1,0 +1,13 @@
+{
+  "evaluator_git_sha": "8ff7462d2e60f577d91dead465d0f817be08d539",
+  "evaluator_source_sha256": "b0c276b9ea0ba9385360f72e82c26811f0e25c384c12a44634486e7fc90d42ce",
+  "configuration_sha256": "a02b8adeb485e02cec1d561d017414d41ee2162567bf8ac05ab1708dc36923bb",
+  "suite_sha256": "6b72cf23f338d68a3ca6ee1ccb5cb13ed5cf878b9e0a96135f513fe09c6c06e3",
+  "execution_mode": "LIVE",
+  "selected_case_ids": [
+    "V3-A-search-royal-home"
+  ],
+  "status": "collected",
+  "input_count_cost_usd": null,
+  "total_billed_cost_usd": null
+}

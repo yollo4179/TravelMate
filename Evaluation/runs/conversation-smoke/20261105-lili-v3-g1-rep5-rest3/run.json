@@ -1,0 +1,16 @@
+{
+  "evaluator_git_sha": "8ff7462d2e60f577d91dead465d0f817be08d539",
+  "evaluator_source_sha256": "b0c276b9ea0ba9385360f72e82c26811f0e25c384c12a44634486e7fc90d42ce",
+  "configuration_sha256": "892568d22b061ec86ef13bf8c7343f8f0c9dc6a44c87af58ba6ca999bb9ed1fc",
+  "suite_sha256": "6b72cf23f338d68a3ca6ee1ccb5cb13ed5cf878b9e0a96135f513fe09c6c06e3",
+  "execution_mode": "LIVE",
+  "selected_case_ids": [
+    "V3-D-hours-and-fee",
+    "V3-D-parking",
+    "V3-D-compare",
+    "V3-A-search-royal-home"
+  ],
+  "status": "failed",
+  "input_count_cost_usd": null,
+  "total_billed_cost_usd": null
+}

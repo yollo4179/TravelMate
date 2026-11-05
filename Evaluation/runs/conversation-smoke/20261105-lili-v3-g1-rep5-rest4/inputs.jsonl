@@ -1,0 +1,1 @@
+{"case_id": "V3-A-search-royal-home", "input_sha256": "b81ad6249920122a2f12c0390d79c4446fc2e350d2ab645e21e60a11fe65fed4", "api_request": {"message": "조선 왕족이 실제로 살던 집 같은 데 가 보고 싶어.", "planningRequest": null, "history": [], "searchContext": {"region": "서울", "city": "종로", "category": "관광지", "excludePlaceIds": [], "area": null}}}

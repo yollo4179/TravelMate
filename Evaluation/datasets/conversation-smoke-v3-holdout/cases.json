@@ -1,0 +1,367 @@
+{
+  "schema_version": "conversation-smoke-v3",
+  "cases": [
+    {
+      "case_id": "V3H-outside-jeju",
+      "creates_plan": false,
+      "api_request": {
+        "message": "제주도 성산일출봉 쪽 볼거리 추천해줘.",
+        "planningRequest": null,
+        "history": [],
+        "searchContext": {
+          "region": "서울",
+          "city": null,
+          "category": null,
+          "excludePlaceIds": [],
+          "area": null
+        }
+      },
+      "expected": {
+        "decision_type": "TOOL_CALL",
+        "tool_types": [
+          "SEARCH_PLACES"
+        ],
+        "tool_names": [
+          "search_places"
+        ],
+        "arguments": [
+          {
+            "exclude_place_ids": []
+          }
+        ],
+        "response_types": [
+          "RECOMMENDATION_JOB"
+        ],
+        "message_sources": [
+          "LLM"
+        ],
+        "answer_kinds": [],
+        "citations": "OPTIONAL",
+        "message_example": "찾아볼게, 잠깐만 기다려줘.",
+        "semantic_criteria": [
+          {
+            "id": "response_relevance",
+            "guidance": "제주 장소를 찾지 못했으면 그렇다고 말하고 서울 결과를 제주 장소처럼 말하지 않는다."
+          },
+          {
+            "id": "reason_and_evidence",
+            "guidance": "설명·추천 이유는 인용 가능한 원문이 있는 장소에 대해서만 말하고, 근거 없는 후보를 이름 없이라도 묘사하지 않는다."
+          },
+          {
+            "id": "state_and_uncertainty",
+            "guidance": "데이터에 없는 지역에서 다시 찾아 주겠다거나 검색 범위를 바꿔 주겠다고 약속하지 않는다."
+          }
+        ],
+        "emotions": "catalog",
+        "intent": "RECOMMENDATION",
+        "lili_branch": "SEARCH_PLACES"
+      },
+      "evaluation_stage": "recommendation"
+    },
+    {
+      "case_id": "V3H-outside-gangneung-no-filter",
+      "creates_plan": false,
+      "api_request": {
+        "message": "강릉 경포대 주변에 가 볼 만한 데 있어?",
+        "planningRequest": null,
+        "history": [],
+        "searchContext": {
+          "region": null,
+          "city": null,
+          "category": null,
+          "excludePlaceIds": [],
+          "area": null
+        }
+      },
+      "expected": {
+        "decision_type": "TOOL_CALL",
+        "tool_types": [
+          "SEARCH_PLACES"
+        ],
+        "tool_names": [
+          "search_places"
+        ],
+        "arguments": [
+          {
+            "exclude_place_ids": []
+          }
+        ],
+        "response_types": [
+          "RECOMMENDATION_JOB"
+        ],
+        "message_sources": [
+          "LLM"
+        ],
+        "answer_kinds": [],
+        "citations": "OPTIONAL",
+        "message_example": "찾아볼게, 잠깐만 기다려줘.",
+        "semantic_criteria": [
+          {
+            "id": "response_relevance",
+            "guidance": "강릉 장소를 찾지 못했으면 그렇다고 말하고 다른 지역 결과를 강릉 장소처럼 말하지 않는다."
+          },
+          {
+            "id": "reason_and_evidence",
+            "guidance": "설명·추천 이유는 인용 가능한 원문이 있는 장소에 대해서만 말하고, 근거 없는 후보를 이름 없이라도 묘사하지 않는다."
+          },
+          {
+            "id": "state_and_uncertainty",
+            "guidance": "데이터에 없는 지역에서 다시 찾아 주겠다거나 검색 범위를 바꿔 주겠다고 약속하지 않는다."
+          }
+        ],
+        "emotions": "catalog",
+        "intent": "RECOMMENDATION",
+        "lili_branch": "SEARCH_PLACES"
+      },
+      "evaluation_stage": "recommendation"
+    },
+    {
+      "case_id": "V3H-conditions-first-message",
+      "creates_plan": false,
+      "api_request": {
+        "message": "모레 오후 2시부터 6시까지, 시청역에서 출발해서 덕수궁 근처로 일정 짜줘.",
+        "planningRequest": null,
+        "history": [],
+        "searchContext": {
+          "region": "서울",
+          "city": "종로",
+          "category": "관광지",
+          "excludePlaceIds": [],
+          "area": null
+        }
+      },
+      "expected": {
+        "decision_type": "CLARIFICATION",
+        "tool_types": [],
+        "tool_names": [],
+        "arguments": [],
+        "response_types": [
+          "TEXT"
+        ],
+        "message_sources": [
+          "LLM"
+        ],
+        "answer_kinds": [
+          "CLARIFICATION"
+        ],
+        "citations": "FORBIDDEN",
+        "message_example": "필요한 정보를 알려줘.",
+        "semantic_criteria": [
+          {
+            "id": "response_relevance",
+            "guidance": "말로 준 조건만으로는 초안을 만들 수 없으면 앱에서 일정 조건을 입력해 달라고 안내하고, 만들 수 있다고 약속하지 않는다."
+          },
+          {
+            "id": "state_and_uncertainty",
+            "guidance": "검색·일정 생성·조회·예약을 실행했다고 말하지 않는다."
+          },
+          {
+            "id": "reason_and_evidence",
+            "guidance": "서버에 없는 기능(이름으로 조회·제외, 예약 정보 정리, 일정 수정)을 약속하지 않는다."
+          }
+        ],
+        "emotions": "catalog",
+        "intent": "PLAN",
+        "lili_branch": [
+          "CLARIFY",
+          "GENERATE_PLAN"
+        ],
+        "outcome": "ASK_BACK"
+      },
+      "evaluation_stage": "conversation"
+    },
+    {
+      "case_id": "V3H-exclude-fifth-also",
+      "creates_plan": false,
+      "api_request": {
+        "message": "다섯 번째 것도 추가로 빼고 보여줘.",
+        "planningRequest": null,
+        "history": [],
+        "searchContext": {
+          "region": "서울",
+          "city": "종로",
+          "category": "관광지",
+          "excludePlaceIds": [
+            173
+          ],
+          "area": null
+        },
+        "displayedResult": {
+          "resultId": "2a6210ab-694c-4437-8c87-5bfd1fdcbd7c",
+          "placeIds": [
+            188,
+            272,
+            368,
+            157,
+            371,
+            397,
+            237,
+            181,
+            382,
+            208
+          ]
+        }
+      },
+      "expected": {
+        "decision_type": "TOOL_CALL",
+        "tool_types": [
+          "SEARCH_PLACES"
+        ],
+        "tool_names": [
+          "search_places"
+        ],
+        "arguments": [
+          {
+            "exclude_place_ids": [
+              371
+            ]
+          }
+        ],
+        "response_types": [
+          "RECOMMENDATION_JOB"
+        ],
+        "message_sources": [
+          "LLM"
+        ],
+        "answer_kinds": [],
+        "citations": "OPTIONAL",
+        "message_example": "찾아볼게, 잠깐만 기다려줘.",
+        "semantic_criteria": [
+          {
+            "id": "response_relevance",
+            "guidance": "이미 뺀 장소를 유지한 채 다섯 번째 장소를 더 빼고, 끝난 제외를 다시 묻지 않는다."
+          },
+          {
+            "id": "reason_and_evidence",
+            "guidance": "설명·추천 이유는 인용 가능한 원문이 있는 장소에 대해서만 말하고, 근거 없는 후보를 이름 없이라도 묘사하지 않는다."
+          },
+          {
+            "id": "state_and_uncertainty",
+            "guidance": "운영시간·입장료·주차·현재 입장 가능 여부처럼 원문에 없는 정보를 지어내지 않는다."
+          }
+        ],
+        "emotions": "catalog",
+        "intent": "RECOMMENDATION",
+        "lili_branch": "SEARCH_PLACES",
+        "exclusion": {
+          "positions": [
+            5
+          ],
+          "place_ids": [
+            371
+          ]
+        }
+      },
+      "evaluation_stage": "tool_call"
+    },
+    {
+      "case_id": "V3H-no-match-ski",
+      "creates_plan": false,
+      "api_request": {
+        "message": "종로에서 스키 탈 수 있는 데 추천해줘.",
+        "planningRequest": null,
+        "history": [],
+        "searchContext": {
+          "region": "서울",
+          "city": "종로",
+          "category": "관광지",
+          "excludePlaceIds": [],
+          "area": null
+        }
+      },
+      "expected": {
+        "decision_type": "TOOL_CALL",
+        "tool_types": [
+          "SEARCH_PLACES"
+        ],
+        "tool_names": [
+          "search_places"
+        ],
+        "arguments": [
+          {
+            "exclude_place_ids": []
+          }
+        ],
+        "response_types": [
+          "RECOMMENDATION_JOB"
+        ],
+        "message_sources": [
+          "LLM"
+        ],
+        "answer_kinds": [],
+        "citations": "OPTIONAL",
+        "message_example": "찾아볼게, 잠깐만 기다려줘.",
+        "semantic_criteria": [
+          {
+            "id": "response_relevance",
+            "guidance": "조건에 맞는 곳을 찾지 못했다고 솔직히 말하고 관련 없는 장소를 맞는 것처럼 소개하지 않는다."
+          },
+          {
+            "id": "reason_and_evidence",
+            "guidance": "설명·추천 이유는 인용 가능한 원문이 있는 장소에 대해서만 말하고, 근거 없는 후보를 이름 없이라도 묘사하지 않는다."
+          },
+          {
+            "id": "state_and_uncertainty",
+            "guidance": "데이터에 없는 지역에서 다시 찾아 주겠다거나 검색 범위를 바꿔 주겠다고 약속하지 않는다."
+          }
+        ],
+        "emotions": "catalog",
+        "intent": "RECOMMENDATION",
+        "lili_branch": "SEARCH_PLACES"
+      },
+      "evaluation_stage": "recommendation"
+    },
+    {
+      "case_id": "V3H-no-data-wheelchair",
+      "creates_plan": false,
+      "api_request": {
+        "message": "창경궁에서 휠체어 빌릴 수 있어?",
+        "planningRequest": null,
+        "history": [],
+        "searchContext": {
+          "region": "서울",
+          "city": "종로",
+          "category": "관광지",
+          "excludePlaceIds": [],
+          "area": null
+        }
+      },
+      "expected": {
+        "decision_type": "ANSWER",
+        "tool_types": [],
+        "tool_names": [],
+        "arguments": [],
+        "response_types": [
+          "TEXT"
+        ],
+        "message_sources": [
+          "LLM"
+        ],
+        "answer_kinds": [
+          "CONVERSATION"
+        ],
+        "citations": "FORBIDDEN",
+        "message_example": "필요한 정보를 알려줘.",
+        "semantic_criteria": [
+          {
+            "id": "response_relevance",
+            "guidance": "휠체어 대여 여부는 확인할 수 없다고 말하고, 찾아서 확인해 주겠다고 약속하지 않는다."
+          },
+          {
+            "id": "state_and_uncertainty",
+            "guidance": "운영시간·입장료·주차·현재 입장 가능 여부처럼 원문에 없는 정보를 지어내지 않는다."
+          },
+          {
+            "id": "reason_and_evidence",
+            "guidance": "서버에 없는 기능(이름으로 조회·제외, 예약 정보 정리, 일정 수정)을 약속하지 않는다."
+          }
+        ],
+        "emotions": "catalog",
+        "intent": null,
+        "lili_branch": "CHAT",
+        "capability": "UNSUPPORTED"
+      },
+      "evaluation_stage": "conversation"
+    }
+  ]
+}

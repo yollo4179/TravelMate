@@ -1,0 +1,529 @@
+{
+  "schema_version": "conversation-evaluation-contract-v1",
+  "environment": "evaluation",
+  "evaluation_user": {
+    "user_id": "aDMINuser",
+    "uid": "0d44932c-840f-4efb-8c92-601f9752ad4d"
+  },
+  "tools": [
+    {
+      "name": "generate_plan",
+      "parameters": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {},
+        "required": []
+      },
+      "tool_type": "GENERATE_PLAN"
+    },
+    {
+      "name": "get_planning_job",
+      "parameters": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "job_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 36
+          }
+        },
+        "required": [
+          "job_id"
+        ]
+      },
+      "tool_type": "GET_PLANNING_JOB"
+    },
+    {
+      "name": "search_places",
+      "parameters": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "region": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 200,
+                "pattern": "\\S"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "선택 필터. 생략 또는 null이면 searchContext 값을 사용한다. 둘 다 없으면 제한 없음."
+          },
+          "category": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "관광지",
+                  "문화시설",
+                  "축제공연행사",
+                  "여행코스",
+                  "레포츠",
+                  "숙박",
+                  "쇼핑",
+                  "음식점"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "DB의 대분류와 정확히 일치하는 enum 값만 사용한다. 세부 장소 유형·분위기·관계는 query에 유지한다. 적절한 분류를 확정할 수 없으면 생략 또는 null로 두며 searchContext 값을 상속한다. 둘 다 없으면 제한 없음. 서버는 분류를 자동 보정하지 않는다."
+          },
+          "city": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 200,
+                "pattern": "\\S"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "선택 필터. 생략 또는 null이면 searchContext 값을 사용한다. 둘 다 없으면 제한 없음."
+          },
+          "area": {
+            "anyOf": [
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "radius_meters": {
+                    "type": "integer",
+                    "minimum": 500,
+                    "maximum": 10000
+                  },
+                  "type": {
+                    "type": "string",
+                    "enum": [
+                      "CIRCLE"
+                    ]
+                  },
+                  "center": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                      "lat": {
+                        "type": "number",
+                        "minimum": -90.0,
+                        "maximum": 90.0
+                      },
+                      "lon": {
+                        "type": "number",
+                        "minimum": -180.0,
+                        "maximum": 180.0
+                      }
+                    },
+                    "required": [
+                      "lat",
+                      "lon"
+                    ]
+                  }
+                },
+                "required": [
+                  "center",
+                  "radius_meters",
+                  "type"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "생략 또는 null이면 searchContext의 area를 사용한다. 둘 다 없으면 반경 제한 없음."
+          },
+          "limit": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 20,
+            "default": 10
+          },
+          "exclude_place_ids": {
+            "anyOf": [
+              {
+                "type": "array",
+                "uniqueItems": true,
+                "items": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 9223372036854775807
+                }
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": [],
+            "description": "생략 또는 null이면 빈 목록. searchContext의 제외 ID와 합친다."
+          },
+          "query": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 2000,
+            "pattern": "\\S",
+            "description": "필수 검색어. 궁·조용한·왕실 가족의 거처 같은 세부 장소 유형·분위기·관계 조건을 여기에 유지한다. 사용자 질문에 맞춰 직접 작성하며 서버가 대신 채우지 않는다."
+          }
+        },
+        "required": [
+          "query"
+        ]
+      },
+      "tool_type": "SEARCH_PLACES"
+    }
+  ],
+  "answer_schema": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+      "answerKind": {
+        "type": "string",
+        "enum": [
+          "PLACE_GUIDANCE",
+          "CONVERSATION",
+          "CLARIFICATION"
+        ]
+      },
+      "emotion": {
+        "type": "string",
+        "enum": [
+          "NEUTRAL",
+          "THINKING",
+          "HAPPY",
+          "GUIDING",
+          "EXCITED",
+          "AFFECTIONATE",
+          "EMBARRASSED",
+          "SHY",
+          "SAD",
+          "CONCERNED"
+        ]
+      },
+      "citations": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "sourceId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 500
+            },
+            "placeId": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9223372036854775807
+            },
+            "evidenceId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 500
+            },
+            "quote": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 20000
+            }
+          },
+          "required": [
+            "evidenceId",
+            "placeId",
+            "quote",
+            "sourceId"
+          ]
+        }
+      },
+      "message": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 8000
+      },
+      "intent": {
+        "type": "string",
+        "enum": [
+          "CONVERSATION",
+          "RECOMMENDATION",
+          "PLAN"
+        ]
+      }
+    },
+    "required": [
+      "answerKind",
+      "citations",
+      "emotion",
+      "intent",
+      "message"
+    ]
+  },
+  "max_model_turns": 6,
+  "max_tool_calls": 8,
+  "provider": "OPENAI",
+  "model": "gpt-5.4-mini-2026-03-17",
+  "response_format": "JSON_SCHEMA_V1",
+  "modules": {
+    "modelClass": "com.yollo.TravelMate.domain.conversation.pipeline.GuardedModelV1",
+    "config": {
+      "search": "KAFKA_V1",
+      "evidence": "ORIGINAL_V1",
+      "prompt": "RESOURCE_V1",
+      "model": "GUARDED_V1",
+      "searchRanking": "REQUEST_DEFAULT",
+      "promptResource": "classpath:conversation/prompts/v2-grounded-system.txt",
+      "routing": "LILI_ROUTER_V1"
+    },
+    "promptSha256": "1e643482ded953dbaff5d1359b5ba162c2641ff9ec9c18cbc73d13d5714bd25e",
+    "promptClass": "com.yollo.TravelMate.domain.conversation.pipeline.ResourcePromptV1"
+  },
+  "routing": "LILI_ROUTER_V1",
+  "lili": {
+    "router_schema": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "branch": {
+          "type": "string",
+          "enum": [
+            "CHAT",
+            "CLARIFY",
+            "SEARCH_PLACES",
+            "GENERATE_PLAN",
+            "GET_PLANNING_JOB"
+          ]
+        },
+        "intent": {
+          "type": "string",
+          "enum": [
+            "CONVERSATION",
+            "RECOMMENDATION",
+            "PLAN"
+          ]
+        },
+        "search_query": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 300
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "exclude_positions": {
+          "type": "array",
+          "maxItems": 20,
+          "items": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 20
+          }
+        },
+        "emotion": {
+          "type": "string",
+          "enum": [
+            "NEUTRAL",
+            "THINKING",
+            "HAPPY",
+            "GUIDING",
+            "EXCITED",
+            "AFFECTIONATE",
+            "EMBARRASSED",
+            "SHY",
+            "SAD",
+            "CONCERNED"
+          ]
+        },
+        "message": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "choices": {
+          "type": "array",
+          "maxItems": 3,
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 40
+          }
+        }
+      },
+      "required": [
+        "branch",
+        "choices",
+        "emotion",
+        "exclude_positions",
+        "intent",
+        "message",
+        "search_query"
+      ]
+    },
+    "reply_schema": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "intent": {
+          "type": "string",
+          "enum": [
+            "CONVERSATION",
+            "RECOMMENDATION",
+            "PLAN"
+          ]
+        },
+        "emotion": {
+          "type": "string",
+          "enum": [
+            "NEUTRAL",
+            "THINKING",
+            "HAPPY",
+            "GUIDING",
+            "EXCITED",
+            "AFFECTIONATE",
+            "EMBARRASSED",
+            "SHY",
+            "SAD",
+            "CONCERNED"
+          ]
+        },
+        "message": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "choices": {
+          "type": "array",
+          "maxItems": 3,
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 40
+          }
+        }
+      },
+      "required": [
+        "choices",
+        "emotion",
+        "intent",
+        "message"
+      ]
+    },
+    "recommendation_schema": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "intent": {
+          "type": "string",
+          "enum": [
+            "CONVERSATION",
+            "RECOMMENDATION",
+            "PLAN"
+          ]
+        },
+        "answerKind": {
+          "type": "string",
+          "enum": [
+            "PLACE_GUIDANCE",
+            "CONVERSATION",
+            "CLARIFICATION"
+          ]
+        },
+        "citations": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "sourceId": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 500
+              },
+              "placeId": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 9223372036854775807
+              },
+              "evidenceId": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 500
+              },
+              "quote": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 20000
+              }
+            },
+            "required": [
+              "evidenceId",
+              "placeId",
+              "quote",
+              "sourceId"
+            ]
+          }
+        },
+        "dialogue": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 4,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "text": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 200
+              },
+              "emotion": {
+                "type": "string",
+                "enum": [
+                  "NEUTRAL",
+                  "THINKING",
+                  "HAPPY",
+                  "GUIDING",
+                  "EXCITED",
+                  "AFFECTIONATE",
+                  "EMBARRASSED",
+                  "SHY",
+                  "SAD",
+                  "CONCERNED"
+                ]
+              }
+            },
+            "required": [
+              "emotion",
+              "text"
+            ]
+          }
+        }
+      },
+      "required": [
+        "answerKind",
+        "citations",
+        "dialogue",
+        "intent"
+      ]
+    },
+    "prompt_sha256": {
+      "ROUTER": "e2eee0ef533ac36b878d7972fdb96057db66ed56465f5e69aab06a8efde3cf42",
+      "RECOMMENDATION": "0aec0fbd7cf2b8adb6dbb30fc0537c2f9df0ae36d2dfd3d6930913d17743d4b0",
+      "FOLLOWUP": "6dd2bdd7e53b3c378c3e9a56403d78294ba2b006424eed542a119969b3bfb677"
+    }
+  },
+  "search_endpoint": "http://127.0.0.1:18000",
+  "source_sha256": "47c0787478794b66a84e02638b2b005698e5ef072e2be8e3c818603fc602c345",
+  "reasoning_mode": "DISABLED",
+  "input_count_policy": "LOCAL_BOUND_FIRST",
+  "evaluation_budget_requirement": "REQUIRED",
+  "tool_contract_mode": "STRICT_TOOLS_V1",
+  "observation_file": "C:\\ssafy\\Travelmate\\Server\\TravelMate\\build\\evaluation-observations\\execution.jsonl"
+}
