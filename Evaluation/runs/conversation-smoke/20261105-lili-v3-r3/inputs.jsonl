@@ -1,0 +1,1 @@
+{"case_id": "V3-D-outside-catalog", "input_sha256": "5eb6ad582fdff28f65ab6ec8498932126770bb59bd0807978c03f7bc750fa2fc", "api_request": {"message": "부산 해운대 근처 관광지 알려줘.", "planningRequest": null, "history": [], "searchContext": {"region": "서울", "city": null, "category": null, "excludePlaceIds": [], "area": null}}}
