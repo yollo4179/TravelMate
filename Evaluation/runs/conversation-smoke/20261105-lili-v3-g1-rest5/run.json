@@ -1,0 +1,15 @@
+{
+  "evaluator_git_sha": "1d6ad65d1b3b41bfbd74f17ebc0665dcf16fd047",
+  "evaluator_source_sha256": "b0c276b9ea0ba9385360f72e82c26811f0e25c384c12a44634486e7fc90d42ce",
+  "configuration_sha256": "7932786f9e88b132631cdc3922fd4ed67cb333b2a09d6afbc819071b41deebaa",
+  "suite_sha256": "6b72cf23f338d68a3ca6ee1ccb5cb13ed5cf878b9e0a96135f513fe09c6c06e3",
+  "execution_mode": "LIVE",
+  "selected_case_ids": [
+    "V3-D-plan-budget",
+    "V3-D-plan-car",
+    "V3-D-plan-too-short"
+  ],
+  "status": "collected",
+  "input_count_cost_usd": null,
+  "total_billed_cost_usd": null
+}

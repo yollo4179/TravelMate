@@ -1,0 +1,17 @@
+{
+  "evaluator_git_sha": "1d6ad65d1b3b41bfbd74f17ebc0665dcf16fd047",
+  "evaluator_source_sha256": "b0c276b9ea0ba9385360f72e82c26811f0e25c384c12a44634486e7fc90d42ce",
+  "configuration_sha256": "885bb42416eb9d6f09ddb7f613d31c6cf61bd016fdd7b929963216f34ee1405d",
+  "suite_sha256": "6b72cf23f338d68a3ca6ee1ccb5cb13ed5cf878b9e0a96135f513fe09c6c06e3",
+  "execution_mode": "LIVE",
+  "selected_case_ids": [
+    "V3-D-outside-catalog",
+    "V3-D-compare",
+    "V3-D-plan-budget",
+    "V3-D-plan-car",
+    "V3-D-plan-too-short"
+  ],
+  "status": "failed",
+  "input_count_cost_usd": null,
+  "total_billed_cost_usd": null
+}
