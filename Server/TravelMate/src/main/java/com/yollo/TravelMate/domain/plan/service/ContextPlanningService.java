@@ -18,6 +18,7 @@ import com.yollo.TravelMate.domain.plan.repository.*;
 import com.yollo.TravelMate.domain.plan.validator.DraftPlanValidator;
 import com.yollo.TravelMate.domain.plan.validator.PlanAreaValidator;
 import com.yollo.TravelMate.domain.plan.validator.PlanEvidenceCitationValidator;
+import com.yollo.TravelMate.domain.plan.validator.PlanFieldWording;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
 import lombok.RequiredArgsConstructor;
@@ -262,7 +263,9 @@ public class ContextPlanningService {
             // A citation that fails verification is removed and recorded; the rest of the draft is still saved.
             var review = PlanEvidenceCitationValidator.review(generated, preparedPrompt);
             attempt.droppedCitations = review.dropped();
-            return review.plan();
+            var reworded = PlanFieldWording.apply(review.plan());
+            attempt.rewordedFields = reworded.replacedFields();
+            return reworded.plan();
         } catch (ResponseStatusException conditionReason) {
             // The draft rules word their reasons for users (they also guard manual plans), e.g. a café the area lacks.
             throw conditionReason;
@@ -283,6 +286,8 @@ public class ContextPlanningService {
                         ? statusFailure.getReason() : failure.getMessage());
         var candidates = event.putArray("candidateIds");
         attempt.candidateIds.forEach(candidates::add);
+        // The saved text differs from the model output where a field name was replaced; operators can see which.
+        attempt.rewordedFields.forEach(event.putArray("rewordedFields")::add);
         var dropped = event.putArray("droppedCitations");
         attempt.droppedCitations.forEach(item -> dropped.addObject().put("placeId", item.placeId())
                 .put("evidenceId", item.citation().evidenceId()).put("sourceId", item.citation().sourceId())
@@ -319,6 +324,7 @@ public class ContextPlanningService {
         private String prompt;
         private String output;
         private List<PlanEvidenceCitationValidator.Dropped> droppedCitations = List.of();
+        private List<String> rewordedFields = List.of();
     }
 
     private void recordJob(

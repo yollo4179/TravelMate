@@ -140,6 +140,21 @@ class PlanGenerationFailureObservationTest {
         verify(plans).save(anyString(), any(), any(), anyList(), anyString());
     }
 
+    // Live k2-core2 saved "requiredStops를 그대로 반영" in a description users read.
+    @Test
+    void aFieldNameInTheDraftIsSavedAsPlainWordsAndRecorded() throws Exception {
+        when(llm.generate(anyString(), anyString())).thenReturn("""
+                {"planTitle":"초안","planDescription":"requiredStops를 그대로 반영했어","dialogue":[],
+                 "pins":[{"placeId":101,"sequence":1,"activity":"둘러보기","reason":"요청 장소","citations":[]}]}""");
+        var draft = runUntilFinished();
+        assertEquals(PlanningResponse.JobStatus.SUCCEEDED, finalStatus.get());
+        var saved = org.mockito.ArgumentCaptor.forClass(com.yollo.TravelMate.domain.plan.data.internal.GeneratedPlan.class);
+        verify(plans).save(anyString(), any(), saved.capture(), anyList(), anyString());
+        assertEquals("꼭 넣을 장소를 그대로 반영했어", saved.getValue().planDescription());
+        assertEquals("requiredStops", draft.path("rewordedFields").path(0).asText(), "the record shows the text was changed");
+        assertTrue(draft.path("output").asText().contains("requiredStops"), "the model's own output is kept as it was");
+    }
+
     @Test
     void aModelCallFailureDoesNotClaimACauseNobodyVerified() throws Exception {
         when(llm.generate(anyString(), anyString())).thenThrow(new TokenBudgetException(TokenBudgetException.Reason.COUNT_UNAVAILABLE));
