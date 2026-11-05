@@ -31,6 +31,7 @@ services:
       - ./migrations/20261013_add_planning_context.sql:/docker-entrypoint-initdb.d/02-planning-context.sql:ro
       - ./migrations/20261104_add_plan_character_emotion.sql:/docker-entrypoint-initdb.d/04-plan-character-emotion.sql:ro
       - ./migrations/20261105_lili_dialogue_and_recommendation_jobs.sql:/docker-entrypoint-initdb.d/05-lili-dialogue-and-recommendation-jobs.sql:ro
+      - ./migrations/20261105c_planning_job_failure_dialogue.sql:/docker-entrypoint-initdb.d/06-planning-job-failure-dialogue.sql:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ssafy -d travel_db"]
       interval: 10s

@@ -106,7 +106,7 @@ class AsyncPlanObservationTest {
         });
         var prompts = new ContextPlanPromptFactory(mapper);
         var planning = new ContextPlanningService(jobs, plans, search, mapper, llm,
-                new ContextPlanResultValidator(mapper), prompts);
+                new ContextPlanResultValidator(mapper), prompts, new PlanFailureReactionsForTest().registry());
         var mappedResults = new PlanningToolResults(planning, mapper);
         var registry = new ConversationToolRegistry(List.of(
                 new GeneratePlanTool(planning, mappedResults), new GetPlanningJobTool(planning, mappedResults),

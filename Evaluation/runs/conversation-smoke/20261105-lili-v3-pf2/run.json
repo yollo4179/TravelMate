@@ -1,0 +1,14 @@
+{
+  "evaluator_git_sha": "5a5ec43dd1b8e11ccf479d476c377ef62343c21a",
+  "evaluator_source_sha256": "f0dbf58dc8e68c1cdd8c6d8482fe3469cb9f233281fc7fdee0c0ba452c3e8e94",
+  "configuration_sha256": "815585f9bf7b45a7d97fb1057785f5f03760572972c71abaa7b9d941f998a694",
+  "suite_sha256": "6b72cf23f338d68a3ca6ee1ccb5cb13ed5cf878b9e0a96135f513fe09c6c06e3",
+  "execution_mode": "LIVE",
+  "selected_case_ids": [
+    "V3-D-plan-too-short",
+    "CONV-PLAN-create"
+  ],
+  "status": "collected",
+  "input_count_cost_usd": null,
+  "total_billed_cost_usd": null
+}

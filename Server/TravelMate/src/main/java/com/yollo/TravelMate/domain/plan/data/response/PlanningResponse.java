@@ -25,13 +25,25 @@ public final class PlanningResponse {
             return java.util.Arrays.stream(values()).filter(status -> status.pending).toList();
         }
     }
+    /** dialogue is LiLi's reaction when the job FAILED; it is null for other statuses and for jobs that failed before it existed. */
     public record Job(
             UUID jobId,
             JobStatus status,
             String statusUrl,
             Long planId,
-            String errorMessage
-    ) {}
+            String errorMessage,
+            List<DialogueCut> dialogue
+    ) {
+        public Job(
+                UUID jobId,
+                JobStatus status,
+                String statusUrl,
+                Long planId,
+                String errorMessage
+        ) {
+            this(jobId, status, statusUrl, planId, errorMessage, null);
+        }
+    }
     @Builder
     public record Draft(
             Long planId,

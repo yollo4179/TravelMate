@@ -32,6 +32,7 @@ fi
 cp "$repo_dir/Docker/migrations/20261025_place_recommendation_messaging.sql" "$state_dir/init/03-place-recommendation-messaging.sql"
 cp "$repo_dir/Docker/migrations/20261104_add_plan_character_emotion.sql" "$state_dir/init/04-plan-character-emotion.sql"
 cp "$repo_dir/Docker/migrations/20261105_lili_dialogue_and_recommendation_jobs.sql" "$state_dir/init/05-lili-dialogue-and-recommendation-jobs.sql"
+cp "$repo_dir/Docker/migrations/20261105c_planning_job_failure_dialogue.sql" "$state_dir/init/06-planning-job-failure-dialogue.sql"
 cat > "$state_dir/init/02-local-user-column.sql" <<'SQL'
 ALTER TABLE users ADD COLUMN IF NOT EXISTS provider_id VARCHAR(255);
 SQL
@@ -106,6 +107,7 @@ for attempt in {1..30}; do
   if "${compose[@]}" exec -T postgres pg_isready -U ssafy -d travel_db >/dev/null 2>&1; then
     "${compose[@]}" exec -T postgres psql -v ON_ERROR_STOP=1 -U ssafy -d travel_db -c 'ALTER TABLE users ADD COLUMN IF NOT EXISTS provider_id VARCHAR(255);'
     "${compose[@]}" exec -T postgres psql -v ON_ERROR_STOP=1 -U ssafy -d travel_db -f /docker-entrypoint-initdb.d/03-place-recommendation-messaging.sql
+    "${compose[@]}" exec -T postgres psql -v ON_ERROR_STOP=1 -U ssafy -d travel_db -f /docker-entrypoint-initdb.d/06-planning-job-failure-dialogue.sql
     db_ready=true
     break
   fi

@@ -42,6 +42,7 @@ class LiliRouterTest {
     private static final String QUERY = "종로 조선 왕실 궁궐";
     private static final String FAILURE_REASON = "방문 체류시간이 여행 가능 시간을 초과합니다.";
     private String jobStatus = "QUEUED";
+    private JsonNode storedReaction;
     private final ObjectMapper mapper = new ObjectMapper();
     private final LlmClient llm = mock(LlmClient.class);
     private final RecommendationJobService recommendations = mock(RecommendationJobService.class);
@@ -165,6 +166,20 @@ class LiliRouterTest {
         assertTrue(followUp.contains(FAILURE_REASON));
         assertFalse(followUp.contains("FAILED"), "status codes stay on the server");
         assertTrue(response.choices().isEmpty(), "a failure is not a question, so no choices");
+    }
+
+    // The draft job stored LiLi's reaction when it failed; asking her again would cost a call and lose what was searched.
+    @Test
+    void failedJobWithAStoredReactionIsToldInThoseCutsWithoutAFollowUpCall() throws Exception {
+        jobStatus = "FAILED";
+        storedReaction = mapper.readTree("""
+                [{"text":"종로 범위를 다 찾아봤는데 넣을 곳이 없었어.","emotion":"SAD"}]""");
+        String jobId = UUID.randomUUID().toString();
+        answer(decision("GET_PLANNING_JOB", "PLAN", null, "THINKING", "확인해 볼게.", List.of()));
+        var response = respond(new ConversationRequest("작업 " + jobId + " 어떻게 됐어?", null, List.of()));
+        assertEquals(List.of(new DialogueCut("확인해 볼게.", CharacterEmotion.THINKING),
+                new DialogueCut("종로 범위를 다 찾아봤는데 넣을 곳이 없었어.", CharacterEmotion.SAD)), response.dialogue());
+        assertEquals(1, outputs.size(), "the stored reaction needs no second model call");
     }
 
     @Test
@@ -291,8 +306,9 @@ class LiliRouterTest {
             @Override
             public Result execute(Invocation invocation) {
                 calls.add(invocation);
-                JsonNode data = new ObjectMapper().createObjectNode().put("jobId", UUID.randomUUID().toString())
+                var data = new ObjectMapper().createObjectNode().put("jobId", UUID.randomUUID().toString())
                         .put("status", jobStatus).put("errorMessage", "FAILED".equals(jobStatus) ? FAILURE_REASON : null);
+                data.set("dialogue", storedReaction);
                 return Result.builder().type(type).publicData(data).modelData(data).sources(Map.of()).build();
             }
         };

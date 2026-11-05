@@ -18,5 +18,9 @@
   "REPLY_UNAVAILABLE": {
     "text": "미안, 방금은 내가 대답을 제대로 못 만들었어. 한 번만 다시 말해 줄래?",
     "emotion": "CONCERNED"
+  },
+  "PLAN_UNAVAILABLE": {
+    "text": "미안, 이번엔 일정 초안을 만들지 못했어. 같은 조건으로 다시 부탁하거나 조건을 바꿔서 요청해 줘.",
+    "emotion": "CONCERNED"
   }
 }

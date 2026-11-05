@@ -202,7 +202,11 @@ def _plan_failure_checks(
     tool_events: list[dict[str, Any]],
     followed: dict[str, Any],
 ) -> dict[str, bool | None]:
-    """The job was accepted and then failed the draft rules; failing is the expected end, with a reason users can read."""
+    """The job was accepted and then failed the draft rules; failing is the expected end, with a reason users can read.
+
+    LiLi's reaction is stored with the failed job. A job from a server before that field existed has no "dialogue" key,
+    so the reaction is not applicable there rather than missing.
+    """
     job = followed.get("job") or {}
     accepted = native.get("type") == "PLANNING_JOB" and bool((native.get("data") or {}).get("jobId")) and any(
         (event.get("result") or {}).get("name") == "generate_plan" and (event.get("result") or {}).get("status") == "SUCCEEDED"
@@ -212,7 +216,15 @@ def _plan_failure_checks(
         "plan_job_failed": followed.get("kind") == "PLANNING" and not followed.get("timed_out")
         and job.get("status") == "FAILED" and bool(job.get("errorMessage")),
         "plan_no_draft": not isinstance(followed.get("result"), dict),
+        "plan_failure_reaction": _reaction_cuts(job.get("dialogue")) if "dialogue" in job else None,
     }
+
+
+def _reaction_cuts(dialogue: Any) -> bool:
+    """One or more cuts, each with a line and an expression, the shape LiLi's lines take everywhere else."""
+    return isinstance(dialogue, list) and bool(dialogue) and all(
+        isinstance(cut, dict) and isinstance(cut.get("text"), str) and cut["text"].strip()
+        and isinstance(cut.get("emotion"), str) and cut["emotion"] for cut in dialogue)
 
 
 def _plan_checks(
@@ -323,8 +335,10 @@ def score_lili_case(case: dict[str, Any], record: dict[str, Any], selected: list
     # The draft's title, description and pin explanations are shown to the user as they are, like LiLi's lines.
     shown_plan = [draft.get("title") or "", draft.get("description") or ""] + [
         pin.get("explanation") or "" for pin in draft.get("pins") or []]
-    # A failed job's reason is shown in the app and read aloud by LiLi when the user asks about the job.
-    job_reason = [(followed.get("job") or {}).get("errorMessage") or ""] if plan_outcome == PlanOutcome.FAILED else []
+    # A failed job's reason is shown in the app; LiLi's stored reaction is what she says when the user asks about the job.
+    failed_job = (followed.get("job") or {}) if plan_outcome == PlanOutcome.FAILED else {}
+    failure_reaction = _texts(failed_job.get("dialogue"))
+    job_reason = [failed_job.get("errorMessage") or ""] + failure_reaction if plan_outcome == PlanOutcome.FAILED else []
     spoken = _texts(native.get("dialogue")) + _texts(job_result.get("dialogue")) + _texts(draft.get("dialogue")) + shown_plan + job_reason
     leaked = internal_terms(spoken)
     checks["no_internal_terms"] = not leaked
@@ -350,7 +364,7 @@ def score_lili_case(case: dict[str, Any], record: dict[str, Any], selected: list
                                  "candidateIds": item.get("candidateIds"),
                                  "droppedCitations": item.get("droppedCitations") or []} for item in plan_drafts],
             "response_text": " / ".join(_texts(native.get("dialogue"))) or native.get("message"),
-            "job_response_text": " / ".join(_texts(job_result.get("dialogue"))) or None,
+            "job_response_text": " / ".join(_texts(job_result.get("dialogue")) or failure_reaction) or None,
             "draft_dialogue_text": " / ".join(_texts(draft.get("dialogue"))) or None,
             "plan_draft": _draft_summary(draft),
             "job_status": {"kind": followed.get("kind"), "status": (followed.get("job") or {}).get("status"),

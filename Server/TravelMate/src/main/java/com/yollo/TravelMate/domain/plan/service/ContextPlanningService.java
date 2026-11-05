@@ -10,6 +10,8 @@ import com.yollo.TravelMate.ai.llm.observation.ObservationContext;
 import com.yollo.TravelMate.domain.place.data.result.PlaceResult;
 import com.yollo.TravelMate.domain.place.service.PlaceSemanticSearchService;
 import com.yollo.TravelMate.domain.plan.data.internal.GeneratedPlan;
+import com.yollo.TravelMate.domain.plan.data.internal.PlanFailure;
+import com.yollo.TravelMate.domain.plan.data.internal.PlanFailure.PlanFailureException;
 import com.yollo.TravelMate.domain.plan.data.request.*;
 import com.yollo.TravelMate.domain.plan.data.response.PlanningResponse;
 import com.yollo.TravelMate.domain.plan.repository.*;
@@ -30,23 +32,6 @@ public class ContextPlanningService {
     private enum JobObservationOperation {
         IDEMPOTENCY_READ, INSERT_ACKNOWLEDGED, QUEUE_REJECTED, OWNER_SCOPED_READ, UPDATE_ACKNOWLEDGED
     }
-    /**
-     * What users are told when the model's draft did not come through. Each line states only what the server
-     * verified; a guessed cause such as a passing outage became LiLi's explanation in live runs. The real cause
-     * stays in PLAN_DRAFT for operators.
-     */
-    private enum DraftFailure {
-        // Budget guard, provider or transport: which one, and whether retrying helps, is not known here.
-        GENERATION_UNAVAILABLE("일정 초안을 만들지 못했어요. 같은 조건으로 다시 요청하거나 조건을 바꿔 요청해 주세요."),
-        // The model answered, but its draft could not be read, so nothing was saved. Bad citations alone no longer fail a draft.
-        DRAFT_REJECTED("만들어진 초안이 확인 단계를 통과하지 못해 저장하지 않았어요. 다시 요청해 주세요.");
-
-        private final String userMessage;
-
-        DraftFailure(String userMessage) {
-            this.userMessage = userMessage;
-        }
-    }
     private final PlanningJobRepository jobs;
     private final ContextPlanRepository plans;
     private final PlaceSemanticSearchService searchService;
@@ -54,6 +39,7 @@ public class ContextPlanningService {
     private final LlmClient llmClient;
     private final com.yollo.TravelMate.domain.plan.validator.ContextPlanResultValidator planValidator;
     private final com.yollo.TravelMate.domain.plan.prompts.ContextPlanPromptFactory promptFactory;
+    private final List<PlanFailureReaction> failureReactions;
     private final ExecutorService executor = new java.util.concurrent.ThreadPoolExecutor(
             2, 2, 0L, java.util.concurrent.TimeUnit.MILLISECONDS,
             new java.util.concurrent.ArrayBlockingQueue<>(10)
@@ -87,7 +73,7 @@ public class ContextPlanningService {
                 }
             });
         } catch (java.util.concurrent.RejectedExecutionException exception) {
-            jobs.update(jobId, PlanningResponse.JobStatus.FAILED, null, "생성 요청이 많습니다. 잠시 후 새 요청으로 시도해 주세요.");
+            fail(jobId, PlanFailure.QUEUE_FULL.classified(), request);
             recordJob(jobId, PlanningResponse.JobStatus.FAILED, null, JobObservationOperation.QUEUE_REJECTED);
         }
         return jobs.get(jobId, userUid);
@@ -224,7 +210,7 @@ public class ContextPlanningService {
             required.forEach(place -> candidatesById.put(place.id(), place));
             var candidates = List.copyOf(candidatesById.values());
             attempt.candidateIds = List.copyOf(candidatesById.keySet());
-            if (candidates.isEmpty()) throw new IllegalStateException("선택한 여행 범위에서 장소를 찾지 못했습니다.");
+            if (candidates.isEmpty()) throw new PlanFailureException(PlanFailure.NO_CANDIDATES_IN_AREA);
             var preparedPrompt = promptFactory.prepare(request, candidates, searchResults);
             String prompt = preparedPrompt.userPrompt();
             attempt.prompt = prompt;
@@ -234,7 +220,7 @@ public class ContextPlanningService {
             try {
                 output = llmClient.generate(promptFactory.systemPrompt(), prompt);
             } catch (RuntimeException exception) {
-                throw new DraftFailureException(DraftFailure.GENERATION_UNAVAILABLE, exception);
+                throw new PlanFailureException(PlanFailure.GENERATION_UNAVAILABLE, exception);
             }
             attempt.output = output;
             log.info("planning job={} stage=VALIDATING_RESULT responseCharacters={}", jobId, output == null ? 0 : output.length());
@@ -256,14 +242,10 @@ public class ContextPlanningService {
             log.info("planning job={} stage=SUCCEEDED planId={} pinCount={}", jobId, planId, normalized.pins().size());
         } catch (Exception exception) {
             log.warn("planning job={} stage=FAILED exception={}", jobId, exception.toString());
-            // The job's error is shown to users and read aloud by LiLi; what the model call or its draft raised stays internal.
-            String message = exception instanceof DraftFailureException failure ? failure.kind.userMessage
-                    : exception instanceof ResponseStatusException status ? status.getReason()
-                    : exception instanceof IllegalStateException ? exception.getMessage()
-                    : exception instanceof com.yollo.TravelMate.exceptions.cumtom.ErrorCodeException known ? known.getErrorCode().getMessage()
-                    : "일정 생성 처리에 실패했습니다. 잠시 후 새 요청으로 시도해 주세요.";
+            // What the model call or its draft raised stays internal; the kind decides what users are told and how LiLi reacts.
+            var failure = PlanFailure.classify(exception);
             recordDraft(attempt, PlanningResponse.JobStatus.FAILED, exception);
-            jobs.update(jobId, PlanningResponse.JobStatus.FAILED, null, message);
+            fail(jobId, failure, request);
             recordJob(jobId, PlanningResponse.JobStatus.FAILED, null, JobObservationOperation.UPDATE_ACKNOWLEDGED);
         }
     }
@@ -285,17 +267,17 @@ public class ContextPlanningService {
             // The draft rules word their reasons for users (they also guard manual plans), e.g. a café the area lacks.
             throw conditionReason;
         } catch (RuntimeException exception) {
-            throw new DraftFailureException(DraftFailure.DRAFT_REJECTED, exception);
+            throw new PlanFailureException(PlanFailure.DRAFT_REJECTED, exception);
         }
     }
 
     private void recordDraft(DraftAttempt attempt, PlanningResponse.JobStatus status, Exception rejected) {
-        Throwable failure = rejected instanceof DraftFailureException wrapped ? wrapped.getCause() : rejected;
+        Throwable failure = rejected instanceof PlanFailureException wrapped && wrapped.getCause() != null ? wrapped.getCause() : rejected;
         var event = objectMapper.createObjectNode().put("status", status.name()).put("query", attempt.query)
                 .put("prompt", attempt.prompt)
                 .put("systemPromptSha256", com.yollo.TravelMate.ai.llm.budget.LlmCallGuard.sha256(promptFactory.systemPrompt()))
                 .put("output", attempt.output)
-                .put("failureKind", rejected instanceof DraftFailureException known ? known.kind.name() : null)
+                .put("failureKind", rejected == null ? null : PlanFailure.classify(rejected).kind().name())
                 .put("failureType", failure == null ? null : failure.getClass().getSimpleName())
                 .put("failureMessage", failure == null ? null : failure instanceof ResponseStatusException statusFailure
                         ? statusFailure.getReason() : failure.getMessage());
@@ -308,14 +290,26 @@ public class ContextPlanningService {
         ObservationContext.record(ObservationContext.Event.PLAN_DRAFT, event);
     }
 
-    /** The model call or its draft failed; the cause is for operators, the kind decides what users are told. */
-    private static final class DraftFailureException extends RuntimeException {
-        private final DraftFailure kind;
-
-        private DraftFailureException(DraftFailure kind, RuntimeException cause) {
-            super(cause);
-            this.kind = kind;
+    /**
+     * LiLi's reaction is stored with the error before the job turns FAILED, so whoever sees the failure can read it.
+     * A reaction that cannot be made leaves only the error text; the job must still leave RUNNING.
+     */
+    private void fail(
+            UUID jobId,
+            PlanFailure.Classified failure,
+            GeneratePlanRequest request
+    ) {
+        List<com.yollo.TravelMate.domain.conversation.data.DialogueCut> dialogue = null;
+        try {
+            dialogue = com.yollo.TravelMate.domain.conversation.pipeline.ModuleSelection.requireOne(
+                    failureReactions,
+                    reaction -> reaction.supports(failure.kind().reaction()),
+                    "plan failure reaction"
+            ).execute(failure, request);
+        } catch (RuntimeException exception) {
+            log.warn("planning job={} reaction unavailable kind={} exception={}", jobId, failure.kind(), exception.toString());
         }
+        jobs.fail(jobId, failure.userMessage(), dialogue);
     }
 
     /** What one generation attempt saw and produced, filled in as the job advances. */

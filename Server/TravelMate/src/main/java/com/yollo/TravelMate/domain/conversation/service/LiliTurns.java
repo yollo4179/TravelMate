@@ -34,7 +34,8 @@ public class LiliTurns {
     private final ConversationGenerationPipeline generation;
     private final ObjectMapper mapper;
 
-    public enum Stage { ROUTER, FOLLOW_UP, RECOMMENDATION }
+    // PLAN_FAILURE is LiLi's reaction to a failed draft job, made inside the job rather than in a conversation turn.
+    public enum Stage { ROUTER, FOLLOW_UP, RECOMMENDATION, PLAN_FAILURE }
 
     public record Decision(
             LiliBranch branch,

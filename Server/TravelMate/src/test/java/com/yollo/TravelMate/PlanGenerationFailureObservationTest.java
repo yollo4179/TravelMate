@@ -13,15 +13,18 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.yollo.TravelMate.ai.llm.base.LlmClient;
 import com.yollo.TravelMate.ai.llm.budget.TokenBudgetException;
 import com.yollo.TravelMate.ai.llm.observation.ObservationContext;
+import com.yollo.TravelMate.domain.conversation.data.DialogueCut;
 import com.yollo.TravelMate.domain.place.data.result.PlaceResult;
 import com.yollo.TravelMate.domain.place.data.result.PlaceSemanticSearchResult;
 import com.yollo.TravelMate.domain.place.service.PlaceSemanticSearchService;
+import com.yollo.TravelMate.domain.plan.data.internal.PlanFailure;
 import com.yollo.TravelMate.domain.plan.data.request.GeneratePlanRequest;
 import com.yollo.TravelMate.domain.plan.data.response.PlanningResponse;
 import com.yollo.TravelMate.domain.plan.prompts.ContextPlanPromptFactory;
 import com.yollo.TravelMate.domain.plan.repository.ContextPlanRepository;
 import com.yollo.TravelMate.domain.plan.repository.PlanningJobRepository;
 import com.yollo.TravelMate.domain.plan.service.ContextPlanningService;
+import com.yollo.TravelMate.domain.plan.service.PlanFailureReaction;
 import com.yollo.TravelMate.domain.plan.validator.ContextPlanResultValidator;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -42,6 +45,8 @@ class PlanGenerationFailureObservationTest {
     private final List<JsonNode> events = new CopyOnWriteArrayList<>();
     private final AtomicReference<String> storedError = new AtomicReference<>();
     private final AtomicReference<PlanningResponse.JobStatus> finalStatus = new AtomicReference<>();
+    private final AtomicReference<List<DialogueCut>> storedReaction = new AtomicReference<>();
+    private final PlanFailureReactionsForTest reactions = new PlanFailureReactionsForTest();
     private final CountDownLatch finished = new CountDownLatch(1);
     private ContextPlanningService planning;
     private GeneratePlanRequest request;
@@ -65,14 +70,20 @@ class PlanGenerationFailureObservationTest {
             }
             return null;
         }).when(jobs).update(any(), any(), any(), any());
+        doAnswer(invocation -> {
+            storedError.set(invocation.getArgument(1));
+            storedReaction.set(invocation.getArgument(2));
+            finalStatus.set(PlanningResponse.JobStatus.FAILED);
+            finished.countDown();
+            return null;
+        }).when(jobs).fail(any(), any(), any());
         var place = mapper.readValue("""
                 {"id":101,"name":"모의 카페","category":"카페","latitude":35.8395,"longitude":129.212}
                 """, PlaceResult.class);
         when(plans.requiredPlaces(List.of(101L))).thenReturn(List.of(place));
         when(search.search(anyString(), isNull(), isNull(), isNull(), anyInt(), eq(request.context().area())))
                 .thenReturn(List.of(new PlaceSemanticSearchResult(place, 0.8f)));
-        planning = new ContextPlanningService(jobs, plans, search, mapper, llm,
-                new ContextPlanResultValidator(mapper), new ContextPlanPromptFactory(mapper));
+        planning = service(reactions.registry());
     }
 
     @AfterEach
@@ -136,6 +147,57 @@ class PlanGenerationFailureObservationTest {
         assertEquals("GENERATION_UNAVAILABLE", draft.path("failureKind").asText());
         assertFalse(storedError.get().contains("응답하지 않"), "a passing outage was never verified");
         assertFalse(storedError.get().contains("잠시 후"), "nor that waiting fixes it");
+    }
+
+    // The user asked what the server searched; LiLi reacts to that verified fact instead of the server's error text.
+    @Test
+    void aSearchThatFindsNothingInTheAreaIsVoicedByLiliAndStoredWithTheJob() throws Exception {
+        var noStops = (com.fasterxml.jackson.databind.node.ObjectNode) mapper.readTree(PlanContextContractTest.REQUEST);
+        noStops.putArray("requiredStops");
+        request = mapper.treeToValue(noStops, GeneratePlanRequest.class);
+        when(search.search(anyString(), isNull(), isNull(), isNull(), anyInt(), eq(request.context().area()))).thenReturn(List.of());
+        var draft = runUntilFailed();
+        assertEquals("NO_CANDIDATES_IN_AREA", draft.path("failureKind").asText());
+        assertEquals("선택한 여행 범위에서 장소를 찾지 못했습니다.", storedError.get(), "clients still get the plain reason");
+        assertEquals(List.of(PlanFailureReactionsForTest.LILI_CUT), storedReaction.get());
+        assertEquals(PlanFailure.NO_CANDIDATES_IN_AREA, reactions.asked.get(0).kind());
+        verify(llm, never()).generate(anyString(), anyString());
+    }
+
+    @Test
+    void aFailedModelCallGetsLilisPreparedLineSoTheModelIsNotCalledAgain() throws Exception {
+        when(llm.generate(anyString(), anyString())).thenThrow(new TokenBudgetException(TokenBudgetException.Reason.COUNT_UNAVAILABLE));
+        runUntilFailed();
+        assertEquals(List.of(PlanFailureReactionsForTest.PREPARED_CUT), storedReaction.get());
+        assertEquals(PlanFailure.GENERATION_UNAVAILABLE, reactions.asked.get(0).kind());
+    }
+
+    @Test
+    void aReactionThatCannotBeMadeStillEndsTheJobFailedWithItsReason() throws Exception {
+        ReflectionTestUtils.invokeMethod(planning, "shutdown");
+        planning = service(List.of(new PlanFailureReaction() {
+            @Override
+            public boolean supports(PlanFailure.Reaction reaction) {
+                return true;
+            }
+
+            @Override
+            public List<DialogueCut> execute(
+                    PlanFailure.Classified failure,
+                    GeneratePlanRequest request
+            ) {
+                throw new IllegalStateException("reaction unavailable");
+            }
+        }));
+        when(llm.generate(anyString(), anyString())).thenReturn("not a plan");
+        runUntilFailed();
+        assertNull(storedReaction.get(), "no reaction is stored, but the job does not stay RUNNING");
+        assertFalse(storedError.get().isBlank());
+    }
+
+    private ContextPlanningService service(List<PlanFailureReaction> failureReactions) {
+        return new ContextPlanningService(jobs, plans, search, mapper, llm,
+                new ContextPlanResultValidator(mapper), new ContextPlanPromptFactory(mapper), failureReactions);
     }
 
     private JsonNode runUntilFailed() throws Exception {

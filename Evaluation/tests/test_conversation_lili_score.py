@@ -392,9 +392,11 @@ class LiliBoundaryScoreTests(unittest.TestCase):
         ids = (cls.OUT_OF_RANGE, cls.CHANGE_REGION, cls.KEEP_EXISTING, cls.PLAN_BUDGET, cls.PLAN_TOO_SHORT, cls.HOTEL)
         cls.cases = {case["case_id"]: case for case in load_cases(LILI_BOUNDARY_SUITE, ids, {"owned_job_id": OWNED_JOB_ID})}
 
+    def score(self, trace: LiliTrace) -> dict[str, Any]:
+        return score_case(trace.case, trace.record, trace.events, CONTRACT)
+
     def failed(self, trace: LiliTrace) -> list[str]:
-        return [name for name, value in score_case(trace.case, trace.record, trace.events, CONTRACT)["checks"].items()
-                if value is False]
+        return [name for name, value in self.score(trace)["checks"].items() if value is False]
 
     def words_only(self, trace: LiliTrace) -> LiliTrace:
         trace.native["data"] = None
@@ -461,6 +463,28 @@ class LiliBoundaryScoreTests(unittest.TestCase):
                                                 "result": None, "job": {"status": "FAILED", "errorMessage": reason}}
                 failed = self.failed(trace)
                 self.assertEqual(passes, failed == [], failed)
+
+    def test_a_failed_plan_jobs_reaction_must_be_lilis_lines_and_is_reviewed(self) -> None:
+        reaction = [{"text": "시간이 모자라서 이번엔 못 짰어. 끝나는 시간을 늘려서 다시 해 볼래?", "emotion": "SAD"}]
+        for dialogue, expected_failures in ((reaction, []), ([], ["plan_failure_reaction"]),
+                                            ([{"text": "PLAN_TIME_EXCEEDED", "emotion": "SAD"}], ["no_internal_terms"])):
+            with self.subTest(dialogue=dialogue):
+                trace = LiliTrace(self.cases[self.PLAN_TOO_SHORT], "GENERATE_PLAN", "종로 일정", "PLANNING_JOB")
+                trace.tool("generate_plan", {})
+                trace.record["followed_job"] = {"kind": "PLANNING", "polls": 4, "wait_ms": 9000.0, "timed_out": False,
+                                                "result": None, "job": {"status": "FAILED", "errorMessage": self.STAY_REASON,
+                                                                        "dialogue": dialogue}}
+                score = self.score(trace)
+                self.assertEqual(expected_failures, [name for name, value in score["checks"].items() if value is False])
+                if dialogue == reaction:
+                    self.assertEqual(reaction[0]["text"], score["job_response_text"], "the reaction is what reviewers read")
+
+    def test_a_job_from_a_server_without_reactions_is_not_judged_on_one(self) -> None:
+        trace = LiliTrace(self.cases[self.PLAN_TOO_SHORT], "GENERATE_PLAN", "종로 일정", "PLANNING_JOB")
+        trace.tool("generate_plan", {})
+        trace.record["followed_job"] = {"kind": "PLANNING", "polls": 4, "wait_ms": 9000.0, "timed_out": False,
+                                        "result": None, "job": {"status": "FAILED", "errorMessage": self.STAY_REASON}}
+        self.assertIsNone(self.score(trace)["checks"]["plan_failure_reaction"])
 
     def test_the_v3_suite_loads_with_the_owned_job_binding(self) -> None:
         suite = json.loads(LILI_BOUNDARY_SUITE.read_text(encoding="utf-8"))

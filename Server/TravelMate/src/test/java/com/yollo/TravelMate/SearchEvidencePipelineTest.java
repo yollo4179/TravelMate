@@ -175,7 +175,8 @@ class SearchEvidencePipelineTest {
         var citation = new GeneratedPlan.SourceCitation("E101-0", results.get(0).evidenceChunks().get(0).sourceId(), WALK);
         when(llm.generate(anyString(), anyString())).thenReturn(mapper.writeValueAsString(plan(101L, citation)));
         var service = new ContextPlanningService(jobs, plans, search, mapper, llm,
-                new ContextPlanResultValidator(mapper), new ContextPlanPromptFactory(mapper));
+                new ContextPlanResultValidator(mapper), new ContextPlanPromptFactory(mapper),
+                new PlanFailureReactionsForTest().registry());
         UUID jobId = UUID.randomUUID();
         try {
             ReflectionTestUtils.invokeMethod(service, "runGeneration", jobId, "mock-user", input, "original-request");

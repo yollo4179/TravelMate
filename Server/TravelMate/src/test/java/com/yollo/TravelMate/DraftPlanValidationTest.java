@@ -119,7 +119,7 @@ class DraftPlanValidationTest {
                 verify(jobs).update(generatedJob, PlanningResponse.JobStatus.SUCCEEDED, 77L, null);
             } else {
                 verify(plans, never()).save(anyString(), any(), any(), anyList(), anyString());
-                verify(jobs).update(generatedJob, PlanningResponse.JobStatus.FAILED, null, outcome.reason);
+                verify(jobs).fail(eq(generatedJob), eq(outcome.reason), anyList());
             }
         } finally {
             ReflectionTestUtils.invokeMethod(service, "shutdown");
@@ -189,7 +189,7 @@ class DraftPlanValidationTest {
             assertEquals("존재하지 않는 필수 장소가 있습니다.", manual.getReason());
             UUID jobId = UUID.randomUUID();
             ReflectionTestUtils.invokeMethod(service, "runGeneration", jobId, "mock-user", request, "mock-request");
-            verify(jobs).update(jobId, PlanningResponse.JobStatus.FAILED, null, manual.getReason());
+            verify(jobs).fail(eq(jobId), eq(manual.getReason()), anyList());
             verify(plans, never()).save(anyString(), any(), any(), anyList(), anyString());
             verifyNoInteractions(search, llm);
         } finally {
@@ -235,7 +235,8 @@ class DraftPlanValidationTest {
                 mapper,
                 llm,
                 new ContextPlanResultValidator(mapper),
-                new ContextPlanPromptFactory(mapper)
+                new ContextPlanPromptFactory(mapper),
+                new PlanFailureReactionsForTest().registry()
         );
     }
 

@@ -21,7 +21,8 @@ public final class LiliFixedLines {
         JOB_RUNNING,
         JOB_SUCCEEDED,
         EXPLANATION_UNAVAILABLE,
-        REPLY_UNAVAILABLE
+        REPLY_UNAVAILABLE,
+        PLAN_UNAVAILABLE
     }
 
     private static final Map<JobStatus, Line> STATUS_LINES = Map.of(

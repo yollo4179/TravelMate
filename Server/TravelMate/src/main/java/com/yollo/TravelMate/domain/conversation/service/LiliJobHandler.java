@@ -49,6 +49,9 @@ public class LiliJobHandler implements LiliBranchHandler {
         if (result.type() == ResultType.DRAFT) return told(input, executed, draftCuts(result.publicData()));
         var status = JobStatus.valueOf(result.publicData().path("status").asText());
         if (status == JobStatus.FAILED) {
+            // The job already holds LiLi's reaction to the failure the server verified; asking her again adds a call.
+            var reaction = storedCuts(result.publicData().path("dialogue"));
+            if (!reaction.isEmpty()) return told(input, executed, reaction);
             return followUp(input, LiliServerCode.PLAN_GENERATION_FAILED,
                     result.publicData().path("errorMessage").asText(null), executed, Termination.COMPLETED);
         }
@@ -65,8 +68,12 @@ public class LiliJobHandler implements LiliBranchHandler {
 
     // The plan model already wrote LiLi's cuts for the draft; older drafts without cuts get the fixed line.
     private List<DialogueCut> draftCuts(JsonNode draft) {
-        var stored = draft.path("dialogue");
-        if (!stored.isArray() || stored.isEmpty()) return List.of(LiliFixedLines.line(JobStatus.SUCCEEDED));
+        var cuts = storedCuts(draft.path("dialogue"));
+        return cuts.isEmpty() ? List.of(LiliFixedLines.line(JobStatus.SUCCEEDED)) : cuts;
+    }
+
+    private static List<DialogueCut> storedCuts(JsonNode stored) {
+        if (!stored.isArray()) return List.of();
         var cuts = new ArrayList<DialogueCut>();
         stored.forEach(cut -> cuts.add(new DialogueCut(cut.path("text").asText(),
                 CharacterEmotion.valueOf(cut.path("emotion").asText()))));

@@ -1,7 +1,12 @@
 package com.yollo.TravelMate.domain.plan.repository;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.yollo.TravelMate.domain.conversation.data.DialogueCut;
 import com.yollo.TravelMate.domain.plan.data.response.PlanningResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -13,7 +18,9 @@ import org.springframework.http.HttpStatus;
 @RequiredArgsConstructor
 public class PlanningJobRepository {
     public enum Operation { GENERATE, MANUAL }
+    private static final TypeReference<List<DialogueCut>> CUTS = new TypeReference<>() {};
     private final JdbcTemplate jdbc;
+    private final ObjectMapper mapper;
 
     public Optional<PlanningResponse.Job> findExisting(
             String userUid,
@@ -59,6 +66,19 @@ public class PlanningJobRepository {
                 status.name(), planId, error, jobId);
     }
 
+    /** The error text stays for clients and operators; LiLi's reaction is what the user is shown in her voice. */
+    public void fail(
+            UUID jobId,
+            String error,
+            List<DialogueCut> dialogue
+    ) {
+        jdbc.update("""
+                UPDATE planning_jobs SET status = 'FAILED', plan_id = NULL, error_message = ?,
+                    failure_dialogue = ?::jsonb, updated_at = now()
+                WHERE job_id = ?
+                """, error, encode(dialogue), jobId);
+    }
+
     public void failInterruptedJobs() {
         jdbc.update("""
                 UPDATE planning_jobs SET status = 'FAILED',
@@ -67,14 +87,32 @@ public class PlanningJobRepository {
                 """);
     }
 
-    private static PlanningResponse.Job toResponse(java.sql.ResultSet row) throws java.sql.SQLException {
+    private PlanningResponse.Job toResponse(java.sql.ResultSet row) throws java.sql.SQLException {
         UUID jobId = row.getObject("job_id", UUID.class);
         return new PlanningResponse.Job(
                 jobId,
                 PlanningResponse.JobStatus.valueOf(row.getString("status")),
                 "/api/v1/planning-jobs/" + jobId,
                 row.getObject("plan_id", Long.class),
-                row.getString("error_message")
+                row.getString("error_message"),
+                decode(row.getString("failure_dialogue"))
         );
+    }
+
+    private String encode(List<DialogueCut> dialogue) {
+        try {
+            return mapper.writeValueAsString(dialogue);
+        } catch (JsonProcessingException exception) {
+            throw new IllegalStateException("LiLi reaction could not be stored", exception);
+        }
+    }
+
+    private List<DialogueCut> decode(String stored) {
+        if (stored == null) return null;
+        try {
+            return mapper.readValue(stored, CUTS);
+        } catch (JsonProcessingException exception) {
+            throw new IllegalStateException("Stored LiLi reaction is unreadable", exception);
+        }
     }
 }
