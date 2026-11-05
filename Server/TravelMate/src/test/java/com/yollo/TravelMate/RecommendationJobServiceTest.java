@@ -62,8 +62,12 @@ class RecommendationJobServiceTest {
     void aCandidateWithoutSelectedEvidenceReachesLiliOnlyAsACount() throws Exception {
         var modelData = mapper.readTree("""
                 {"searchContractVersion":"place-search-v2","candidates":[
-                  {"placeId":378,"name":"창경궁","description":"관광지. 고궁.",
-                   "selectedEvidence":[{"evidenceId":"E378-0","original":{"chunk_text":"주로 왕실 가족들의 생활공간으로 사용하였다."}}],
+                  {"placeId":378,"name":"창경궁","description":"관광지. 고궁. 카드 요약",
+                   "selectedEvidence":[{"evidenceId":"E378-0","original":{"chunk_text":"주로 왕실 가족들의 생활공간으로 사용하였다.",
+                     "source_id":"f9778e87-11f5-5d07-83fa-33e8350a3a40",
+                     "source_version":"584360f560922c2194641c1b365a263851cc0edf0a1170cc0d3c4da955cab3fe",
+                     "metadata":{"field":"places.description",
+                                 "corpus_sha256":"c74e902620687cbe8b7ec61a24eb7932e95f8cf7a90762baef5e78ad0b134f9e"}}}],
                    "evidenceAvailability":"SELECTED_UNASSESSED"},
                   {"placeId":380,"name":"창덕궁 낙선재","description":"대한제국 마지막 황실 가족이 생활하다가 세상을 떠난 곳",
                    "selectedEvidence":[],"evidenceAvailability":"NONE_SELECTED"}]}""");
@@ -80,6 +84,12 @@ class RecommendationJobServiceTest {
         assertFalse(sent.contains("대한제국 마지막 황실"), "nor its description");
         assertTrue(sent.contains("\"cardOnlyCandidateCount\":1"));
         assertTrue(sent.contains("\"shownCardCount\":2"), "she knows the cards are on screen even when she can cite none");
+        // Tokens she cannot use: provenance hashes and a card summary that repeats the original she cites.
+        assertFalse(sent.contains("c74e902620687cbe"), "hashes are left in the event, not sent to the model");
+        assertFalse(sent.contains("584360f560922c21"));
+        assertFalse(sent.contains("카드 요약"));
+        assertTrue(sent.contains("f9778e87-11f5-5d07-83fa-33e8350a3a40"), "the source id that citations need stays");
+        assertTrue(sent.contains("places.description"), "short metadata that is not a hash stays");
     }
 
     private com.fasterxml.jackson.databind.JsonNode run(String recommendation) throws Exception {
