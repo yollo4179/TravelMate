@@ -7,6 +7,7 @@
 | [검색 근거 전달 구현](architecture/search-evidence-delivery.md) | 원문·귀속·관계·조건의 Spring·기존 LLM 입력 보존과 인용 소속 검사 |
 | [DRAFT 검증 공통화](architecture/draft-plan-validation.md) | 직접 저장·LLM 생성의 동일 조건 검사, 초안 허용 범위와 미구현 확정 경로 |
 | [단일 LLM 도구 루프 구현](architecture/single-llm-tool-loop.md) | GPT/Qwen 전략, 실제 도구 등록·반복·Job/DRAFT 구분과 모의 검증 범위 |
+| [다음 작업 우선순위·이동시간 설계](plans/2026-11-05-next-priorities.md) | LiLi v2 이후 남은 일, 평가 확장·이동시간 그래프 설계와 확정된 우선순위 |
 | [청크 검색 구현 계획](plans/contextual-retrieval.md) | 장소당 활성 20개·원문 보존·단계별 이행과 검증 범위 |
 | [공통 청크 명세](specifications/contextual-retrieval.md) | Perplexity 문맥 생성·전역 ID·인용 위치·FastAPI DB 변경·실행 명령 |
 | [청크 검색 구조도](architecture/contextual-retrieval.md) | TourAPI/블로그/리뷰 → 문맥+원문 임베딩 → 장소별 대표 근거 → 기존 리랭커 |
